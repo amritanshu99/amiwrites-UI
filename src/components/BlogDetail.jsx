@@ -11,7 +11,7 @@ const BlogDetails = () => {
   const fetchBlog = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`/blogs/${id}`);
+      const res = await axios.get(`https://amiwrites-backend-app-1.onrender.com/api/blogs/${id}`);
       setBlog(res.data);
     } catch (error) {
       console.error("Failed to fetch blog:", error);
