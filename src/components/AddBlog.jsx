@@ -35,7 +35,7 @@ export default function AddBlog() {
 
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/blogs",
+        "https://amiwrites-backend-app-1.onrender.com/api/blogs",
         { title, content },
         {
           headers: {

@@ -15,7 +15,6 @@ import { SiJavascript, SiExpress, SiMongodb, SiGraphql } from "react-icons/si";
 import { motion, AnimatePresence, useInView } from "framer-motion";
 import Loader from "./Loader";
 
-const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
 const skillIcons = {
   JavaScript: <SiJavascript className="text-yellow-500" />,
@@ -125,7 +124,7 @@ export default function Portfolio() {
 
   useEffect(() => {
     axios
-      .get(`${API_URL}/api/portfolio`)
+      .get(`https://amiwrites-backend-app-1.onrender.com/api/portfolio`)
       .then((res) => setData(res.data))
       .catch((err) => console.error("Error fetching portfolio:", err));
   }, []);
@@ -146,7 +145,7 @@ export default function Portfolio() {
         <article className="bg-white bg-opacity-90 backdrop-blur-md rounded-xl shadow-lg max-w-4xl w-full p-6 md:p-10">
           <section className="flex flex-col sm:flex-row items-center gap-6 sm:gap-10">
             <motion.img
-              src={`${API_URL}${data.photoUrl}`}
+              src={`https://amiwrites-backend-app-1.onrender.com${data.photoUrl}`}
               alt={data.name}
               loading="lazy"
               width={192}

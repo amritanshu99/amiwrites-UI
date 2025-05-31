@@ -20,7 +20,7 @@ export default function LoginModal({ isOpen, onClose }) {
     }
 
     try {
-      const response = await axios.post("http://localhost:5000/api/auth/login", {
+      const response = await axios.post("https://amiwrites-backend-app-1.onrender.com/api/auth/login", {
         username,
         password,
       });
@@ -40,7 +40,7 @@ export default function LoginModal({ isOpen, onClose }) {
     setError("");
     setInfo("");
     try {
-      await axios.post("http://localhost:5000/api/auth/reset-password", { email });
+      await axios.post("https://amiwrites-backend-app-1.onrender.com/api/auth/reset-password", { email });
       setInfo("Reset link sent to your email.");
       setShowResetForm(false);
     } catch (err) {

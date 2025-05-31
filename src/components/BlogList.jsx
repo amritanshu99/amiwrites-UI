@@ -35,7 +35,7 @@ const BlogList = () => {
   const fetchBlogs = async () => {
     setLoading(true);
     try {
-      const res = await axios.get('/blogs');
+      const res = await axios.get('https://amiwrites-backend-app-1.onrender.com/api/blogs');
       setBlogs(res.data);
     } catch (error) {
       console.error('Error fetching blogs:', error);
