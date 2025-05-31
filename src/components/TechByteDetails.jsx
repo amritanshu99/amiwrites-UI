@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import Loader from "./Loader";
 
-export default function TechNewsCards() {
+function TechNewsCards() {
   const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -11,9 +11,7 @@ export default function TechNewsCards() {
     let isMounted = true;
 
     axios
-      .get(
-        "https://newsapi.org/v2/top-headlines?category=technology&apiKey=e36d1ec32a5c44268ad724e8e36568cb"
-      )
+      .get("https://amiwrites-backend-app-1.onrender.com/api/tech-news")
       .then((res) => {
         if (isMounted) {
           setArticles(res.data.articles);
@@ -32,6 +30,12 @@ export default function TechNewsCards() {
     };
   }, []);
 
+  // Memoize the handler to avoid recreating the function each render
+  const handleReadMoreClick = useCallback((e, url) => {
+    e.preventDefault();
+    window.open(url, "_blank", "noopener,noreferrer");
+  }, []);
+
   if (loading) return <Loader />;
 
   if (error)
@@ -42,61 +46,70 @@ export default function TechNewsCards() {
     );
 
   return (
-    <section className="max-w-7xl mx-auto px-5 sm:px-8 lg:px-12 py-12">
-      <h2 className="text-4xl font-extrabold text-gray-900 mb-10 text-center tracking-tight">
-        Latest Technology News
-      </h2>
+    <section className="max-w-7xl mx-auto p-6 sm:p-10">
+      <h1 className="text-3xl font-extrabold text-gray-900 mb-8 text-center">
+        Latest Tech News
+      </h1>
 
-      <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-        {articles.map((article, idx) => (
-          <article
-            key={idx}
-            tabIndex={0}
-            role="button"
-            onClick={() => window.open(article.url, "_blank")}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") window.open(article.url, "_blank");
-            }}
-            className="cursor-pointer bg-white rounded-xl shadow-md overflow-hidden flex flex-col transition-transform duration-300 ease-in-out hover:shadow-2xl hover:scale-[1.04] focus:outline-none focus:ring-4 focus:ring-indigo-400"
-            aria-label={`Read article titled ${article.title}`}
+      <div className="grid gap-8 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+        {articles.map((article) => (
+          <a
+            key={article.url} // Use URL as a unique key
+            href={article.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={`Read full article: ${article.title}`}
+            className="group block bg-white rounded-3xl shadow-lg overflow-hidden flex flex-col transform transition duration-400 hover:scale-105 hover:shadow-2xl focus:outline-none focus:ring-4 focus:ring-blue-400"
           >
-            {article.urlToImage ? (
+            <div className="relative w-full h-56 overflow-hidden rounded-t-3xl bg-gray-100">
               <img
-                src={article.urlToImage}
+                src={article.image || "/placeholder-image.png"}
                 alt={article.title}
-                className="h-52 w-full object-cover transition-transform duration-500 ease-in-out hover:scale-105"
                 loading="lazy"
-                decoding="async"
-                fetchpriority="low"
+                className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-110"
               />
-            ) : (
-              <div className="h-52 w-full bg-gray-100 flex items-center justify-center text-gray-400 text-lg font-medium">
-                No Image
-              </div>
-            )}
+            </div>
 
             <div className="p-6 flex flex-col flex-grow">
-              <h3 className="text-xl font-semibold mb-3 text-gray-900 line-clamp-2 leading-tight">
+              <h2 className="text-xl font-semibold text-gray-900 mb-3 line-clamp-2 group-hover:text-blue-600 transition-colors duration-300">
                 {article.title}
-              </h3>
-              <p className="text-gray-700 flex-grow line-clamp-3 leading-relaxed">
+              </h2>
+
+              <p className="text-gray-700 flex-grow text-sm leading-relaxed line-clamp-5">
                 {article.description || "No description available."}
               </p>
 
-              <div className="mt-6 flex justify-between items-center text-sm text-gray-500 font-medium tracking-wide">
-                <span className="capitalize">{article.source.name}</span>
-                <time dateTime={article.publishedAt} className="whitespace-nowrap">
-                  {new Date(article.publishedAt).toLocaleDateString(undefined, {
-                    year: "numeric",
-                    month: "short",
-                    day: "numeric",
-                  })}
+              <div className="mt-5 flex flex-col text-gray-500 text-xs space-y-1">
+                <time dateTime={article.publishedAt} className="italic">
+                  {new Date(article.publishedAt).toLocaleString()}
                 </time>
+                <span>
+                  Source:{" "}
+                  <a
+                    href={article.source?.url || "#"}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className="text-blue-600 underline"
+                  >
+                    {article.source?.name || "Unknown"}
+                  </a>
+                </span>
               </div>
+
+              <button
+                type="button"
+                onClick={(e) => handleReadMoreClick(e, article.url)}
+                className="mt-6 bg-blue-600 text-white rounded-xl py-2 font-semibold text-sm tracking-wide shadow-md hover:bg-blue-700 transition"
+              >
+                Read More
+              </button>
             </div>
-          </article>
+          </a>
         ))}
       </div>
     </section>
   );
 }
+
+export default React.memo(TechNewsCards);
