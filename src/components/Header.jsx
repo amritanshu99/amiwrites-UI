@@ -21,6 +21,7 @@ export default function Header() {
     { name: "My Portfolio", to: "/" },
     { name: "My Blog", to: "/blog" },
     { name: "AI Chat", to: "/ai-chat" },
+    { name: "Tech Byte", to: "/tech-byte" }, // Added Tech Byte link here
   ];
 
   if (isAuthenticated) {
@@ -30,6 +31,7 @@ export default function Header() {
   const handleLogout = () => {
     localStorage.removeItem("token");
     setIsAuthenticated(false);
+    setMenuOpen(false);
   };
 
   const isActive = (path) => location.pathname === path;
@@ -38,13 +40,24 @@ export default function Header() {
     <>
       <header className="bg-gradient-to-r from-sky-100 via-rose-100 to-lime-100 backdrop-blur-md border-b border-gray-200 shadow-sm sticky top-0 z-50 px-6 py-3 transition-all duration-300 w-full">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
+          {/* Logo / Brand with slide-in on load and glow + scale on hover */}
           <Link
             to="/"
-            className="text-2xl font-bold tracking-tight text-sky-700 hover:text-sky-900 transition duration-300"
+            className="
+              text-2xl font-bold tracking-tight
+              animate-fade-in-left
+              transition duration-300 ease-in-out
+              hover:animate-text-glow-hover
+              hover:scale-105
+              hover:text-sky-600
+              cursor-pointer
+              select-none
+            "
           >
-            Amritanshu
+            AmiVerse
           </Link>
 
+          {/* Desktop nav */}
           <nav className="hidden md:flex space-x-8">
             {navLinks.map((link) => (
               <Link
@@ -87,6 +100,7 @@ export default function Header() {
             </div>
           )}
 
+          {/* Mobile menu button */}
           <button
             onClick={() => setMenuOpen(!menuOpen)}
             className="md:hidden text-gray-700 hover:text-sky-700 transition ml-3"
@@ -96,6 +110,7 @@ export default function Header() {
           </button>
         </div>
 
+        {/* Mobile menu */}
         {menuOpen && (
           <div className="md:hidden bg-white border-t border-gray-200 px-6 pb-4 pt-2 animate-fade-in-down">
             {navLinks.map((link) => (

@@ -6,6 +6,8 @@ import BlogPage from "./pages/BlogPage";
 import AIChat from "./pages/AIChat";
 import AddBlogDetails from "./pages/AddBlogDetails";
 import BlogsDetails from "./pages/BlogsDetails";
+import Footer from "./components/Footer";
+import TechByte from "./pages/TechByte";
 const App = () => {
   return (
     <div className="min-h-screen bg-gray-100">
@@ -16,7 +18,9 @@ const App = () => {
         <Route path="/ai-chat" element={<AIChat />} />
         <Route path="/add-blog" element={<AddBlogDetails />} />
         <Route path="/blogs/:id" element={<BlogsDetails />} />
+          <Route path="/tech-byte" element={<TechByte />} />
       </Routes>
+      <Footer/>
     </div>
   );
 };
