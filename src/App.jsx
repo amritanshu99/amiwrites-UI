@@ -8,6 +8,7 @@ import AddBlogDetails from "./pages/AddBlogDetails";
 import BlogsDetails from "./pages/BlogsDetails";
 import Footer from "./components/Footer";
 import TechByte from "./pages/TechByte";
+import ContactMeButton from "./components/ContactMeButton";
 const App = () => {
   return (
     <div className="min-h-screen bg-gray-100">
@@ -20,6 +21,7 @@ const App = () => {
         <Route path="/blogs/:id" element={<BlogsDetails />} />
           <Route path="/tech-byte" element={<TechByte />} />
       </Routes>
+      <ContactMeButton/>
       <Footer/>
     </div>
   );
