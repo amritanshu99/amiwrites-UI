@@ -76,7 +76,7 @@ const BlogList = () => {
     }
     setDeletingId(id);
     try {
-      await axios.delete(`/blogs/${id}`, {
+      await axios.delete(`/blogs/api/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       await fetchBlogs();
