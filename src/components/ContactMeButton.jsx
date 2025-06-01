@@ -145,8 +145,7 @@ export default function ContactMeButton() {
         </div>
       )}
 
-      {/* Toast Container for notifications */}
-      <ToastContainer position="top-right" autoClose={4000} />
+     
     </>
   );
 }
