@@ -62,7 +62,7 @@ export default function Header({ setLoading }) { // receive setLoading prop
       setIsAuthenticated(false);
       setUsername(null);
       setMenuOpen(false);
-      toast.success("Logged out successfully");
+    
     } catch (error) {
       toast.error("Logout failed. Please try again.");
     } finally {

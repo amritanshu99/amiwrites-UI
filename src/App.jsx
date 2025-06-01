@@ -11,12 +11,23 @@ import TechByte from "./pages/TechByte";
 import ContactMeButton from "./components/ContactMeButton";
 import Loader from "./components/Loader";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 const App = () => {
   const [isLoading, setIsLoading] = useState(false); // Loading state in parent
 
   return (
     <div className="h-screen overflow-y-scroll relative">
       <Header setLoading={setIsLoading} /> {/* Pass loading setter to Header */}
+<ToastContainer
+  position="top-right"
+  autoClose={5000}
+  hideProgressBar={false}
+  closeOnClick
+  pauseOnHover
+  draggable
+/>
 
       {/* Show loader on top of all content when loading */}
       {isLoading && (

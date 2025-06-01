@@ -156,8 +156,6 @@ export default function LoginModal({ isOpen, onClose }) {
         )}
       </Modal>
 
-      {/* Toast container to render toasts */}
-      <ToastContainer position="top-right" autoClose={4000} />
     </>
   );
 }
