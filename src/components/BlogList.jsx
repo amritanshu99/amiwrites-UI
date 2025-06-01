@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Trash2 } from 'lucide-react';
+import { toast } from 'react-toastify'; // ✅ import toast only
 import axios from '../utils/api';
-import Loader from './Loader'; // Import Loader component
+import Loader from './Loader';
 
-// Helper function to decode JWT payload
 function parseJwt(token) {
   try {
     const base64Payload = token.split('.')[1];
@@ -31,8 +31,7 @@ const useAuth = () => {
       }
     };
 
-    checkAuth(); // Run initially
-
+    checkAuth();
     const intervalId = setInterval(checkAuth, 1000);
     window.addEventListener('storage', checkAuth);
 
@@ -47,8 +46,8 @@ const useAuth = () => {
 
 const BlogList = () => {
   const [blogs, setBlogs] = useState([]);
-  const [loading, setLoading] = useState(false);  // Loading state for fetching
-  const [deletingId, setDeletingId] = useState(null); // To track which blog is deleting
+  const [loading, setLoading] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
   const { isAuthenticated, username } = useAuth();
   const navigate = useNavigate();
 
@@ -59,6 +58,7 @@ const BlogList = () => {
       setBlogs(res.data);
     } catch (error) {
       console.error('Error fetching blogs:', error);
+      toast.error('Failed to fetch blogs');
     } finally {
       setLoading(false);
     }
@@ -71,18 +71,19 @@ const BlogList = () => {
   const handleDelete = async (id) => {
     const token = localStorage.getItem('token');
     if (!token) {
-      alert('You must be logged in to delete a blog');
+      toast.error('You must be logged in to delete a blog');
       return;
     }
     setDeletingId(id);
     try {
-      await axios.delete(`/blogs/api/${id}`, {
+      await axios.delete(`/api/blogs/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      toast.success('Blog deleted successfully');
       await fetchBlogs();
     } catch (error) {
       console.error('Failed to delete blog:', error);
-      alert('Failed to delete blog');
+      toast.error('Failed to delete blog');
     } finally {
       setDeletingId(null);
     }
@@ -104,23 +105,11 @@ const BlogList = () => {
         <p className="text-gray-700 italic text-center text-lg">No blogs available.</p>
       )}
 
-      {/* Grid container for cards: 1 column mobile, 3 columns large */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 justify-items-center">
         {blogs.map((blog) => (
           <div
             key={blog._id}
-            className="
-              bg-white border border-gray-300 shadow-xl rounded-2xl p-8
-              cursor-pointer
-              transform transition-transform duration-300 ease-in-out
-              hover:shadow-3xl hover:border-pink-500
-              hover:scale-105 hover:-translate-y-1
-              max-w-full mx-auto relative
-              flex flex-col
-              w-full
-              max-w-[350px]
-              h-[280px]
-            "
+            className="bg-white border border-gray-300 shadow-xl rounded-2xl p-8 cursor-pointer transform transition-transform duration-300 ease-in-out hover:shadow-3xl hover:border-pink-500 hover:scale-105 hover:-translate-y-1 max-w-full mx-auto relative flex flex-col w-full max-w-[350px] h-[280px]"
             onClick={() => handleBlogClick(blog._id)}
             role="button"
             tabIndex={0}
