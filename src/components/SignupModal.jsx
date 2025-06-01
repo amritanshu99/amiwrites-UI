@@ -1,4 +1,7 @@
 import React, { useState } from "react";
+import { toast } from "react-toastify";
+import Loader from "./Loader";  // imported Loader
+import 'react-toastify/dist/ReactToastify.css'; // in case not imported globally
 
 export default function SignUpModal({ isOpen, onClose }) {
   const [username, setUsername] = useState("");
@@ -52,7 +55,8 @@ export default function SignUpModal({ isOpen, onClose }) {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Signup failed");
 
-      localStorage.setItem("token", data.token); // if token is returned
+      localStorage.setItem("token", data.token);
+      toast.success("Signup successful! Welcome aboard.");
       resetForm();
       onClose();
     } catch (err) {
@@ -92,6 +96,7 @@ export default function SignUpModal({ isOpen, onClose }) {
                 className="w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                disabled={isSubmitting}
               />
             </div>
 
@@ -106,6 +111,7 @@ export default function SignUpModal({ isOpen, onClose }) {
                 className="w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
+                disabled={isSubmitting}
               />
             </div>
 
@@ -120,12 +126,13 @@ export default function SignUpModal({ isOpen, onClose }) {
                 className="w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                disabled={isSubmitting}
               />
             </div>
 
             {error && <p className="text-red-500 text-sm">{error}</p>}
 
-            <div className="flex justify-end pt-2 space-x-3">
+            <div className="flex justify-end pt-2 space-x-3 items-center">
               <button
                 type="button"
                 onClick={handleOverlayClick}
@@ -136,10 +143,10 @@ export default function SignUpModal({ isOpen, onClose }) {
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 rounded-md bg-blue-600 text-white"
+                className="px-4 py-2 rounded-md bg-blue-600 text-white flex items-center"
                 disabled={isSubmitting}
               >
-                {isSubmitting ? "Signing up..." : "Signup"}
+                {isSubmitting ? <Loader /> : "Signup"}
               </button>
             </div>
           </form>

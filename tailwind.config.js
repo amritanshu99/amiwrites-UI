@@ -1,3 +1,4 @@
+/** @type {import('tailwindcss').Config} */
 module.exports = {
   content: ["./src/**/*.{js,jsx,ts,tsx}"],
   theme: {
@@ -7,7 +8,8 @@ module.exports = {
         'text-glow-hover': 'textGlowHover 1.5s ease-in-out infinite alternate',
         'fade-in': 'fadeIn 0.3s ease-in-out forwards',
         'fade-in-down': 'fadeInDown 0.4s ease-out both',
-        'popup-fade-in': 'popupFadeIn 0.3s ease-out forwards', // New animation
+        'popup-fade-in': 'popupFadeIn 0.3s ease-out forwards',
+        'spin-slower': 'spin 2s linear infinite', // ✅ Add this line
       },
       keyframes: {
         fadeInLeft: {
@@ -25,7 +27,7 @@ module.exports = {
           },
         },
         fadeIn: {
-          '0%': { opacity: 0, transform: 'scale(0.95)' }, // 🔄 Enhanced for modal effect
+          '0%': { opacity: 0, transform: 'scale(0.95)' },
           '100%': { opacity: 1, transform: 'scale(1)' },
         },
         fadeInDown: {
@@ -39,5 +41,4 @@ module.exports = {
       },
     },
   },
-  plugins: [],
 };

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Routes, Route } from "react-router-dom";
 import Header from "./components/Header";
 import Portfolio from "./pages/Portfolio";
@@ -9,20 +9,47 @@ import BlogsDetails from "./pages/BlogsDetails";
 import Footer from "./components/Footer";
 import TechByte from "./pages/TechByte";
 import ContactMeButton from "./components/ContactMeButton";
+import { ToastContainer } from "react-toastify";
+import Loader from "./components/Loader";
+
 const App = () => {
+  const [isLoading, setIsLoading] = useState(false); // Loading state in parent
+
   return (
-    <div className="min-h-screen bg-gray-100">
-      <Header />
+    <div className="h-screen overflow-y-scroll relative">
+      <Header setLoading={setIsLoading} /> {/* Pass loading setter to Header */}
+
+      {/* Show loader on top of all content when loading */}
+      {isLoading && (
+        <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+          <Loader />
+        </div>
+      )}
+
+    <ToastContainer
+  position="top-right"
+  autoClose={3000}
+  hideProgressBar={false}
+  newestOnTop={false}
+  closeOnClick
+  pauseOnFocusLoss
+  draggable
+  pauseOnHover
+  theme="colored"
+  toastClassName="custom-toast" // you can customize toast styling here if needed
+/>
+
       <Routes>
         <Route path="/" element={<Portfolio />} />
         <Route path="/blog" element={<BlogPage />} />
         <Route path="/ai-chat" element={<AIChat />} />
         <Route path="/add-blog" element={<AddBlogDetails />} />
         <Route path="/blogs/:id" element={<BlogsDetails />} />
-          <Route path="/tech-byte" element={<TechByte />} />
+        <Route path="/tech-byte" element={<TechByte />} />
       </Routes>
-      <ContactMeButton/>
-      <Footer/>
+
+      <ContactMeButton />
+      <Footer />
     </div>
   );
 };

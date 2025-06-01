@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { Menu, X, LogOut } from "lucide-react";
 import SignupModal from "./SignupModal";
 import LoginModal from "./LoginModal";
+import { toast } from "react-toastify";
 
 // Simple base64 JWT payload decoder (no validation, just for UI)
 function parseJwt(token) {
@@ -15,7 +16,7 @@ function parseJwt(token) {
   }
 }
 
-export default function Header() {
+export default function Header({ setLoading }) { // receive setLoading prop
   const [menuOpen, setMenuOpen] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
   const [signupOpen, setSignupOpen] = useState(false);
@@ -47,16 +48,26 @@ export default function Header() {
     { name: "Tech Byte", to: "/tech-byte" },
   ];
 
-  // Show Add Blog only if logged in AND username is 'amritanshu99'
   if (isAuthenticated && username === "amritanshu99") {
     navLinks.push({ name: "Add Blog", to: "/add-blog" });
   }
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    setIsAuthenticated(false);
-    setUsername(null);
-    setMenuOpen(false);
+  const handleLogout = async () => {
+    if (!setLoading) return; // safety check
+    setLoading(true);
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      localStorage.removeItem("token");
+      setIsAuthenticated(false);
+      setUsername(null);
+      setMenuOpen(false);
+      toast.success("Logged out successfully");
+    } catch (error) {
+      toast.error("Logout failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const isActive = (path) => location.pathname === path;

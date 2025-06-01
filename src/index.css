@@ -1,3 +1,51 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+/* Modern Smooth Scrollbar Styling */
+
+/* Webkit browsers (Chrome, Edge, Safari) */
+::-webkit-scrollbar {
+  width: 10px;               /* Slightly wider for easy grabbing */
+  height: 10px;              /* Horizontal scrollbar height */
+  background: transparent;   /* Transparent background */
+  transition: background-color 0.3s ease;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;   /* Keep track transparent for minimalism */
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgba(59, 130, 246, 0.6); /* Tailwind blue-500, 60% opacity */
+  border-radius: 9999px;     /* Full round corners */
+  border: 2px solid transparent;
+  background-clip: content-box; /* Keep border visible */
+  box-shadow: 0 0 6px rgba(59, 130, 246, 0.8); /* subtle glow */
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Thumb hover effect */
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(59, 130, 246, 0.9); /* Darker blue on hover */
+  box-shadow: 0 0 8px rgba(59, 130, 246, 1); /* Brighter glow */
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;  /* Thin scrollbar */
+  scrollbar-color: rgba(59, 130, 246, 0.6) transparent; /* Thumb color and transparent track */
+}
+
+*::-moz-scrollbar-thumb {
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+  box-shadow: 0 0 6px rgba(59, 130, 246, 0.8);
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+*::-moz-scrollbar-thumb:hover {
+  background-color: rgba(59, 130, 246, 0.9);
+  box-shadow: 0 0 8px rgba(59, 130, 246, 1);
+}
+

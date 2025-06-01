@@ -4,22 +4,36 @@ const Footer = () => {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    // Trigger animation after mount
     const timeout = setTimeout(() => setIsVisible(true), 100);
     return () => clearTimeout(timeout);
   }, []);
 
   return (
     <footer
-      className={`w-full border-t border-zinc-300 bg-zinc-100 text-zinc-700 px-6 py-5 shadow-[0_-1px_4px_rgba(0,0,0,0.05)] transition-all duration-700 ease-out
-        ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}
+      className={`w-full px-6 py-4
+        bg-gradient-to-br from-indigo-900 via-sky-800 to-purple-800
+        bg-opacity-40
+        backdrop-blur-lg
+        border-t border-white/10
+        shadow-[inset_0_1px_6px_rgba(255,255,255,0.08)]
+        text-gray-100
+        transition-all duration-700 ease-out
+        ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}
       `}
+      style={{
+        WebkitBackdropFilter: "blur(16px)",
+        backdropFilter: "blur(16px)",
+      }}
     >
-      <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center text-center text-sm sm:text-base gap-1 sm:gap-0">
-        <p className="font-medium tracking-wide">
-          Built with <span className="text-pink-500 animate-pulse">❤️</span> by AI
+      <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2 sm:gap-4 text-sm font-medium tracking-wide select-none text-center sm:text-left">
+        <p className="flex items-center gap-1">
+          Built with
+          <span className="text-pink-400 animate-pulse" role="img" aria-label="heart">
+            ❤️
+          </span>
+          by AI
         </p>
-        <p className="text-zinc-500 font-light">
+        <p className="text-gray-300 sm:text-right">
           © {new Date().getFullYear()} Amiverse. All rights reserved.
         </p>
       </div>

@@ -15,7 +15,6 @@ import { SiJavascript, SiExpress, SiMongodb, SiGraphql } from "react-icons/si";
 import { motion, AnimatePresence, useInView } from "framer-motion";
 import Loader from "./Loader";
 
-
 const skillIcons = {
   JavaScript: <SiJavascript className="text-yellow-500" />,
   React: <FaReact className="text-cyan-500" />,
@@ -55,7 +54,7 @@ const Tooltip = ({ children, content }) => {
 
 function ScrollFadeIn({ children, className = "" }) {
   const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-100px" }); // triggers a bit before fully visible
+  const isInView = useInView(ref, { once: true, margin: "-100px" });
 
   return (
     <motion.div
@@ -75,7 +74,6 @@ function AchievementsModal({ isOpen, onClose, title, achievements }) {
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* Backdrop */}
           <motion.div
             key="backdrop"
             className="fixed inset-0 bg-black bg-opacity-50 z-40"
@@ -85,7 +83,6 @@ function AchievementsModal({ isOpen, onClose, title, achievements }) {
             onClick={onClose}
           />
 
-          {/* Modal */}
           <motion.div
             key="modal"
             className="fixed inset-0 flex items-center justify-center p-4 z-50"
@@ -95,7 +92,6 @@ function AchievementsModal({ isOpen, onClose, title, achievements }) {
             transition={{ duration: 0.3, ease: "easeInOut" }}
           >
             <div className="bg-white rounded-xl max-w-lg w-full max-h-[80vh] overflow-y-auto shadow-lg p-6 relative">
-              {/* Close Button */}
               <button
                 onClick={onClose}
                 aria-label="Close modal"
@@ -141,7 +137,7 @@ export default function Portfolio() {
 
   return (
     <>
-      <main className="min-h-screen bg-gradient-to-br from-cyan-50 to-blue-50 p-4 sm:p-8 md:p-12 flex justify-center">
+      <main className="min-h-screen bg-gradient-to-br from-cyan-300 via-pink-300 to-yellow-200 p-4 sm:p-8 md:p-12 flex justify-center">
         <article className="bg-white bg-opacity-90 backdrop-blur-md rounded-xl shadow-lg max-w-4xl w-full p-6 md:p-10">
           <section className="flex flex-col sm:flex-row items-center gap-6 sm:gap-10">
             <motion.img

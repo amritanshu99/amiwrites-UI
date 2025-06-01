@@ -1,7 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import Modal from "./Modal";
 import ResetPasswordForm from "./ResetPasswordForm";
+import Loader from "./Loader";                // import Loader
+import { toast } from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css';
 
 export default function LoginModal({ isOpen, onClose }) {
   const [username, setUsername] = useState("");
@@ -9,6 +12,18 @@ export default function LoginModal({ isOpen, onClose }) {
   const [error, setError] = useState("");
   const [showResetForm, setShowResetForm] = useState(false);
   const [info, setInfo] = useState("");
+  const [isLoading, setIsLoading] = useState(false);  // loading state
+
+  useEffect(() => {
+    if (!isOpen) {
+      setUsername("");
+      setPassword("");
+      setError("");
+      setInfo("");
+      setShowResetForm(false);
+      setIsLoading(false);
+    }
+  }, [isOpen]);
 
   const handleLogin = async () => {
     setError("");
@@ -19,20 +34,28 @@ export default function LoginModal({ isOpen, onClose }) {
       return;
     }
 
+    setIsLoading(true);   // start loader
     try {
-      const response = await axios.post("https://amiwrites-backend-app-1.onrender.com/api/auth/login", {
-        username,
-        password,
-      });
+      const response = await axios.post(
+        "https://amiwrites-backend-app-1.onrender.com/api/auth/login",
+        {
+          username,
+          password,
+        }
+      );
 
       const { token } = response.data;
       localStorage.setItem("token", token);
+
+      toast.success("Login successful! Welcome back.");
       onClose();
+
     } catch (err) {
-      // axios error message extraction
       const message =
         err.response?.data?.message || err.message || "Invalid username or password";
       setError(message);
+    } finally {
+      setIsLoading(false);  // stop loader
     }
   };
 
@@ -50,13 +73,16 @@ export default function LoginModal({ isOpen, onClose }) {
     }
   };
 
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" && !showResetForm) {
+      handleLogin();
+    }
+  };
+
   return (
     <Modal
       isOpen={isOpen}
       onClose={() => {
-        setShowResetForm(false);
-        setError("");
-        setInfo("");
         onClose();
       }}
       title={showResetForm ? "Reset Password" : "Login"}
@@ -71,7 +97,7 @@ export default function LoginModal({ isOpen, onClose }) {
           onSubmit={handleResetPasswordSubmit}
         />
       ) : (
-        <div className="space-y-4 p-2">
+        <div className="space-y-4 p-2" onKeyDown={handleKeyDown} tabIndex={-1}>
           <div>
             <label className="block text-sm text-gray-700 mb-1">Username</label>
             <input
@@ -81,6 +107,7 @@ export default function LoginModal({ isOpen, onClose }) {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               autoComplete="username"
+              disabled={isLoading}
             />
           </div>
 
@@ -93,18 +120,23 @@ export default function LoginModal({ isOpen, onClose }) {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               autoComplete="current-password"
+              disabled={isLoading}
             />
           </div>
 
           {error && <p className="text-red-500 text-sm">{error}</p>}
           {info && <p className="text-green-600 text-sm">{info}</p>}
 
-          <button
-            onClick={handleLogin}
-            className="w-full py-2 px-4 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
-          >
-            Login
-          </button>
+          <div className="flex items-center space-x-4">
+            <button
+              onClick={handleLogin}
+              className="flex-1 py-2 px-4 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition disabled:opacity-50"
+              disabled={isLoading}
+            >
+              Login
+            </button>
+            {isLoading && <Loader />}  {/* Loader shown next to button */}
+          </div>
 
           <div className="text-center">
             <button
@@ -114,6 +146,7 @@ export default function LoginModal({ isOpen, onClose }) {
                 setInfo("");
               }}
               className="text-sm text-blue-600 hover:underline mt-2"
+              disabled={isLoading}
             >
               Forgot your password?
             </button>
