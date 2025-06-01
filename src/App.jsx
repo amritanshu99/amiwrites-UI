@@ -11,7 +11,7 @@ import TechByte from "./pages/TechByte";
 import ContactMeButton from "./components/ContactMeButton";
 import { ToastContainer } from "react-toastify";
 import Loader from "./components/Loader";
-
+import ResetPasswordPage from "./pages/ResetPasswordPage";
 const App = () => {
   const [isLoading, setIsLoading] = useState(false); // Loading state in parent
 
@@ -46,6 +46,8 @@ const App = () => {
         <Route path="/add-blog" element={<AddBlogDetails />} />
         <Route path="/blogs/:id" element={<BlogsDetails />} />
         <Route path="/tech-byte" element={<TechByte />} />
+        <Route path="/reset-password/:id" element={<ResetPasswordPage />} />
+
       </Routes>
 
       <ContactMeButton />
