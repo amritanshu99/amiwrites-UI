@@ -1,11 +1,12 @@
 import React, { useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";  // <-- import useNavigate
 import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 export default function ResetPasswordPageDetails() {
   const { id } = useParams(); // token from URL
+  const navigate = useNavigate(); // <-- create navigate function
 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -35,13 +36,19 @@ export default function ResetPasswordPageDetails() {
     setLoading(true);
     try {
       await axios.post("https://amiwrites-backend-app-1.onrender.com/api/auth/reset", {
-        newPassword:password,
+        newPassword: password,
         token: id,
       });
 
       toast.success("Password reset successful! Please login.");
       setPassword("");
       setConfirmPassword("");
+
+      // Navigate to home page after short delay so toast shows
+      setTimeout(() => {
+        navigate("/");
+      }, 1500);
+
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to reset password.");
     } finally {

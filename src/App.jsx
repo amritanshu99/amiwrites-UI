@@ -9,7 +9,6 @@ import BlogsDetails from "./pages/BlogsDetails";
 import Footer from "./components/Footer";
 import TechByte from "./pages/TechByte";
 import ContactMeButton from "./components/ContactMeButton";
-import { ToastContainer } from "react-toastify";
 import Loader from "./components/Loader";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 const App = () => {
@@ -26,18 +25,7 @@ const App = () => {
         </div>
       )}
 
-    <ToastContainer
-  position="top-right"
-  autoClose={3000}
-  hideProgressBar={false}
-  newestOnTop={false}
-  closeOnClick
-  pauseOnFocusLoss
-  draggable
-  pauseOnHover
-  theme="colored"
-  toastClassName="custom-toast" // you can customize toast styling here if needed
-/>
+
 
       <Routes>
         <Route path="/" element={<Portfolio />} />
