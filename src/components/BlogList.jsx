@@ -4,14 +4,34 @@ import { Trash2 } from 'lucide-react';
 import axios from '../utils/api';
 import Loader from './Loader'; // Import Loader component
 
+// Helper function to decode JWT payload
+function parseJwt(token) {
+  try {
+    const base64Payload = token.split('.')[1];
+    const payload = atob(base64Payload);
+    return JSON.parse(payload);
+  } catch (e) {
+    return null;
+  }
+}
+
 const useAuth = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('token'));
+  const [username, setUsername] = useState(null);
 
   useEffect(() => {
     const checkAuth = () => {
       const token = localStorage.getItem('token');
       setIsAuthenticated(!!token);
+      if (token) {
+        const decoded = parseJwt(token);
+        setUsername(decoded?.username || null);
+      } else {
+        setUsername(null);
+      }
     };
+
+    checkAuth(); // Run initially
 
     const intervalId = setInterval(checkAuth, 1000);
     window.addEventListener('storage', checkAuth);
@@ -22,14 +42,14 @@ const useAuth = () => {
     };
   }, []);
 
-  return isAuthenticated;
+  return { isAuthenticated, username };
 };
 
 const BlogList = () => {
   const [blogs, setBlogs] = useState([]);
   const [loading, setLoading] = useState(false);  // Loading state for fetching
   const [deletingId, setDeletingId] = useState(null); // To track which blog is deleting
-  const isAuthenticated = useAuth();
+  const { isAuthenticated, username } = useAuth();
   const navigate = useNavigate();
 
   const fetchBlogs = async () => {
@@ -107,7 +127,7 @@ const BlogList = () => {
             Read more →
           </span>
 
-          {isAuthenticated && (
+          {isAuthenticated && username === 'amritanshu99' && (
             <button
               aria-label={`Delete blog titled ${blog.title}`}
               className="absolute top-5 right-5 text-red-600 hover:text-red-800 focus:outline-none focus:ring-2 focus:ring-red-400 rounded p-1 transition disabled:opacity-50 disabled:cursor-not-allowed"

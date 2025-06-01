@@ -4,33 +4,58 @@ import { Menu, X, LogOut } from "lucide-react";
 import SignupModal from "./SignupModal";
 import LoginModal from "./LoginModal";
 
+// Simple base64 JWT payload decoder (no validation, just for UI)
+function parseJwt(token) {
+  try {
+    const base64Payload = token.split('.')[1];
+    const payload = atob(base64Payload);
+    return JSON.parse(payload);
+  } catch {
+    return null;
+  }
+}
+
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
   const [signupOpen, setSignupOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [username, setUsername] = useState(null);
 
   const location = useLocation();
 
   useEffect(() => {
     const token = localStorage.getItem("token");
     setIsAuthenticated(!!token);
+
+    if (token) {
+      const decoded = parseJwt(token);
+      if (decoded && decoded.username) {
+        setUsername(decoded.username);
+      } else {
+        setUsername(null);
+      }
+    } else {
+      setUsername(null);
+    }
   }, [loginOpen, signupOpen]);
 
   const navLinks = [
     { name: "My Portfolio", to: "/" },
     { name: "My Blog", to: "/blog" },
     { name: "AI Chat", to: "/ai-chat" },
-    { name: "Tech Byte", to: "/tech-byte" }, // Added Tech Byte link here
+    { name: "Tech Byte", to: "/tech-byte" },
   ];
 
-  if (isAuthenticated) {
+  // Show Add Blog only if logged in AND username is 'amritanshu99'
+  if (isAuthenticated && username === "amritanshu99") {
     navLinks.push({ name: "Add Blog", to: "/add-blog" });
   }
 
   const handleLogout = () => {
     localStorage.removeItem("token");
     setIsAuthenticated(false);
+    setUsername(null);
     setMenuOpen(false);
   };
 
@@ -40,7 +65,6 @@ export default function Header() {
     <>
       <header className="bg-gradient-to-r from-sky-100 via-rose-100 to-lime-100 backdrop-blur-md border-b border-gray-200 shadow-sm sticky top-0 z-50 px-6 py-3 transition-all duration-300 w-full">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
-          {/* Logo / Brand with slide-in on load and glow + scale on hover */}
           <Link
             to="/"
             className="
@@ -57,7 +81,6 @@ export default function Header() {
             AmiVerse
           </Link>
 
-          {/* Desktop nav */}
           <nav className="hidden md:flex space-x-8">
             {navLinks.map((link) => (
               <Link
@@ -74,7 +97,6 @@ export default function Header() {
             ))}
           </nav>
 
-          {/* Auth Buttons */}
           {isAuthenticated ? (
             <button
               onClick={handleLogout}
@@ -100,7 +122,6 @@ export default function Header() {
             </div>
           )}
 
-          {/* Mobile menu button */}
           <button
             onClick={() => setMenuOpen(!menuOpen)}
             className="md:hidden text-gray-700 hover:text-sky-700 transition ml-3"
@@ -110,7 +131,6 @@ export default function Header() {
           </button>
         </div>
 
-        {/* Mobile menu */}
         {menuOpen && (
           <div className="md:hidden bg-white border-t border-gray-200 px-6 pb-4 pt-2 animate-fade-in-down">
             {navLinks.map((link) => (
@@ -131,7 +151,6 @@ export default function Header() {
         )}
       </header>
 
-      {/* Modals */}
       <SignupModal isOpen={signupOpen} onClose={() => setSignupOpen(false)} />
       <LoginModal isOpen={loginOpen} onClose={() => setLoginOpen(false)} />
     </>
