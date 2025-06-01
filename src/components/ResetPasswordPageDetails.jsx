@@ -35,7 +35,7 @@ export default function ResetPasswordPageDetails() {
     setLoading(true);
     try {
       await axios.post("https://amiwrites-backend-app-1.onrender.com/api/auth/reset", {
-        password,
+        newPassword:password,
         token: id,
       });
 
