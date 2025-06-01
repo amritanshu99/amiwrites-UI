@@ -147,7 +147,7 @@ export default function Portfolio() {
             <motion.img
               src={`https://amiwrites-backend-app-1.onrender.com${data.photoUrl}`}
               alt={data.name}
-              loading="lazy"
+              loading="eager"
               width={192}
               height={192}
               className="rounded-3xl object-cover shadow-lg border-4 border-cyan-300 w-40 h-40 sm:w-48 sm:h-48 flex-shrink-0"

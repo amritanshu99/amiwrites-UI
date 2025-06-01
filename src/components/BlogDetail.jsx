@@ -27,61 +27,87 @@ const BlogDetails = () => {
 
   if (loading)
     return (
-      <div className="min-h-screen flex items-center justify-center p-6 bg-gradient-to-b from-amber-100 to-amber-200">
+      <div className="min-h-screen flex items-center justify-center p-6 bg-slate-50">
         <Loader />
       </div>
     );
 
   if (!blog)
     return (
-      <div className="min-h-screen flex items-center justify-center p-6 bg-gradient-to-b from-amber-100 to-amber-200">
-        <p className="text-red-700 text-xl font-semibold">Blog not found.</p>
+      <div className="min-h-screen flex items-center justify-center p-6 bg-slate-50">
+        <p className="text-red-500 text-xl font-medium">Blog not found.</p>
       </div>
     );
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-amber-100 to-amber-200 py-20 px-6 flex justify-center">
-      <div
-        className="relative bg-[#fff3d1] rounded-3xl shadow-2xl p-16 max-w-[90vw] w-full max-w-4xl"
-        style={{
-          borderLeft: "8px solid #b76e2c", // warm diary margin line
-          fontFamily: "'Patrick Hand', cursive, 'Georgia', serif", // handwritten + serif fallback
-          color: "#5b3a00",
-          lineHeight: "1.8",
-          fontSize: "1.15rem",
-          backgroundImage: `url("data:image/svg+xml,%3csvg width='20' height='20' viewBox='0 0 20 20' fill='none' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='20' height='20' fill='%23fff3d1'/%3e%3cline x1='0' y1='5' x2='20' y2='5' stroke='%23f5e6b3' stroke-width='1'/%3e%3cline x1='0' y1='15' x2='20' y2='15' stroke='%23f5e6b3' stroke-width='1'/%3e%3c/svg%3e")`,
-          backgroundRepeat: "repeat-y",
-          backgroundSize: "20px 40px",
-          backgroundPosition: "left 8px top 0",
-        }}
-      >
-        <h1
-          className="text-5xl font-bold mb-8"
-          style={{ fontFamily: "'Pacifico', cursive", lineHeight: "1.2", color: "#8b4b00" }}
-        >
+    <main className="min-h-screen bg-slate-50 py-16 px-4 sm:px-6 lg:px-8 flex justify-center">
+      <article className="bg-white max-w-4xl w-full rounded-2xl shadow-xl p-8 sm:p-12 md:p-14 animate-fadeIn border border-slate-200">
+        {/* Title */}
+        <h1 className="text-3xl sm:text-4xl font-bold leading-snug text-slate-800 mb-5 font-sans">
           {blog.title}
         </h1>
-        <p
-          className="italic mb-12"
-          style={{ color: "#8b4b00", fontSize: "1.1rem" }}
-        >
-          Written on{" "}
-          {new Date(blog.date).toLocaleDateString(undefined, {
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-          })}
-        </p>
+
+        {/* Date & Author */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between text-slate-500 text-sm mb-10">
+          <time dateTime={blog.date} className="italic">
+            Published on{" "}
+            {new Date(blog.date).toLocaleDateString(undefined, {
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            })}
+          </time>
+          <p className="mt-2 sm:mt-0">
+            By <span className="text-blue-500 font-semibold">Amritanshu</span>
+          </p>
+        </div>
+
+        {/* Content */}
         <article
-          className="prose prose-lg max-w-none"
-          style={{
-            fontFamily: "'Patrick Hand', cursive, Georgia, serif",
-            color: "#5b3a00",
-          }}
+          className="prose prose-lg max-w-none prose-headings:text-slate-800 prose-a:text-blue-500 prose-a:hover:text-blue-600 prose-a:underline prose-img:rounded-xl prose-img:shadow-md"
+          style={{ fontFamily: "'Georgia', serif" }}
           dangerouslySetInnerHTML={{ __html: blog.content }}
         />
-      </div>
-    </div>
+
+        {/* Social Buttons */}
+        <div className="mt-12 flex space-x-5">
+          <a
+            href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(blog.title)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-500 hover:text-blue-600 transition flex items-center space-x-2"
+          >
+            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M23 3a10.9 10.9 0 01-3.14 1.53A4.48 4.48 0 0012 7.07V8A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z" />
+            </svg>
+            <span className="hidden sm:inline">Tweet</span>
+          </a>
+
+          <a
+            href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-500 hover:text-blue-600 transition flex items-center space-x-2"
+          >
+            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M22 12a10 10 0 10-11 9.95v-7.04H8.6v-2.9h2.4v-2.2c0-2.4 1.4-3.8 3.6-3.8 1 0 2 .07 2 .07v2.3h-1.1c-1.1 0-1.4.68-1.4 1.38v1.7h2.4l-.38 2.9h-2.02V22A10 10 0 0022 12z" />
+            </svg>
+            <span className="hidden sm:inline">Share</span>
+          </a>
+        </div>
+      </article>
+
+      {/* Subtle animation */}
+      <style>{`
+        @keyframes fadeIn {
+          from {opacity: 0; transform: translateY(12px);}
+          to {opacity: 1; transform: translateY(0);}
+        }
+        .animate-fadeIn {
+          animation: fadeIn 0.5s ease-in-out forwards;
+        }
+      `}</style>
+    </main>
   );
 };
 
