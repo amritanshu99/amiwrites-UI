@@ -1,3 +1,4 @@
+// Header.jsx
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, X, LogOut } from "lucide-react";
@@ -5,7 +6,6 @@ import SignupModal from "./SignupModal";
 import LoginModal from "./LoginModal";
 import { toast } from "react-toastify";
 
-// Simple base64 JWT payload decoder (no validation, just for UI)
 function parseJwt(token) {
   try {
     const base64Payload = token.split('.')[1];
@@ -16,7 +16,7 @@ function parseJwt(token) {
   }
 }
 
-export default function Header({ setLoading }) { // receive setLoading prop
+export default function Header({ setLoading }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
   const [signupOpen, setSignupOpen] = useState(false);
@@ -28,14 +28,9 @@ export default function Header({ setLoading }) { // receive setLoading prop
   useEffect(() => {
     const token = localStorage.getItem("token");
     setIsAuthenticated(!!token);
-
     if (token) {
       const decoded = parseJwt(token);
-      if (decoded && decoded.username) {
-        setUsername(decoded.username);
-      } else {
-        setUsername(null);
-      }
+      setUsername(decoded?.username || null);
     } else {
       setUsername(null);
     }
@@ -48,22 +43,16 @@ export default function Header({ setLoading }) { // receive setLoading prop
     { name: "Tech Byte", to: "/tech-byte" },
   ];
 
-  if (isAuthenticated && username === "amritanshu99") {
-    navLinks.push({ name: "Add Blog", to: "/add-blog" });
-  }
-
   const handleLogout = async () => {
-    if (!setLoading) return; // safety check
+    if (!setLoading) return;
     setLoading(true);
     try {
       await new Promise((resolve) => setTimeout(resolve, 500));
-
       localStorage.removeItem("token");
       setIsAuthenticated(false);
       setUsername(null);
       setMenuOpen(false);
-    
-    } catch (error) {
+    } catch {
       toast.error("Logout failed. Please try again.");
     } finally {
       setLoading(false);
@@ -74,21 +63,9 @@ export default function Header({ setLoading }) { // receive setLoading prop
 
   return (
     <>
-      <header className="bg-gradient-to-r from-sky-100 via-rose-100 to-lime-100 backdrop-blur-md border-b border-gray-200 shadow-sm sticky top-0 z-50 px-6 py-3 transition-all duration-300 w-full">
+      <header className="bg-gradient-to-r from-sky-100 via-rose-100 to-lime-100 backdrop-blur-md border-b border-gray-200 shadow-sm sticky top-0 z-50 px-6 py-3 w-full">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <Link
-            to="/"
-            className="
-              text-2xl font-bold tracking-tight
-              animate-fade-in-left
-              transition duration-300 ease-in-out
-              hover:animate-text-glow-hover
-              hover:scale-105
-              hover:text-sky-600
-              cursor-pointer
-              select-none
-            "
-          >
+          <Link to="/" className="text-2xl font-bold tracking-tight hover:scale-105 hover:text-sky-600 transition cursor-pointer select-none">
             AmiVerse
           </Link>
 
@@ -143,7 +120,7 @@ export default function Header({ setLoading }) { // receive setLoading prop
         </div>
 
         {menuOpen && (
-          <div className="md:hidden bg-white border-t border-gray-200 px-6 pb-4 pt-2 animate-fade-in-down">
+          <div className="md:hidden bg-white border-t border-gray-200 px-6 pb-4 pt-2">
             {navLinks.map((link) => (
               <Link
                 key={link.name}
