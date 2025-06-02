@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Trash2, PlusCircle } from 'lucide-react';
+import { Trash2, Plus } from 'lucide-react';
 import { toast } from 'react-toastify';
 import axios from '../utils/api';
 import Loader from './Loader';
@@ -110,36 +110,24 @@ const BlogList = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-cyan-300 via-pink-300 to-yellow-200 p-6 w-full">
-      <div className="flex justify-between items-center mb-8">
-        <h2 className="text-4xl font-extrabold text-gray-900 tracking-wide text-center w-full">
+      <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
+        <h2 className="text-4xl font-extrabold text-gray-900 tracking-wide text-center w-full sm:text-left">
           Latest Blogs
         </h2>
 
         {isAuthenticated && username === 'amritanshu99' && (
           <button
             onClick={handleAddBlog}
-            className="hidden sm:flex items-center gap-2 bg-pink-600 text-white px-4 py-2 rounded-lg shadow hover:bg-pink-700 transition duration-300"
-            title="Add a new blog"
+            className="relative inline-flex items-center justify-center px-5 py-2.5 overflow-hidden font-medium text-white transition duration-300 ease-out border-none rounded-xl shadow-md group bg-gradient-to-r from-pink-500 via-red-500 to-yellow-500 hover:from-yellow-500 hover:via-pink-500 hover:to-red-500 focus:outline-none"
           >
-            <PlusCircle size={20} />
-            Add Blog
+            <span className="absolute inset-0 transition-all duration-300 ease-out transform -translate-x-full bg-white opacity-10 group-hover:translate-x-0 rounded-xl"></span>
+            <span className="relative flex items-center gap-2">
+              <Plus className="w-5 h-5" />
+              Add Blog
+            </span>
           </button>
         )}
       </div>
-
-      {/* Show add button on small screens */}
-      {isAuthenticated && username === 'amritanshu99' && (
-        <div className="sm:hidden flex justify-center mb-4">
-          <button
-            onClick={handleAddBlog}
-            className="flex items-center gap-2 bg-pink-600 text-white px-4 py-2 rounded-lg shadow hover:bg-pink-700 transition duration-300"
-            title="Add a new blog"
-          >
-            <PlusCircle size={20} />
-            Add Blog
-          </button>
-        </div>
-      )}
 
       {blogs.length === 0 ? (
         <p className="text-gray-700 italic text-center text-lg">No blogs available.</p>
