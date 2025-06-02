@@ -106,54 +106,65 @@ const BlogList = () => {
       )}
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 justify-items-center">
-        {blogs.map((blog) => (
-          <div
-            key={blog._id}
-            className="bg-white border border-gray-300 shadow-xl rounded-2xl p-8 cursor-pointer transform transition-transform duration-300 ease-in-out hover:shadow-3xl hover:border-pink-500 hover:scale-105 hover:-translate-y-1 max-w-full mx-auto relative flex flex-col w-full max-w-[350px] h-[280px]"
-            onClick={() => handleBlogClick(blog._id)}
-            role="button"
-            tabIndex={0}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') handleBlogClick(blog._id);
-            }}
-          >
-            <h3 className="text-3xl font-bold text-pink-700 hover:text-pink-900 hover:underline transition-colors duration-200 truncate">
-              {blog.title}
-            </h3>
-            <div
-              className="text-gray-800 mt-4 prose max-w-none overflow-hidden overflow-ellipsis"
-              style={{ maxHeight: '130px' }}
-              dangerouslySetInnerHTML={{
-                __html:
-                  blog.content.length > 150
-                    ? blog.content.slice(0, 150) + '...'
-                    : blog.content,
-              }}
-            />
-            <span className="text-pink-600 mt-auto inline-block font-semibold hover:text-pink-800 transition-colors duration-200">
-              Read more →
-            </span>
+        {blogs.map((blog) => {
+          const publishedDate = new Date(blog.date).toLocaleDateString('en-IN', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+          });
 
-            {isAuthenticated && username === 'amritanshu99' && (
-              <button
-                aria-label={`Delete blog titled ${blog.title}`}
-                className="absolute top-6 right-6 text-red-600 hover:text-red-900 focus:outline-none focus:ring-2 focus:ring-red-500 rounded p-1 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleDelete(blog._id);
+          return (
+            <div
+              key={blog._id}
+              className="bg-white border border-gray-300 shadow-xl rounded-2xl p-8 cursor-pointer transform transition-transform duration-300 ease-in-out hover:shadow-3xl hover:border-pink-500 hover:scale-105 hover:-translate-y-1 max-w-full mx-auto relative flex flex-col w-full max-w-[350px] h-[260px]"
+              onClick={() => handleBlogClick(blog._id)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleBlogClick(blog._id);
+              }}
+            >
+              <h3 className="text-3xl font-bold text-pink-700 hover:text-pink-900 hover:underline transition-colors duration-200 truncate">
+                {blog.title}
+              </h3>
+
+              <p className="text-sm text-gray-500 mb-2">{publishedDate}</p> {/* Published date */}
+
+              <div
+                className="text-gray-800 prose max-w-none overflow-hidden overflow-ellipsis"
+                style={{ maxHeight: '130px' }}
+                dangerouslySetInnerHTML={{
+                  __html:
+                    blog.content.length > 150
+                      ? blog.content.slice(0, 150) + '...'
+                      : blog.content,
                 }}
-                disabled={deletingId === blog._id}
-                title={deletingId === blog._id ? 'Deleting...' : 'Delete blog'}
-              >
-                {deletingId === blog._id ? (
-                  <Loader size="small" />
-                ) : (
-                  <Trash2 size={28} />
-                )}
-              </button>
-            )}
-          </div>
-        ))}
+              />
+              <span className="text-pink-600 mt-auto inline-block font-semibold hover:text-pink-800 transition-colors duration-200">
+                Read more →
+              </span>
+
+              {isAuthenticated && username === 'amritanshu99' && (
+                <button
+                  aria-label={`Delete blog titled ${blog.title}`}
+                  className="absolute top-6 right-6 text-red-600 hover:text-red-900 focus:outline-none focus:ring-2 focus:ring-red-500 rounded p-1 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDelete(blog._id);
+                  }}
+                  disabled={deletingId === blog._id}
+                  title={deletingId === blog._id ? 'Deleting...' : 'Delete blog'}
+                >
+                  {deletingId === blog._id ? (
+                    <Loader size="small" />
+                  ) : (
+                    <Trash2 size={28} />
+                  )}
+                </button>
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
