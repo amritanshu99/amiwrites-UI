@@ -3,6 +3,7 @@ import axios from "axios";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { useNavigate } from "react-router-dom";
+import Loader from "./Loader";  // Import Loader component
 
 export default function AddBlog() {
   const [title, setTitle] = useState("");
@@ -25,13 +26,13 @@ export default function AddBlog() {
   });
 
   useEffect(() => {
-      let link = document.querySelector("link[rel='canonical']");
-  if (!link) {
-    link = document.createElement("link");
-    link.rel = "canonical";
-    document.head.appendChild(link);
-  }
-  link.href = window.location.href;
+    let link = document.querySelector("link[rel='canonical']");
+    if (!link) {
+      link = document.createElement("link");
+      link.rel = "canonical";
+      document.head.appendChild(link);
+    }
+    link.href = window.location.href;
     document.title = "Add Blog";
   }, []);
 
@@ -184,9 +185,9 @@ export default function AddBlog() {
           <button
             onClick={handleSubmit}
             disabled={loading}
-            className="px-10 py-3 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition disabled:opacity-50 text-lg font-semibold"
+            className="px-10 py-3 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition disabled:opacity-50 text-lg font-semibold flex items-center justify-center"
           >
-            {loading ? "Submitting..." : "Add Blog"}
+            {loading ? <Loader /> : "Add Blog"}
           </button>
         </div>
       </div>
