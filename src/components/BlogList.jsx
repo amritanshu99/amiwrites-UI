@@ -44,6 +44,19 @@ const useAuth = () => {
   return { isAuthenticated, username };
 };
 
+const BlogSkeleton = () => (
+  <div className="bg-white border border-gray-200 shadow rounded-xl p-6 animate-pulse h-[260px] sm:h-[208px] w-full flex flex-col">
+    <div className="h-5 bg-gray-300 rounded w-3/4 mb-2"></div>
+    <div className="h-3 bg-gray-200 rounded w-1/3 mb-4"></div>
+    <div className="flex-1 space-y-2">
+      <div className="h-3 bg-gray-200 rounded w-full"></div>
+      <div className="h-3 bg-gray-200 rounded w-5/6"></div>
+      <div className="h-3 bg-gray-200 rounded w-4/6"></div>
+    </div>
+    <div className="h-4 bg-gray-300 rounded w-24 mt-4"></div>
+  </div>
+);
+
 const BlogList = () => {
   const [blogs, setBlogs] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -95,8 +108,6 @@ const BlogList = () => {
     fetchBlogs();
   }, []);
 
-  if (loading) return <Loader />;
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-cyan-300 via-pink-300 to-yellow-200 p-6">
       <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
@@ -115,7 +126,13 @@ const BlogList = () => {
         )}
       </div>
 
-      {blogs.length === 0 ? (
+      {loading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <BlogSkeleton key={i} />
+          ))}
+        </div>
+      ) : blogs.length === 0 ? (
         <p className="text-center text-gray-700 italic text-lg">No blogs available.</p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
@@ -129,7 +146,7 @@ const BlogList = () => {
             return (
               <div
                 key={blog._id}
-                className="bg-white border border-gray-300 shadow-lg rounded-xl p-6 cursor-pointer hover:shadow-xl hover:border-pink-500 transition-all duration-200 flex flex-col max-w-full mx-auto h-[208px] relative"
+                className="bg-white border border-gray-300 shadow-lg rounded-xl p-6 cursor-pointer transition-transform duration-300 ease-in-out hover:scale-105 hover:-translate-y-1 hover:shadow-xl hover:border-pink-500 flex flex-col h-[260px] sm:h-[208px] w-full relative"
                 onClick={() => handleBlogClick(blog._id)}
                 role="button"
                 tabIndex={0}
@@ -143,7 +160,7 @@ const BlogList = () => {
                 <p className="text-sm text-gray-500 mb-1">{publishedDate}</p>
                 <div
                   className="text-gray-800 text-sm overflow-hidden"
-                  style={{ maxHeight: '100px' }}
+                  style={{ maxHeight: '70px', textOverflow: 'ellipsis', overflow: 'hidden' }}
                   dangerouslySetInnerHTML={{
                     __html:
                       blog.content.length > 150
