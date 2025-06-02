@@ -3,7 +3,7 @@ import axios from "axios";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { useNavigate } from "react-router-dom";
-import Loader from "./Loader";  // Import Loader component
+import Loader from "./Loader";
 
 export default function AddBlog() {
   const [title, setTitle] = useState("");
@@ -84,11 +84,15 @@ export default function AddBlog() {
     }
   };
 
-  const handleCancel = () => {
+  const handleClear = () => {
     setTitle("");
     editor?.commands.clearContent();
     setError(null);
     setSuccess(null);
+  };
+
+  const handleCancel = () => {
+    navigate("/blog");
   };
 
   if (!editor) return null;
@@ -119,7 +123,6 @@ export default function AddBlog() {
           className="w-full mb-8 px-6 py-4 rounded-lg border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-2xl font-semibold tracking-wide placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:ring-4 focus:ring-blue-500 transition"
         />
 
-        {/* Toolbar */}
         <div className="flex flex-wrap gap-3 mb-6">
           {toolbarButtons.map(({ format, label, title, level }) => {
             const isActive =
@@ -160,7 +163,6 @@ export default function AddBlog() {
           })}
         </div>
 
-        {/* Editor */}
         <EditorContent editor={editor} />
 
         {error && (
@@ -174,18 +176,26 @@ export default function AddBlog() {
           </p>
         )}
 
-        <div className="flex justify-end space-x-6 mt-10">
+        {/* Action Buttons */}
+        <div className="flex flex-wrap justify-end gap-4 mt-10">
+          <button
+            onClick={handleClear}
+            disabled={loading}
+            className="px-6 py-2 rounded-lg bg-yellow-500 text-white hover:bg-yellow-600 transition disabled:opacity-50 text-base font-medium"
+          >
+            Clear
+          </button>
           <button
             onClick={handleCancel}
             disabled={loading}
-            className="px-10 py-3 rounded-lg bg-gray-300 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-400 dark:hover:bg-gray-600 transition disabled:opacity-50 text-lg font-semibold"
+            className="px-6 py-2 rounded-lg bg-gray-400 text-white hover:bg-gray-500 transition disabled:opacity-50 text-base font-medium"
           >
             Cancel
           </button>
           <button
             onClick={handleSubmit}
             disabled={loading}
-            className="px-10 py-3 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition disabled:opacity-50 text-lg font-semibold flex items-center justify-center"
+            className="px-6 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition disabled:opacity-50 text-base font-medium flex items-center justify-center"
           >
             {loading ? <Loader /> : "Add Blog"}
           </button>

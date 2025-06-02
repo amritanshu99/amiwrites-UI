@@ -20,15 +20,6 @@ const useAuth = () => {
   const [username, setUsername] = useState(null);
 
   useEffect(() => {
-    let link = document.querySelector("link[rel='canonical']");
-    if (!link) {
-      link = document.createElement("link");
-      link.rel = "canonical";
-      document.head.appendChild(link);
-    }
-    link.href = window.location.href;
-    document.title = "Blog List";
-
     const checkAuth = () => {
       const token = localStorage.getItem('token');
       setIsAuthenticated(!!token);
@@ -66,7 +57,6 @@ const BlogList = () => {
       const res = await axios.get('https://amiwrites-backend-app-1.onrender.com/api/blogs');
       setBlogs(res.data);
     } catch (error) {
-      console.error('Error fetching blogs:', error);
       toast.error('Failed to fetch blogs');
     } finally {
       setLoading(false);
@@ -90,8 +80,7 @@ const BlogList = () => {
       });
       toast.success('Blog deleted successfully');
       await fetchBlogs();
-    } catch (error) {
-      console.error('Failed to delete blog:', error);
+    } catch {
       toast.error('Failed to delete blog');
     } finally {
       setDeletingId(null);
@@ -109,30 +98,27 @@ const BlogList = () => {
   if (loading) return <Loader />;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-cyan-300 via-pink-300 to-yellow-200 p-6 w-full">
-      <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
-        <h2 className="text-4xl font-extrabold text-gray-900 tracking-wide text-center w-full sm:text-left">
+    <div className="min-h-screen bg-gradient-to-br from-cyan-300 via-pink-300 to-yellow-200 p-6">
+      <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+        <h2 className="text-3xl font-bold text-gray-900 text-center sm:text-left">
           Latest Blogs
         </h2>
 
         {isAuthenticated && username === 'amritanshu99' && (
           <button
             onClick={handleAddBlog}
-            className="relative inline-flex items-center justify-center px-5 py-2.5 overflow-hidden font-medium text-white transition duration-300 ease-out border-none rounded-xl shadow-md group bg-gradient-to-r from-pink-500 via-red-500 to-yellow-500 hover:from-yellow-500 hover:via-pink-500 hover:to-red-500 focus:outline-none"
+            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-pink-500 to-yellow-500 text-white text-sm font-medium rounded-full hover:from-yellow-500 hover:to-pink-500 transition duration-300 shadow-md"
           >
-            <span className="absolute inset-0 transition-all duration-300 ease-out transform -translate-x-full bg-white opacity-10 group-hover:translate-x-0 rounded-xl"></span>
-            <span className="relative flex items-center gap-2">
-              <Plus className="w-5 h-5" />
-              Add Blog
-            </span>
+            <Plus className="w-4 h-4" />
+            Add Blog
           </button>
         )}
       </div>
 
       {blogs.length === 0 ? (
-        <p className="text-gray-700 italic text-center text-lg">No blogs available.</p>
+        <p className="text-center text-gray-700 italic text-lg">No blogs available.</p>
       ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 justify-items-center">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
           {blogs.map((blog) => {
             const publishedDate = new Date(blog.date).toLocaleDateString('en-IN', {
               year: 'numeric',
@@ -143,7 +129,7 @@ const BlogList = () => {
             return (
               <div
                 key={blog._id}
-                className="bg-white border border-gray-300 shadow-xl rounded-2xl p-8 cursor-pointer transform transition-transform duration-300 ease-in-out hover:shadow-3xl hover:border-pink-500 hover:scale-105 hover:-translate-y-1 max-w-full mx-auto relative flex flex-col w-full max-w-[350px] h-[260px]"
+                className="bg-white border border-gray-300 shadow-lg rounded-xl p-6 cursor-pointer hover:shadow-xl hover:border-pink-500 transition-all duration-200 flex flex-col max-w-full mx-auto h-[260px]"
                 onClick={() => handleBlogClick(blog._id)}
                 role="button"
                 tabIndex={0}
@@ -151,14 +137,12 @@ const BlogList = () => {
                   if (e.key === 'Enter') handleBlogClick(blog._id);
                 }}
               >
-                <h3 className="text-3xl font-bold text-pink-700 hover:text-pink-900 hover:underline transition-colors duration-200 truncate">
+                <h3 className="text-xl font-semibold text-pink-700 truncate hover:underline">
                   {blog.title}
                 </h3>
-
-                <p className="text-sm text-gray-500 mb-2">{publishedDate}</p>
-
+                <p className="text-sm text-gray-500 mb-1">{publishedDate}</p>
                 <div
-                  className="text-gray-800 prose max-w-none overflow-hidden overflow-ellipsis"
+                  className="text-gray-800 text-sm overflow-hidden"
                   style={{ maxHeight: '130px' }}
                   dangerouslySetInnerHTML={{
                     __html:
@@ -167,14 +151,14 @@ const BlogList = () => {
                         : blog.content,
                   }}
                 />
-                <span className="text-pink-600 mt-auto inline-block font-semibold hover:text-pink-800 transition-colors duration-200">
+                <span className="text-pink-600 mt-auto font-semibold hover:text-pink-800 text-sm">
                   Read more →
                 </span>
 
                 {isAuthenticated && username === 'amritanshu99' && (
                   <button
                     aria-label={`Delete blog titled ${blog.title}`}
-                    className="absolute top-6 right-6 text-red-600 hover:text-red-900 focus:outline-none focus:ring-2 focus:ring-red-500 rounded p-1 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="absolute top-4 right-4 text-red-500 hover:text-red-700"
                     onClick={(e) => {
                       e.stopPropagation();
                       handleDelete(blog._id);
@@ -185,7 +169,7 @@ const BlogList = () => {
                     {deletingId === blog._id ? (
                       <Loader size="small" />
                     ) : (
-                      <Trash2 size={28} />
+                      <Trash2 size={20} />
                     )}
                   </button>
                 )}
