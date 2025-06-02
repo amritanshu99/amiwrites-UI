@@ -1,4 +1,6 @@
+# robots.txt for https://www.amiverse.in
+
 User-agent: *
-Allow: /
+Disallow:
 
 Sitemap: https://www.amiverse.in/sitemap.xml
