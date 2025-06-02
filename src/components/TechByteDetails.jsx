@@ -8,7 +8,16 @@ function TechNewsCards() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+      let link = document.querySelector("link[rel='canonical']");
+  if (!link) {
+    link = document.createElement("link");
+    link.rel = "canonical";
+    document.head.appendChild(link);
+  }
+  link.href = window.location.href;
     let isMounted = true;
+  
+    document.title = "Tech-Byte";
 
     axios
       .get("https://amiwrites-backend-app-1.onrender.com/api/tech-news")

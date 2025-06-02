@@ -21,6 +21,17 @@ const BlogDetails = () => {
     }
   };
 
+    useEffect(() => {
+        let link = document.querySelector("link[rel='canonical']");
+  if (!link) {
+    link = document.createElement("link");
+    link.rel = "canonical";
+    document.head.appendChild(link);
+  }
+  link.href = window.location.href;
+    document.title = "Blog Details";
+  }, []);
+
   useEffect(() => {
     fetchBlog();
   }, [id]);
