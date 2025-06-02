@@ -129,7 +129,7 @@ const BlogList = () => {
             return (
               <div
                 key={blog._id}
-                className="bg-white border border-gray-300 shadow-lg rounded-xl p-6 cursor-pointer hover:shadow-xl hover:border-pink-500 transition-all duration-200 flex flex-col max-w-full mx-auto h-[260px]"
+                className="bg-white border border-gray-300 shadow-lg rounded-xl p-6 cursor-pointer hover:shadow-xl hover:border-pink-500 transition-all duration-200 flex flex-col max-w-full mx-auto h-[208px] relative"
                 onClick={() => handleBlogClick(blog._id)}
                 role="button"
                 tabIndex={0}
@@ -143,7 +143,7 @@ const BlogList = () => {
                 <p className="text-sm text-gray-500 mb-1">{publishedDate}</p>
                 <div
                   className="text-gray-800 text-sm overflow-hidden"
-                  style={{ maxHeight: '130px' }}
+                  style={{ maxHeight: '100px' }}
                   dangerouslySetInnerHTML={{
                     __html:
                       blog.content.length > 150
