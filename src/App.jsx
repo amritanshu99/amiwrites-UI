@@ -11,14 +11,16 @@ import TechByte from "./pages/TechByte";
 import ContactMeButton from "./components/ContactMeButton";
 import Loader from "./components/Loader";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
+import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+
 const App = () => {
-  const [isLoading, setIsLoading] = useState(false); // Loading state in parent
+  const [isLoading, setIsLoading] = useState(false);
 
   return (
     <div className="h-screen overflow-y-scroll relative">
-      <Header setLoading={setIsLoading} /> {/* Pass loading setter to Header */}
+      <Header setLoading={setIsLoading} />
       <ToastContainer
         position="top-right"
         autoClose={5000}
@@ -27,21 +29,30 @@ const App = () => {
         pauseOnHover
         draggable
       />
-      {/* Show loader on top of all content when loading */}
+
       {isLoading && (
         <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
           <Loader />
         </div>
       )}
+
       <Routes>
         <Route path="/" element={<Portfolio />} />
         <Route path="/blog" element={<BlogPage />} />
         <Route path="/ai-chat" element={<AIChat />} />
-        <Route path="/add-blog" element={<AddBlogDetails />} />
+        <Route
+          path="/add-blog"
+          element={
+            <ProtectedAdminRoute>
+              <AddBlogDetails />
+            </ProtectedAdminRoute>
+          }
+        />
         <Route path="/blogs/:id" element={<BlogsDetails />} />
         <Route path="/tech-byte" element={<TechByte />} />
         <Route path="/reset-password/:id" element={<ResetPasswordPage />} />
       </Routes>
+
       <ContactMeButton />
       <Footer />
     </div>
