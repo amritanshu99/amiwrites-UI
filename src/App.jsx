@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 import { Routes, Route } from "react-router-dom";
 import Header from "./components/Header";
 import Portfolio from "./pages/Portfolio";
@@ -14,10 +14,19 @@ import ResetPasswordPage from "./pages/ResetPasswordPage";
 import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-
+import { initGA, logPageView } from './analytics';
+import { useLocation } from 'react-router-dom';
 const App = () => {
   const [isLoading, setIsLoading] = useState(false);
+ const location = useLocation();
 
+  useEffect(() => {
+    initGA(); // Initialize once
+  }, []);
+
+  useEffect(() => {
+    logPageView(location.pathname + location.search); // Log on route change
+  }, [location]);
   return (
     <div className="h-screen overflow-y-scroll relative">
       <Header setLoading={setIsLoading} />
