@@ -13,14 +13,12 @@ import Loader from "./components/Loader";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { SpeedInsights } from "@vercel/speed-insights/next";
 const App = () => {
   const [isLoading, setIsLoading] = useState(false); // Loading state in parent
 
   return (
     <div className="h-screen overflow-y-scroll relative">
       <Header setLoading={setIsLoading} /> {/* Pass loading setter to Header */}
-      <SpeedInsights />
       <ToastContainer
         position="top-right"
         autoClose={5000}
