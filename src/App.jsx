@@ -13,12 +13,13 @@ import Loader from "./components/Loader";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-
+import ScrollToTop from './ScrollToTop';
 const App = () => {
   const [isLoading, setIsLoading] = useState(false); // Loading state in parent
 
   return (
     <div className="h-screen overflow-y-scroll relative">
+        <ScrollToTop />
       <Header setLoading={setIsLoading} /> {/* Pass loading setter to Header */}
 <ToastContainer
   position="top-right"

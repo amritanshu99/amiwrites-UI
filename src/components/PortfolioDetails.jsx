@@ -119,13 +119,13 @@ export default function Portfolio() {
   const [modalData, setModalData] = useState({ isOpen: false, title: "", achievements: [] });
 
   useEffect(() => {
-        let link = document.querySelector("link[rel='canonical']");
-  if (!link) {
-    link = document.createElement("link");
-    link.rel = "canonical";
-    document.head.appendChild(link);
-  }
-  link.href = window.location.href;
+    let link = document.querySelector("link[rel='canonical']");
+    if (!link) {
+      link = document.createElement("link");
+      link.rel = "canonical";
+      document.head.appendChild(link);
+    }
+    link.href = window.location.href;
     document.title = "My Portfolio";
 
     axios
@@ -215,12 +215,6 @@ export default function Portfolio() {
               </nav>
             </div>
           </section>
-
-          {/* Summary */}
-          <ScrollFadeIn className="mt-10">
-            <h3 className="text-2xl font-bold text-cyan-800 mb-3 border-b-2 border-cyan-300 pb-1">Summary</h3>
-            <p className="text-cyan-900 leading-relaxed">{data.summary}</p>
-          </ScrollFadeIn>
 
           {/* Skills */}
           <ScrollFadeIn className="mt-8">
