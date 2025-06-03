@@ -14,7 +14,7 @@ import {
 import { SiJavascript, SiExpress, SiMongodb, SiGraphql } from "react-icons/si";
 import { motion, AnimatePresence, useInView } from "framer-motion";
 import Loader from "./Loader";
-
+import { useLocation } from 'react-router-dom';
 const skillIcons = {
   JavaScript: <SiJavascript className="text-yellow-500" />,
   React: <FaReact className="text-cyan-500" />,
@@ -117,7 +117,7 @@ function AchievementsModal({ isOpen, onClose, title, achievements }) {
 export default function Portfolio() {
   const [data, setData] = useState(null);
   const [modalData, setModalData] = useState({ isOpen: false, title: "", achievements: [] });
-
+const { pathname } = useLocation();
   useEffect(() => {
     let link = document.querySelector("link[rel='canonical']");
     if (!link) {
@@ -133,6 +133,16 @@ export default function Portfolio() {
       .then((res) => setData(res.data))
       .catch((err) => console.error("Error fetching portfolio:", err));
   }, []);
+   useEffect(() => {
+    // Find your scroll container
+    const scrollContainer = document.querySelector('.h-screen.overflow-y-scroll.relative');
+    if (scrollContainer) {
+      scrollContainer.scrollTo({
+        top: 0,
+        behavior: 'smooth', // or 'auto'
+      });
+    }
+  }, [pathname]);
 
   if (!data) return <Loader />;
 

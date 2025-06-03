@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
-import Loader from "./Loader";
-
+import { useLocation } from 'react-router-dom';
 // Skeleton for loading state
 const TechNewsSkeleton = () => (
   <div className="bg-white rounded-3xl shadow-lg overflow-hidden animate-pulse flex flex-col h-[500px]">
@@ -22,7 +21,7 @@ function TechNewsCards() {
   const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
+ const { pathname } = useLocation();
   useEffect(() => {
     let link = document.querySelector("link[rel='canonical']");
     if (!link) {
@@ -55,6 +54,19 @@ function TechNewsCards() {
       isMounted = false;
     };
   }, []);
+
+    useEffect(() => {
+    // Find your scroll container element
+    const scrollContainer = document.querySelector('.h-screen.overflow-y-scroll.relative');
+
+    if (scrollContainer) {
+      // Scroll it to top smoothly
+      scrollContainer.scrollTo({
+        top: 0,
+        behavior: 'smooth',
+      });
+    }
+  }, [pathname]);
 
   const handleReadMoreClick = useCallback((e, url) => {
     e.preventDefault();

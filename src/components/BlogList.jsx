@@ -4,7 +4,7 @@ import { Trash2, Plus } from 'lucide-react';
 import { toast } from 'react-toastify';
 import axios from '../utils/api';
 import Loader from './Loader';
-
+import { useLocation } from "react-router-dom";
 function parseJwt(token) {
   try {
     const base64Payload = token.split('.')[1];
@@ -63,7 +63,7 @@ const BlogList = () => {
   const [deletingId, setDeletingId] = useState(null);
   const { isAuthenticated, username } = useAuth();
   const navigate = useNavigate();
-
+const { pathname } = useLocation();
   const fetchBlogs = async () => {
     setLoading(true);
     try {
@@ -75,6 +75,8 @@ const BlogList = () => {
       setLoading(false);
     }
   };
+
+  
 
   const handleBlogClick = (id) => {
     navigate(`/blogs/${id}`);
@@ -107,6 +109,16 @@ const BlogList = () => {
   useEffect(() => {
     fetchBlogs();
   }, []);
+ useEffect(() => {
+    // Find your scroll container
+    const scrollContainer = document.querySelector('.h-screen.overflow-y-scroll.relative');
+    if (scrollContainer) {
+      scrollContainer.scrollTo({
+        top: 0,
+        behavior: 'smooth', // or 'auto'
+      });
+    }
+  }, [pathname]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-cyan-300 via-pink-300 to-yellow-200 p-6">
