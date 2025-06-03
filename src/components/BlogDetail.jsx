@@ -2,12 +2,12 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import axios from "../utils/api";
 import Loader from "./Loader";
-
+import { useLocation } from 'react-router-dom';
 const BlogDetails = () => {
   const { id } = useParams();
   const [blog, setBlog] = useState(null);
   const [loading, setLoading] = useState(true);
-
+const { pathname } = useLocation();
   const fetchBlog = async () => {
     setLoading(true);
     try {
@@ -31,7 +31,18 @@ const BlogDetails = () => {
   link.href = window.location.href;
     document.title = "Blog Details";
   }, []);
+  useEffect(() => {
+    // Find your scroll container element
+    const scrollContainer = document.querySelector('.h-screen.overflow-y-scroll.relative');
 
+    if (scrollContainer) {
+      // Scroll it to top smoothly
+      scrollContainer.scrollTo({
+        top: 0,
+        behavior: 'smooth',
+      });
+    }
+  }, [pathname]);
   useEffect(() => {
     fetchBlog();
   }, [id]);
