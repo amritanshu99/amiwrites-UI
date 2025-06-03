@@ -2,16 +2,18 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import axios from "../utils/api";
 import Loader from "./Loader";
-import { useLocation } from 'react-router-dom';
+import { useLocation } from "react-router-dom";
 const BlogDetails = () => {
   const { id } = useParams();
   const [blog, setBlog] = useState(null);
   const [loading, setLoading] = useState(true);
-const { pathname } = useLocation();
+  const { pathname } = useLocation();
   const fetchBlog = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`https://amiwrites-backend-app-1.onrender.com/api/blogs/${id}`);
+      const res = await axios.get(
+        `https://amiwrites-backend-app-1.onrender.com/api/blogs/${id}`
+      );
       setBlog(res.data);
     } catch (error) {
       console.error("Failed to fetch blog:", error);
@@ -21,25 +23,27 @@ const { pathname } = useLocation();
     }
   };
 
-    useEffect(() => {
-        let link = document.querySelector("link[rel='canonical']");
-  if (!link) {
-    link = document.createElement("link");
-    link.rel = "canonical";
-    document.head.appendChild(link);
-  }
-  link.href = window.location.href;
+  useEffect(() => {
+    let link = document.querySelector("link[rel='canonical']");
+    if (!link) {
+      link = document.createElement("link");
+      link.rel = "canonical";
+      document.head.appendChild(link);
+    }
+    link.href = window.location.href;
     document.title = "Blog Details";
   }, []);
   useEffect(() => {
     // Find your scroll container element
-    const scrollContainer = document.querySelector('.h-screen.overflow-y-scroll.relative');
+    const scrollContainer = document.querySelector(
+      ".h-screen.overflow-y-scroll.relative"
+    );
 
     if (scrollContainer) {
       // Scroll it to top smoothly
       scrollContainer.scrollTo({
         top: 0,
-        behavior: 'smooth',
+        behavior: "smooth",
       });
     }
   }, [pathname]);
@@ -94,7 +98,9 @@ const { pathname } = useLocation();
         {/* Social Buttons */}
         <div className="mt-12 flex space-x-5">
           <a
-            href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(blog.title)}`}
+            href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(
+              window.location.href
+            )}&text=${encodeURIComponent(blog.title)}`}
             target="_blank"
             rel="noopener noreferrer"
             className="text-blue-500 hover:text-blue-600 transition flex items-center space-x-2"
@@ -106,7 +112,9 @@ const { pathname } = useLocation();
           </a>
 
           <a
-            href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`}
+            href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+              window.location.href
+            )}`}
             target="_blank"
             rel="noopener noreferrer"
             className="text-blue-500 hover:text-blue-600 transition flex items-center space-x-2"
