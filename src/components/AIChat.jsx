@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import { Send, User, Sparkles } from "lucide-react";
+import { Send, Sparkles } from "lucide-react";
 import AIChatHeader from "./AIChatHeader";
 
 function decodeJWT(token) {
@@ -38,11 +38,18 @@ const AIChat = () => {
       if (decoded?.username) {
         setUsername(decoded.username);
         setIsLoggedIn(true);
+        setMessages([
+          {
+            role: "ai",
+            content: `Hello! ${decoded.username}, how can I help you today?`,
+          },
+        ]);
         return;
       }
     }
     setUsername("");
     setIsLoggedIn(false);
+    setMessages([{ role: "ai", content: "Hello! How can I help you today?" }]);
   }, [token]);
 
   useEffect(() => {
@@ -65,19 +72,56 @@ const AIChat = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (!input.trim()) return;
+
     const userMessage = {
       role: "user",
       content: `(${category}) ${input.trim()}`,
     };
-    // Mock AI reply - replace with real API call
-    const aiReply = {
-      role: "ai",
-      content: `Here's a response for "${category}":\nStay calm and take deep breaths. (mock response)`,
-    };
-    setMessages((prev) => [...prev, userMessage, aiReply]);
+
+    // Add user message immediately
+    setMessages((prev) => [...prev, userMessage]);
     setInput("");
+
+    try {
+      // Call your API with prompt as the input (without category prefix)
+      const response = await fetch(
+        "https://amiwrites-backend-app-1.onrender.com/api/gemini/generate",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ prompt: input.trim() }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      // Add AI response message
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "ai",
+          content: data.response || "Sorry, I didn't get a response.",
+        },
+      ]);
+    } catch (error) {
+      console.error("Error fetching AI response:", error);
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "ai",
+          content:
+            "Sorry, something went wrong while fetching the response. Please try again later.",
+        },
+      ]);
+    }
   };
 
   if (!isLoggedIn) {
@@ -88,12 +132,12 @@ const AIChat = () => {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.8 }}
       >
-        <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md p-8 rounded-3xl shadow-2xl max-w-md w-full text-center space-y-6">
+        <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md p-6 sm:p-8 rounded-3xl shadow-2xl max-w-md w-full text-center space-y-6">
           <Sparkles className="mx-auto text-purple-600 animate-pulse" size={36} />
-          <h1 className="text-3xl font-bold text-zinc-800 dark:text-white">
+          <h1 className="text-2xl sm:text-3xl font-bold text-zinc-800 dark:text-white">
             Welcome to AI Chat
           </h1>
-          <p className="text-sm text-gray-700 dark:text-gray-300">
+          <p className="text-xs sm:text-sm text-gray-700 dark:text-gray-300">
             Please log in to start chatting.
           </p>
         </div>
@@ -103,7 +147,7 @@ const AIChat = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-cyan-300 via-pink-300 to-yellow-200">
-      <div className="mt-10 mb-2 px-4 max-w-5xl mx-auto w-full">
+      <div className="mt-8 mb-2 px-4 max-w-5xl mx-auto w-full">
         <AIChatHeader
           category={category}
           setCategory={setCategory}
@@ -114,57 +158,29 @@ const AIChat = () => {
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
-          className="text-center mt-6 px-2"
+          className="text-center mt-4 px-2"
         >
-          <h1 className="text-3xl md:text-4xl font-bold text-zinc-800 dark:text-white leading-tight">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-zinc-800 dark:text-white leading-tight">
             Making Machines Think for You
           </h1>
-          <p className="text-sm md:text-base text-zinc-600 dark:text-zinc-300 mt-1 max-w-md mx-auto">
-            Your personal AI-powered well-being companion
-          </p>
         </motion.div>
       </div>
 
-      <div className="flex-1 flex flex-col items-center px-4 py-6 w-full max-w-5xl mx-auto">
+      <div className="flex-1 flex flex-col items-center px-4 py-4 w-full max-w-5xl mx-auto">
         <motion.div
           initial={{ scale: 0.95, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 0.4 }}
-          className="
-            w-full
-            bg-white dark:bg-zinc-900
-            p-4 sm:p-6 md:p-8
-            rounded-3xl
-            shadow-2xl
-            flex flex-col
-            h-[45vh] sm:h-[50vh] md:h-[55vh] lg:h-[60vh]
-            max-h-[600px]
-          "
+          className="w-full bg-white dark:bg-zinc-900 p-4 sm:p-6 md:p-8 rounded-3xl shadow-2xl flex flex-col h-[30vh] sm:h-[35vh] md:h-[40vh] max-h-[40vh] overflow-y-auto"
         >
-          <div className="text-center text-gray-600 dark:text-gray-300 text-sm flex items-center justify-center gap-2 mb-2">
-            <User size={18} />
-            Logged in as <span className="font-medium truncate max-w-xs">{username}</span>
-          </div>
-
-          <div
-            className="
-              flex-1
-              overflow-y-auto
-              p-4
-              bg-zinc-50 dark:bg-zinc-800
-              rounded-xl
-              space-y-4
-              scrollbar-thin scrollbar-thumb-purple-400 scrollbar-track-transparent
-              scroll-smooth
-            "
-          >
+          <div className="flex-1 overflow-y-auto space-y-4 scrollbar-thin scrollbar-thumb-gray-400 dark:scrollbar-thumb-gray-700 scrollbar-thumb-rounded">
             {messages.map((msg, idx) => (
               <div
                 key={idx}
-                className={`whitespace-pre-wrap px-4 py-3 rounded-xl text-sm md:text-base max-w-[80%] ${
+                className={`px-4 py-2 rounded-xl max-w-[80%] text-xs sm:text-sm md:text-base whitespace-pre-line break-words ${
                   msg.role === "user"
-                    ? "bg-blue-100 dark:bg-blue-800 text-blue-900 dark:text-blue-100 self-end ml-auto"
-                    : "bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-100 self-start mr-auto"
+                    ? "bg-blue-100 dark:bg-blue-700 text-blue-900 dark:text-white self-end"
+                    : "bg-zinc-200 dark:bg-zinc-800 text-zinc-800 dark:text-white self-start"
                 }`}
               >
                 {msg.content}
@@ -172,49 +188,33 @@ const AIChat = () => {
             ))}
             <div ref={messagesEndRef} />
           </div>
+        </motion.div>
 
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleSend();
-            }}
-            className="mt-4 flex flex-row items-center gap-3"
-          >
+        {/* AI Disclaimer */}
+        <p className="mt-2 text-center text-[10px] sm:text-xs text-gray-700 dark:text-gray-300 max-w-xl">
+          ⚠️ <strong>Disclaimer:</strong> This AI chat is for informational purposes only and not a substitute for professional advice.
+        </p>
+
+        {/* Input + Send */}
+        <div className="mt-4 w-full max-w-5xl flex flex-col items-center">
+          <div className="w-full flex items-center bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-full px-3 py-2 shadow-md">
             <input
+              className="flex-1 bg-transparent outline-none px-3 py-2 text-xs sm:text-sm md:text-base text-zinc-800 dark:text-white placeholder-zinc-500"
+              placeholder="Ask something..."
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Type your message..."
-              className="
-                flex-shrink-0
-                flex-grow
-                px-4 py-2
-                rounded-full
-                border border-gray-300 dark:border-gray-700
-                bg-white dark:bg-zinc-800
-                text-gray-800 dark:text-white
-                focus:outline-none focus:ring-2 focus:ring-purple-400
-                text-sm
-                sm:text-base
-              "
-              autoFocus
-              aria-label="Type your message"
+              onKeyDown={(e) => e.key === "Enter" && handleSend()}
+              aria-label="Chat input"
             />
             <button
-              type="submit"
-              className="
-                bg-purple-500 hover:bg-purple-600 text-white
-                w-10 h-10
-                rounded-full
-                transition
-                flex items-center justify-center
-                flex-shrink-0
-              "
+              onClick={handleSend}
+              className="ml-2 bg-blue-600 hover:bg-blue-700 text-white rounded-full p-2 transition"
               aria-label="Send message"
             >
-              <Send size={16} />
+              <Send size={18} />
             </button>
-          </form>
-        </motion.div>
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -7,73 +7,107 @@ const CATEGORIES = [
   "Depression",
   "Sleep Issues",
   "Stress",
+  "Relationships",
+  "Health and diet",
+  "Career",
+  "Daily motivation",
 ];
 
-const PREDEFINED_PROMPTS = [
-  "How can I reduce daily stress?",
-  "What are good sleep habits?",
-  "How to deal with anxiety?",
-  "Tips for better mental health?",
-];
+const CATEGORY_PROMPTS_MAP = {
+  "Mental Well-being": [
+    "Tips for better mental health?",
+    "How to build emotional resilience?",
+    "What are daily mental wellness habits?",
+  ],
+  Anxiety: [
+    "How to deal with anxiety?",
+    "Grounding techniques for anxiety?",
+    "Is anxiety normal and how to manage it?",
+  ],
+  Depression: [
+    "What helps with feeling low?",
+    "How to cope with depression?",
+    "How to stay motivated during depression?",
+  ],
+  "Sleep Issues": [
+    "What are good sleep habits?",
+    "How to improve sleep quality?",
+    "Does screen time affect sleep?",
+  ],
+  Stress: [
+    "How can I reduce daily stress?",
+    "Stress-relief techniques?",
+    "How to manage work-related stress?",
+  ],
+  Relationships: [
+    "How to communicate better with a partner?",
+    "Dealing with conflicts in relationships?",
+    "Signs of a healthy relationship?",
+  ],
+  "Health and diet": [
+    "What is a balanced diet?",
+    "Tips for healthy eating?",
+    "How does diet impact mental health?",
+  ],
+  Career: [
+    "How to find purpose in my career?",
+    "Tips for managing work stress?",
+    "How to grow professionally?",
+  ],
+  "Daily motivation": [
+    "How to stay motivated every day?",
+    "Morning habits for a productive day?",
+    "Simple mindset shifts for motivation?",
+  ],
+};
 
 const AIChatHeader = ({ category, setCategory, onPromptClick }) => {
   const [promptsOpen, setPromptsOpen] = useState(false);
-  const mainHeaderHeight = 70;
+  const currentPrompts = CATEGORY_PROMPTS_MAP[category] || [];
 
   return (
     <>
-      {/* Sticky AI Chat Header below main header */}
+      {/* Chat header bar */}
       <div
         className="
-          w-full
+          sticky top-[70px] z-40
+          flex flex-col md:flex-row items-center justify-between gap-3 md:gap-6
+          px-4 py-3 md:px-6
           bg-gradient-to-r from-purple-600 via-purple-700 to-purple-800
           dark:from-zinc-900 dark:via-zinc-800 dark:to-zinc-900
-          shadow-lg
-          sticky
-          z-40
-          px-5 py-3
-          flex flex-col md:flex-row md:items-center md:justify-between
-          gap-3 md:gap-6
-          rounded-b-lg
-          border-b-2 border-purple-700 dark:border-purple-900
+          shadow-md border-b-2 border-purple-700 dark:border-purple-900
+          rounded-b-xl
         "
-        style={{
-          top: mainHeaderHeight,
-          position: "sticky",
-          backgroundClip: "padding-box",
-        }}
       >
-        {/* Title and Icon */}
-        <div className="flex items-center gap-2 text-white text-xl md:text-2xl font-bold select-none justify-center md:justify-start">
+        {/* Title */}
+        <div className="flex items-center gap-2 text-white text-lg md:text-2xl font-semibold select-none">
           <Sparkles className="text-yellow-400 animate-pulse" size={24} />
-          AI Chat - Mental Wellness
+          <span>AI Chat – Mental Wellness</span>
         </div>
 
-        {/* Category selector */}
-        <div className="flex items-center gap-2 justify-center md:justify-end w-full md:w-auto">
+        {/* Dropdown */}
+        <div className="flex items-center gap-2 w-full md:w-auto">
           <label
-            htmlFor="category-select"
-            className="text-white font-semibold whitespace-nowrap select-none text-sm md:text-base"
+            htmlFor="category"
+            className="text-white font-medium text-sm md:text-base"
           >
             Category:
           </label>
           <select
-            id="category-select"
+            id="category"
             value={category}
             onChange={(e) => setCategory(e.target.value)}
             className="
-              px-3 py-1.5
-              rounded-full
-              bg-white bg-opacity-90 dark:bg-zinc-800 dark:bg-opacity-90
-              border border-transparent
+              w-full md:w-auto
+              bg-white dark:bg-zinc-800 bg-opacity-90 dark:bg-opacity-90
               text-gray-900 dark:text-white
+              px-3 py-2 rounded-full shadow-sm
+              border border-transparent
               text-sm md:text-base
               font-medium
-              shadow-sm
-              focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-600
+              focus:outline-none focus:ring-2 focus:ring-purple-400
               transition
               cursor-pointer
-              w-full max-w-xs md:max-w-none
             "
           >
             {CATEGORIES.map((cat) => (
@@ -85,76 +119,61 @@ const AIChatHeader = ({ category, setCategory, onPromptClick }) => {
         </div>
       </div>
 
-      {/* Always visible, slim Quick Tips header with toggle */}
+      {/* Toggle tips button */}
       <div
-        className="
-          w-full
-          bg-white/20 dark:bg-zinc-900/30
-          backdrop-blur-sm
-          border-b border-purple-700 dark:border-purple-900
-          px-5 py-2
-          flex justify-between items-center select-none
-          cursor-pointer
-          text-purple-900 dark:text-purple-300
-          font-semibold text-sm md:text-base
-          shadow-sm
-          sticky
-          top-[calc(70px+48px)] /* Stick below main header and this bar */
-          z-30
-          rounded-b-lg
-          transition-colors duration-300
-          hover:bg-white/30 dark:hover:bg-zinc-900/50
-        "
         onClick={() => setPromptsOpen(!promptsOpen)}
+        className="
+          sticky top-[118px] z-30
+          flex justify-between items-center
+          px-4 py-2
+          bg-white/20 dark:bg-zinc-900/30
+          backdrop-blur-md
+          text-purple-900 dark:text-purple-300
+          font-medium text-sm md:text-base
+          border-b border-purple-700 dark:border-purple-900
+          rounded-b-lg
+          transition hover:bg-white/30 dark:hover:bg-zinc-900/50
+          cursor-pointer select-none
+        "
         role="button"
         aria-expanded={promptsOpen}
-        aria-label={promptsOpen ? "Collapse tips" : "Expand tips"}
       >
-        Quick Tips
+        <span>Quick Tips</span>
         {promptsOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
       </div>
 
-      {/* Collapsible Quick Tips content */}
+      {/* Collapsible tips section */}
       <div
         className={`
+          overflow-hidden
+          transition-all duration-300 ease-in-out
           bg-white/10 dark:bg-zinc-900/20
           backdrop-blur-sm
           border-b border-purple-700 dark:border-purple-900
-          rounded-b-lg
           px-5
-          overflow-hidden
-          transition-[max-height,padding] duration-300 ease-in-out
-          ${promptsOpen ? "py-3" : "py-0"}
+          ${promptsOpen ? "py-4 max-h-[300px]" : "py-0 max-h-0"}
+          rounded-b-xl
         `}
-        style={{ maxHeight: promptsOpen ? "300px" : "0" }}
       >
         <div
-          className={`flex flex-wrap justify-center gap-2 md:gap-3 ${
+          className={`flex flex-wrap gap-2 md:gap-3 justify-center transition-opacity duration-300 ${
             promptsOpen ? "opacity-100" : "opacity-0 pointer-events-none"
-          } transition-opacity duration-300`}
+          }`}
         >
-          {PREDEFINED_PROMPTS.map((prompt, idx) => (
+          {currentPrompts.map((prompt, idx) => (
             <button
               key={idx}
               onClick={() => {
                 onPromptClick(prompt);
-                setPromptsOpen(false); // Collapse quick tips on selection
+                setPromptsOpen(false);
               }}
               className="
-                bg-purple-600
-                text-white
-                text-sm md:text-base
-                px-3 md:px-4 py-1.5 rounded-full
-                shadow-md
-                hover:bg-purple-700
-                active:bg-purple-800
+                bg-purple-600 hover:bg-purple-700 active:bg-purple-800
+                text-white text-sm md:text-base
+                px-4 py-1.5 rounded-full shadow-md
                 transition
-                select-none
-                cursor-pointer
                 whitespace-nowrap
-                flex-shrink-0
               "
-              type="button"
             >
               {prompt}
             </button>
