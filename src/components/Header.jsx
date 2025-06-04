@@ -28,7 +28,8 @@ export default function Header({ setLoading }) {
   const userMenuRef = useRef(null);
   const mobileMenuRef = useRef(null);
 
-  useEffect(() => {
+  // Function to update auth state based on localStorage token
+  const updateAuthStateFromToken = () => {
     const token = localStorage.getItem("token");
     setIsAuthenticated(!!token);
     if (token) {
@@ -37,8 +38,25 @@ export default function Header({ setLoading }) {
     } else {
       setUsername(null);
     }
+  };
+
+  // Initial load & modal open/close effect
+  useEffect(() => {
+    updateAuthStateFromToken();
   }, [loginOpen, signupOpen]);
 
+  // Listen for tokenChanged event globally to sync auth state
+  useEffect(() => {
+    const handleTokenChanged = () => {
+      updateAuthStateFromToken();
+    };
+    window.addEventListener("tokenChanged", handleTokenChanged);
+    return () => {
+      window.removeEventListener("tokenChanged", handleTokenChanged);
+    };
+  }, []);
+
+  // Close menus when clicking outside
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (userMenuRef.current && !userMenuRef.current.contains(e.target)) {
@@ -52,6 +70,7 @@ export default function Header({ setLoading }) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Close menus on route change
   useEffect(() => {
     setUserMenuOpen(false);
     setMenuOpen(false);
@@ -68,10 +87,12 @@ export default function Header({ setLoading }) {
     if (!setLoading) return;
     setLoading(true);
     try {
+      // Simulate async logout operation
       await new Promise((resolve) => setTimeout(resolve, 500));
       localStorage.removeItem("token");
-      setIsAuthenticated(false);
-      setUsername(null);
+      // Dispatch tokenChanged event so header updates
+      window.dispatchEvent(new Event("tokenChanged"));
+
       setUserMenuOpen(false);
       setMenuOpen(false);
     } catch {
@@ -197,6 +218,30 @@ export default function Header({ setLoading }) {
                   {link.name}
                 </Link>
               ))}
+
+              {/* Show login/signup on mobile menu if not authenticated */}
+              {!isAuthenticated && (
+                <div className="mt-4 flex space-x-4">
+                  <button
+                    onClick={() => {
+                      setLoginOpen(true);
+                      setMenuOpen(false);
+                    }}
+                    className="flex-1 px-4 py-2 rounded-md bg-sky-600 text-white hover:bg-sky-700 transition shadow-sm"
+                  >
+                    Login
+                  </button>
+                  <button
+                    onClick={() => {
+                      setSignupOpen(true);
+                      setMenuOpen(false);
+                    }}
+                    className="flex-1 px-4 py-2 rounded-md bg-emerald-600 text-white hover:bg-emerald-700 transition shadow-sm"
+                  >
+                    Sign Up
+                  </button>
+                </div>
+              )}
             </motion.div>
           )}
         </AnimatePresence>

@@ -1,5 +1,5 @@
-import React, { useState,useEffect } from "react";
-import { Routes, Route } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Routes, Route, useLocation } from "react-router-dom";
 import Header from "./components/Header";
 import Portfolio from "./pages/Portfolio";
 import BlogPage from "./pages/BlogPage";
@@ -15,10 +15,10 @@ import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { initGA, logPageView } from './analytics';
-import { useLocation } from 'react-router-dom';
+
 const App = () => {
   const [isLoading, setIsLoading] = useState(false);
- const location = useLocation();
+  const location = useLocation();
 
   useEffect(() => {
     initGA(); // Initialize once
@@ -27,8 +27,9 @@ const App = () => {
   useEffect(() => {
     logPageView(location.pathname + location.search); // Log on route change
   }, [location]);
+
   return (
-    <div className="h-screen overflow-y-scroll relative">
+    <div className="flex flex-col min-h-screen">
       <Header setLoading={setIsLoading} />
       <ToastContainer
         position="top-right"
@@ -45,22 +46,24 @@ const App = () => {
         </div>
       )}
 
-      <Routes>
-        <Route path="/" element={<Portfolio />} />
-        <Route path="/blog" element={<BlogPage />} />
-        <Route path="/ai-chat" element={<AIChat />} />
-        <Route
-          path="/add-blog"
-          element={
-            <ProtectedAdminRoute>
-              <AddBlogDetails />
-            </ProtectedAdminRoute>
-          }
-        />
-        <Route path="/blogs/:id" element={<BlogsDetails />} />
-        <Route path="/tech-byte" element={<TechByte />} />
-        <Route path="/reset-password/:id" element={<ResetPasswordPage />} />
-      </Routes>
+      <main className="flex-1">
+        <Routes>
+          <Route path="/" element={<Portfolio />} />
+          <Route path="/blog" element={<BlogPage />} />
+          <Route path="/ai-chat" element={<AIChat />} />
+          <Route
+            path="/add-blog"
+            element={
+              <ProtectedAdminRoute>
+                <AddBlogDetails />
+              </ProtectedAdminRoute>
+            }
+          />
+          <Route path="/blogs/:id" element={<BlogsDetails />} />
+          <Route path="/tech-byte" element={<TechByte />} />
+          <Route path="/reset-password/:id" element={<ResetPasswordPage />} />
+        </Routes>
+      </main>
 
       <ContactMeButton />
       <Footer />

@@ -62,6 +62,8 @@ export default function LoginModal({ isOpen, onClose }) {
       }
 
       toast.success("Login successful! Welcome back.");
+      window.dispatchEvent(new Event("tokenChanged"));
+
       onClose();
     } catch (err) {
       const message =

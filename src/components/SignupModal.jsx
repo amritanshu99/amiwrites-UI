@@ -57,6 +57,7 @@ export default function SignUpModal({ isOpen, onClose }) {
 
       localStorage.setItem("token", data.token);
       toast.success("Signup successful! Welcome aboard.");
+      window.dispatchEvent(new Event("tokenChanged"));
       resetForm();
       onClose();
     } catch (err) {
