@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { Send, Sparkles } from "lucide-react";
+import ReactMarkdown from "react-markdown";
 import AIChatHeader from "./AIChatHeader";
 
 function decodeJWT(token) {
@@ -32,6 +33,7 @@ const AIChat = () => {
 
   const messagesEndRef = useRef(null);
 
+  // Decode token and update login state & messages
   useEffect(() => {
     if (token) {
       const decoded = decodeJWT(token);
@@ -52,6 +54,7 @@ const AIChat = () => {
     setMessages([{ role: "ai", content: "Hello! How can I help you today?" }]);
   }, [token]);
 
+  // Listen to localStorage 'token' changes (from other tabs)
   useEffect(() => {
     const onStorage = (e) => {
       if (e.key === "token") setToken(e.newValue);
@@ -60,6 +63,7 @@ const AIChat = () => {
     return () => window.removeEventListener("storage", onStorage);
   }, []);
 
+  // Listen for custom 'tokenChanged' event in the same tab (optional)
   useEffect(() => {
     const onTokenChanged = () => {
       setToken(localStorage.getItem("token"));
@@ -68,6 +72,7 @@ const AIChat = () => {
     return () => window.removeEventListener("tokenChanged", onTokenChanged);
   }, []);
 
+  // Scroll to bottom when messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -75,17 +80,19 @@ const AIChat = () => {
   const handleSend = async () => {
     if (!input.trim()) return;
 
+    // Compose prompt including category for expert-like answers
+    const expertPrompt = `Think like a ${category} expert. Respond in detail: ${input.trim()}`;
+
+    // Add user message with prompt
     const userMessage = {
       role: "user",
-      content: `(${category}) ${input.trim()}`,
+      content: expertPrompt,
     };
 
-    // Add user message immediately
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
 
     try {
-      // Call your API with prompt as the input (without category prefix)
       const response = await fetch(
         "https://amiwrites-backend-app-1.onrender.com/api/gemini/generate",
         {
@@ -102,15 +109,35 @@ const AIChat = () => {
       }
 
       const data = await response.json();
+      const fullText = data.response || "Sorry, I didn't get a response.";
 
-      // Add AI response message
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "ai",
-          content: data.response || "Sorry, I didn't get a response.",
-        },
-      ]);
+      let index = 0;
+      let currentText = "";
+
+      // Simulate typing animation for AI response
+      const typingInterval = setInterval(() => {
+        if (index < fullText.length) {
+          currentText += fullText[index++];
+          setMessages((prev) => {
+            const updated = [...prev];
+            if (updated[updated.length - 1]?.role === "typing") {
+              updated[updated.length - 1].content = currentText;
+            } else {
+              updated.push({ role: "typing", content: currentText });
+            }
+            return updated;
+          });
+        } else {
+          clearInterval(typingInterval);
+          setMessages((prev) => {
+            const updated = [...prev];
+            if (updated[updated.length - 1]?.role === "typing") {
+              updated[updated.length - 1] = { role: "ai", content: fullText };
+            }
+            return updated;
+          });
+        }
+      }, 20);
     } catch (error) {
       console.error("Error fetching AI response:", error);
       setMessages((prev) => [
@@ -133,7 +160,10 @@ const AIChat = () => {
         transition={{ duration: 0.8 }}
       >
         <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md p-6 sm:p-8 rounded-3xl shadow-2xl max-w-md w-full text-center space-y-6">
-          <Sparkles className="mx-auto text-purple-600 animate-pulse" size={36} />
+          <Sparkles
+            className="mx-auto text-purple-600 animate-pulse"
+            size={36}
+          />
           <h1 className="text-2xl sm:text-3xl font-bold text-zinc-800 dark:text-white">
             Welcome to AI Chat
           </h1>
@@ -147,7 +177,7 @@ const AIChat = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-cyan-300 via-pink-300 to-yellow-200">
-      <div className="mt-8 mb-2 px-4 max-w-5xl mx-auto w-full">
+      <div className="mt-8 px-4 max-w-5xl mx-auto w-full">
         <AIChatHeader
           category={category}
           setCategory={setCategory}
@@ -158,63 +188,70 @@ const AIChat = () => {
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
-          className="text-center mt-4 px-2"
+          className="text-center mt-4"
         >
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-zinc-800 dark:text-white leading-tight">
+          <h1 className="text-3xl font-bold text-zinc-800 dark:text-white">
             Making Machines Think for You
           </h1>
         </motion.div>
       </div>
 
-      <div className="flex-1 flex flex-col items-center px-4 py-4 w-full max-w-5xl mx-auto">
-        <motion.div
-          initial={{ scale: 0.95, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.4 }}
-          className="w-full bg-white dark:bg-zinc-900 p-4 sm:p-6 md:p-8 rounded-3xl shadow-2xl flex flex-col h-[30vh] sm:h-[35vh] md:h-[40vh] max-h-[40vh] overflow-y-auto"
-        >
-          <div className="flex-1 overflow-y-auto space-y-4 scrollbar-thin scrollbar-thumb-gray-400 dark:scrollbar-thumb-gray-700 scrollbar-thumb-rounded">
-            {messages.map((msg, idx) => (
-              <div
-                key={idx}
-                className={`px-4 py-2 rounded-xl max-w-[80%] text-xs sm:text-sm md:text-base whitespace-pre-line break-words ${
-                  msg.role === "user"
-                    ? "bg-blue-100 dark:bg-blue-700 text-blue-900 dark:text-white self-end"
-                    : "bg-zinc-200 dark:bg-zinc-800 text-zinc-800 dark:text-white self-start"
-                }`}
-              >
-                {msg.content}
-              </div>
-            ))}
-            <div ref={messagesEndRef} />
-          </div>
-        </motion.div>
-
-        {/* AI Disclaimer */}
-        <p className="mt-2 text-center text-[10px] sm:text-xs text-gray-700 dark:text-gray-300 max-w-xl">
-          ⚠️ <strong>Disclaimer:</strong> This AI chat is for informational purposes only and not a substitute for professional advice.
-        </p>
-
-        {/* Input + Send */}
-        <div className="mt-4 w-full max-w-5xl flex flex-col items-center">
-          <div className="w-full flex items-center bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-full px-3 py-2 shadow-md">
-            <input
-              className="flex-1 bg-transparent outline-none px-3 py-2 text-xs sm:text-sm md:text-base text-zinc-800 dark:text-white placeholder-zinc-500"
-              placeholder="Ask something..."
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSend()}
-              aria-label="Chat input"
-            />
-            <button
-              onClick={handleSend}
-              className="ml-2 bg-blue-600 hover:bg-blue-700 text-white rounded-full p-2 transition"
-              aria-label="Send message"
+      <div className="flex flex-col px-4 py-6 max-w-5xl mx-auto flex-grow overflow-y-auto space-y-4">
+        {messages.map((message, index) => (
+          <motion.div
+            key={index}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+            className={`p-4 rounded-2xl max-w-[75%] whitespace-pre-wrap break-words
+              ${
+                message.role === "user"
+                  ? "bg-blue-400 text-white self-end shadow-md"
+                  : "bg-white dark:bg-zinc-700 text-zinc-900 dark:text-gray-100 self-start shadow-lg"
+              }`}
+            style={{ wordBreak: "break-word" }}
+          >
+            <ReactMarkdown
+              components={{
+                p: ({ children }) => (
+                  <p className="text-base leading-relaxed mb-2">{children}</p>
+                ),
+                strong: ({ children }) => (
+                  <strong className="font-semibold">{children}</strong>
+                ),
+                code: ({ children }) => (
+                  <code className="bg-gray-100 dark:bg-zinc-600 px-1 py-0.5 rounded text-sm font-mono">
+                    {children}
+                  </code>
+                ),
+                li: ({ children }) => (
+                  <li className="ml-6 list-disc text-base">{children}</li>
+                ),
+              }}
             >
-              <Send size={18} />
-            </button>
-          </div>
-        </div>
+              {message.content}
+            </ReactMarkdown>
+          </motion.div>
+        ))}
+        <div ref={messagesEndRef} />
+      </div>
+
+      <div className="p-4 max-w-5xl mx-auto w-full flex gap-2 items-center bg-white/50 backdrop-blur-md rounded-t-xl">
+        <input
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && handleSend()}
+          placeholder="Ask something..."
+          className="flex-1 bg-white dark:bg-zinc-800 border border-gray-300 dark:border-zinc-700 px-4 py-2 rounded-xl text-sm outline-none text-white"
+        />
+
+        <button
+          onClick={handleSend}
+          className="bg-blue-600 text-white px-4 py-2 rounded-xl hover:bg-blue-700 transition"
+          aria-label="Send message"
+        >
+          <Send size={18} />
+        </button>
       </div>
     </div>
   );
