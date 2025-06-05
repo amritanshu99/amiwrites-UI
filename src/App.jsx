@@ -29,7 +29,7 @@ const App = () => {
   }, [location]);
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="h-screen overflow-y-scroll relative">
       <Header setLoading={setIsLoading} />
       <ToastContainer
         position="top-right"
