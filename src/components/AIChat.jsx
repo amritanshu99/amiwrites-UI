@@ -223,7 +223,7 @@ const AIChat = () => {
           <input
             ref={inputRef}
             type="text"
-            placeholder="Ask something..."
+            placeholder={`Ask something about ${category}....`}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSend()}
