@@ -7,8 +7,11 @@ self.addEventListener('push', event => {
 
   event.waitUntil(
     self.registration.showNotification(data.title, {
-      body: data.body
-      // No icon or badge here
+      body: data.body,
+      icon: '/favicon.ico', // Uses favicon from public folder
+      data: {
+        url: 'https://www.amiverse.in/blog' // Store the URL to open on click
+      }
     })
   );
 });

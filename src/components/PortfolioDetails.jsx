@@ -11,6 +11,7 @@ import {
   FaGraduationCap,
   FaTimes,
 } from "react-icons/fa";
+import { SiTensorflow, SiOpenai } from "react-icons/si";
 import { SiJavascript, SiExpress, SiMongodb, SiGraphql } from "react-icons/si";
 import { motion, AnimatePresence, useInView } from "framer-motion";
 import Loader from "./Loader";
@@ -22,7 +23,10 @@ const skillIcons = {
   Express: <SiExpress className="text-gray-700" />,
   MongoDB: <SiMongodb className="text-green-700" />,
   GraphQL: <SiGraphql className="text-pink-500" />,
+  AI: <SiOpenai className="text-purple-600" />,
+  "ML": <SiTensorflow className="text-orange-500" />,
 };
+
 
 const Tooltip = ({ children, content }) => {
   const [visible, setVisible] = React.useState(false);
