@@ -1,97 +1,54 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <!-- Title and Description -->
-    <title>AmiVerse – Blogs, Portfolio & AI Tools for Mindful Living</title>
-    <meta name="description" content="AmiVerse is your digital space for personal blogs, creative portfolio, and AI-powered tools supporting mental wellness, mindfulness, and creativity." />
+  <!-- Primary SEO -->
+  <title>Amritanshu Mishra – AmiVerse | Blogs, Portfolio & AI Tools for Mindful Living</title>
+  <meta name="description" content="Official site of Amritanshu Mishra — explore AmiVerse for his personal blogs, AI-powered tools, tech portfolio, and mental wellness content." />
+  <meta name="keywords" content="Amritanshu Mishra, AmiVerse, mental wellness, AI tools, blog, portfolio, mindfulness, Amritanshu developer, Amritanshu blog" />
+  <meta name="author" content="Amritanshu Mishra" />
+  <link rel="canonical" href="https://www.amiverse.com/" />
 
-    <!-- Keywords -->
-    <meta name="keywords" content="AmiVerse, mental wellness, AI tools, personal blog, creativity, mindfulness, productivity, Amritanshu" />
+  <!-- Favicon & App Icons -->
+  <link rel="icon" type="image/png" sizes="32x32" href="%PUBLIC_URL%/favicon-32x32.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="%PUBLIC_URL%/apple-touch-icon.png" />
+  <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
 
-    <!-- Author -->
-    <meta name="author" content="Amritanshu" />
+  <!-- Open Graph -->
+  <meta property="og:title" content="Amritanshu Mishra – AmiVerse" />
+  <meta property="og:description" content="Explore blogs, portfolio, and AI wellness tools by Amritanshu Mishra on AmiVerse." />
+  <meta property="og:url" content="https://www.amiverse.com/" />
+  <meta property="og:image" content="https://www.amiverse.com/og-image.jpg" />
+  <meta property="og:type" content="website" />
 
-    <!-- Canonical -->
-    <link rel="canonical" href="https://www.amiverse.com/" />
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Amritanshu Mishra – AmiVerse" />
+  <meta name="twitter:description" content="AmiVerse by Amritanshu Mishra: tech blogs, AI tools, and mindful content." />
+  <meta name="twitter:image" content="https://www.amiverse.com/og-image.jpg" />
 
-    <!-- Theme Color -->
-    <meta name="theme-color" content="#000000" />
+  <!-- Schema.org JSON-LD -->
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Person",
+      "name": "Amritanshu Mishra",
+      "url": "https://www.amiverse.com",
+      "image": "https://www.amiverse.com/profile.jpg",
+      "sameAs": [
+        "https://www.linkedin.com/in/amritanshu99",
+        "https://github.com/amritanshu99"
+      ],
+      "jobTitle": "Full Stack Developer",
+      "worksFor": {
+        "@type": "Organization",
+        "name": "AmiVerse"
+      },
+      "description": "Official site of Amritanshu Mishra featuring his personal blog, AI tools, mental wellness resources, and full-stack development portfolio."
+    }
+  </script>
 
- <!-- Favicon for all modern browsers -->
-<link rel="icon" type="image/png" sizes="32x32" href="%PUBLIC_URL%/favicon-32x32.png" />
-<link rel="icon" type="image/png" sizes="16x16" href="%PUBLIC_URL%/favicon-16x16.png" />
-
-<!-- Fallback for older browsers -->
-<link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico" type="image/x-icon" />
-
-<!-- Apple Touch Icon for iOS devices -->
-<link rel="apple-touch-icon" sizes="180x180" href="%PUBLIC_URL%/apple-touch-icon.png" />
-
-<!-- Web App Manifest (Optional but recommended) -->
-<link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-
-
-    <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://www.amiverse.com/" />
-    <meta property="og:title" content="AmiVerse – Blogs, Portfolio & AI Tools for Mindful Living" />
-    <meta property="og:description" content="Visit AmiVerse for insightful blogs, AI-powered tools, and a creative portfolio for your mental wellness and growth journey." />
-    <meta property="og:image" content="https://www.amiverse.com/og-image.jpg" />
-
-    <!-- Twitter Meta Tags -->
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:url" content="https://www.amiverse.com/" />
-    <meta name="twitter:title" content="AmiVerse – Blogs, Portfolio & AI Tools for Mindful Living" />
-    <meta name="twitter:description" content="AmiVerse is a blog, portfolio, and AI wellness platform to help you grow creatively and mindfully." />
-    <meta name="twitter:image" content="https://www.amiverse.com/og-image.jpg" />
-
-    <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Patrick+Hand&display=swap" rel="stylesheet" />
-
-    <!-- Manifest -->
-    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-
-    <!-- Structured Data (JSON-LD) -->
-    <script type="application/ld+json">
-      {
-        "@context": "https://schema.org",
-        "@type": "WebSite",
-        "name": "AmiVerse",
-        "url": "https://www.amiverse.com",
-        "description": "Personal blog, portfolio, and AI tools for mental wellness and creativity by Amritanshu.",
-        "inLanguage": "en",
-        "author": {
-          "@type": "Person",
-          "name": "Amritanshu"
-        },
-        "publisher": {
-          "@type": "Organization",
-          "name": "AmiVerse",
-          "logo": {
-            "@type": "ImageObject",
-            "url": "https://www.amiverse.com/logo192.png"
-          }
-        }
-      }
-    </script>
-
-    <!-- Robots -->
-    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
-
-    <!-- Language Declaration -->
-    <meta name="language" content="English" />
-
-    <!-- Viewport Hints for Mobile SEO -->
-    <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-
-  </head>
-  <body>
-    <noscript>You need to enable JavaScript to run this app.</noscript>
-    <div id="root"></div>
-  </body>
-</html>
+  <!-- Robots -->
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+</head>

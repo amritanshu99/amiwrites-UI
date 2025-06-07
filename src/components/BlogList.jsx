@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Trash2, Plus } from 'lucide-react';
+import { Trash2, Plus, Filter } from 'lucide-react';
 import { toast } from 'react-toastify';
 import axios from '../utils/api';
 import Loader from './Loader';
 import { useLocation } from "react-router-dom";
+
 function parseJwt(token) {
   try {
     const base64Payload = token.split('.')[1];
@@ -61,9 +62,12 @@ const BlogList = () => {
   const [blogs, setBlogs] = useState([]);
   const [loading, setLoading] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
+  const [filter, setFilter] = useState('latest');
+  const [search, setSearch] = useState('');
   const { isAuthenticated, username } = useAuth();
   const navigate = useNavigate();
-const { pathname } = useLocation();
+  const { pathname } = useLocation();
+
   const fetchBlogs = async () => {
     setLoading(true);
     try {
@@ -75,8 +79,6 @@ const { pathname } = useLocation();
       setLoading(false);
     }
   };
-
-  
 
   const handleBlogClick = (id) => {
     navigate(`/blogs/${id}`);
@@ -109,16 +111,20 @@ const { pathname } = useLocation();
   useEffect(() => {
     fetchBlogs();
   }, []);
- useEffect(() => {
-    // Find your scroll container
+
+  useEffect(() => {
     const scrollContainer = document.querySelector('.h-screen.overflow-y-scroll.relative');
     if (scrollContainer) {
       scrollContainer.scrollTo({
         top: 0,
-        behavior: 'smooth', // or 'auto'
+        behavior: 'smooth',
       });
     }
   }, [pathname]);
+
+  const filteredBlogs = blogs
+    .filter(blog => blog.title.toLowerCase().includes(search.toLowerCase()))
+    .sort((a, b) => filter === 'latest' ? new Date(b.date) - new Date(a.date) : new Date(a.date) - new Date(b.date));
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-cyan-300 via-pink-300 to-yellow-200 p-6">
@@ -138,17 +144,42 @@ const { pathname } = useLocation();
         )}
       </div>
 
+      <div className="flex flex-col md:flex-row gap-4 justify-between items-center mb-6">
+        <input
+          type="text"
+          placeholder="🔍 Search by title..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="px-5 py-2 rounded-full border-2 border-white bg-white/80 backdrop-blur-md shadow-lg w-full md:w-2/3 text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-pink-500"
+        />
+
+    <div className="relative w-full md:w-auto">
+  <select
+    value={filter}
+    onChange={(e) => setFilter(e.target.value)}
+    className="appearance-none w-full md:w-44 px-5 py-2 pr-10 rounded-full border border-gray-300 bg-white/80 backdrop-blur-md text-gray-700 shadow-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-400 hover:border-pink-400 cursor-pointer"
+  >
+    <option value="latest">🆕 Latest</option>
+    <option value="oldest">📜 Oldest</option>
+  </select>
+  <div className="pointer-events-none absolute inset-y-0 right-4 flex items-center">
+    <Filter size={18} className="text-pink-600" />
+  </div>
+</div>
+
+      </div>
+
       {loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
           {Array.from({ length: 6 }).map((_, i) => (
             <BlogSkeleton key={i} />
           ))}
         </div>
-      ) : blogs.length === 0 ? (
+      ) : filteredBlogs.length === 0 ? (
         <p className="text-center text-gray-700 italic text-lg">No blogs available.</p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
-          {blogs.map((blog) => {
+          {filteredBlogs.map((blog) => {
             const publishedDate = new Date(blog.date).toLocaleDateString('en-IN', {
               year: 'numeric',
               month: 'short',
