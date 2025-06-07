@@ -2,24 +2,24 @@ self.addEventListener('push', event => {
   let data = {
     title: 'Notification',
     body: 'You have a new message.',
-    icon: '/favicon.ico',
+    icon: 'https://www.amiverse.in/images/favicon.ico', // FULL URL here
     url: 'https://www.amiverse.in/blog'
   };
 
   if (event.data) {
-    const payload = event.data.json();
-    if (payload.notification) {
-      data = {
-        ...data,
-        ...payload.notification
-      };
-    } else {
-      data = {
-        ...data,
-        ...payload
-      };
+    try {
+      const payload = event.data.json();
+      if (payload.notification) {
+        data = { ...data, ...payload.notification };
+      } else {
+        data = { ...data, ...payload };
+      }
+    } catch (e) {
+      console.error('Push event payload JSON parsing error:', e);
     }
   }
+
+  console.log('Push notification data:', data);
 
   event.waitUntil(
     self.registration.showNotification(data.title, {
@@ -32,8 +32,9 @@ self.addEventListener('push', event => {
 
 self.addEventListener('notificationclick', event => {
   event.notification.close();
-
   const urlToOpen = event.notification.data?.url || 'https://www.amiverse.in/blog';
+
+  console.log('Notification click URL:', urlToOpen);
 
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then(windowClients => {
