@@ -1,9 +1,13 @@
 self.addEventListener('push', event => {
-  const data = event.data.json();
-  const title = data.title || 'New Blog Alert!';
-  const options = {
-    body: data.body,
-    icon: '/icon.png', // optional
-  };
-  event.waitUntil(self.registration.showNotification(title, options));
+  let data = { title: 'Notification', body: 'You have a new message.' };
+  if (event.data) {
+    data = event.data.json();
+  }
+  event.waitUntil(
+    self.registration.showNotification(data.title, {
+      body: data.body,
+      icon: '/icon.png',
+      badge: '/badge.png'
+    })
+  );
 });
