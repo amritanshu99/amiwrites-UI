@@ -5,7 +5,7 @@ import { toast } from 'react-toastify';
 import axios from '../utils/api';
 import Loader from './Loader';
 import { useLocation } from "react-router-dom";
-
+import PushNotificationButton from './PushNotificationButton';
 function parseJwt(token) {
   try {
     const base64Payload = token.split('.')[1];
@@ -129,6 +129,7 @@ const BlogList = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-cyan-300 via-pink-300 to-yellow-200 p-6">
+      <PushNotificationButton/>
       <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
         <h2 className="text-3xl font-bold text-gray-900 text-center sm:text-left">
           Latest Blogs
