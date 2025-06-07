@@ -110,6 +110,7 @@ const BlogList = () => {
 
   useEffect(() => {
     fetchBlogs();
+    document.title = "Amritanshu Mishra's Blogs";
   }, []);
 
   useEffect(() => {

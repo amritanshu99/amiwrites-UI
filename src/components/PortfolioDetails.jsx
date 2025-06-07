@@ -126,7 +126,7 @@ const { pathname } = useLocation();
       document.head.appendChild(link);
     }
     link.href = window.location.href;
-    document.title = "My Portfolio";
+    document.title = "Amritanshu Mishra's Portfolio";
 
     axios
       .get(`https://amiwrites-backend-app-1.onrender.com/api/portfolio`)
