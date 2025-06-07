@@ -21,10 +21,19 @@
     <!-- Theme Color -->
     <meta name="theme-color" content="#000000" />
 
-    <!-- Favicon & Icons -->
-    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
-    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
-    <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico" type="image/x-icon" />
+ <!-- Favicon for all modern browsers -->
+<link rel="icon" type="image/png" sizes="32x32" href="%PUBLIC_URL%/favicon-32x32.png" />
+<link rel="icon" type="image/png" sizes="16x16" href="%PUBLIC_URL%/favicon-16x16.png" />
+
+<!-- Fallback for older browsers -->
+<link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico" type="image/x-icon" />
+
+<!-- Apple Touch Icon for iOS devices -->
+<link rel="apple-touch-icon" sizes="180x180" href="%PUBLIC_URL%/apple-touch-icon.png" />
+
+<!-- Web App Manifest (Optional but recommended) -->
+<link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
