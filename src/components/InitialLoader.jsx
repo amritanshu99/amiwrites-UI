@@ -4,19 +4,22 @@ const InitialLoader = ({ onComplete }) => {
   const [fadeOut, setFadeOut] = useState(false);
 
   useEffect(() => {
-    // Prevent scroll on mobile
-    document.body.style.overflow = 'hidden';
+    // Lock scrolling during initial load
+    document.documentElement.classList.add('no-scroll');
+    document.body.classList.add('no-scroll');
 
-    const fadeOutTimer = setTimeout(() => setFadeOut(true), 5000); // Wait 5s, then fade out
+    const fadeOutTimer = setTimeout(() => setFadeOut(true), 5000);
     const finishTimer = setTimeout(() => {
-      document.body.style.overflow = ''; // Re-enable scroll
+      document.documentElement.classList.remove('no-scroll');
+      document.body.classList.remove('no-scroll');
       onComplete();
-    }, 6500); // Remove after 6.5s total
+    }, 6500);
 
     return () => {
       clearTimeout(fadeOutTimer);
       clearTimeout(finishTimer);
-      document.body.style.overflow = ''; // Clean up
+      document.documentElement.classList.remove('no-scroll');
+      document.body.classList.remove('no-scroll');
     };
   }, [onComplete]);
 
