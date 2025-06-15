@@ -79,7 +79,6 @@ const CATEGORY_PROMPTS_MAP = {
   ],
 };
 
-
 const AIChatHeader = ({ category, setCategory, onPromptClick }) => {
   const [promptsOpen, setPromptsOpen] = useState(false);
   const currentPrompts = CATEGORY_PROMPTS_MAP[category] || [];
@@ -88,13 +87,11 @@ const AIChatHeader = ({ category, setCategory, onPromptClick }) => {
     <>
       {/* Header Bar */}
       <div className="sticky top-[70px] z-40 flex flex-col md:flex-row items-center justify-between gap-4 px-4 py-4 md:px-8 bg-gradient-to-r from-purple-600 via-purple-700 to-purple-800 dark:from-zinc-900 dark:via-zinc-800 dark:to-zinc-900 shadow-md border-b border-purple-700 dark:border-purple-900 rounded-b-xl">
-        {/* Title */}
-        <div className="flex items-center gap-2 text-white text-xl md:text-2xl font-bold">
+        <div className="flex items-center gap-2 text-white text-lg md:text-2xl font-bold flex-shrink-0">
           <Sparkles className="text-yellow-400 animate-pulse" size={26} />
-          <span>AI Chat – Mental Wellness</span>
+          <span className="truncate">AI Chat – Mental Wellness</span>
         </div>
 
-        {/* Category Selector */}
         <div className="flex items-center gap-2 w-full md:w-auto">
           <label
             htmlFor="category"
@@ -117,7 +114,7 @@ const AIChatHeader = ({ category, setCategory, onPromptClick }) => {
         </div>
       </div>
 
-      {/* Quick Tips Toolbar */}
+      {/* Quick Tips Toggle */}
       <div
         onClick={() => setPromptsOpen(!promptsOpen)}
         role="button"
@@ -131,11 +128,11 @@ const AIChatHeader = ({ category, setCategory, onPromptClick }) => {
       {/* Prompt Suggestions */}
       <div
         className={`transition-all duration-500 ease-in-out overflow-hidden bg-white/20 dark:bg-zinc-900/30 backdrop-blur-lg border-b border-purple-700 dark:border-purple-900 rounded-b-xl px-4 md:px-6 ${
-          promptsOpen ? "py-4 max-h-[500px]" : "py-0 max-h-0"
+          promptsOpen ? "py-4 max-h-[600px]" : "py-0 max-h-0"
         }`}
       >
         <div
-          className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 transition-opacity duration-300 ${
+          className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 transition-opacity duration-300 ${
             promptsOpen ? "opacity-100" : "opacity-0 pointer-events-none"
           }`}
         >
@@ -146,7 +143,7 @@ const AIChatHeader = ({ category, setCategory, onPromptClick }) => {
                 onPromptClick(prompt);
                 setPromptsOpen(false);
               }}
-              className="bg-purple-600 hover:bg-purple-700 active:bg-purple-800 text-white text-sm px-4 py-2 rounded-full shadow-md transition whitespace-nowrap"
+              className="bg-purple-600 hover:bg-purple-700 active:bg-purple-800 text-white text-sm md:text-base px-4 py-2 rounded-full shadow-md transition whitespace-normal break-words max-w-full text-left"
             >
               {prompt}
             </button>

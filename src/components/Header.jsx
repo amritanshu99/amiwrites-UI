@@ -107,91 +107,92 @@ export default function Header({ setLoading }) {
   return (
     <>
       <header className="bg-gradient-to-r from-sky-100 via-rose-100 to-lime-100 backdrop-blur-md border-b border-gray-200 shadow-sm sticky top-0 z-50 px-6 py-3 w-full">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <Link
-            to="/"
-            className="text-2xl font-bold tracking-tight hover:scale-105 hover:text-sky-600 transition cursor-pointer select-none"
-          >
-            AmiVerse
-          </Link>
+       <div className="flex flex-wrap justify-between items-center gap-y-4">
+  <Link
+    to="/"
+    className="text-2xl font-bold tracking-tight hover:scale-105 hover:text-sky-600 transition cursor-pointer select-none"
+  >
+    AmiVerse
+  </Link>
 
-          <nav className="hidden md:flex space-x-8">
-            {navLinks.map((link) => (
-              <Link
-                key={link.name}
-                to={link.to}
-                className={`relative text-base font-medium transition duration-300 pb-1 ${
-                  isActive(link.to)
-                    ? "text-sky-700 after:scale-x-100"
-                    : "text-gray-700 hover:text-sky-600"
-                } after:content-[''] after:absolute after:left-0 after:-bottom-1 after:h-[2px] after:w-full after:bg-sky-500 after:scale-x-0 after:origin-left after:transition-transform after:duration-300 hover:after:scale-x-100`}
-              >
-                {link.name}
-              </Link>
-            ))}
-          </nav>
+  <nav className="hidden md:flex flex-wrap gap-x-6">
+    {navLinks.map((link) => (
+      <Link
+        key={link.name}
+        to={link.to}
+        className={`relative text-base font-medium transition duration-300 pb-1 ${
+          isActive(link.to)
+            ? "text-sky-700 after:scale-x-100"
+            : "text-gray-700 hover:text-sky-600"
+        } after:content-[''] after:absolute after:left-0 after:-bottom-1 after:h-[2px] after:w-full after:bg-sky-500 after:scale-x-0 after:origin-left after:transition-transform after:duration-300 hover:after:scale-x-100`}
+      >
+        {link.name}
+      </Link>
+    ))}
+  </nav>
 
-          <div className="flex items-center">
-            {isAuthenticated ? (
-              <div className="relative ml-4" ref={userMenuRef}>
-                <button
-                  onClick={() => setUserMenuOpen((prev) => !prev)}
-                  className="p-2 rounded-full hover:bg-gray-200 transition text-gray-800"
-                  aria-label="User menu"
-                >
-                  <UserCircle size={32} />
-                </button>
+  <div className="flex items-center flex-wrap gap-2">
+    {isAuthenticated ? (
+      <div className="relative" ref={userMenuRef}>
+        <button
+          onClick={() => setUserMenuOpen((prev) => !prev)}
+          className="p-2 rounded-full hover:bg-gray-200 transition text-gray-800"
+          aria-label="User menu"
+        >
+          <UserCircle size={32} />
+        </button>
 
-                <AnimatePresence>
-                  {userMenuOpen && (
-                    <motion.div
-                      key="dropdown"
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.95 }}
-                      transition={{ duration: 0.2 }}
-                      className="absolute right-0 mt-2 w-44 bg-white border border-gray-200 rounded-md shadow-lg z-50 origin-top-right"
-                    >
-                      <div className="px-4 py-2 text-sm text-gray-700 border-b">
-                        Hi, <span className="font-medium">{username}</span>!
-                      </div>
-                      <button
-                        onClick={handleLogout}
-                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
-                      >
-                        <LogOut size={16} />
-                        Logout
-                      </button>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            ) : (
-              <div className="space-x-2 ml-4">
-                <button
-                  onClick={() => setLoginOpen(true)}
-                  className="px-4 py-2 rounded-md bg-sky-600 text-white hover:bg-sky-700 transition shadow-sm"
-                >
-                  Login
-                </button>
-                <button
-                  onClick={() => setSignupOpen(true)}
-                  className="px-4 py-2 rounded-md bg-emerald-600 text-white hover:bg-emerald-700 transition shadow-sm"
-                >
-                  Sign Up
-                </button>
-              </div>
-            )}
-
-            <button
-              onClick={() => setMenuOpen(!menuOpen)}
-              className="md:hidden text-gray-700 hover:text-sky-700 transition ml-3"
-              aria-label="Toggle menu"
+        <AnimatePresence>
+          {userMenuOpen && (
+            <motion.div
+              key="dropdown"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.2 }}
+              className="absolute right-0 mt-2 w-44 bg-white border border-gray-200 rounded-md shadow-lg z-50 origin-top-right"
             >
-              {menuOpen ? <X size={28} /> : <Menu size={28} />}
-            </button>
-          </div>
-        </div>
+              <div className="px-4 py-2 text-sm text-gray-700 border-b">
+                Hi, <span className="font-medium">{username}</span>!
+              </div>
+              <button
+                onClick={handleLogout}
+                className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+              >
+                <LogOut size={16} />
+                Logout
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    ) : (
+      <div className="flex gap-2">
+        <button
+          onClick={() => setLoginOpen(true)}
+          className="px-4 py-2 rounded-md bg-sky-600 text-white hover:bg-sky-700 transition shadow-sm"
+        >
+          Login
+        </button>
+        <button
+          onClick={() => setSignupOpen(true)}
+          className="px-4 py-2 rounded-md bg-emerald-600 text-white hover:bg-emerald-700 transition shadow-sm"
+        >
+          Sign Up
+        </button>
+      </div>
+    )}
+
+    <button
+      onClick={() => setMenuOpen(!menuOpen)}
+      className="md:hidden text-gray-700 hover:text-sky-700 transition"
+      aria-label="Toggle menu"
+    >
+      {menuOpen ? <X size={28} /> : <Menu size={28} />}
+    </button>
+  </div>
+</div>
+
 
         <AnimatePresence>
           {menuOpen && (
