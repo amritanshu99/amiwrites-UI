@@ -9,7 +9,8 @@ module.exports = {
         'fade-in': 'fadeIn 0.3s ease-in-out forwards',
         'fade-in-down': 'fadeInDown 0.4s ease-out both',
         'popup-fade-in': 'popupFadeIn 0.3s ease-out forwards',
-        'spin-slower': 'spin 2s linear infinite', // ✅ Add this line
+        'spin-slower': 'spin 2s linear infinite', // ✅ existing
+        'fade-in-slow': 'fadeInSlow 3s ease-out forwards', // ✅ new
       },
       keyframes: {
         fadeInLeft: {
@@ -38,6 +39,10 @@ module.exports = {
           '0%': { opacity: 0, transform: 'scale(0.9)' },
           '100%': { opacity: 1, transform: 'scale(1)' },
         },
+        fadeInSlow: {
+          '0%': { opacity: 0, transform: 'translateY(20px)' },
+          '100%': { opacity: 1, transform: 'translateY(0)' },
+        }, // ✅ new
       },
     },
   },

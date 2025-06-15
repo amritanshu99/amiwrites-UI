@@ -14,7 +14,7 @@ import {
 import { SiTensorflow, SiOpenai } from "react-icons/si";
 import { SiJavascript, SiExpress, SiMongodb, SiGraphql } from "react-icons/si";
 import { motion, AnimatePresence, useInView } from "framer-motion";
-import Loader from "./Loader";
+import InitialLoader from './InitialLoader'
 import { useLocation } from 'react-router-dom';
 const skillIcons = {
   JavaScript: <SiJavascript className="text-yellow-500" />,
@@ -148,7 +148,7 @@ const { pathname } = useLocation();
     }
   }, [pathname]);
 
-  if (!data) return <Loader />;
+  if (!data) return <InitialLoader />;
 
   const openModal = (title, achievements) => {
     setModalData({ isOpen: true, title, achievements });
