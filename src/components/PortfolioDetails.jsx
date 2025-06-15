@@ -121,8 +121,10 @@ function AchievementsModal({ isOpen, onClose, title, achievements }) {
 export default function Portfolio() {
   const [data, setData] = useState(null);
   const [modalData, setModalData] = useState({ isOpen: false, title: "", achievements: [] });
+   const [showLoader, setShowLoader] = useState(true);
 const { pathname } = useLocation();
-  useEffect(() => {
+ useEffect(() => {
+    // Setup canonical link and title
     let link = document.querySelector("link[rel='canonical']");
     if (!link) {
       link = document.createElement("link");
@@ -132,11 +134,19 @@ const { pathname } = useLocation();
     link.href = window.location.href;
     document.title = "Amritanshu Mishra's Portfolio";
 
+    // Start 3-second loader timer
+    const loaderTimer = setTimeout(() => {
+      setShowLoader(false);
+    }, 1000);
+
+    // Fetch portfolio data
     axios
       .get(`https://amiwrites-backend-app-1.onrender.com/api/portfolio`)
       .then((res) => setData(res.data))
       .catch((err) => console.error("Error fetching portfolio:", err));
-  }, []);
+
+    return () => clearTimeout(loaderTimer);
+  }, [])
    useEffect(() => {
     // Find your scroll container
     const scrollContainer = document.querySelector('.h-screen.overflow-y-scroll.relative');
@@ -148,7 +158,10 @@ const { pathname } = useLocation();
     }
   }, [pathname]);
 
-  if (!data) return <InitialLoader />;
+
+  
+
+  if ((!data || showLoader)) return <InitialLoader />;
 
   const openModal = (title, achievements) => {
     setModalData({ isOpen: true, title, achievements });

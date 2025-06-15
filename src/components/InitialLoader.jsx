@@ -4,8 +4,8 @@ const InitialLoader = ({ onComplete }) => {
   const [fadeOut, setFadeOut] = useState(false);
 
   useEffect(() => {
-    const fadeOutTimer = setTimeout(() => setFadeOut(true), 4000);
-    const finishTimer = setTimeout(onComplete, 5500);
+    const fadeOutTimer = setTimeout(() => setFadeOut(true), 5000); // Wait 5s, then fade out
+    const finishTimer = setTimeout(onComplete, 6500); // Remove after 6.5s total
 
     return () => {
       clearTimeout(fadeOutTimer);
