@@ -49,3 +49,11 @@
   box-shadow: 0 0 8px rgba(59, 130, 246, 1);
 }
 
+/* Prevent side scroll and layout shift */
+.no-scroll {
+  overflow: hidden !important;
+  height: 100% !important;
+  width: 100% !important;
+  position: fixed !important;
+  touch-action: none;
+}
