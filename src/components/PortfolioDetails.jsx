@@ -137,7 +137,7 @@ const { pathname } = useLocation();
     // Start 3-second loader timer
     const loaderTimer = setTimeout(() => {
       setShowLoader(false);
-    }, 1000);
+    }, 1600);
 
     // Fetch portfolio data
     axios
