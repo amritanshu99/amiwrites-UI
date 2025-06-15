@@ -4,12 +4,19 @@ const InitialLoader = ({ onComplete }) => {
   const [fadeOut, setFadeOut] = useState(false);
 
   useEffect(() => {
+    // Prevent scroll on mobile
+    document.body.style.overflow = 'hidden';
+
     const fadeOutTimer = setTimeout(() => setFadeOut(true), 5000); // Wait 5s, then fade out
-    const finishTimer = setTimeout(onComplete, 6500); // Remove after 6.5s total
+    const finishTimer = setTimeout(() => {
+      document.body.style.overflow = ''; // Re-enable scroll
+      onComplete();
+    }, 6500); // Remove after 6.5s total
 
     return () => {
       clearTimeout(fadeOutTimer);
       clearTimeout(finishTimer);
+      document.body.style.overflow = ''; // Clean up
     };
   }, [onComplete]);
 
