@@ -130,28 +130,6 @@ const BlogDetails = () => {
             </svg>
             <span className="hidden sm:inline">Share</span>
           </a>
-
-          {/* LinkedIn */}
-          {/* LinkedIn */}
-          <a
-            href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(
-              currentURL
-            )}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center space-x-2 text-[#0077B5] hover:text-[#005582] transition"
-            aria-label="Share on LinkedIn"
-          >
-            <svg
-              className="w-5 h-5"
-              fill="currentColor"
-              viewBox="0 0 448 512"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path d="M100.28 448H7.4V148.9h92.88zM53.79 108.1C24.09 108.1 0 83.89 0 54.1a53.8 53.8 0 11107.6 0c0 29.79-24.09 54-53.81 54zM447.9 448h-92.68V302.4c0-34.7-.7-79.2-48.3-79.2-48.3 0-55.7 37.7-55.7 76.6V448h-92.7V148.9h89V185h1.3c12.4-23.5 42.5-48.3 87.5-48.3 93.6 0 110.8 61.5 110.8 141.3V448z" />
-            </svg>
-            <span className="hidden sm:inline">LinkedIn</span>
-          </a>
         </div>
       </article>
 
