@@ -178,7 +178,7 @@ const { pathname } = useLocation();
           <section className="flex flex-col sm:flex-row items-center gap-6 sm:gap-10">
             <motion.img
               src={`https://amiwrites-backend-app-1.onrender.com${data.photoUrl}`}
-              alt={data.name}
+              alt="Amritanshu Mishra – Software Developer and Founder of AmiVerse"
               loading="eager"
               width={192}
               height={192}

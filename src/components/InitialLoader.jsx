@@ -55,6 +55,7 @@ const InitialLoader = ({ onComplete }) => {
         <img
           src="/favicon.ico"
           alt="AmiVerse Logo"
+          loading="eager"
           className="mx-auto w-12 h-12 md:w-16 md:h-16 lg:w-20 lg:h-20 opacity-80"
         />
         <h1 className="text-3xl md:text-5xl lg:text-6xl font-cinzel tracking-widest text-white uppercase">
