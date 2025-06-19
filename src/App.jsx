@@ -14,13 +14,10 @@ import ResetPasswordPage from "./pages/ResetPasswordPage";
 import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { initGA, logPageView } from './analytics';
+import { initGA, logPageView } from "./analytics";
 
 const App = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const [darkMode, setDarkMode] = useState(() => {
-    return localStorage.getItem("theme") === "dark";
-  });
 
   const location = useLocation();
 
@@ -33,21 +30,9 @@ const App = () => {
     logPageView(location.pathname + location.search);
   }, [location]);
 
-  // Apply dark mode class to <html>
-  // useEffect(() => {
-  //   const root = document.documentElement;
-  //   if (darkMode) {
-  //     root.classList.add("dark");
-  //     localStorage.setItem("theme", "dark");
-  //   } else {
-  //     root.classList.remove("dark");
-  //     localStorage.setItem("theme", "light");
-  //   }
-  // }, [darkMode]);
-
   return (
-     <div className="h-screen overflow-y-scroll relative">
-      <Header setLoading={setIsLoading} darkMode={darkMode} setDarkMode={setDarkMode} />
+    <div className="h-screen overflow-y-scroll relative">
+      <Header setLoading={setIsLoading} />
       <ToastContainer
         position="top-right"
         autoClose={5000}
