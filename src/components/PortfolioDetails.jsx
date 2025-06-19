@@ -173,8 +173,11 @@ const { pathname } = useLocation();
 
   return (
     <>
-      <main className="min-h-screen bg-gradient-to-br from-cyan-300 via-pink-300 to-yellow-200 p-4 sm:p-8 md:p-12 flex justify-center">
-        <article className="bg-white bg-opacity-90 backdrop-blur-md rounded-xl shadow-lg max-w-4xl w-full p-6 md:p-10">
+   {/* Main page container with background gradient — becomes black in dark mode */}
+    <main className="min-h-screen bg-gradient-to-br from-cyan-300 via-pink-300 to-yellow-200 dark:from-black dark:via-black dark:to-black p-4 sm:p-8 md:p-12 flex justify-center">
+      
+      {/* Article (card) remains white even in dark mode */}
+      <article className="bg-white text-black bg-opacity-90 backdrop-blur-md rounded-xl shadow-lg max-w-4xl w-full p-6 md:p-10">
           <section className="flex flex-col sm:flex-row items-center gap-6 sm:gap-10">
             <motion.img
               src={`https://amiwrites-backend-app-1.onrender.com${data.photoUrl}`}

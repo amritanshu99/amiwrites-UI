@@ -68,8 +68,9 @@ const BlogDetails = () => {
   const currentURL = window.location.href;
 
   return (
-    <main className="min-h-screen bg-slate-50 py-16 px-4 sm:px-6 lg:px-8 flex justify-center">
-      <article className="bg-white max-w-4xl w-full rounded-2xl shadow-xl p-6 sm:p-10 md:p-14 animate-fadeIn border border-slate-200">
+  <main className="min-h-screen bg-slate-50 dark:bg-black py-16 px-4 sm:px-6 lg:px-8 flex justify-center">
+  <article className="bg-white dark:bg-white text-black dark:text-black max-w-4xl w-full rounded-2xl shadow-xl p-6 sm:p-10 md:p-14 animate-fadeIn border border-slate-200">
+
         {/* Title */}
         <h1 className="text-3xl sm:text-4xl font-bold leading-snug text-slate-800 mb-6 font-sans">
           {blog.title}

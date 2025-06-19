@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Send, Sparkles } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import AIChatHeader from "./AIChatHeader";
+
 function decodeJWT(token) {
   try {
     const payload = token.split(".")[1];
@@ -23,7 +24,6 @@ function decodeJWT(token) {
 const AIChat = () => {
   const [token, setToken] = useState(() => localStorage.getItem("token"));
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  // const [username, setUsername] = useState("");
   const [messages, setMessages] = useState([
     { role: "ai", content: "Hello! How can I help you today?" },
   ]);
@@ -36,7 +36,6 @@ const AIChat = () => {
     if (token) {
       const decoded = decodeJWT(token);
       if (decoded?.username) {
-        // setUsername(decoded.username);
         setIsLoggedIn(true);
         setMessages([
           {
@@ -47,7 +46,6 @@ const AIChat = () => {
         return;
       }
     }
-    // setUsername("");
     setIsLoggedIn(false);
     setMessages([{ role: "ai", content: "Hello! How can I help you today?" }]);
   }, [token]);
@@ -80,14 +78,10 @@ const AIChat = () => {
     return () => window.removeEventListener("tokenChanged", onTokenChanged);
   }, []);
 
-  // useEffect(() => {
-  //   messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  // }, [messages]);
-
   const handleSend = async () => {
     if (!input.trim()) return;
 
-    const expertPrompt = `Think like a ${category} expert. Limit answer to 200 words Respond in detail: ${input.trim()}`;
+    const expertPrompt = `Think like a ${category} expert. Limit answer to 200 words. Respond in detail: ${input.trim()}`;
 
     const userMessage = {
       role: "user",
@@ -146,7 +140,7 @@ const AIChat = () => {
     } catch (error) {
       console.error("Error fetching AI response:", error);
       setMessages((prev) => [
-        ...prev.slice(0, -1), // remove "typing"
+        ...prev.slice(0, -1),
         {
           role: "ai",
           content:
@@ -159,20 +153,20 @@ const AIChat = () => {
   if (!isLoggedIn) {
     return (
       <motion.div
-        className="min-h-screen flex flex-col items-center justify-center p-6 bg-gradient-to-br from-cyan-300 via-pink-300 to-yellow-200"
+        className="min-h-screen flex flex-col items-center justify-center p-6 bg-gradient-to-br from-cyan-300 via-pink-300 to-yellow-200 dark:from-black dark:via-black dark:to-black"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.8 }}
       >
-        <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md p-6 sm:p-8 rounded-3xl shadow-2xl max-w-md w-full text-center space-y-6">
+        <div className="bg-white/80 backdrop-blur-md p-6 sm:p-8 rounded-3xl shadow-2xl max-w-md w-full text-center space-y-6">
           <Sparkles
             className="mx-auto text-purple-600 animate-pulse"
             size={36}
           />
-          <h1 className="text-2xl sm:text-3xl font-bold text-zinc-800 dark:text-white">
+          <h1 className="text-2xl sm:text-3xl font-bold text-zinc-800">
             Welcome to AI Chat
           </h1>
-          <p className="text-xs sm:text-sm text-gray-700 dark:text-gray-300">
+          <p className="text-xs sm:text-sm text-gray-700">
             Please log in to start chatting.
           </p>
         </div>
@@ -181,7 +175,7 @@ const AIChat = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-cyan-300 via-pink-300 to-yellow-200">
+    <div className="w-full bg-gradient-to-br from-cyan-300 via-pink-300 to-yellow-200 dark:from-black dark:via-black dark:to-black min-h-screen py-10 px-4 sm:px-6 lg:px-8">
       <div className="mt-8 px-4 max-w-5xl mx-auto w-full">
         <AIChatHeader
           category={category}
@@ -195,7 +189,7 @@ const AIChat = () => {
           transition={{ duration: 0.4 }}
           className="text-center mt-4"
         >
-          <h1 className="text-3xl font-bold text-zinc-800 dark:text-white">
+          <h1 className="text-3xl font-bold text-zinc-800">
             Making Machines Think For YOU
           </h1>
           <span className="text-sm text-gray-600 italic tracking-tight">
@@ -203,14 +197,14 @@ const AIChat = () => {
           </span>
         </motion.div>
 
-        <div className="mt-6 space-y-4 max-h-[50vh] overflow-y-auto p-4 rounded-xl bg-white/80 dark:bg-zinc-900/80 shadow-inner">
+        <div className="mt-6 space-y-4 max-h-[50vh] overflow-y-auto p-4 rounded-xl bg-white/80 shadow-inner">
           {messages.map((msg, idx) => (
             <div
               key={idx}
               className={`whitespace-pre-wrap text-sm sm:text-base ${
                 msg.role === "ai"
-                  ? "text-left text-zinc-800 dark:text-white"
-                  : "text-right text-blue-700 dark:text-blue-300"
+                  ? "text-left text-zinc-800"
+                  : "text-right text-blue-700"
               }`}
             >
               <ReactMarkdown>{msg.content}</ReactMarkdown>
@@ -223,11 +217,11 @@ const AIChat = () => {
           <input
             ref={inputRef}
             type="text"
-            placeholder={`Ask something about ${category}....`}
+            placeholder={`Ask something about ${category}...`}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSend()}
-            className="flex-grow p-3 rounded-full shadow-md focus:outline-none bg-white/90 dark:bg-zinc-800/90 text-white text-sm sm:text-base"
+            className="flex-grow p-3 rounded-full shadow-md focus:outline-none bg-white/90 text-gray-900 text-sm sm:text-base"
           />
           <button
             onClick={handleSend}

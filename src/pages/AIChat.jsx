@@ -1,7 +1,7 @@
 import AIChat from '../components/AIChat';
 
 
-const BlogPage = () => {
+const AIChatPage = () => {
   return (
     <div>
       <AIChat />
@@ -9,4 +9,4 @@ const BlogPage = () => {
   );
 };
 
-export default BlogPage;
+export default AIChatPage;

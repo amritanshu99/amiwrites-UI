@@ -27,6 +27,7 @@ export default function ResetPasswordForm({ onBack, onSubmit }) {
   };
 
   return (
+    <div className="w-full bg-gradient-to-br from-cyan-300 via-pink-300 to-yellow-200 dark:from-black dark:via-black dark:to-black min-h-screen py-10 px-4 sm:px-6 lg:px-8">
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
         <label
@@ -72,5 +73,6 @@ export default function ResetPasswordForm({ onBack, onSubmit }) {
         </button>
       </div>
     </form>
+    </div>
   );
 }

@@ -128,7 +128,8 @@ const BlogList = () => {
     .sort((a, b) => filter === 'latest' ? new Date(b.date) - new Date(a.date) : new Date(a.date) - new Date(b.date));
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-cyan-300 via-pink-300 to-yellow-200 p-6">
+<div className="min-h-screen bg-gradient-to-br from-cyan-300 via-pink-300 to-yellow-200 dark:from-black dark:via-black dark:to-black p-6">
+
       <PushNotificationButton/>
       <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
         <h2 className="text-3xl font-bold text-gray-900 text-center sm:text-left">

@@ -86,7 +86,7 @@ const AIChatHeader = ({ category, setCategory, onPromptClick }) => {
   return (
     <>
       {/* Header Bar */}
-      <div className="sticky top-[70px] z-40 flex flex-col md:flex-row items-center justify-between gap-4 px-4 py-4 md:px-8 bg-gradient-to-r from-purple-600 via-purple-700 to-purple-800 dark:from-zinc-900 dark:via-zinc-800 dark:to-zinc-900 shadow-md border-b border-purple-700 dark:border-purple-900 rounded-b-xl">
+      <div className="sticky top-[70px] z-40 flex flex-col md:flex-row items-center justify-between gap-4 px-4 py-4 md:px-8 bg-gradient-to-r from-purple-600 via-purple-700 to-purple-800 shadow-md border-b border-purple-700 rounded-b-xl">
         <div className="flex items-center gap-2 text-white text-lg md:text-2xl font-bold flex-shrink-0">
           <Sparkles className="text-yellow-400 animate-pulse" size={26} />
           <span className="truncate">AI Chat – Mental Wellness</span>
@@ -103,7 +103,7 @@ const AIChatHeader = ({ category, setCategory, onPromptClick }) => {
             id="category"
             value={category}
             onChange={(e) => setCategory(e.target.value)}
-            className="bg-white dark:bg-zinc-800 bg-opacity-90 text-gray-900 dark:text-white px-4 py-2 rounded-full shadow-sm text-sm md:text-base font-medium focus:outline-none focus:ring-2 focus:ring-purple-400 transition w-full md:w-auto"
+            className="bg-white text-gray-900 px-4 py-2 rounded-full shadow-sm text-sm md:text-base font-medium focus:outline-none focus:ring-2 focus:ring-purple-400 transition w-full md:w-auto"
           >
             {CATEGORIES.map((cat) => (
               <option key={cat} value={cat}>
@@ -119,7 +119,7 @@ const AIChatHeader = ({ category, setCategory, onPromptClick }) => {
         onClick={() => setPromptsOpen(!promptsOpen)}
         role="button"
         aria-expanded={promptsOpen}
-        className="sticky top-[118px] z-30 flex justify-between items-center px-5 py-2 md:px-6 bg-white/40 dark:bg-zinc-900/40 backdrop-blur-md text-purple-900 dark:text-purple-200 font-medium text-sm md:text-base border-b border-purple-700 dark:border-purple-900 rounded-b-lg transition hover:bg-white/50 dark:hover:bg-zinc-800/50 cursor-pointer select-none"
+        className="sticky top-[118px] z-30 flex justify-between items-center px-5 py-2 md:px-6 bg-white/40 backdrop-blur-md text-purple-900 font-medium text-sm md:text-base border-b border-purple-700 rounded-b-lg transition hover:bg-white/50 cursor-pointer select-none"
       >
         <span>Quick Tips</span>
         {promptsOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
@@ -127,7 +127,7 @@ const AIChatHeader = ({ category, setCategory, onPromptClick }) => {
 
       {/* Prompt Suggestions */}
       <div
-        className={`transition-all duration-500 ease-in-out overflow-hidden bg-white/20 dark:bg-zinc-900/30 backdrop-blur-lg border-b border-purple-700 dark:border-purple-900 rounded-b-xl px-4 md:px-6 ${
+        className={`transition-all duration-500 ease-in-out overflow-hidden bg-white/20 backdrop-blur-lg border-b border-purple-700 rounded-b-xl px-4 md:px-6 ${
           promptsOpen ? "py-4 max-h-[600px]" : "py-0 max-h-0"
         }`}
       >

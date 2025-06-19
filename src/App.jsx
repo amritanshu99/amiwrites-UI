@@ -3,7 +3,7 @@ import { Routes, Route, useLocation } from "react-router-dom";
 import Header from "./components/Header";
 import Portfolio from "./pages/Portfolio";
 import BlogPage from "./pages/BlogPage";
-import AIChat from "./pages/AIChat";
+import AIChatPage from "./pages/AIChat";
 import AddBlogDetails from "./pages/AddBlogDetails";
 import BlogsDetails from "./pages/BlogsDetails";
 import Footer from "./components/Footer";
@@ -18,19 +18,36 @@ import { initGA, logPageView } from './analytics';
 
 const App = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const [darkMode, setDarkMode] = useState(() => {
+    return localStorage.getItem("theme") === "dark";
+  });
+
   const location = useLocation();
 
+  // Analytics
   useEffect(() => {
-    initGA(); // Initialize once
+    initGA();
   }, []);
 
   useEffect(() => {
-    logPageView(location.pathname + location.search); // Log on route change
+    logPageView(location.pathname + location.search);
   }, [location]);
 
+  // Apply dark mode class to <html>
+  // useEffect(() => {
+  //   const root = document.documentElement;
+  //   if (darkMode) {
+  //     root.classList.add("dark");
+  //     localStorage.setItem("theme", "dark");
+  //   } else {
+  //     root.classList.remove("dark");
+  //     localStorage.setItem("theme", "light");
+  //   }
+  // }, [darkMode]);
+
   return (
-    <div className="h-screen overflow-y-scroll relative">
-      <Header setLoading={setIsLoading} />
+     <div className="h-screen overflow-y-scroll relative">
+      <Header setLoading={setIsLoading} darkMode={darkMode} setDarkMode={setDarkMode} />
       <ToastContainer
         position="top-right"
         autoClose={5000}
@@ -50,7 +67,7 @@ const App = () => {
         <Routes>
           <Route path="/" element={<Portfolio />} />
           <Route path="/blog" element={<BlogPage />} />
-          <Route path="/ai-chat" element={<AIChat />} />
+          <Route path="/ai-chat" element={<AIChatPage />} />
           <Route
             path="/add-blog"
             element={
