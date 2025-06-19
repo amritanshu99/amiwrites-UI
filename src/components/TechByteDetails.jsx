@@ -83,7 +83,7 @@ function TechNewsCards() {
   return (
   <div className="w-full bg-gradient-to-br from-cyan-300 via-pink-300 to-yellow-200 dark:from-black dark:via-black dark:to-black min-h-screen py-10 px-4 sm:px-6 lg:px-8">
   <section className="max-w-7xl mx-auto">
-        <h1 className="text-3xl font-extrabold text-gray-900 mb-8 text-center">
+        <h1 className="text-3xl font-extrabold text-gray-200 mb-8 text-center">
           Latest Tech News
         </h1>
 
