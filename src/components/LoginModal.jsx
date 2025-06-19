@@ -149,7 +149,7 @@ export default function LoginModal({ isOpen, onClose }) {
                 onChange={(e) => setRememberMe(e.target.checked)}
                 disabled={isLoading}
               />
-              <label htmlFor="rememberMe" className="text-sm text-white">
+              <label htmlFor="rememberMe" className="text-sm text-black">
                 Remember Me
               </label>
             </div>
