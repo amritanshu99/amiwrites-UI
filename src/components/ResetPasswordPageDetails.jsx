@@ -70,7 +70,7 @@ export default function ResetPasswordPageDetails() {
       {loading ? (
         <Loader />
       ) : (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 to-blue-300 px-4">
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 to-blue-300 dark:from-black dark:via-black dark:to-black px-4">
           <div className="max-w-md w-full bg-white p-8 rounded-2xl shadow-xl space-y-6">
             <h2 className="text-2xl font-bold text-center text-blue-700">Reset Your Password</h2>
             <form onSubmit={handleSubmit} className="space-y-4">
