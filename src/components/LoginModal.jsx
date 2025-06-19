@@ -116,7 +116,7 @@ export default function LoginModal({ isOpen, onClose }) {
         ) : (
           <div className="space-y-4 p-2" onKeyDown={handleKeyDown} tabIndex={-1}>
             <div>
-              <label className="block text-sm text-white mb-1">Username</label>
+              <label className="block text-sm text-black mb-1">Username</label>
               <input
                 type="text"
                 className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -129,7 +129,7 @@ export default function LoginModal({ isOpen, onClose }) {
             </div>
 
             <div>
-              <label className="block text-sm text-white mb-1">Password</label>
+              <label className="block text-sm text-black mb-1">Password</label>
               <input
                 type="password"
                 className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
