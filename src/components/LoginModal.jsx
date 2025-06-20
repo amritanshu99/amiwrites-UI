@@ -5,6 +5,7 @@ import ResetPasswordForm from "./ResetPasswordForm";
 import Loader from "./Loader";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { Eye, EyeOff } from "lucide-react";
 
 export default function LoginModal({ isOpen, onClose }) {
   const [username, setUsername] = useState("");
@@ -14,6 +15,7 @@ export default function LoginModal({ isOpen, onClose }) {
   const [info, setInfo] = useState("");
   const [showResetForm, setShowResetForm] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -63,7 +65,9 @@ export default function LoginModal({ isOpen, onClose }) {
       onClose();
     } catch (err) {
       const message =
-        err.response?.data?.message || err.message || "Invalid username or password.";
+        err.response?.data?.message ||
+        err.message ||
+        "Invalid username or password.";
       setError(message);
     } finally {
       setIsLoading(false);
@@ -85,7 +89,9 @@ export default function LoginModal({ isOpen, onClose }) {
       onClose();
     } catch (err) {
       const message =
-        err.response?.data?.message || err.message || "Failed to send reset link.";
+        err.response?.data?.message ||
+        err.message ||
+        "Failed to send reset link.";
       setError(message);
       toast.error("Failed to send reset link.");
     }
@@ -98,7 +104,11 @@ export default function LoginModal({ isOpen, onClose }) {
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={showResetForm ? "Reset Password" : "Login"}>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={showResetForm ? "Reset Password" : "Login"}
+    >
       {showResetForm ? (
         <ResetPasswordForm
           onBack={() => {
@@ -109,7 +119,11 @@ export default function LoginModal({ isOpen, onClose }) {
           onSubmit={handleResetPasswordSubmit}
         />
       ) : (
-        <div className="space-y-5 px-2 py-1" onKeyDown={handleKeyDown} tabIndex={-1}>
+        <div
+          className="space-y-5 px-2 py-1"
+          onKeyDown={handleKeyDown}
+          tabIndex={-1}
+        >
           {/* Username */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
@@ -131,15 +145,25 @@ export default function LoginModal({ isOpen, onClose }) {
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
               Password
             </label>
-            <input
-              type="password"
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-white placeholder-gray-400"
-              placeholder="Enter your password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              autoComplete="current-password"
-              disabled={isLoading}
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                className="w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-white placeholder-gray-400"
+                placeholder="Enter your password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                autoComplete="current-password"
+                disabled={isLoading}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                className="absolute inset-y-0 right-2 flex items-center text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white"
+                tabIndex={-1}
+              >
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
           </div>
 
           {/* Remember Me */}
@@ -152,7 +176,10 @@ export default function LoginModal({ isOpen, onClose }) {
               disabled={isLoading}
               className="accent-blue-600"
             />
-            <label htmlFor="rememberMe" className="text-sm text-gray-800 dark:text-gray-300">
+            <label
+              htmlFor="rememberMe"
+              className="text-sm text-gray-800 dark:text-gray-300"
+            >
               Remember Me
             </label>
           </div>

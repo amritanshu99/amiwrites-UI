@@ -107,11 +107,11 @@ export default function Header({ setLoading }) {
 
   return (
     <>
-      <header className="bg-gradient-to-r from-sky-100 via-pink-100 to-lime-100 dark:bg-[#0f0f0f] border-b border-gray-200 dark:border-gray-700 shadow-sm sticky top-0 z-50 px-6 py-3 w-full">
+      <header className="bg-gradient-to-r from-sky-100 via-pink-100 to-lime-100 dark:bg-gradient-to-br dark:from-gray-900 dark:via-gray-950 dark:to-black border-b border-gray-200 dark:border-gray-700 shadow-md sticky top-0 z-50 px-6 py-3 w-full">
         <div className="flex flex-wrap justify-between items-center gap-y-4">
           <Link
             to="/"
-            className="text-2xl font-bold tracking-tight hover:scale-105 text-gray-900 dark:text-white hover:text-sky-600 dark:hover:text-sky-400 transition cursor-pointer select-none"
+            className="text-2xl font-bold tracking-tight hover:scale-105 text-gray-900 dark:text-white hover:text-sky-600 dark:hover:text-cyan-400 transition cursor-pointer select-none"
           >
             AmiVerse
           </Link>
@@ -123,8 +123,8 @@ export default function Header({ setLoading }) {
                 to={link.to}
                 className={`relative text-base font-medium transition duration-300 pb-1 ${
                   isActive(link.to)
-                    ? "text-sky-700 dark:text-sky-400 after:scale-x-100"
-                    : "text-gray-700 hover:text-sky-600 dark:text-gray-300 dark:hover:text-sky-400"
+                    ? "text-sky-700 dark:text-cyan-300 after:scale-x-100"
+                    : "text-gray-700 hover:text-sky-600 dark:text-gray-300 dark:hover:text-cyan-400"
                 } after:content-[''] after:absolute after:left-0 after:-bottom-1 after:h-[2px] after:w-full after:bg-sky-500 after:scale-x-0 after:origin-left after:transition-transform after:duration-300 hover:after:scale-x-100`}
               >
                 {link.name}
@@ -133,10 +133,9 @@ export default function Header({ setLoading }) {
           </nav>
 
           <div className="flex items-center flex-wrap gap-2">
-            {/* 🌙 Dark Mode Toggle */}
             <button
               onClick={() => setDarkMode((prev) => !prev)}
-              className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition"
+              className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-800 transition"
               aria-label="Toggle Dark Mode"
             >
               {darkMode ? (
@@ -154,7 +153,7 @@ export default function Header({ setLoading }) {
               <div className="relative" ref={userMenuRef}>
                 <button
                   onClick={() => setUserMenuOpen((prev) => !prev)}
-                  className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition text-gray-800 dark:text-white"
+                  className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-800 transition text-gray-800 dark:text-white"
                   aria-label="User menu"
                 >
                   <UserCircle size={32} />
@@ -168,7 +167,7 @@ export default function Header({ setLoading }) {
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.95 }}
                       transition={{ duration: 0.2 }}
-                      className="absolute right-0 mt-2 w-44 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-600 rounded-md shadow-lg z-50 origin-top-right"
+                      className="absolute right-0 mt-2 w-44 bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-50 origin-top-right"
                     >
                       <div className="px-4 py-2 text-sm text-gray-700 dark:text-gray-200 border-b border-gray-200 dark:border-gray-600">
                         Hi, <span className="font-medium">{username}</span>!
@@ -203,7 +202,7 @@ export default function Header({ setLoading }) {
 
             <button
               onClick={() => setMenuOpen(!menuOpen)}
-              className="md:hidden text-gray-700 dark:text-gray-200 hover:text-sky-700 dark:hover:text-sky-400 transition"
+              className="md:hidden text-gray-700 dark:text-gray-200 hover:text-sky-700 dark:hover:text-cyan-400 transition"
               aria-label="Toggle menu"
             >
               {menuOpen ? <X size={28} /> : <Menu size={28} />}
@@ -211,7 +210,6 @@ export default function Header({ setLoading }) {
           </div>
         </div>
 
-        {/* Mobile Nav */}
         <AnimatePresence>
           {menuOpen && (
             <motion.div
@@ -231,7 +229,7 @@ export default function Header({ setLoading }) {
                   className={`block py-2 text-base font-medium rounded-md transition ${
                     isActive(link.to)
                       ? "text-sky-700 bg-sky-100 dark:bg-gray-800"
-                      : "text-gray-700 dark:text-gray-300 hover:text-sky-600 dark:hover:text-sky-400"
+                      : "text-gray-700 dark:text-gray-300 hover:text-sky-600 dark:hover:text-cyan-400"
                   }`}
                 >
                   {link.name}
