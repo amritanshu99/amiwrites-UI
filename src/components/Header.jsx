@@ -107,7 +107,11 @@ export default function Header({ setLoading }) {
 
   return (
     <>
-      <header className="bg-gradient-to-r from-sky-100 via-pink-100 to-lime-100 dark:bg-gradient-to-br dark:from-gray-900 dark:via-gray-950 dark:to-black border-b border-gray-200 dark:border-gray-700 shadow-md sticky top-0 z-50 px-6 py-3 w-full">
+      <header className="bg-gradient-to-r from-sky-100 via-pink-100 to-lime-100 
+       dark:bg-gradient-to-br dark:from-black dark:via-black dark:to-black 
+       border-b border-gray-200 dark:border-gray-600 
+       shadow-[inset_0_-1px_0_rgba(255,255,255,0.05)] 
+       sticky top-0 z-50 px-6 py-3 w-full">
         <div className="flex flex-wrap justify-between items-center gap-y-4">
           <Link
             to="/"
