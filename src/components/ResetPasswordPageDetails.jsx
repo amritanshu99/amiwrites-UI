@@ -8,7 +8,11 @@ import Loader from "./Loader"; // 👈 Import your loader
 export default function ResetPasswordPageDetails() {
   const { id } = useParams(); // token from URL
   const navigate = useNavigate();
-
+  useEffect(() => {
+    if (!id) {
+      navigate("/", { replace: true });
+    }
+  }, [id, navigate]);
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
