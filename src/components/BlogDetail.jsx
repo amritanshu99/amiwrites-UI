@@ -53,33 +53,32 @@ const BlogDetails = () => {
 
   if (loading)
     return (
-      <div className="min-h-screen flex items-center justify-center p-6 bg-slate-50">
+      <div className="min-h-screen flex items-center justify-center p-6 bg-slate-50 dark:bg-zinc-900">
         <Loader />
       </div>
     );
 
   if (!blog)
     return (
-      <div className="min-h-screen flex items-center justify-center p-6 bg-slate-50">
-        <p className="text-red-500 text-xl font-medium">Blog not found.</p>
+      <div className="min-h-screen flex items-center justify-center p-6 bg-slate-50 dark:bg-zinc-900">
+        <p className="text-red-500 dark:text-red-400 text-xl font-medium">Blog not found.</p>
       </div>
     );
 
   const currentURL = window.location.href;
 
   return (
-  <main className="min-h-screen bg-slate-50 dark:bg-black py-16 px-4 sm:px-6 lg:px-8 flex justify-center">
-  <article className="bg-white dark:bg-white text-black dark:text-black max-w-4xl w-full rounded-2xl shadow-xl p-6 sm:p-10 md:p-14 animate-fadeIn border border-slate-200">
-
+    <main className="min-h-screen bg-slate-50 dark:bg-zinc-900 py-16 px-4 sm:px-6 lg:px-8 flex justify-center">
+      <article className="bg-white dark:bg-zinc-800 text-black dark:text-zinc-100 max-w-4xl w-full rounded-2xl shadow-xl p-6 sm:p-10 md:p-14 animate-fadeIn border border-slate-200 dark:border-zinc-700">
         {/* Title */}
-        <h1 className="text-3xl sm:text-4xl font-bold leading-snug text-slate-800 mb-6 font-sans">
+        <h1 className="text-3xl sm:text-4xl font-bold leading-snug text-slate-800 dark:text-cyan-300 mb-6 font-sans">
           {blog.title}
         </h1>
 
         {/* Meta */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between text-slate-500 text-sm mb-10">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between text-slate-500 dark:text-zinc-400 text-sm mb-10">
           <time dateTime={blog.date} className="italic">
-            Published on{" "}
+            Published on {" "}
             {new Date(blog.date).toLocaleDateString(undefined, {
               year: "numeric",
               month: "long",
@@ -87,13 +86,13 @@ const BlogDetails = () => {
             })}
           </time>
           <p className="mt-2 sm:mt-0">
-            By <span className="text-blue-600 font-semibold">Amritanshu</span>
+            By <span className="text-blue-600 dark:text-cyan-400 font-semibold">Amritanshu</span>
           </p>
         </div>
 
         {/* Blog Content */}
         <div
-          className="prose prose-lg max-w-none prose-headings:text-slate-800 prose-a:text-blue-600 prose-a:hover:text-blue-700 prose-img:rounded-xl prose-img:shadow-md"
+          className="prose prose-lg max-w-none dark:prose-invert prose-headings:text-slate-800 dark:prose-headings:text-cyan-300 prose-a:text-blue-600 dark:prose-a:text-cyan-400 prose-a:hover:text-blue-700 dark:prose-a:hover:text-cyan-200 prose-img:rounded-xl prose-img:shadow-md"
           style={{ fontFamily: "'Georgia', serif" }}
           dangerouslySetInnerHTML={{ __html: blog.content }}
         />
@@ -107,7 +106,7 @@ const BlogDetails = () => {
             )}&text=${encodeURIComponent(blog.title)}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center space-x-2 text-blue-500 hover:text-blue-600 transition"
+            className="flex items-center space-x-2 text-blue-500 dark:text-cyan-400 hover:text-blue-600 dark:hover:text-cyan-200 transition"
             aria-label="Share on Twitter"
           >
             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -123,7 +122,7 @@ const BlogDetails = () => {
             )}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center space-x-2 text-blue-600 hover:text-blue-700 transition"
+            className="flex items-center space-x-2 text-blue-600 dark:text-cyan-400 hover:text-blue-700 dark:hover:text-cyan-200 transition"
             aria-label="Share on Facebook"
           >
             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -134,7 +133,6 @@ const BlogDetails = () => {
         </div>
       </article>
 
-      {/* Subtle Animation */}
       <style>{`
         @keyframes fadeIn {
           from { opacity: 0; transform: translateY(12px); }

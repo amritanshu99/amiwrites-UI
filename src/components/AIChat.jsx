@@ -189,9 +189,9 @@ const AIChat = () => {
           transition={{ duration: 0.4 }}
           className="text-center mt-4"
         >
-          <h1 className="text-3xl font-bold text-zinc-800">
+       <h2 className="text-3xl font-bold text-zinc-500">
             Making Machines Think For YOU
-          </h1>
+          </h2>
           <span className="text-sm text-gray-600 italic tracking-tight">
             ⚠️ AI-generated content — use discretion.
           </span>

@@ -6,6 +6,7 @@ import axios from "../utils/api";
 import Loader from "./Loader";
 import { useLocation } from "react-router-dom";
 import PushNotificationButton from "./PushNotificationButton";
+
 function parseJwt(token) {
   try {
     const base64Payload = token.split(".")[1];
@@ -17,9 +18,7 @@ function parseJwt(token) {
 }
 
 const useAuth = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(
-    !!localStorage.getItem("token")
-  );
+  const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem("token"));
   const [username, setUsername] = useState(null);
 
   useEffect(() => {
@@ -48,15 +47,15 @@ const useAuth = () => {
 };
 
 const BlogSkeleton = () => (
-  <div className="bg-white border border-gray-200 shadow rounded-xl p-6 animate-pulse h-[260px] sm:h-[208px] w-full flex flex-col">
-    <div className="h-5 bg-gray-300 rounded w-3/4 mb-2"></div>
-    <div className="h-3 bg-gray-200 rounded w-1/3 mb-4"></div>
+  <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 shadow rounded-xl p-6 animate-pulse h-[260px] sm:h-[208px] w-full flex flex-col">
+    <div className="h-5 bg-gray-300 dark:bg-zinc-700 rounded w-3/4 mb-2"></div>
+    <div className="h-3 bg-gray-200 dark:bg-zinc-600 rounded w-1/3 mb-4"></div>
     <div className="flex-1 space-y-2">
-      <div className="h-3 bg-gray-200 rounded w-full"></div>
-      <div className="h-3 bg-gray-200 rounded w-5/6"></div>
-      <div className="h-3 bg-gray-200 rounded w-4/6"></div>
+      <div className="h-3 bg-gray-200 dark:bg-zinc-600 rounded w-full"></div>
+      <div className="h-3 bg-gray-200 dark:bg-zinc-600 rounded w-5/6"></div>
+      <div className="h-3 bg-gray-200 dark:bg-zinc-600 rounded w-4/6"></div>
     </div>
-    <div className="h-4 bg-gray-300 rounded w-24 mt-4"></div>
+    <div className="h-4 bg-gray-300 dark:bg-zinc-700 rounded w-24 mt-4"></div>
   </div>
 );
 
@@ -73,9 +72,7 @@ const BlogList = () => {
   const fetchBlogs = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(
-        "https://amiwrites-backend-app-1.onrender.com/api/blogs"
-      );
+      const res = await axios.get("https://amiwrites-backend-app-1.onrender.com/api/blogs");
       setBlogs(res.data);
     } catch (error) {
       toast.error("Failed to fetch blogs");
@@ -118,14 +115,9 @@ const BlogList = () => {
   }, []);
 
   useEffect(() => {
-    const scrollContainer = document.querySelector(
-      ".h-screen.overflow-y-scroll.relative"
-    );
+    const scrollContainer = document.querySelector(".h-screen.overflow-y-scroll.relative");
     if (scrollContainer) {
-      scrollContainer.scrollTo({
-        top: 0,
-        behavior: "smooth",
-      });
+      scrollContainer.scrollTo({ top: 0, behavior: "smooth" });
     }
   }, [pathname]);
 
@@ -138,10 +130,11 @@ const BlogList = () => {
     );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-cyan-300 via-pink-300 to-yellow-200 dark:from-black dark:via-black dark:to-black p-6">
+    <div className="min-h-screen bg-gradient-to-br from-cyan-300 via-pink-300 to-yellow-200 dark:from-zinc-900 dark:via-black dark:to-zinc-900 p-4 sm:p-6">
       <PushNotificationButton />
+
       <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
-        <h2 className="text-3xl font-bold text-gray-200 text-center sm:text-left">
+        <h2 className="text-2xl sm:text-3xl font-bold text-zinc-800 dark:text-white text-center sm:text-left">
           Latest Blogs
         </h2>
 
@@ -162,14 +155,14 @@ const BlogList = () => {
           placeholder="🔍 Search by title..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="px-5 py-2 rounded-full border-2 border-white bg-white/80 backdrop-blur-md shadow-lg w-full md:w-2/3 text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-pink-500"
+          className="px-5 py-2 rounded-full border border-gray-300 bg-white/80 dark:bg-zinc-800 text-gray-800 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-pink-500 w-full md:w-2/3"
         />
 
         <div className="relative w-full md:w-auto">
           <select
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
-            className="appearance-none w-full md:w-44 px-5 py-2 pr-10 rounded-full border border-gray-300 bg-white/80 backdrop-blur-md text-gray-700 shadow-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-400 hover:border-pink-400 cursor-pointer"
+            className="appearance-none w-full md:w-44 px-5 py-2 pr-10 rounded-full border border-gray-300 bg-white/80 dark:bg-zinc-800 text-gray-700 dark:text-white shadow-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-pink-500 cursor-pointer"
           >
             <option value="latest">🆕 Latest</option>
             <option value="oldest">📜 Oldest</option>
@@ -187,25 +180,22 @@ const BlogList = () => {
           ))}
         </div>
       ) : filteredBlogs.length === 0 ? (
-        <p className="text-center text-gray-700 italic text-lg">
+        <p className="text-center text-gray-700 dark:text-gray-300 italic text-lg">
           No blogs available.
         </p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
           {filteredBlogs.map((blog) => {
-            const publishedDate = new Date(blog.date).toLocaleDateString(
-              "en-IN",
-              {
-                year: "numeric",
-                month: "short",
-                day: "numeric",
-              }
-            );
+            const publishedDate = new Date(blog.date).toLocaleDateString("en-IN", {
+              year: "numeric",
+              month: "short",
+              day: "numeric",
+            });
 
             return (
               <div
                 key={blog._id}
-                className="bg-white border border-gray-300 shadow-lg rounded-xl p-6 cursor-pointer transition-transform duration-300 ease-in-out hover:scale-105 hover:-translate-y-1 hover:shadow-xl hover:border-pink-500 flex flex-col h-[260px] sm:h-[208px] w-full relative"
+                className="bg-white dark:bg-zinc-900 border border-gray-300 dark:border-zinc-700 shadow-lg rounded-xl p-6 cursor-pointer transition-transform duration-300 ease-in-out hover:scale-105 hover:-translate-y-1 hover:shadow-xl hover:border-pink-500 flex flex-col h-[260px] sm:h-[230px] w-full relative"
                 onClick={() => handleBlogClick(blog._id)}
                 role="button"
                 tabIndex={0}
@@ -213,17 +203,12 @@ const BlogList = () => {
                   if (e.key === "Enter") handleBlogClick(blog._id);
                 }}
               >
-                <h3 className="text-xl font-semibold text-pink-700 truncate hover:underline">
+                <h3 className="text-lg sm:text-xl font-semibold text-pink-700 truncate hover:underline">
                   {blog.title}
                 </h3>
-                <p className="text-sm text-gray-500 mb-1">{publishedDate}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">{publishedDate}</p>
                 <div
-                  className="text-gray-800 text-sm overflow-hidden"
-                  style={{
-                    maxHeight: "70px",
-                    textOverflow: "ellipsis",
-                    overflow: "hidden",
-                  }}
+                  className="text-gray-800 dark:text-gray-200 text-sm overflow-hidden line-clamp-3"
                   dangerouslySetInnerHTML={{
                     __html:
                       blog.content.length > 150
@@ -244,9 +229,7 @@ const BlogList = () => {
                       handleDelete(blog._id);
                     }}
                     disabled={deletingId === blog._id}
-                    title={
-                      deletingId === blog._id ? "Deleting..." : "Delete blog"
-                    }
+                    title={deletingId === blog._id ? "Deleting..." : "Delete blog"}
                   >
                     {deletingId === blog._id ? (
                       <Loader size="small" />
