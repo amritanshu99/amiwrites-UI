@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { Routes, Route, useLocation, useParams, useNavigate } from "react-router-dom";
+import {
+  Routes,
+  Route,
+  useLocation,
+  useParams,
+  useNavigate,
+} from "react-router-dom";
 import axios from "axios";
 import Header from "./components/Header";
 import Portfolio from "./pages/Portfolio";
@@ -16,7 +22,7 @@ import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { initGA, logPageView } from "./analytics";
-
+import { Navigate } from "react-router-dom";
 const ValidateResetToken = () => {
   const { id: token } = useParams();
   const navigate = useNavigate();
@@ -88,7 +94,7 @@ const App = () => {
       <main className="flex-1">
         <Routes>
           <Route path="/" element={<Portfolio />} />
-          <Route path="/blog" element={<BlogPage />} />
+          <Route path="/blogs" element={<BlogPage />} />
           <Route path="/ai-chat" element={<AIChatPage />} />
           <Route
             path="/add-blog"
@@ -101,6 +107,7 @@ const App = () => {
           <Route path="/blogs/:id" element={<BlogsDetails />} />
           <Route path="/tech-byte" element={<TechByte />} />
           <Route path="/reset-password/:id" element={<ValidateResetToken />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
 

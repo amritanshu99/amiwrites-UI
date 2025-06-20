@@ -82,7 +82,7 @@ export default function Header({ setLoading }) {
 
   const navLinks = [
     { name: "My Portfolio", to: "/" },
-    { name: "My Blog", to: "/blog" },
+    { name: "My Blogs", to: "/blogs" },
     { name: "AI Chat", to: "/ai-chat" },
     { name: "Tech Byte", to: "/tech-byte" },
   ];
