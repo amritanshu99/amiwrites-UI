@@ -19,35 +19,26 @@ export default function AddBlog() {
     editorProps: {
       attributes: {
         class:
-          "prose prose-sm sm:prose lg:prose-lg xl:prose-xl max-w-full focus:outline-none min-h-[350px] px-6 py-5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 shadow-sm transition-shadow duration-300 placeholder-gray-400 dark:placeholder-gray-600",
+          "prose prose-sm sm:prose lg:prose-lg xl:prose-xl max-w-full focus:outline-none min-h-[350px] px-6 py-5 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 shadow-sm placeholder-gray-400 dark:placeholder-gray-500 transition",
         placeholder: "Start writing your blog here...",
       },
     },
   });
 
   useEffect(() => {
-    let link = document.querySelector("link[rel='canonical']");
-    if (!link) {
-      link = document.createElement("link");
-      link.rel = "canonical";
-      document.head.appendChild(link);
-    }
-    link.href = window.location.href;
     document.title = "Add Blog";
+    const link = document.querySelector("link[rel='canonical']") || document.createElement("link");
+    link.rel = "canonical";
+    link.href = window.location.href;
+    document.head.appendChild(link);
   }, []);
 
   const handleSubmit = async () => {
-    if (!title.trim()) {
-      setError("Title is required");
-      return;
-    }
+    if (!title.trim()) return setError("Title is required");
     if (!editor) return;
 
     const content = editor.getHTML();
-    if (!content || content === "<p></p>") {
-      setError("Content cannot be empty");
-      return;
-    }
+    if (!content || content === "<p></p>") return setError("Content cannot be empty");
 
     setLoading(true);
     setError(null);
@@ -75,7 +66,6 @@ export default function AddBlog() {
       setSuccess("Blog submitted successfully!");
       setTitle("");
       editor.commands.clearContent();
-
       navigate("/blog");
     } catch (err) {
       setError(err.response?.data?.error || err.message || "Something went wrong");
@@ -91,9 +81,7 @@ export default function AddBlog() {
     setSuccess(null);
   };
 
-  const handleCancel = () => {
-    navigate("/blog");
-  };
+  const handleCancel = () => navigate("/blog");
 
   if (!editor) return null;
 
@@ -108,20 +96,27 @@ export default function AddBlog() {
     { format: "blockquote", label: '"', title: "Blockquote" },
   ];
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-cyan-300 via-pink-300 to-yellow-200 flex items-center justify-center p-4">
-      <div className="max-w-4xl w-full p-8 bg-white dark:bg-gray-900 rounded-xl shadow-lg">
-        <h2 className="text-4xl font-serif font-semibold mb-8 text-gray-900 dark:text-gray-100">
-          Create Blog
-        </h2>
+ return (
+  <div className="min-h-screen flex items-center justify-center p-4
+    bg-gradient-to-br from-sky-100 via-pink-100 to-lime-100 
+    dark:bg-gradient-to-br dark:from-black dark:via-black dark:to-black
+    transition-colors duration-700">
+    
+    <div className="max-w-4xl w-full p-8 bg-white dark:bg-black rounded-xl shadow-lg border border-gray-200 dark:border-gray-800">
+      <h2 className="text-4xl font-serif font-semibold mb-8 text-gray-900 dark:text-white">
+        Create Blog
+      </h2>
 
-        <input
-          type="text"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder="Blog Title"
-          className="w-full mb-8 px-6 py-4 rounded-lg border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-2xl font-semibold tracking-wide placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:ring-4 focus:ring-blue-500 transition"
-        />
+      <input
+        type="text"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        placeholder="Blog Title"
+        className="w-full mb-8 px-6 py-4 rounded-lg border border-gray-300 dark:border-gray-700 
+          bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white 
+          placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none 
+          focus:ring-4 focus:ring-blue-500 transition"
+      />
 
         <div className="flex flex-wrap gap-3 mb-6">
           {toolbarButtons.map(({ format, label, title, level }) => {
@@ -145,9 +140,7 @@ export default function AddBlog() {
                   } else if (format === "blockquote") {
                     editor.toggleBlockquote().run();
                   } else {
-                    editor[
-                      `toggle${format.charAt(0).toUpperCase() + format.slice(1)}`
-                    ]().run();
+                    editor[`toggle${format.charAt(0).toUpperCase() + format.slice(1)}`]().run();
                   }
                 }}
                 className={`px-4 py-2 rounded-lg border font-semibold transition 
@@ -165,18 +158,11 @@ export default function AddBlog() {
 
         <EditorContent editor={editor} />
 
-        {error && (
-          <p className="mt-6 text-red-600 dark:text-red-400 font-medium text-lg">
-            {error}
-          </p>
-        )}
+        {error && <p className="mt-6 text-red-600 dark:text-red-400 font-medium text-lg">{error}</p>}
         {success && (
-          <p className="mt-6 text-green-600 dark:text-green-400 font-medium text-lg">
-            {success}
-          </p>
+          <p className="mt-6 text-green-600 dark:text-green-400 font-medium text-lg">{success}</p>
         )}
 
-        {/* Action Buttons */}
         <div className="flex flex-wrap justify-end gap-4 mt-10">
           <button
             onClick={handleClear}

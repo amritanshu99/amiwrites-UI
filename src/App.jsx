@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Routes, Route, useLocation } from "react-router-dom";
+import { Routes, Route, useLocation, useParams, useNavigate } from "react-router-dom";
+import axios from "axios";
 import Header from "./components/Header";
 import Portfolio from "./pages/Portfolio";
 import BlogPage from "./pages/BlogPage";
@@ -12,16 +13,52 @@ import ContactMeButton from "./components/ContactMeButton";
 import Loader from "./components/Loader";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
-import { ToastContainer } from "react-toastify";
+import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { initGA, logPageView } from "./analytics";
 
+const ValidateResetToken = () => {
+  const { id: token } = useParams();
+  const navigate = useNavigate();
+  const [isValidating, setIsValidating] = useState(true);
+
+  useEffect(() => {
+    const validateToken = async () => {
+      try {
+        const res = await axios.get(
+          `https://amiwrites-backend-app-1.onrender.com/api/auth/validate-reset-token/${token}`
+        );
+
+        if (res.data.valid) {
+          setIsValidating(false);
+        } else {
+          toast.error("Invalid or expired reset link.");
+          navigate("/");
+        }
+      } catch (err) {
+        toast.error("Invalid or expired reset link.");
+        navigate("/");
+      }
+    };
+
+    validateToken();
+  }, [token, navigate]);
+
+  if (isValidating) {
+    return (
+      <div className="min-h-screen flex justify-center items-center">
+        <Loader />
+      </div>
+    );
+  }
+
+  return <ResetPasswordPage token={token} />;
+};
+
 const App = () => {
   const [isLoading, setIsLoading] = useState(false);
-
   const location = useLocation();
 
-  // Analytics
   useEffect(() => {
     initGA();
   }, []);
@@ -63,7 +100,7 @@ const App = () => {
           />
           <Route path="/blogs/:id" element={<BlogsDetails />} />
           <Route path="/tech-byte" element={<TechByte />} />
-          <Route path="/reset-password/:id" element={<ResetPasswordPage />} />
+          <Route path="/reset-password/:id" element={<ValidateResetToken />} />
         </Routes>
       </main>
 
