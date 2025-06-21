@@ -3,7 +3,7 @@ self.addEventListener('push', event => {
     title: 'Notification',
     body: 'You have a new message.',
     icon: 'https://www.amiverse.in/images/favicon.ico', // FULL URL here
-    url: 'https://www.amiverse.in/blog'
+    url: 'https://www.amiverse.in/blogs'
   };
 
   if (event.data) {

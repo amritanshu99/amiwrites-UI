@@ -66,7 +66,7 @@ export default function AddBlog() {
       setSuccess("Blog submitted successfully!");
       setTitle("");
       editor.commands.clearContent();
-      navigate("/blog");
+      navigate("/blogs");
     } catch (err) {
       setError(err.response?.data?.error || err.message || "Something went wrong");
     } finally {
