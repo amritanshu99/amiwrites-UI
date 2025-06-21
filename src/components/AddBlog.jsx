@@ -81,7 +81,7 @@ export default function AddBlog() {
     setSuccess(null);
   };
 
-  const handleCancel = () => navigate("/blog");
+  const handleCancel = () => navigate("/blogs");
 
   if (!editor) return null;
 
