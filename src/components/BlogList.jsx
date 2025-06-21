@@ -17,7 +17,9 @@ function parseJwt(token) {
 }
 
 const useAuth = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem("token"));
+  const [isAuthenticated, setIsAuthenticated] = useState(
+    !!localStorage.getItem("token")
+  );
   const [username, setUsername] = useState(null);
 
   useEffect(() => {
@@ -63,94 +65,113 @@ const BlogList = () => {
   const loaderRef = useRef(null);
   const navigate = useNavigate();
   const { pathname } = useLocation();
-const fetchedPagesRef = useRef(new Set());
-const fetchBlogs = async (pageNumber) => {
-  if (loading || fetchedPagesRef.current.has(pageNumber)) return;
+  const fetchedPagesRef = useRef(new Set());
+  const fetchBlogs = async (pageNumber) => {
+    if (loading || fetchedPagesRef.current.has(pageNumber)) return;
 
-  setLoading(true);
-  try {
-    const res = await axios.get(`/api/blogs?page=${pageNumber}&limit=9`);
-    if (res.data.blogs && res.data.blogs.length > 0) {
-      setBlogs((prev) => {
-        const newBlogs = res.data.blogs.filter(
-          (newBlog) => !prev.some((b) => b._id === newBlog._id)
-        );
-        return [...prev, ...newBlogs];
-      });
-      fetchedPagesRef.current.add(pageNumber);
-      setHasMore(res.data.hasMore);
-    } else {
-      setHasMore(false);
-    }
-  } catch {
-    toast.error("Failed to fetch blogs");
-  } finally {
-    setLoading(false);
-  }
-};
-
-useEffect(() => {
-  fetchBlogs(page);
-}, [page]);
-
-const observerRef = useRef();
-
-const handleObserver = useCallback(
-  (entries) => {
-    const target = entries[0];
-    if (target.isIntersecting && hasMore && !loading) {
-      setPage((prev) => prev + 1);
-    }
-  },
-  [hasMore, loading]
-);
-
-useEffect(() => {
-  if (observerRef.current) observerRef.current.disconnect();
-  observerRef.current = new IntersectionObserver(handleObserver, { threshold: 1.0 });
-
-  if (loaderRef.current) observerRef.current.observe(loaderRef.current);
-
-  return () => {
-    if (observerRef.current && loaderRef.current) {
-      observerRef.current.unobserve(loaderRef.current);
+    setLoading(true);
+    try {
+      const res = await axios.get(`/api/blogs?page=${pageNumber}&limit=10`);
+      if (res.data.blogs && res.data.blogs.length > 0) {
+        setBlogs((prev) => {
+          const newBlogs = res.data.blogs.filter(
+            (newBlog) => !prev.some((b) => b._id === newBlog._id)
+          );
+          return [...prev, ...newBlogs];
+        });
+        fetchedPagesRef.current.add(pageNumber);
+        setHasMore(res.data.hasMore);
+      } else {
+        setHasMore(false);
+      }
+    } catch {
+      toast.error("Failed to fetch blogs");
+    } finally {
+      setLoading(false);
+      resetObserver(); // re-attach observer for next scroll
     }
   };
-}, [handleObserver]);
+
+  useEffect(() => {
+    fetchBlogs(page);
+  }, [page]);
+
+  const observerRef = useRef();
+  const resetObserver = () => {
+    if (observerRef.current && loaderRef.current) {
+      observerRef.current.unobserve(loaderRef.current);
+      observerRef.current.observe(loaderRef.current);
+    }
+  };
+
+  const handleObserver = useCallback(
+    (entries) => {
+      const target = entries[0];
+      if (target.isIntersecting && hasMore && !loading) {
+        setPage((prev) => prev + 1);
+      }
+    },
+    [hasMore, loading]
+  );
+
+  useEffect(() => {
+    if (observerRef.current) observerRef.current.disconnect();
+    observerRef.current = new IntersectionObserver(handleObserver, {
+      threshold: 1.0,
+    });
+
+    if (loaderRef.current) observerRef.current.observe(loaderRef.current);
+
+    return () => {
+      if (observerRef.current && loaderRef.current) {
+        observerRef.current.unobserve(loaderRef.current);
+      }
+    };
+  }, [handleObserver]);
 
   useEffect(() => {
     document.title = "Amritanshu Mishra's Blogs";
   }, []);
 
   useEffect(() => {
-    const scrollContainer = document.querySelector(".h-screen.overflow-y-scroll.relative");
-    if (scrollContainer) scrollContainer.scrollTo({ top: 0, behavior: "smooth" });
+    const scrollContainer = document.querySelector(
+      ".h-screen.overflow-y-scroll.relative"
+    );
+    if (scrollContainer)
+      scrollContainer.scrollTo({ top: 0, behavior: "smooth" });
   }, [pathname]);
 
-  const handleBlogClick = id => navigate(`/blogs/${id}`);
+  const handleBlogClick = (id) => navigate(`/blogs/${id}`);
 
-  const handleDelete = async id => {
-    const token = localStorage.getItem("token");
-    if (!token) return toast.error("Login required to delete blog");
+const handleDelete = async (id) => {
+  const token = localStorage.getItem("token");
+  if (!token) return toast.error("Login required to delete blog");
 
-    setDeletingId(id);
-    try {
-      await axios.delete(`/api/blogs/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setBlogs(prev => prev.filter(blog => blog._id !== id));
-      toast.success("Blog deleted");
-    } catch {
-      toast.error("Failed to delete blog");
-    } finally {
-      setDeletingId(null);
-    }
-  };
+  setDeletingId(id);
+  try {
+    await axios.delete(`/api/blogs/${id}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    toast.success("Blog deleted");
+
+    // Reset everything to fetch fresh
+    fetchedPagesRef.current = new Set();
+    setBlogs([]);
+    setPage(1);
+    setHasMore(true);
+  } catch {
+    toast.error("Failed to delete blog");
+  } finally {
+    setDeletingId(null);
+  }
+};
+
 
   const handleAddBlog = () => navigate("/add-blog");
 
   const filteredBlogs = blogs
-    .filter(blog => blog.title.toLowerCase().includes(search.toLowerCase()))
+    .filter((blog) => blog.title.toLowerCase().includes(search.toLowerCase()))
     .sort((a, b) =>
       filter === "latest"
         ? new Date(b.date) - new Date(a.date)
@@ -207,12 +228,15 @@ useEffect(() => {
         </p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
-          {filteredBlogs.map(blog => {
-            const publishedDate = new Date(blog.date).toLocaleDateString("en-IN", {
-              year: "numeric",
-              month: "short",
-              day: "numeric",
-            });
+          {filteredBlogs.map((blog) => {
+            const publishedDate = new Date(blog.date).toLocaleDateString(
+              "en-IN",
+              {
+                year: "numeric",
+                month: "short",
+                day: "numeric",
+              }
+            );
 
             return (
               <div
@@ -221,18 +245,23 @@ useEffect(() => {
                 onClick={() => handleBlogClick(blog._id)}
                 role="button"
                 tabIndex={0}
-                onKeyDown={(e) => e.key === "Enter" && handleBlogClick(blog._id)}
+                onKeyDown={(e) =>
+                  e.key === "Enter" && handleBlogClick(blog._id)
+                }
               >
                 <h3 className="text-lg sm:text-xl font-semibold text-pink-700 truncate hover:underline">
                   {blog.title}
                 </h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">{publishedDate}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">
+                  {publishedDate}
+                </p>
                 <div
                   className="text-gray-800 dark:text-gray-200 text-sm overflow-hidden line-clamp-3"
                   dangerouslySetInnerHTML={{
-                    __html: blog.content.length > 150
-                      ? blog.content.slice(0, 150) + "..."
-                      : blog.content,
+                    __html:
+                      blog.content.length > 150
+                        ? blog.content.slice(0, 150) + "..."
+                        : blog.content,
                   }}
                 />
                 <span className="text-pink-600 mt-auto font-semibold hover:text-pink-800 text-sm">
@@ -248,9 +277,15 @@ useEffect(() => {
                       handleDelete(blog._id);
                     }}
                     disabled={deletingId === blog._id}
-                    title={deletingId === blog._id ? "Deleting..." : "Delete blog"}
+                    title={
+                      deletingId === blog._id ? "Deleting..." : "Delete blog"
+                    }
                   >
-                    {deletingId === blog._id ? <Loader size="small" /> : <Trash2 size={20} />}
+                    {deletingId === blog._id ? (
+                      <Loader size="small" />
+                    ) : (
+                      <Trash2 size={20} />
+                    )}
                   </button>
                 )}
               </div>
@@ -261,7 +296,9 @@ useEffect(() => {
 
       {loading && (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 mt-6">
-          {Array.from({ length: 3 }).map((_, i) => <BlogSkeleton key={i} />)}
+          {Array.from({ length: 3 }).map((_, i) => (
+            <BlogSkeleton key={i} />
+          ))}
         </div>
       )}
 
