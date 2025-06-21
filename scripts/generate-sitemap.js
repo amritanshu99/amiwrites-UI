@@ -7,7 +7,7 @@ async function generateSitemap() {
 
   const urls = [
     { url: '/', changefreq: 'daily', priority: 1.0 },
-    { url: '/blog', changefreq: 'weekly', priority: 0.9 },
+    { url: '/blogs', changefreq: 'weekly', priority: 0.9 },
     { url: '/ai-chat', changefreq: 'monthly', priority: 0.7 },
     { url: '/add-blog', changefreq: 'monthly', priority: 0.7 },
     { url: '/tech-byte', changefreq: 'weekly', priority: 0.8 },
