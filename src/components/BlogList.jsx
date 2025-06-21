@@ -66,48 +66,51 @@ const BlogList = () => {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const fetchedPagesRef = useRef(new Set());
-  const fetchBlogs = async (
-    pageNumber,
-    currentSearch = search,
-    currentFilter = filter
-  ) => {
-    if (
-      loading ||
-      fetchedPagesRef.current.has(
-        `${pageNumber}-${currentSearch}-${currentFilter}`
-      )
-    )
-      return;
+const fetchBlogs = async (
+  pageNumber,
+  currentSearch = search,
+  currentFilter = filter
+) => {
+  const cacheKey = `${pageNumber}-${currentSearch}-${currentFilter}`;
 
-    setLoading(true);
-    try {
-      const res = await axios.get(
-        `/api/blogs?page=${pageNumber}&limit=10&search=${encodeURIComponent(
-          currentSearch
-        )}&sort=${currentFilter}`
-      );
+  if (loading || fetchedPagesRef.current.has(cacheKey)) return;
 
-      if (res.data.blogs && res.data.blogs.length > 0) {
-        setBlogs((prev) => {
-          const newBlogs = res.data.blogs.filter(
-            (newBlog) => !prev.some((b) => b._id === newBlog._id)
-          );
-          return [...prev, ...newBlogs];
-        });
-        fetchedPagesRef.current.add(
-          `${pageNumber}-${currentSearch}-${currentFilter}`
-        );
-        setHasMore(res.data.hasMore);
-      } else {
-        setHasMore(false);
-      }
-    } catch {
-      toast.error("Failed to fetch blogs");
-    } finally {
-      setLoading(false);
-      resetObserver();
+  setLoading(true);
+  try {
+    const res = await axios.get(
+      `/api/blogs?page=${pageNumber}&limit=10&search=${encodeURIComponent(
+        currentSearch
+      )}&sort=${currentFilter}`
+    );
+
+    if (res.data.blogs && res.data.blogs.length > 0) {
+      setBlogs((prev) => {
+        // Reset list if pageNumber is 1 (new search/filter)
+        const updatedBlogs =
+          pageNumber === 1
+            ? res.data.blogs
+            : [
+                ...prev,
+                ...res.data.blogs.filter(
+                  (newBlog) => !prev.some((b) => b._id === newBlog._id)
+                ),
+              ];
+        return updatedBlogs;
+      });
+
+      fetchedPagesRef.current.add(cacheKey);
+      setHasMore(res.data.hasMore);
+    } else {
+      setHasMore(false);
     }
-  };
+  } catch {
+    toast.error("Failed to fetch blogs");
+  } finally {
+    setLoading(false);
+    resetObserver();
+  }
+};
+
   useEffect(() => {
     fetchBlogs(page, search, filter);
   }, [page, search, filter]);
