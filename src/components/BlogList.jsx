@@ -143,30 +143,32 @@ const BlogList = () => {
 
   const handleBlogClick = (id) => navigate(`/blogs/${id}`);
 
-const handleDelete = async (id) => {
-  const token = localStorage.getItem("token");
-  if (!token) return toast.error("Login required to delete blog");
+  const handleDelete = async (id) => {
+    const token = localStorage.getItem("token");
+    if (!token) return toast.error("Login required to delete blog");
 
-  setDeletingId(id);
-  try {
-    await axios.delete(`/api/blogs/${id}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    setDeletingId(id);
+    try {
+      await axios.delete(`/api/blogs/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-    toast.success("Blog deleted");
+      toast.success("Blog deleted");
 
-    // Reset everything to fetch fresh
-    fetchedPagesRef.current = new Set();
-    setBlogs([]);
-    setPage(1);
-    setHasMore(true);
-  } catch {
-    toast.error("Failed to delete blog");
-  } finally {
-    setDeletingId(null);
-  }
-};
+      // Reset state
+      fetchedPagesRef.current = new Set();
+      setBlogs([]);
+      setPage(1);
+      setHasMore(true);
 
+      // ✅ Trigger immediate fresh fetch for page 1
+      fetchBlogs(1);
+    } catch {
+      toast.error("Failed to delete blog");
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   const handleAddBlog = () => navigate("/add-blog");
 
