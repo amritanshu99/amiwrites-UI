@@ -66,31 +66,35 @@ const BlogList = () => {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const fetchedPagesRef = useRef(new Set());
-  const fetchBlogs = async (pageNumber) => {
-    if (loading || fetchedPagesRef.current.has(pageNumber)) return;
+const fetchBlogs = async (pageNumber) => {
+  if (loading || fetchedPagesRef.current.has(pageNumber)) return;
 
-    setLoading(true);
-    try {
-      const res = await axios.get(`/api/blogs?page=${pageNumber}&limit=10`);
-      if (res.data.blogs && res.data.blogs.length > 0) {
-        setBlogs((prev) => {
-          const newBlogs = res.data.blogs.filter(
-            (newBlog) => !prev.some((b) => b._id === newBlog._id)
-          );
-          return [...prev, ...newBlogs];
-        });
-        fetchedPagesRef.current.add(pageNumber);
-        setHasMore(res.data.hasMore);
-      } else {
-        setHasMore(false);
-      }
-    } catch {
-      toast.error("Failed to fetch blogs");
-    } finally {
-      setLoading(false);
-      resetObserver(); // re-attach observer for next scroll
+  setLoading(true);
+  try {
+    const res = await axios.get(
+      `/api/blogs?page=${pageNumber}&limit=10&search=${encodeURIComponent(search)}&sort=${filter}`
+    );
+
+    if (res.data.blogs && res.data.blogs.length > 0) {
+      setBlogs((prev) => {
+        const newBlogs = res.data.blogs.filter(
+          (newBlog) => !prev.some((b) => b._id === newBlog._id)
+        );
+        return [...prev, ...newBlogs];
+      });
+      fetchedPagesRef.current.add(pageNumber);
+      setHasMore(res.data.hasMore);
+    } else {
+      setHasMore(false);
     }
-  };
+  } catch {
+    toast.error("Failed to fetch blogs");
+  } finally {
+    setLoading(false);
+    resetObserver();
+  }
+};
+
 
   useEffect(() => {
     fetchBlogs(page);
@@ -169,16 +173,19 @@ const BlogList = () => {
       setDeletingId(null);
     }
   };
+  
+  useEffect(() => {
+  fetchedPagesRef.current = new Set();
+  setBlogs([]);
+  setPage(1);
+  setHasMore(true);
+}, [search, filter]);
+
 
   const handleAddBlog = () => navigate("/add-blog");
 
   const filteredBlogs = blogs
-    .filter((blog) => blog.title.toLowerCase().includes(search.toLowerCase()))
-    .sort((a, b) =>
-      filter === "latest"
-        ? new Date(b.date) - new Date(a.date)
-        : new Date(a.date) - new Date(b.date)
-    );
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-cyan-300 via-pink-300 to-yellow-200 dark:from-zinc-900 dark:via-black dark:to-zinc-900 p-4 sm:p-6">
