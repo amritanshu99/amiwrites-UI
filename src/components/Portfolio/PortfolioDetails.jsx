@@ -34,6 +34,14 @@ const skillIcons = {
   ML: <SiTensorflow className="text-orange-500" />,
 };
 
+const socialColors = {
+  FaLinkedin: "hover:text-[#0077b5]",     // LinkedIn blue
+  FaGithub: "hover:text-[#333]",          // GitHub dark gray
+  FaInstagram: "hover:text-[#e4405f]",    // Instagram pink
+  FaFacebook: "hover:text-[#1877f2]",     // Facebook blue
+};
+
+
 const Tooltip = ({ children, content }) => {
   const [visible, setVisible] = React.useState(false);
 
@@ -161,22 +169,29 @@ export default function Portfolio() {
                 <p>✉️ {data.email}</p>
                 <p>📞 {data.phone}</p>
               </div>
-              <nav className="flex justify-center sm:justify-start gap-6 mt-5 text-2xl">
-                {[FaLinkedin, FaGithub, FaInstagram, FaFacebook].map((Icon, i) => (
-                  <motion.a
-                    key={i}
-                    href={Object.values(data.socialLinks)[i]}
-                    target="_blank"
-                    rel="noreferrer"
-                    aria-label={Icon.name}
-                    whileHover={{ scale: 1.15 }}
-                    transition={{ type: "spring", stiffness: 300 }}
-                    className="cursor-pointer text-cyan-600 dark:text-cyan-400 hover:text-cyan-800 dark:hover:text-white transition-colors"
-                  >
-                    <Icon />
-                  </motion.a>
-                ))}
-              </nav>
+       <nav className="flex justify-center sm:justify-start gap-6 mt-5 text-2xl">
+  {[FaLinkedin, FaGithub, FaInstagram, FaFacebook].map((Icon, i) => {
+    const iconName = Icon.displayName || Icon.name;
+    const socialLink = Object.values(data.socialLinks)[i];
+    const hoverClass = socialColors[iconName] || "hover:text-cyan-800";
+
+    return (
+      <motion.a
+        key={i}
+        href={socialLink}
+        target="_blank"
+        rel="noreferrer"
+        aria-label={iconName}
+        whileHover={{ scale: 1.15 }}
+        transition={{ type: "spring", stiffness: 300 }}
+        className={`cursor-pointer text-cyan-600 dark:text-cyan-400 transition-colors ${hoverClass}`}
+      >
+        <Icon />
+      </motion.a>
+    );
+  })}
+</nav>
+
             </div>
           </section>
 
