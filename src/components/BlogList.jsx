@@ -5,7 +5,7 @@ import { toast } from "react-toastify";
 import axios from "../utils/api";
 import Loader from "./Loader";
 import PushNotificationButton from "./PushNotificationButton";
-
+import { useDebounce } from "../hooks/useDebounce";
 function parseJwt(token) {
   try {
     const base64Payload = token.split(".")[1];
@@ -65,39 +65,34 @@ const BlogList = () => {
   const loaderRef = useRef(null);
   const navigate = useNavigate();
   const { pathname } = useLocation();
+  const resetRef = useRef(false);
   const fetchedPagesRef = useRef(new Set());
-const fetchBlogs = async (
-  pageNumber,
-  currentSearch = search,
-  currentFilter = filter
-) => {
-  const cacheKey = `${pageNumber}-${currentSearch}-${currentFilter}`;
+  const debouncedSearch = useDebounce(search, 500); // 👈 Debounced search
+
+const fetchBlogs = async (pageNumber, currentSearch, currentFilter) => {
+  // Ensure fallback only if explicitly not passed
+  const searchQuery = currentSearch ?? "";
+  const sortOrder = currentFilter ?? "latest";
+
+  const cacheKey = `${pageNumber}-${searchQuery}-${sortOrder}`;
 
   if (loading || fetchedPagesRef.current.has(cacheKey)) return;
 
   setLoading(true);
   try {
     const res = await axios.get(
-      `/api/blogs?page=${pageNumber}&limit=10&search=${encodeURIComponent(
-        currentSearch
-      )}&sort=${currentFilter}`
+      `/api/blogs?page=${pageNumber}&limit=10&search=${encodeURIComponent(searchQuery)}&sort=${sortOrder}`
     );
 
     if (res.data.blogs && res.data.blogs.length > 0) {
-      setBlogs((prev) => {
-        // Reset list if pageNumber is 1 (new search/filter)
-        const updatedBlogs =
-          pageNumber === 1
-            ? res.data.blogs
-            : [
-                ...prev,
-                ...res.data.blogs.filter(
-                  (newBlog) => !prev.some((b) => b._id === newBlog._id)
-                ),
-              ];
-        return updatedBlogs;
-      });
-
+      setBlogs((prev) =>
+        pageNumber === 1
+          ? res.data.blogs
+          : [
+              ...prev,
+              ...res.data.blogs.filter((b) => !prev.some((p) => p._id === b._id)),
+            ]
+      );
       fetchedPagesRef.current.add(cacheKey);
       setHasMore(res.data.hasMore);
     } else {
@@ -111,9 +106,7 @@ const fetchBlogs = async (
   }
 };
 
-  useEffect(() => {
-    fetchBlogs(page, search, filter);
-  }, [page, search, filter]);
+
 
   const observerRef = useRef();
   const resetObserver = () => {
@@ -189,12 +182,29 @@ const fetchBlogs = async (
     }
   };
 
-  useEffect(() => {
-    fetchedPagesRef.current = new Set(); // Clear cache tracking
-    setBlogs([]);
-    setPage(1);
-    setHasMore(true);
-  }, [search, filter]);
+  // 🔁 Reset on search/filter
+useEffect(() => {
+  resetRef.current = true;
+  setBlogs([]);
+  setHasMore(true);
+  fetchedPagesRef.current = new Set();
+  setPage(1);
+}, [debouncedSearch, filter]); // 👈 Use debouncedSearch instead of search
+
+
+  // 🔁 Fetch on page change
+// 🔁 Fetch on page change
+useEffect(() => {
+  if (resetRef.current) {
+    fetchBlogs(1, debouncedSearch, filter); // ✅ Use debounced value
+    resetRef.current = false;
+  } else {
+    fetchBlogs(page, debouncedSearch, filter); // ✅ Use debounced value
+  }
+}, [page, debouncedSearch, filter]); // ✅ Also add `debouncedSearch` and `filter` as dependencies
+
+
+
 
   const handleAddBlog = () => navigate("/add-blog");
 
