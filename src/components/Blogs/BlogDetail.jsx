@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useLocation } from "react-router-dom";
-import axios from "../utils/api";
-import Loader from "./Loader";
+import axios from "../../utils/api";
+import Loader from "../Loader/Loader";
 
 const BlogDetails = () => {
   const { id } = useParams();

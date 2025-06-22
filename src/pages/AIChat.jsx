@@ -1,4 +1,4 @@
-import AIChat from '../components/AIChat';
+import AIChat from '../components/AI-Chat/AIChat';
 
 
 const AIChatPage = () => {

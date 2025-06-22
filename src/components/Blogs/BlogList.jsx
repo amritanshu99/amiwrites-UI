@@ -2,10 +2,10 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Trash2, Plus, Filter } from "lucide-react";
 import { toast } from "react-toastify";
-import axios from "../utils/api";
-import Loader from "./Loader";
-import PushNotificationButton from "./PushNotificationButton";
-import { useDebounce } from "../hooks/useDebounce";
+import axios from "../../utils/api";
+import Loader from "../Loader/Loader";
+import PushNotificationButton from "../Floating-buttons/PushNotificationButton";
+import { useDebounce } from "../../hooks/useDebounce";
 function parseJwt(token) {
   try {
     const base64Payload = token.split(".")[1];

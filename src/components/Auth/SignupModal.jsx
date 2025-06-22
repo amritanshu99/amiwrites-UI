@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { toast } from "react-toastify";
-import Loader from "./Loader"; // imported Loader
+import Loader from "../Loader/Loader"; // imported Loader
 import "react-toastify/dist/ReactToastify.css"; // in case not imported globally
 import { Eye, EyeOff } from "lucide-react";
 

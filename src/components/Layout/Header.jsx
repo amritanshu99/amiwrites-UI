@@ -2,8 +2,8 @@ import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, X, LogOut, UserCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import SignupModal from "./SignupModal";
-import LoginModal from "./LoginModal";
+import SignupModal from "../Auth/SignupModal";
+import LoginModal from "../Auth/LoginModal";
 import { toast } from "react-toastify";
 
 function parseJwt(token) {

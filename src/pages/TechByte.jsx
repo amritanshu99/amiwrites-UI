@@ -1,4 +1,4 @@
-import TechByteDetails from '../components/TechByteDetails';
+import TechByteDetails from '../components/Tech-byte/TechByteDetails';
 
 
 const TechByte = () => {

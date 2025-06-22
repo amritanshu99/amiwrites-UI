@@ -3,7 +3,7 @@ import axios from "axios";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { useNavigate } from "react-router-dom";
-import Loader from "./Loader";
+import Loader from "../Loader/Loader";
 
 export default function AddBlog() {
   const [title, setTitle] = useState("");

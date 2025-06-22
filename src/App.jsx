@@ -7,16 +7,16 @@ import {
   useNavigate,
 } from "react-router-dom";
 import axios from "axios";
-import Header from "./components/Header";
+import Header from "./components/Layout/Header";
 import Portfolio from "./pages/Portfolio";
 import BlogPage from "./pages/BlogPage";
 import AIChatPage from "./pages/AIChat";
 import AddBlogDetails from "./pages/AddBlogDetails";
 import BlogsDetails from "./pages/BlogsDetails";
-import Footer from "./components/Footer";
+import Footer from "./components/Layout/Footer";
 import TechByte from "./pages/TechByte";
-import ContactMeButton from "./components/ContactMeButton";
-import Loader from "./components/Loader";
+import ContactMeButton from "./components/Floating-buttons/ContactMeButton";
+import Loader from "./components/Loader/Loader";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
 import { ToastContainer, toast } from "react-toastify";

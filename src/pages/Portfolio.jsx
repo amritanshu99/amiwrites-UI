@@ -1,4 +1,4 @@
-import PortfolioDetails from '../components/PortfolioDetails';
+import PortfolioDetails from '../components/Portfolio/PortfolioDetails';
 
 
 const Portfolio = () => {

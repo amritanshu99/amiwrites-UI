@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import Loader from "./Loader";
+import Loader from "../Loader/Loader";
 
 export default function ResetPasswordPageDetails() {
   const { id } = useParams();

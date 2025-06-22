@@ -1,4 +1,4 @@
-import AddBlog from '../components/AddBlog';
+import AddBlog from '../components/Blogs/AddBlog';
 
 
 const AddBlogDetails = () => {
