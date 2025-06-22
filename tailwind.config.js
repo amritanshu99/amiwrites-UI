@@ -1,7 +1,7 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: ["./src/**/*.{js,jsx,ts,tsx}"],
-    darkMode: 'class',
+  darkMode: 'class',
   theme: {
     extend: {
       animation: {
@@ -10,8 +10,10 @@ module.exports = {
         'fade-in': 'fadeIn 0.3s ease-in-out forwards',
         'fade-in-down': 'fadeInDown 0.4s ease-out both',
         'popup-fade-in': 'popupFadeIn 0.3s ease-out forwards',
-        'spin-slower': 'spin 2s linear infinite', // ✅ existing
-        'fade-in-slow': 'fadeInSlow 3s ease-out forwards', // ✅ new
+        'spin-slower': 'spin 2s linear infinite',
+        'fade-in-slow': 'fadeInSlow 3s ease-out forwards',
+        'glitch': 'glitch 0.7s infinite linear alternate',      // ✅ new
+        'flicker': 'flicker 3s ease-in-out infinite',            // ✅ new
       },
       keyframes: {
         fadeInLeft: {
@@ -43,7 +45,18 @@ module.exports = {
         fadeInSlow: {
           '0%': { opacity: 0, transform: 'translateY(20px)' },
           '100%': { opacity: 1, transform: 'translateY(0)' },
-        }, // ✅ new
+        },
+        glitch: {
+          '0%, 100%': { transform: 'translate(0)' },
+          '20%': { transform: 'translate(-2px, 2px)' },
+          '40%': { transform: 'translate(2px, -2px)' },
+          '60%': { transform: 'translate(-1px, 1px)' },
+          '80%': { transform: 'translate(1px, -1px)' },
+        },
+        flicker: {
+          '0%, 100%': { opacity: 1 },
+          '50%': { opacity: 0.3 },
+        },
       },
     },
   },

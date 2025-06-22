@@ -85,6 +85,7 @@ export default function Header({ setLoading }) {
     { name: "My Blogs", to: "/blogs" },
     { name: "AI Chat", to: "/ai-chat" },
     { name: "Tech Byte", to: "/tech-byte" },
+    { name: "AI Tools", to: "/ai-tools" },
   ];
 
   const handleLogout = async () => {

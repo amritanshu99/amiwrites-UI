@@ -23,6 +23,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { initGA, logPageView } from "./analytics";
 import { Navigate } from "react-router-dom";
+import AIToolsDetails from "./pages/AIToolsDetails";
 const ValidateResetToken = () => {
   const { id: token } = useParams();
   const navigate = useNavigate();
@@ -107,6 +108,7 @@ const App = () => {
           <Route path="/blogs/:id" element={<BlogsDetails />} />
           <Route path="/tech-byte" element={<TechByte />} />
           <Route path="/reset-password/:id" element={<ValidateResetToken />} />
+          <Route path="/ai-tools" element={<AIToolsDetails />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
