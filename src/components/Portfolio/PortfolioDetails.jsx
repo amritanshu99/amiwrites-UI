@@ -22,6 +22,7 @@ import { motion, AnimatePresence, useInView } from "framer-motion";
 import InitialLoader from "./InitialLoader";
 import { useLocation } from "react-router-dom";
 import AchievementsModal from "./AchievementsModal";
+import clsx from 'clsx';
 
 const skillIcons = {
   JavaScript: <SiJavascript className="text-yellow-500" />,
@@ -40,8 +41,6 @@ const socialColors = {
   FaInstagram: "hover:text-pink-500",
   FaFacebook: "hover:text-blue-600",
 };
-
-
 
 const Tooltip = ({ children, content }) => {
   const [visible, setVisible] = React.useState(false);
@@ -170,29 +169,37 @@ export default function Portfolio() {
                 <p>✉️ {data.email}</p>
                 <p>📞 {data.phone}</p>
               </div>
-       <nav className="flex justify-center sm:justify-start gap-6 mt-5 text-2xl">
-  {[FaLinkedin, FaGithub, FaInstagram, FaFacebook].map((Icon, i) => {
-    const iconName = Icon.displayName || Icon.name;
-    const socialLink = Object.values(data.socialLinks)[i];
-    const hoverClass = socialColors[iconName] || "hover:text-cyan-800";
+              <nav className="flex justify-center sm:justify-start gap-6 mt-5 text-2xl">
+                {[FaLinkedin, FaGithub, FaInstagram, FaFacebook].map(
+                  (Icon, i) => {
+                    const iconName = Icon.displayName || Icon.name;
+                    const socialLink = Object.values(data.socialLinks)[i];
+                    const hoverClass =
+                      socialColors[iconName] || "hover:text-cyan-800";
 
-    return (
-      <motion.a
-        key={i}
-        href={socialLink}
-        target="_blank"
-        rel="noreferrer"
-        aria-label={iconName}
-        whileHover={{ scale: 1.15 }}
-        transition={{ type: "spring", stiffness: 300 }}
-        className={`cursor-pointer text-cyan-600 dark:text-cyan-400 transition-colors ${hoverClass}`}
-      >
-        <Icon />
-      </motion.a>
-    );
-  })}
-</nav>
-
+                    return (
+                      <motion.a
+                        key={i}
+                        href={socialLink}
+                        target="_blank"
+                        rel="noreferrer"
+                        aria-label={iconName}
+                        whileHover={{ scale: 1.15 }}
+                        transition={{ type: "spring", stiffness: 300 }}
+                        className={clsx(
+                          "cursor-pointer text-cyan-600 dark:text-cyan-400 transition-colors",
+                          iconName === "FaLinkedin" && "hover:text-blue-700",
+                          iconName === "FaGithub" && "hover:text-gray-800",
+                          iconName === "FaInstagram" && "hover:text-pink-500",
+                          iconName === "FaFacebook" && "hover:text-blue-600"
+                        )}
+                      >
+                        <Icon />
+                      </motion.a>
+                    );
+                  }
+                )}
+              </nav>
             </div>
           </section>
 
@@ -219,23 +226,37 @@ export default function Portfolio() {
               <FaBriefcase /> Experience
             </h3>
             <div className="space-y-6 max-w-md">
-              {data.experience.map(({ company, role, duration, description, achievements }, i) => (
-                <article key={i} className="border-l-4 border-cyan-400 dark:border-cyan-600 pl-4">
-                  <h4 className="text-xl font-semibold text-cyan-900 dark:text-cyan-200">{role}</h4>
-                  <p className="italic text-gray-600 dark:text-gray-400 mb-1">
-                    {company} • {duration}
-                  </p>
-                  <p className="text-cyan-800 dark:text-cyan-300">{description}</p>
-                  {achievements?.length > 0 && (
-                    <button
-                      onClick={() => openModal(`${role} at ${company} - Achievements`, achievements)}
-                      className="mt-2 text-cyan-600 dark:text-cyan-400 hover:text-cyan-900 dark:hover:text-cyan-100 font-semibold underline"
-                    >
-                      View Achievements
-                    </button>
-                  )}
-                </article>
-              ))}
+              {data.experience.map(
+                ({ company, role, duration, description, achievements }, i) => (
+                  <article
+                    key={i}
+                    className="border-l-4 border-cyan-400 dark:border-cyan-600 pl-4"
+                  >
+                    <h4 className="text-xl font-semibold text-cyan-900 dark:text-cyan-200">
+                      {role}
+                    </h4>
+                    <p className="italic text-gray-600 dark:text-gray-400 mb-1">
+                      {company} • {duration}
+                    </p>
+                    <p className="text-cyan-800 dark:text-cyan-300">
+                      {description}
+                    </p>
+                    {achievements?.length > 0 && (
+                      <button
+                        onClick={() =>
+                          openModal(
+                            `${role} at ${company} - Achievements`,
+                            achievements
+                          )
+                        }
+                        className="mt-2 text-cyan-600 dark:text-cyan-400 hover:text-cyan-900 dark:hover:text-cyan-100 font-semibold underline"
+                      >
+                        View Achievements
+                      </button>
+                    )}
+                  </article>
+                )
+              )}
             </div>
           </ScrollFadeIn>
 
@@ -245,22 +266,34 @@ export default function Portfolio() {
               <FaGraduationCap /> Education
             </h3>
             <div className="space-y-6 max-w-md">
-              {data.education.map(({ institution, degree, duration, achievements }, i) => (
-                <article key={i} className="border-l-4 border-cyan-400 dark:border-cyan-600 pl-4">
-                  <h4 className="text-xl font-semibold text-cyan-900 dark:text-cyan-200">{degree}</h4>
-                  <p className="italic text-gray-600 dark:text-gray-400 mb-1">
-                    {institution} • {duration}
-                  </p>
-                  {achievements?.length > 0 && (
-                    <button
-                      onClick={() => openModal(`${degree} at ${institution} - Achievements`, achievements)}
-                      className="mt-2 text-cyan-600 dark:text-cyan-400 hover:text-cyan-900 dark:hover:text-cyan-100 font-semibold underline"
-                    >
-                      View Achievements
-                    </button>
-                  )}
-                </article>
-              ))}
+              {data.education.map(
+                ({ institution, degree, duration, achievements }, i) => (
+                  <article
+                    key={i}
+                    className="border-l-4 border-cyan-400 dark:border-cyan-600 pl-4"
+                  >
+                    <h4 className="text-xl font-semibold text-cyan-900 dark:text-cyan-200">
+                      {degree}
+                    </h4>
+                    <p className="italic text-gray-600 dark:text-gray-400 mb-1">
+                      {institution} • {duration}
+                    </p>
+                    {achievements?.length > 0 && (
+                      <button
+                        onClick={() =>
+                          openModal(
+                            `${degree} at ${institution} - Achievements`,
+                            achievements
+                          )
+                        }
+                        className="mt-2 text-cyan-600 dark:text-cyan-400 hover:text-cyan-900 dark:hover:text-cyan-100 font-semibold underline"
+                      >
+                        View Achievements
+                      </button>
+                    )}
+                  </article>
+                )
+              )}
             </div>
           </ScrollFadeIn>
         </article>

@@ -2,6 +2,12 @@
 module.exports = {
   content: ["./src/**/*.{js,jsx,ts,tsx}"],
   darkMode: "class",
+   safelist: [
+    "hover:text-blue-700",
+    "hover:text-gray-800",
+    "hover:text-pink-500",
+    "hover:text-blue-600",
+  ],
   theme: {
     extend: {
       animation: {
