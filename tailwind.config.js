@@ -1,6 +1,12 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: ["./src/**/*.{js,jsx,ts,tsx}"],
+    safelist: [
+    "hover:text-[#0077b5]",  // LinkedIn
+    "hover:text-[#333]",     // GitHub
+    "hover:text-[#e4405f]",  // Instagram
+    "hover:text-[#1877f2]",  // Facebook
+  ],
   darkMode: 'class',
   theme: {
     extend: {
