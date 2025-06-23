@@ -22,7 +22,7 @@ import { motion, AnimatePresence, useInView } from "framer-motion";
 import InitialLoader from "./InitialLoader";
 import { useLocation } from "react-router-dom";
 import AchievementsModal from "./AchievementsModal";
-import clsx from "clsx";
+
 
 const skillIcons = {
   JavaScript: <SiJavascript className="text-yellow-500" />,
@@ -35,12 +35,7 @@ const skillIcons = {
   ML: <SiTensorflow className="text-orange-500" />,
 };
 
-const socialColors = {
-  FaLinkedin: "hover:text-blue-700",
-  FaGithub: "hover:text-gray-800",
-  FaInstagram: "hover:text-pink-500",
-  FaFacebook: "hover:text-blue-600",
-};
+
 
 const Tooltip = ({ children, content }) => {
   const [visible, setVisible] = React.useState(false);
@@ -169,40 +164,52 @@ export default function Portfolio() {
                 <p>✉️ {data.email}</p>
                 <p>📞 {data.phone}</p>
               </div>
-              <nav className="flex justify-center sm:justify-start gap-6 mt-5 text-2xl">
-                {[FaLinkedin, FaGithub, FaInstagram, FaFacebook].map(
-                  (Icon, i) => {
-                    const iconName = Icon.displayName || Icon.name;
-                    const socialLink = Object.values(data.socialLinks)[i];
+          <nav className="flex justify-center sm:justify-start gap-6 mt-5 text-2xl">
+  <motion.a
+    href={data.socialLinks.linkedin}
+    target="_blank"
+    rel="noreferrer"
+    whileHover={{ scale: 1.15 }}
+    transition={{ type: "spring", stiffness: 300 }}
+    className="cursor-pointer text-cyan-600 dark:text-cyan-400 transition-colors hover:text-blue-700"
+  >
+    <FaLinkedin />
+  </motion.a>
 
-                    return (
-                      <motion.a
-                        key={i}
-                        href={socialLink}
-                        target="_blank"
-                        rel="noreferrer"
-                        aria-label={iconName}
-                        whileHover={{ scale: 1.15 }}
-                        transition={{ type: "spring", stiffness: 300 }}
-                        className={clsx(
-                          "cursor-pointer text-cyan-600 dark:text-cyan-400 transition-colors",
-                          iconName === "FaLinkedin"
-                            ? "hover:text-blue-700"
-                            : "",
-                          iconName === "FaGithub" ? "hover:text-gray-800" : "",
-                          iconName === "FaInstagram"
-                            ? "hover:text-pink-500"
-                            : "",
-                          iconName === "FaFacebook" ? "hover:text-blue-600" : ""
-                        )}
-                      >
-                        <Icon />
-                        test
-                      </motion.a>
-                    );
-                  }
-                )}
-              </nav>
+  <motion.a
+    href={data.socialLinks.github}
+    target="_blank"
+    rel="noreferrer"
+    whileHover={{ scale: 1.15 }}
+    transition={{ type: "spring", stiffness: 300 }}
+    className="cursor-pointer text-cyan-600 dark:text-cyan-400 transition-colors hover:text-gray-800"
+  >
+    <FaGithub />
+  </motion.a>
+
+  <motion.a
+    href={data.socialLinks.instagram}
+    target="_blank"
+    rel="noreferrer"
+    whileHover={{ scale: 1.15 }}
+    transition={{ type: "spring", stiffness: 300 }}
+    className="cursor-pointer text-cyan-600 dark:text-cyan-400 transition-colors hover:text-pink-500"
+  >
+    <FaInstagram />
+  </motion.a>
+
+  <motion.a
+    href={data.socialLinks.facebook}
+    target="_blank"
+    rel="noreferrer"
+    whileHover={{ scale: 1.15 }}
+    transition={{ type: "spring", stiffness: 300 }}
+    className="cursor-pointer text-cyan-600 dark:text-cyan-400 transition-colors hover:text-blue-600"
+  >
+    <FaFacebook />
+  </motion.a>
+</nav>
+
             </div>
           </section>
 
