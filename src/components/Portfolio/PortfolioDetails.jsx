@@ -22,7 +22,7 @@ import { motion, AnimatePresence, useInView } from "framer-motion";
 import InitialLoader from "./InitialLoader";
 import { useLocation } from "react-router-dom";
 import AchievementsModal from "./AchievementsModal";
-import clsx from 'clsx';
+import clsx from "clsx";
 
 const skillIcons = {
   JavaScript: <SiJavascript className="text-yellow-500" />,
@@ -174,8 +174,6 @@ export default function Portfolio() {
                   (Icon, i) => {
                     const iconName = Icon.displayName || Icon.name;
                     const socialLink = Object.values(data.socialLinks)[i];
-                    const hoverClass =
-                      socialColors[iconName] || "hover:text-cyan-800";
 
                     return (
                       <motion.a
@@ -188,10 +186,14 @@ export default function Portfolio() {
                         transition={{ type: "spring", stiffness: 300 }}
                         className={clsx(
                           "cursor-pointer text-cyan-600 dark:text-cyan-400 transition-colors",
-                          iconName === "FaLinkedin" && "hover:text-blue-700",
-                          iconName === "FaGithub" && "hover:text-gray-800",
-                          iconName === "FaInstagram" && "hover:text-pink-500",
-                          iconName === "FaFacebook" && "hover:text-blue-600"
+                          iconName === "FaLinkedin"
+                            ? "hover:text-blue-700"
+                            : "",
+                          iconName === "FaGithub" ? "hover:text-gray-800" : "",
+                          iconName === "FaInstagram"
+                            ? "hover:text-pink-500"
+                            : "",
+                          iconName === "FaFacebook" ? "hover:text-blue-600" : ""
                         )}
                       >
                         <Icon />
