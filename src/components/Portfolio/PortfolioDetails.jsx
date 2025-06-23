@@ -35,11 +35,12 @@ const skillIcons = {
 };
 
 const socialColors = {
-  FaLinkedin: "hover:text-[#0077b5]",     // LinkedIn blue
-  FaGithub: "hover:text-[#333]",          // GitHub dark gray
-  FaInstagram: "hover:text-[#e4405f]",    // Instagram pink
-  FaFacebook: "hover:text-[#1877f2]",     // Facebook blue
+  FaLinkedin: "hover:text-blue-700",
+  FaGithub: "hover:text-gray-800",
+  FaInstagram: "hover:text-pink-500",
+  FaFacebook: "hover:text-blue-600",
 };
+
 
 
 const Tooltip = ({ children, content }) => {
