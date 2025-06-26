@@ -76,7 +76,10 @@ function TaskManager() {
   };
 
   const handleAddTask = async () => {
-    if (!newTask.title.trim()) return;
+    if (!newTask.title.trim() || !newTask.description.trim()) {
+      toast.warn("Please enter both title and description.");
+      return;
+    }
 
     try {
       setLoading(true);
@@ -113,6 +116,11 @@ function TaskManager() {
   };
 
   const handleUpdateTask = async () => {
+    if (!newTask.title.trim() || !newTask.description.trim()) {
+      toast.warn("Please enter both title and description.");
+      return;
+    }
+
     try {
       setLoading(true);
       const res = await axiosAuth.put(`/${editingTaskId}`, newTask);
