@@ -12,6 +12,7 @@ async function generateSitemap() {
     { url: "/add-blog", changefreq: "monthly", priority: 0.7 },
     { url: "/tech-byte", changefreq: "daily", priority: 1.0 },
     { url: "/ai-tools", changefreq: "monthly", priority: 0.5 },
+    { url: "/task-manager", changefreq: "weekly", priority: 0.8 },
   ];
 
   const sitemapStream = new SitemapStream({ hostname });
