@@ -128,6 +128,11 @@ function TaskManager() {
     }
   };
 
+  const handleCancelEdit = () => {
+    setEditingTaskId(null);
+    setNewTask({ title: "", description: "" });
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-cyan-300 via-pink-300 to-yellow-200 dark:bg-gradient-to-br dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 transition-colors duration-500 p-6">
       <div className="max-w-5xl mx-auto">
@@ -157,12 +162,20 @@ function TaskManager() {
                 onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
               />
               {editingTaskId ? (
-                <button
-                  className="bg-gradient-to-tr from-yellow-400 to-yellow-500 hover:to-yellow-600 text-white px-5 py-2.5 rounded-xl font-semibold transition shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-yellow-300"
-                  onClick={handleUpdateTask}
-                >
-                  Update
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    className="bg-gradient-to-tr from-yellow-400 to-yellow-500 hover:to-yellow-600 text-white px-5 py-2.5 rounded-xl font-semibold transition shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-yellow-300"
+                    onClick={handleUpdateTask}
+                  >
+                    Update
+                  </button>
+                  <button
+                    className="bg-gradient-to-tr from-gray-400 to-gray-500 hover:to-gray-600 text-white px-5 py-2.5 rounded-xl font-semibold transition shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-gray-300"
+                    onClick={handleCancelEdit}
+                  >
+                    Cancel
+                  </button>
+                </div>
               ) : (
                 <button
                   className="bg-gradient-to-tr from-green-500 to-green-600 hover:to-green-700 text-white px-5 py-2.5 rounded-xl font-semibold transition shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-green-300"
