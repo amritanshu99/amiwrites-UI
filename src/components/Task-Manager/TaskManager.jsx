@@ -14,7 +14,7 @@ const quotes = [
   "💼 Every task you complete is a mission accomplished. Make today legendary.",
   "🎯 Forget luck. You’ve got precision, focus, and a plan. Now execute.",
   "🚁 Your productivity protocol has been activated. Proceed with intensity.",
-  "🗂️ You don’t need a team. You are the team. Now go complete that mission."
+  "🗂️ You don’t need a team. You are the team. Now go complete that mission.",
 ];
 
 function TaskManager() {
@@ -24,7 +24,12 @@ function TaskManager() {
   const [newTask, setNewTask] = useState({ title: "", description: "" });
   const [editingTaskId, setEditingTaskId] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [stats, setStats] = useState({ total: 0, completed: 0, completionRate: 0, history: [] });
+  const [stats, setStats] = useState({
+    total: 0,
+    completed: 0,
+    completionRate: 0,
+    history: [],
+  });
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [quote, setQuote] = useState("");
   const analyticsRef = useRef(null);
@@ -57,7 +62,7 @@ function TaskManager() {
   }, []);
 
   useEffect(() => {
-     let link = document.querySelector("link[rel='canonical']");
+    let link = document.querySelector("link[rel='canonical']");
     if (!link) {
       link = document.createElement("link");
       link.rel = "canonical";
@@ -67,15 +72,14 @@ function TaskManager() {
     document.title = "Task Manager";
   }, []);
 
-
-   useEffect(() => {
-      const scrollContainer = document.querySelector(
-        ".h-screen.overflow-y-scroll.relative"
-      );
-      if (scrollContainer) {
-        scrollContainer.scrollTo({ top: 0, behavior: "smooth" });
-      }
-    }, [pathname]);
+  useEffect(() => {
+    const scrollContainer = document.querySelector(
+      ".h-screen.overflow-y-scroll.relative"
+    );
+    if (scrollContainer) {
+      scrollContainer.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }, [pathname]);
 
   useEffect(() => {
     const updateAuthStateFromToken = () => {
@@ -87,7 +91,8 @@ function TaskManager() {
     };
     window.addEventListener("tokenChanged", updateAuthStateFromToken);
     updateAuthStateFromToken();
-    return () => window.removeEventListener("tokenChanged", updateAuthStateFromToken);
+    return () =>
+      window.removeEventListener("tokenChanged", updateAuthStateFromToken);
   }, []);
 
   const fetchTasks = async (tokenToUse = token) => {
@@ -109,8 +114,12 @@ function TaskManager() {
   const calculateStats = (tasks) => {
     const total = tasks.length;
     const completed = tasks.filter((t) => t.completed).length;
-    const completionRate = total > 0 ? ((completed / total) * 100).toFixed(1) : 0;
-    const history = tasks.map((t) => ({ date: new Date(t.createdAt).toDateString(), completed: t.completed ? 1 : 0 }));
+    const completionRate =
+      total > 0 ? ((completed / total) * 100).toFixed(1) : 0;
+    const history = tasks.map((t) => ({
+      date: new Date(t.createdAt).toDateString(),
+      completed: t.completed ? 1 : 0,
+    }));
     setStats({ total, completed, completionRate, history });
   };
 
@@ -171,7 +180,9 @@ function TaskManager() {
     try {
       setLoading(true);
       const res = await axiosAuth.put(`/${editingTaskId}`, newTask);
-      const updated = tasks.map((t) => (t._id === editingTaskId ? res.data : t));
+      const updated = tasks.map((t) =>
+        t._id === editingTaskId ? res.data : t
+      );
       setTasks(updated);
       setEditingTaskId(null);
       setNewTask({ title: "", description: "" });
@@ -211,14 +222,14 @@ function TaskManager() {
         )}
 
         {showAnalytics && (
-          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4 sm:px-0">
             <div
               ref={analyticsRef}
-              className="bg-white dark:bg-gray-800 p-6 rounded-2xl max-w-3xl w-full relative shadow-2xl"
+              className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto relative shadow-2xl"
             >
               <button
                 onClick={() => setShowAnalytics(false)}
-                className="absolute top-2 right-3 text-gray-500 hover:text-red-600 font-bold text-xl"
+                className="absolute top-2 right-3 text-gray-500 hover:text-red-600 font-bold text-2xl"
               >
                 &times;
               </button>
@@ -229,7 +240,10 @@ function TaskManager() {
 
         {!isAuthenticated ? (
           <div className="text-center text-lg font-semibold text-gray-700 dark:text-gray-300">
-            🔐 Please <span className="text-blue-600 dark:text-blue-400">Login</span> or <span className="text-green-600 dark:text-green-400">Signup</span> to manage tasks.
+            🔐 Please{" "}
+            <span className="text-blue-600 dark:text-blue-400">Login</span> or{" "}
+            <span className="text-green-600 dark:text-green-400">Signup</span>{" "}
+            to manage tasks.
           </div>
         ) : (
           <>
@@ -239,45 +253,99 @@ function TaskManager() {
                 placeholder="Task title"
                 className="p-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-black dark:text-white w-full"
                 value={newTask.title}
-                onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
+                onChange={(e) =>
+                  setNewTask({ ...newTask, title: e.target.value })
+                }
               />
               <input
                 type="text"
                 placeholder="Task description"
                 className="p-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-black dark:text-white w-full"
                 value={newTask.description}
-                onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
+                onChange={(e) =>
+                  setNewTask({ ...newTask, description: e.target.value })
+                }
               />
               {editingTaskId ? (
                 <div className="flex gap-2">
-                  <button className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-xl font-semibold transition-all" onClick={handleUpdateTask}>Update</button>
-                  <button className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-xl font-semibold transition-all" onClick={handleCancelEdit}>Cancel</button>
+                  <button
+                    className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-xl font-semibold transition-all"
+                    onClick={handleUpdateTask}
+                  >
+                    Update
+                  </button>
+                  <button
+                    className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-xl font-semibold transition-all"
+                    onClick={handleCancelEdit}
+                  >
+                    Cancel
+                  </button>
                 </div>
               ) : (
-                <button className="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-xl font-semibold transition-all" onClick={handleAddTask}>Add</button>
+                <button
+                  className="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-xl font-semibold transition-all"
+                  onClick={handleAddTask}
+                >
+                  Add
+                </button>
               )}
             </div>
 
             <div className="space-y-6">
               {loading
                 ? Array.from({ length: 3 }).map((_, i) => (
-                    <div key={i} className="rounded-xl p-5 shadow bg-white dark:bg-zinc-900 animate-pulse">
+                    <div
+                      key={i}
+                      className="rounded-xl p-5 shadow bg-white dark:bg-zinc-900 animate-pulse"
+                    >
                       <div className="h-5 bg-gray-300 dark:bg-zinc-600 rounded w-3/4 mb-2" />
                       <div className="h-3 bg-gray-200 dark:bg-zinc-700 rounded w-full" />
                     </div>
                   ))
                 : tasks.map((task) => (
-                    <div key={task._id} className="flex flex-col sm:flex-row justify-between gap-4 bg-white/70 dark:bg-zinc-800 p-5 rounded-2xl shadow-lg transition-all hover:shadow-2xl">
+                    <div
+                      key={task._id}
+                      className="flex flex-col sm:flex-row justify-between gap-4 bg-white/70 dark:bg-zinc-800 p-5 rounded-2xl shadow-lg transition-all hover:shadow-2xl"
+                    >
                       <div>
-                        <h2 className={`font-semibold text-xl ${task.completed ? 'line-through text-gray-400' : 'text-gray-900 dark:text-blue-300'}`}>{task.title}</h2>
-                        <p className="text-gray-700 dark:text-gray-300 mt-1">{task.description}</p>
+                        <h2
+                          className={`font-semibold text-xl ${
+                            task.completed
+                              ? "line-through text-gray-400"
+                              : "text-gray-900 dark:text-blue-300"
+                          }`}
+                        >
+                          {task.title}
+                        </h2>
+                        <p className="text-gray-700 dark:text-gray-300 mt-1">
+                          {task.description}
+                        </p>
                       </div>
                       <div className="flex gap-2 flex-wrap items-center">
-                        <button className={`px-4 py-2 rounded-xl font-semibold shadow transition-all ${task.completed ? 'bg-gray-500' : 'bg-green-600 hover:bg-green-700'} text-white`} onClick={() => toggleTaskComplete(task._id, task.completed)}>
-                          {task.completed ? '☑️ Completed' : '✅ Mark Complete'}
+                        <button
+                          className={`px-4 py-2 rounded-xl font-semibold shadow transition-all ${
+                            task.completed
+                              ? "bg-gray-500"
+                              : "bg-green-600 hover:bg-green-700"
+                          } text-white`}
+                          onClick={() =>
+                            toggleTaskComplete(task._id, task.completed)
+                          }
+                        >
+                          {task.completed ? "☑️ Completed" : "✅ Mark Complete"}
                         </button>
-                        <button className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-xl font-semibold shadow transition-all" onClick={() => handleEditTask(task._id)}>✏️ Edit</button>
-                        <button className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl font-semibold shadow transition-all" onClick={() => handleDeleteTask(task._id)}>🗑️ Delete</button>
+                        <button
+                          className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-xl font-semibold shadow transition-all"
+                          onClick={() => handleEditTask(task._id)}
+                        >
+                          ✏️ Edit
+                        </button>
+                        <button
+                          className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl font-semibold shadow transition-all"
+                          onClick={() => handleDeleteTask(task._id)}
+                        >
+                          🗑️ Delete
+                        </button>
                       </div>
                     </div>
                   ))}
