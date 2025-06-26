@@ -23,6 +23,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { initGA, logPageView } from "./analytics";
 import { Navigate } from "react-router-dom";
+import TaskManagerDetails from "./pages/TaskManagerDetails";
 import AIToolsDetails from "./pages/AIToolsDetails";
 const ValidateResetToken = () => {
   const { id: token } = useParams();
@@ -109,6 +110,7 @@ const App = () => {
           <Route path="/tech-byte" element={<TechByte />} />
           <Route path="/reset-password/:id" element={<ValidateResetToken />} />
           <Route path="/ai-tools" element={<AIToolsDetails />} />
+           <Route path="/task-manager" element={<TaskManagerDetails />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>

@@ -59,11 +59,7 @@ const AIChat = () => {
     }
     link.href = window.location.href;
     document.title = "AI Chat";
-    const onStorage = (e) => {
-      if (e.key === "token") setToken(e.newValue);
-    };
-    window.addEventListener("storage", onStorage);
-    return () => window.removeEventListener("storage", onStorage);
+   
   }, []);
 
   useEffect(() => {
