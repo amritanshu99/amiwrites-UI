@@ -186,7 +186,7 @@ function TaskManager() {
             </div>
           </div>
         )}
-        <h1 className="text-5xl font-extrabold text-center mb-4 text-gray-900 dark:text-blue-200 drop-shadow tracking-tight">✨ Task Manager</h1>
+        <h1 className="text-5xl font-extrabold text-center mb-4 text-gray-900 dark:text-blue-200 drop-shadow tracking-tight"> Task Manager</h1>
         <p className="text-center italic text-lg text-gray-800 dark:text-gray-400 mb-8 max-w-3xl mx-auto">{quote}</p>
 
         {isAuthenticated && (
