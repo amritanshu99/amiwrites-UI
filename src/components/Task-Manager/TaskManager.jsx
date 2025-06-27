@@ -128,7 +128,7 @@ function TaskManager() {
       setTasks(updated);
       setNewTask({ title: "", description: "" });
       calculateStats(updated);
-      toast.success("Task added successfully!");
+      toast.success("Mission added successfully!");
     } catch {
       toast.error("Error adding task.");
     } finally {
@@ -143,7 +143,7 @@ function TaskManager() {
       const updated = tasks.filter((task) => task._id !== id);
       setTasks(updated);
       calculateStats(updated);
-      toast.success("Task deleted!");
+      toast.success("Mission deleted!");
     } catch {
       toast.error("Error deleting task.");
     } finally {
@@ -152,12 +152,18 @@ function TaskManager() {
   };
 
   const toggleTaskComplete = async (id, currentStatus) => {
+    debugger;
     setLoading(true);
     try {
       const res = await axiosAuth.put(`/${id}`, { completed: !currentStatus });
       const updated = tasks.map((task) => (task._id === id ? res.data : task));
       setTasks(updated);
       calculateStats(updated);
+      const task = updated.find((item) => item._id === id);
+      const isCompleted = task?.completed;
+      toast.success(
+        isCompleted ? "Mission Accomplished" : "Mission Reinitiated"
+      );
     } catch {
       toast.error("Error updating task status.");
     } finally {
@@ -186,7 +192,7 @@ function TaskManager() {
       setEditingTaskId(null);
       setNewTask({ title: "", description: "" });
       calculateStats(updated);
-      toast.success("Task updated!");
+      toast.success("Mission updated!");
     } catch {
       toast.error("Error updating task.");
     } finally {
@@ -308,45 +314,78 @@ function TaskManager() {
             </div>
 
             <div className="space-y-6">
-           {loading ? (
-  Array.from({ length: 3 }).map((_, i) => (
-    <div key={i} className="rounded-xl p-5 shadow bg-white dark:bg-zinc-900 animate-pulse">
-      <div className="h-5 bg-gray-300 dark:bg-zinc-600 rounded w-3/4 mb-2" />
-      <div className="h-3 bg-gray-200 dark:bg-zinc-700 rounded w-full" />
-    </div>
-  ))
-) : tasks.length === 0 ? (
-  <div className="text-center text-xl font-semibold text-gray-800 dark:text-gray-300 bg-white/60 dark:bg-zinc-800 p-6 rounded-2xl shadow-md">
-    🎯 <em>“Your mission, should you choose to accept it, begins now. No tasks on file.”</em>
-  </div>
-) : (
-  tasks.map((task) => (
-    <div key={task._id} className="flex flex-col sm:flex-row justify-between gap-4 bg-white/70 dark:bg-zinc-800 p-5 rounded-2xl shadow-lg transition-all hover:shadow-2xl">
-      <div>
-        <h2 className={`font-semibold text-xl ${task.completed ? "line-through text-gray-400" : "text-gray-900 dark:text-blue-300"}`}>{task.title}</h2>
-        <p className="text-gray-700 dark:text-gray-300 mt-1">{task.description}</p>
-      </div>
-      <div className="flex gap-2 flex-wrap items-center">
-        <label className="inline-flex items-center cursor-pointer">
-          <input
-            type="checkbox"
-            className="sr-only peer"
-            checked={task.completed}
-            onChange={() => toggleTaskComplete(task._id, task.completed)}
-            disabled={loading}
-          />
-          <div className="w-14 h-8 bg-gray-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-500 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all dark:border-gray-500 peer-checked:bg-green-500 relative"></div>
-          <span className="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300">
-            {task.completed ? "Completed" : "Mark Complete"}
-          </span>
-        </label>
-        <button className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-xl font-semibold shadow transition-all" onClick={() => handleEditTask(task._id)} disabled={loading}>✏️ Edit</button>
-        <button className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl font-semibold shadow transition-all" onClick={() => handleDeleteTask(task._id)} disabled={loading}>🗑️ Delete</button>
-      </div>
-    </div>
-  ))
-)}
-
+              {loading ? (
+                Array.from({ length: 3 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="rounded-xl p-5 shadow bg-white dark:bg-zinc-900 animate-pulse"
+                  >
+                    <div className="h-5 bg-gray-300 dark:bg-zinc-600 rounded w-3/4 mb-2" />
+                    <div className="h-3 bg-gray-200 dark:bg-zinc-700 rounded w-full" />
+                  </div>
+                ))
+              ) : tasks.length === 0 ? (
+                <div className="text-center text-xl font-semibold text-gray-800 dark:text-gray-300 bg-white/60 dark:bg-zinc-800 p-6 rounded-2xl shadow-md">
+                  🎯{" "}
+                  <em>
+                    “Your mission, should you choose to accept it, begins now.
+                    No tasks on file.”
+                  </em>
+                </div>
+              ) : (
+                tasks.map((task) => (
+                  <div
+                    key={task._id}
+                    className="flex flex-col sm:flex-row justify-between gap-4 bg-white/70 dark:bg-zinc-800 p-5 rounded-2xl shadow-lg transition-all hover:shadow-2xl"
+                  >
+                    <div>
+                      <h2
+                        className={`font-semibold text-xl ${
+                          task.completed
+                            ? "line-through text-gray-400"
+                            : "text-gray-900 dark:text-blue-300"
+                        }`}
+                      >
+                        {task.title}
+                      </h2>
+                      <p className="text-gray-700 dark:text-gray-300 mt-1">
+                        {task.description}
+                      </p>
+                    </div>
+                    <div className="flex gap-2 flex-wrap items-center">
+                      <label className="inline-flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          className="sr-only peer"
+                          checked={task.completed}
+                          onChange={() =>
+                            toggleTaskComplete(task._id, task.completed)
+                          }
+                          disabled={loading}
+                        />
+                        <div className="w-14 h-8 bg-gray-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-500 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all dark:border-gray-500 peer-checked:bg-green-500 relative"></div>
+                        <span className="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300">
+                          {task.completed ? "Completed" : "Mark Complete"}
+                        </span>
+                      </label>
+                      <button
+                        className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-xl font-semibold shadow transition-all"
+                        onClick={() => handleEditTask(task._id)}
+                        disabled={loading}
+                      >
+                        ✏️ Edit
+                      </button>
+                      <button
+                        className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl font-semibold shadow transition-all"
+                        onClick={() => handleDeleteTask(task._id)}
+                        disabled={loading}
+                      >
+                        🗑️ Delete
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </>
         )}
