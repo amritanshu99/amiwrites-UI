@@ -32,7 +32,7 @@ self.addEventListener('push', event => {
 
 self.addEventListener('notificationclick', event => {
   event.notification.close();
-  const urlToOpen = event.notification.data?.url || 'https://www.amiverse.in/blog';
+  const urlToOpen = event.notification.data?.url || 'https://www.amiverse.in/blogs';
 
   console.log('Notification click URL:', urlToOpen);
 
