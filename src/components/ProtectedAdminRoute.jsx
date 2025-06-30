@@ -20,7 +20,7 @@ const ProtectedAdminRoute = ({ children }) => {
     return children;
   }
 
-  return <Navigate to="/blog" replace />;
+  return <Navigate to="/blogs" replace />;
 };
 
 export default ProtectedAdminRoute;
