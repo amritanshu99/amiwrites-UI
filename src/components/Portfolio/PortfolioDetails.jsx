@@ -223,7 +223,7 @@ export default function Portfolio() {
     Skills
   </h3>
 
-  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5">
+  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4">
     {data.skills.map(({ skill, expertise }, index) => (
       <motion.div
         key={skill}
@@ -231,19 +231,20 @@ export default function Portfolio() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{
-          delay: index * 0.04,
+          delay: index * 0.03,
           duration: 0.4,
           ease: "easeOut",
         }}
+        className="w-full"
       >
         <Tooltip content={expertise}>
-          <div className="flex flex-col items-center justify-center p-4 rounded-xl bg-white/70 dark:bg-zinc-800/60 backdrop-blur-sm shadow-sm hover:shadow-md hover:scale-[1.04] transition-all duration-300 ease-in-out w-full text-center max-w-[110px] mx-auto">
-            <div className="w-9 h-9 flex items-center justify-center mb-1">
+          <div className="flex flex-col items-center justify-center w-full aspect-square max-w-[100px] mx-auto bg-white dark:bg-zinc-800 shadow-sm rounded-xl hover:shadow-md hover:scale-105 transition-all duration-300 ease-in-out">
+            <div className="w-8 h-8 mb-1 flex items-center justify-center">
               {skillIconMap[skill] ?? (
-                <span className="text-cyan-700 dark:text-cyan-300 text-xs">?</span>
+                <span className="text-cyan-700 dark:text-cyan-300 text-sm">?</span>
               )}
             </div>
-            <span className="text-[13px] font-medium text-gray-800 dark:text-gray-200 leading-tight truncate">
+            <span className="text-xs font-medium text-gray-800 dark:text-gray-200 text-center truncate px-2">
               {skill}
             </span>
           </div>
@@ -252,6 +253,7 @@ export default function Portfolio() {
     ))}
   </div>
 </ScrollFadeIn>
+
 
 
 
