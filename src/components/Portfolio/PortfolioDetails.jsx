@@ -24,16 +24,6 @@ import InitialLoader from "./InitialLoader";
 import { useLocation } from "react-router-dom";
 import AchievementsModal from "./AchievementsModal";
 
-const iconWrapper = (icon, label) => (
-  <div className="flex flex-col items-center justify-center gap-2 p-3 rounded-xl bg-white dark:bg-zinc-900 shadow hover:shadow-lg transition w-full h-full max-w-[100px] text-center">
-    <div className="w-10 h-10 flex items-center justify-center">
-      {icon}
-    </div>
-    <span className="text-xs font-medium text-gray-700 dark:text-gray-200 truncate">
-      {label}
-    </span>
-  </div>
-);
 
 // 🎯 Skill icon data with proper label and icon component
 const skillIconMap = {
