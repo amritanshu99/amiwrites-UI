@@ -9,31 +9,31 @@ import {
   FaNodeJs,
   FaBriefcase,
   FaGraduationCap,
+  FaJs, // ✅ Added
 } from "react-icons/fa";
 import {
   SiTensorflow,
   SiOpenai,
-  SiJavascript,
   SiExpress,
   SiMongodb,
   SiGraphql,
 } from "react-icons/si";
+import clsx from "clsx";
 import { motion, AnimatePresence, useInView } from "framer-motion";
 import InitialLoader from "./InitialLoader";
 import { useLocation } from "react-router-dom";
 import AchievementsModal from "./AchievementsModal";
 
-
+// ✅ Replaced SiJavascript with FaJs
 const skillIcons = {
-JavaScript: <SiJavascript className="text-yellow-500" />,
-
-  React: <FaReact className="text-cyan-500" />,
-  "Node.js": <FaNodeJs className="text-green-600" />,
-  Express: <SiExpress className="text-gray-700 dark:text-gray-200" />,
-  MongoDB: <SiMongodb className="text-green-700" />,
-  GraphQL: <SiGraphql className="text-pink-500" />,
-  AI: <SiOpenai className="text-purple-600" />,
-  ML: <SiTensorflow className="text-orange-500" />,
+  JavaScript: <FaJs className="text-yellow-500 text-4xl" />,
+  React: <FaReact className="text-cyan-500 text-4xl" />,
+  "Node.js": <FaNodeJs className="text-green-600 text-4xl" />,
+  Express: <SiExpress className="text-gray-700 dark:text-gray-200 text-4xl" />,
+  MongoDB: <SiMongodb className="text-green-700 text-4xl" />,
+  GraphQL: <SiGraphql className="text-pink-500 text-4xl" />,
+  AI: <SiOpenai className="text-purple-600 text-4xl" />,
+  ML: <SiTensorflow className="text-orange-500 text-4xl" />,
 };
 
 
