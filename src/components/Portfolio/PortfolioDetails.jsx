@@ -24,23 +24,28 @@ import InitialLoader from "./InitialLoader";
 import { useLocation } from "react-router-dom";
 import AchievementsModal from "./AchievementsModal";
 
-const iconWrapper = (icon) => (
-  <div className="w-14 h-14 rounded-full bg-white dark:bg-zinc-900 shadow-md flex items-center justify-center">
-    {icon}
+const iconWrapper = (icon, label) => (
+  <div className="flex flex-col items-center justify-center gap-2 p-3 rounded-xl bg-white dark:bg-zinc-900 shadow hover:shadow-lg transition w-full h-full max-w-[100px] text-center">
+    <div className="w-10 h-10 flex items-center justify-center">
+      {icon}
+    </div>
+    <span className="text-xs font-medium text-gray-700 dark:text-gray-200 truncate">
+      {label}
+    </span>
   </div>
 );
 
-
-const skillIcons = {
-  JavaScript: iconWrapper(<FaJs className="text-yellow-500 w-8 h-8" />),
-  React: iconWrapper(<FaReact className="text-cyan-500 w-8 h-8" />),
-  "Node.js": iconWrapper(<FaNodeJs className="text-green-600 w-8 h-8" />),
-  Express: iconWrapper(<SiExpress className="text-gray-700 dark:text-gray-200 w-8 h-8" />),
-  MongoDB: iconWrapper(<SiMongodb className="text-green-700 w-8 h-8" />),
-  GraphQL: iconWrapper(<SiGraphql className="text-pink-500 w-8 h-8" />),
-  AI: iconWrapper(<SiOpenai className="text-purple-600 w-8 h-8" />),
-  ML: iconWrapper(<SiTensorflow className="text-orange-500 w-8 h-8" />),
-};
+// 🎯 Skill icon data with proper label and icon component
+const skillIcons = [
+  iconWrapper(<FaJs className="text-yellow-500 w-8 h-8" />, "JavaScript"),
+  iconWrapper(<FaReact className="text-cyan-500 w-8 h-8" />, "React"),
+  iconWrapper(<FaNodeJs className="text-green-600 w-8 h-8" />, "Node.js"),
+  iconWrapper(<SiExpress className="text-gray-700 dark:text-gray-200 w-8 h-8" />, "Express"),
+  iconWrapper(<SiMongodb className="text-green-700 w-8 h-8" />, "MongoDB"),
+  iconWrapper(<SiGraphql className="text-pink-500 w-8 h-8" />, "GraphQL"),
+  iconWrapper(<SiOpenai className="text-purple-600 w-8 h-8" />, "AI"),
+  iconWrapper(<SiTensorflow className="text-orange-500 w-8 h-8" />, "ML"),
+];
 
 
 
