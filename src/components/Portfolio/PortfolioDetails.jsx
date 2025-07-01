@@ -36,16 +36,17 @@ const iconWrapper = (icon, label) => (
 );
 
 // 🎯 Skill icon data with proper label and icon component
-const skillIcons = {
-  JavaScript: iconWrapper(<FaJs className="text-yellow-500 w-8 h-8" />, "JavaScript"),
-  React: iconWrapper(<FaReact className="text-cyan-500 w-8 h-8" />, "React"),
-  "Node.js": iconWrapper(<FaNodeJs className="text-green-600 w-8 h-8" />, "Node.js"),
-  Express: iconWrapper(<SiExpress className="text-gray-700 dark:text-gray-200 w-8 h-8" />, "Express"),
-  MongoDB: iconWrapper(<SiMongodb className="text-green-700 w-8 h-8" />, "MongoDB"),
-  GraphQL: iconWrapper(<SiGraphql className="text-pink-500 w-8 h-8" />, "GraphQL"),
-  AI: iconWrapper(<SiOpenai className="text-purple-600 w-8 h-8" />, "AI"),
-  ML: iconWrapper(<SiTensorflow className="text-orange-500 w-8 h-8" />, "ML"),
+const skillIconMap = {
+  JavaScript: <FaJs className="text-yellow-500 w-8 h-8" />,
+  React: <FaReact className="text-cyan-500 w-8 h-8" />,
+  "Node.js": <FaNodeJs className="text-green-600 w-8 h-8" />,
+  Express: <SiExpress className="text-gray-700 dark:text-gray-200 w-8 h-8" />,
+  MongoDB: <SiMongodb className="text-green-700 w-8 h-8" />,
+  GraphQL: <SiGraphql className="text-pink-500 w-8 h-8" />,
+  AI: <SiOpenai className="text-purple-600 w-8 h-8" />,
+  ML: <SiTensorflow className="text-orange-500 w-8 h-8" />,
 };
+
 
 
 
@@ -231,18 +232,23 @@ export default function Portfolio() {
             <h3 className="text-2xl font-bold text-cyan-800 dark:text-cyan-300 mb-4 border-b-2 border-cyan-300 dark:border-cyan-600 pb-1">
               Skills
             </h3>
-          <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 max-w-md">
- <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 max-w-md">
+  <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 max-w-md">
   {data.skills.map(({ skill, expertise }) => (
     <Tooltip key={skill} content={expertise}>
-      {skillIcons[skill] ?? (
-        <div className="flex items-center justify-center rounded-md border border-cyan-300 dark:border-cyan-600 px-3 py-1 text-cyan-900 dark:text-cyan-200 text-sm font-semibold">
-          {skill}
+      <div className="flex flex-col items-center justify-center gap-2 p-3 rounded-xl bg-white dark:bg-zinc-900 shadow hover:shadow-lg transition w-full h-full max-w-[100px] text-center">
+        <div className="w-10 h-10 flex items-center justify-center">
+          {skillIconMap[skill] ?? (
+            <span className="text-cyan-700 dark:text-cyan-300 text-sm">?</span>
+          )}
         </div>
-      )}
+        <span className="text-xs font-medium text-gray-700 dark:text-gray-200 truncate">
+          {skill}
+        </span>
+      </div>
     </Tooltip>
   ))}
 </div>
+
 
 </div>
 
