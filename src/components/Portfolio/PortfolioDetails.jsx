@@ -24,16 +24,22 @@ import InitialLoader from "./InitialLoader";
 import { useLocation } from "react-router-dom";
 import AchievementsModal from "./AchievementsModal";
 
-// ✅ Replaced SiJavascript with FaJs
+const iconWrapper = (icon) => (
+  <div className="w-14 h-14 rounded-full bg-white dark:bg-zinc-900 shadow-md flex items-center justify-center">
+    {icon}
+  </div>
+);
+
+
 const skillIcons = {
-  JavaScript: <FaJs className="text-yellow-500 text-4xl" />,
-  React: <FaReact className="text-cyan-500 text-4xl" />,
-  "Node.js": <FaNodeJs className="text-green-600 text-4xl" />,
-  Express: <SiExpress className="text-gray-700 dark:text-gray-200 text-4xl" />,
-  MongoDB: <SiMongodb className="text-green-700 text-4xl" />,
-  GraphQL: <SiGraphql className="text-pink-500 text-4xl" />,
-  AI: <SiOpenai className="text-purple-600 text-4xl" />,
-  ML: <SiTensorflow className="text-orange-500 text-4xl" />,
+  JavaScript: iconWrapper(<FaJs className="text-yellow-500 w-8 h-8" />),
+  React: iconWrapper(<FaReact className="text-cyan-500 w-8 h-8" />),
+  "Node.js": iconWrapper(<FaNodeJs className="text-green-600 w-8 h-8" />),
+  Express: iconWrapper(<SiExpress className="text-gray-700 dark:text-gray-200 w-8 h-8" />),
+  MongoDB: iconWrapper(<SiMongodb className="text-green-700 w-8 h-8" />),
+  GraphQL: iconWrapper(<SiGraphql className="text-pink-500 w-8 h-8" />),
+  AI: iconWrapper(<SiOpenai className="text-purple-600 w-8 h-8" />),
+  ML: iconWrapper(<SiTensorflow className="text-orange-500 w-8 h-8" />),
 };
 
 
