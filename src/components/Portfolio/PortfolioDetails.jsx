@@ -228,32 +228,32 @@ export default function Portfolio() {
           </section>
 
           {/* Skills */}
-  <ScrollFadeIn className="mt-10">
+<ScrollFadeIn className="mt-10">
   <h3 className="text-3xl font-bold text-cyan-800 dark:text-cyan-300 mb-6 border-b-4 border-cyan-300 dark:border-cyan-600 inline-block pb-1">
     Skills
   </h3>
 
-  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
+  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5">
     {data.skills.map(({ skill, expertise }, index) => (
       <motion.div
         key={skill}
-        initial={{ opacity: 0, y: 30 }}
+        initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{
-          delay: index * 0.05,
-          duration: 0.5,
+          delay: index * 0.04,
+          duration: 0.4,
           ease: "easeOut",
         }}
       >
         <Tooltip content={expertise}>
-          <div className="flex flex-col items-center justify-center p-5 rounded-2xl bg-white/80 dark:bg-zinc-800/70 backdrop-blur-md shadow-md hover:shadow-xl hover:scale-[1.03] transition-all duration-300 ease-in-out text-center h-full w-full min-w-[100px] max-w-[120px] mx-auto">
-            <div className="w-12 h-12 flex items-center justify-center mb-2">
+          <div className="flex flex-col items-center justify-center p-4 rounded-xl bg-white/70 dark:bg-zinc-800/60 backdrop-blur-sm shadow-sm hover:shadow-md hover:scale-[1.04] transition-all duration-300 ease-in-out w-full text-center max-w-[110px] mx-auto">
+            <div className="w-9 h-9 flex items-center justify-center mb-1">
               {skillIconMap[skill] ?? (
-                <span className="text-cyan-700 dark:text-cyan-300 text-sm">?</span>
+                <span className="text-cyan-700 dark:text-cyan-300 text-xs">?</span>
               )}
             </div>
-            <span className="text-sm font-semibold text-gray-800 dark:text-gray-100 truncate">
+            <span className="text-[13px] font-medium text-gray-800 dark:text-gray-200 leading-tight truncate">
               {skill}
             </span>
           </div>
@@ -262,6 +262,7 @@ export default function Portfolio() {
     ))}
   </div>
 </ScrollFadeIn>
+
 
 
 
