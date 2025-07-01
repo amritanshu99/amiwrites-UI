@@ -25,7 +25,7 @@ import AchievementsModal from "./AchievementsModal";
 
 
 const skillIcons = {
-JavaScript: <SiJavascript className="text-yellow-500 w-12 h-12" />,
+JavaScript: <SiJavascript className="text-yellow-500" />,
 
   React: <FaReact className="text-cyan-500" />,
   "Node.js": <FaNodeJs className="text-green-600" />,
