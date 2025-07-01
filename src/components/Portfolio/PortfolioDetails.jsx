@@ -230,16 +230,17 @@ export default function Portfolio() {
             <h3 className="text-2xl font-bold text-cyan-800 dark:text-cyan-300 mb-4 border-b-2 border-cyan-300 dark:border-cyan-600 pb-1">
               Skills
             </h3>
-            <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 max-w-md">
-              {data.skills.map(({ skill, expertise }) => (
-                <Tooltip key={skill} content={expertise}>
-                  <div className="flex items-center space-x-1 rounded-md border border-cyan-300 dark:border-cyan-600 px-3 py-1 text-cyan-900 dark:text-cyan-200 text-sm font-semibold cursor-default select-none hover:bg-cyan-100 dark:hover:bg-cyan-800/30 transition">
-                    {skillIcons[skill]}
-                    <span>{skill}</span>
-                  </div>
-                </Tooltip>
-              ))}
-            </div>
+          <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 max-w-md">
+  {data.skills.map(({ skill, expertise }) => (
+    <Tooltip key={skill} content={expertise}>
+      <div className="flex items-center gap-2 rounded-md border border-cyan-300 dark:border-cyan-600 px-3 py-1 text-cyan-900 dark:text-cyan-200 text-sm font-semibold cursor-default select-none hover:bg-cyan-100 dark:hover:bg-cyan-800/30 transition">
+        {skillIcons[skill]}
+        <span className="truncate">{skill}</span>
+      </div>
+    </Tooltip>
+  ))}
+</div>
+
           </ScrollFadeIn>
 
           {/* Experience */}
