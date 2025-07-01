@@ -228,31 +228,28 @@ export default function Portfolio() {
           </section>
 
           {/* Skills */}
-          <ScrollFadeIn className="mt-8">
-            <h3 className="text-2xl font-bold text-cyan-800 dark:text-cyan-300 mb-4 border-b-2 border-cyan-300 dark:border-cyan-600 pb-1">
-              Skills
-            </h3>
+         <ScrollFadeIn className="mt-8">
+  <h3 className="text-2xl font-bold text-cyan-800 dark:text-cyan-300 mb-4 border-b-2 border-cyan-300 dark:border-cyan-600 pb-1">
+    Skills
+  </h3>
   <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 max-w-md">
-  {data.skills.map(({ skill, expertise }) => (
-    <Tooltip key={skill} content={expertise}>
-      <div className="flex flex-col items-center justify-center gap-2 p-3 rounded-xl bg-white dark:bg-zinc-900 shadow hover:shadow-lg transition w-full h-full max-w-[100px] text-center">
-        <div className="w-10 h-10 flex items-center justify-center">
-          {skillIconMap[skill] ?? (
-            <span className="text-cyan-700 dark:text-cyan-300 text-sm">?</span>
-          )}
+    {data.skills.map(({ skill, expertise }) => (
+      <Tooltip key={skill} content={expertise}>
+        <div className="flex flex-col items-center justify-center gap-2 p-3 rounded-xl bg-white dark:bg-zinc-900 shadow hover:shadow-lg transition w-full h-full max-w-[100px] text-center">
+          <div className="w-10 h-10 flex items-center justify-center">
+            {skillIconMap[skill] ?? (
+              <span className="text-cyan-700 dark:text-cyan-300 text-sm">?</span>
+            )}
+          </div>
+          <span className="text-xs font-medium text-gray-700 dark:text-gray-200 truncate">
+            {skill}
+          </span>
         </div>
-        <span className="text-xs font-medium text-gray-700 dark:text-gray-200 truncate">
-          {skill}
-        </span>
-      </div>
-    </Tooltip>
-  ))}
-</div>
+      </Tooltip>
+    ))}
+  </div>
+</ScrollFadeIn>
 
-
-</div>
-
-          </ScrollFadeIn>
 
           {/* Experience */}
           <ScrollFadeIn className="mt-10">
