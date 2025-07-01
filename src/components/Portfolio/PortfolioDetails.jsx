@@ -228,27 +228,36 @@ export default function Portfolio() {
           </section>
 
           {/* Skills */}
-         <ScrollFadeIn className="mt-8">
-  <h3 className="text-2xl font-bold text-cyan-800 dark:text-cyan-300 mb-4 border-b-2 border-cyan-300 dark:border-cyan-600 pb-1">
+  <ScrollFadeIn className="mt-8">
+  <h3 className="text-2xl font-bold text-cyan-800 dark:text-cyan-300 mb-6 border-b-2 border-cyan-300 dark:border-cyan-600 pb-1">
     Skills
   </h3>
-  <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 max-w-md">
-    {data.skills.map(({ skill, expertise }) => (
-      <Tooltip key={skill} content={expertise}>
-        <div className="flex flex-col items-center justify-center gap-2 p-3 rounded-xl bg-white dark:bg-zinc-900 shadow hover:shadow-lg transition w-full h-full max-w-[100px] text-center">
-          <div className="w-10 h-10 flex items-center justify-center">
-            {skillIconMap[skill] ?? (
-              <span className="text-cyan-700 dark:text-cyan-300 text-sm">?</span>
-            )}
+
+  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5">
+    {data.skills.map(({ skill, expertise }, index) => (
+      <motion.div
+        key={skill}
+        initial={{ opacity: 0, scale: 0.9, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ delay: index * 0.05, duration: 0.4, ease: "easeOut" }}
+      >
+        <Tooltip content={expertise}>
+          <div className="flex flex-col items-center justify-center gap-2 p-4 rounded-2xl bg-white dark:bg-zinc-900 shadow-md hover:shadow-lg hover:scale-105 transition-transform duration-300 ease-out w-full h-full text-center">
+            <div className="w-12 h-12 flex items-center justify-center">
+              {skillIconMap[skill] ?? (
+                <span className="text-cyan-700 dark:text-cyan-300 text-sm">?</span>
+              )}
+            </div>
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-200 truncate">
+              {skill}
+            </span>
           </div>
-          <span className="text-xs font-medium text-gray-700 dark:text-gray-200 truncate">
-            {skill}
-          </span>
-        </div>
-      </Tooltip>
+        </Tooltip>
+      </motion.div>
     ))}
   </div>
 </ScrollFadeIn>
+
 
 
           {/* Experience */}
