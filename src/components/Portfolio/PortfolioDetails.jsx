@@ -231,14 +231,18 @@ export default function Portfolio() {
               Skills
             </h3>
           <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 max-w-md">
+ <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 max-w-md">
   {data.skills.map(({ skill, expertise }) => (
     <Tooltip key={skill} content={expertise}>
-      <div className="flex items-center gap-2 rounded-md border border-cyan-300 dark:border-cyan-600 px-3 py-1 text-cyan-900 dark:text-cyan-200 text-sm font-semibold cursor-default select-none hover:bg-cyan-100 dark:hover:bg-cyan-800/30 transition">
-        {skillIcons[skill]}
-        <span className="truncate">{skill}</span>
-      </div>
+      {skillIcons[skill] ?? (
+        <div className="flex items-center justify-center rounded-md border border-cyan-300 dark:border-cyan-600 px-3 py-1 text-cyan-900 dark:text-cyan-200 text-sm font-semibold">
+          {skill}
+        </div>
+      )}
     </Tooltip>
   ))}
+</div>
+
 </div>
 
           </ScrollFadeIn>
