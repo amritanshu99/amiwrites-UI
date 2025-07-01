@@ -224,34 +224,26 @@ export default function Portfolio() {
   </h3>
 
   <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-5">
-    {data.skills.map(({ skill, expertise }, index) => (
-      <motion.div
+    {data.skills.map(({ skill, expertise }) => (
+      <div
         key={skill}
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{
-          delay: index * 0.03,
-          duration: 0.4,
-          ease: "easeOut",
-        }}
+        className="group h-[110px] w-[110px] bg-white dark:bg-zinc-800 rounded-xl shadow-sm hover:shadow-lg hover:shadow-cyan-300/30 transition-transform duration-300 ease-in-out hover:scale-105 flex flex-col items-center justify-center mx-auto"
       >
         <Tooltip content={expertise}>
-          <div className="group flex flex-col items-center justify-center h-[110px] w-[110px] bg-white dark:bg-zinc-800 shadow-sm rounded-xl mx-auto transition-all duration-300 ease-in-out transform hover:scale-105 hover:rotate-1 hover:shadow-lg hover:shadow-cyan-300/30">
-            <div className="w-8 h-8 mb-2 flex items-center justify-center transition-transform duration-500 group-hover:rotate-3">
-              {skillIconMap[skill] ?? (
-                <span className="text-cyan-700 dark:text-cyan-300 text-sm">?</span>
-              )}
-            </div>
-            <span className="text-xs font-semibold text-gray-800 dark:text-gray-200 text-center truncate px-2">
-              {skill}
-            </span>
+          <div className="w-8 h-8 mb-2 flex items-center justify-center transition-transform duration-500 group-hover:rotate-3">
+            {skillIconMap[skill] ?? (
+              <span className="text-cyan-700 dark:text-cyan-300 text-sm">?</span>
+            )}
           </div>
+          <span className="text-xs font-semibold text-gray-800 dark:text-gray-200 text-center truncate px-2">
+            {skill}
+          </span>
         </Tooltip>
-      </motion.div>
+      </div>
     ))}
   </div>
 </ScrollFadeIn>
+
 
 
 
