@@ -36,16 +36,17 @@ const iconWrapper = (icon, label) => (
 );
 
 // 🎯 Skill icon data with proper label and icon component
-const skillIcons = [
-  iconWrapper(<FaJs className="text-yellow-500 w-8 h-8" />, "JavaScript"),
-  iconWrapper(<FaReact className="text-cyan-500 w-8 h-8" />, "React"),
-  iconWrapper(<FaNodeJs className="text-green-600 w-8 h-8" />, "Node.js"),
-  iconWrapper(<SiExpress className="text-gray-700 dark:text-gray-200 w-8 h-8" />, "Express"),
-  iconWrapper(<SiMongodb className="text-green-700 w-8 h-8" />, "MongoDB"),
-  iconWrapper(<SiGraphql className="text-pink-500 w-8 h-8" />, "GraphQL"),
-  iconWrapper(<SiOpenai className="text-purple-600 w-8 h-8" />, "AI"),
-  iconWrapper(<SiTensorflow className="text-orange-500 w-8 h-8" />, "ML"),
-];
+const skillIcons = {
+  JavaScript: iconWrapper(<FaJs className="text-yellow-500 w-8 h-8" />, "JavaScript"),
+  React: iconWrapper(<FaReact className="text-cyan-500 w-8 h-8" />, "React"),
+  "Node.js": iconWrapper(<FaNodeJs className="text-green-600 w-8 h-8" />, "Node.js"),
+  Express: iconWrapper(<SiExpress className="text-gray-700 dark:text-gray-200 w-8 h-8" />, "Express"),
+  MongoDB: iconWrapper(<SiMongodb className="text-green-700 w-8 h-8" />, "MongoDB"),
+  GraphQL: iconWrapper(<SiGraphql className="text-pink-500 w-8 h-8" />, "GraphQL"),
+  AI: iconWrapper(<SiOpenai className="text-purple-600 w-8 h-8" />, "AI"),
+  ML: iconWrapper(<SiTensorflow className="text-orange-500 w-8 h-8" />, "ML"),
+};
+
 
 
 
