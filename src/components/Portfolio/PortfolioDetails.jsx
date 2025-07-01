@@ -238,11 +238,13 @@ export default function Portfolio() {
         className="w-full"
       >
         <Tooltip content={expertise}>
-          <div className="flex flex-col items-center justify-center w-full aspect-square max-w-[100px] mx-auto bg-white dark:bg-zinc-800 shadow-sm rounded-xl hover:shadow-md hover:scale-105 transition-all duration-300 ease-in-out">
+          <div className="group flex flex-col items-center justify-center w-full aspect-square max-w-[100px] mx-auto bg-white dark:bg-zinc-800 shadow-sm rounded-xl hover:shadow-md hover:scale-105 transition-all duration-300 ease-in-out">
             <div className="w-8 h-8 mb-1 flex items-center justify-center">
-              {skillIconMap[skill] ?? (
-                <span className="text-cyan-700 dark:text-cyan-300 text-sm">?</span>
-              )}
+              <span className="group-hover:animate-spin-slow">
+                {skillIconMap[skill] ?? (
+                  <span className="text-cyan-700 dark:text-cyan-300 text-sm">?</span>
+                )}
+              </span>
             </div>
             <span className="text-xs font-medium text-gray-800 dark:text-gray-200 text-center truncate px-2">
               {skill}
@@ -253,6 +255,7 @@ export default function Portfolio() {
     ))}
   </div>
 </ScrollFadeIn>
+
 
 
 
