@@ -12,7 +12,7 @@ module.exports = {
     extend: {
       animation: {
         "fade-in-left": "fadeInLeft 0.8s ease-out forwards",
-                'spin-slow': 'spin 2s linear infinite',
+                      'pulse-slow': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
         "text-glow-hover": "textGlowHover 1.5s ease-in-out infinite alternate",
         "fade-in": "fadeIn 0.3s ease-in-out forwards",
         "fade-in-down": "fadeInDown 0.4s ease-out both",
