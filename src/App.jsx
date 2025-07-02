@@ -26,12 +26,12 @@ import { Navigate } from "react-router-dom";
 import TaskManagerDetails from "./pages/TaskManagerDetails";
 import AIToolsDetails from "./pages/AIToolsDetails";
 import { isTokenExpired } from "./utils/auth";
+import { useNavigate } from "react-router-dom";
 import { verifyToken } from './utils/authApi';
 const ValidateResetToken = () => {
   const { id: token } = useParams();
   const navigate = useNavigate();
   const [isValidating, setIsValidating] = useState(true);
-
   useEffect(() => {
     const validateToken = async () => {
       try {
@@ -88,7 +88,7 @@ const App = () => {
 
     const logout = () => {
       localStorage.removeItem("token");
-       window.location.reload();
+      navigate("/login");
       
     };
 
