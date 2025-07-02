@@ -83,17 +83,19 @@ const App = () => {
         return;
       }
 
-
+      // ✅ Token is valid → allow rendering
+      setShouldRender(true);
     };
 
     const logout = () => {
       localStorage.removeItem("token");
-      navigate("/");
-      
+      navigate("/", { replace: true });
     };
 
     checkAuth();
-  }, []);
+  }, [navigate]);
+
+  if (!shouldRender) return null;
 
   
   useEffect(() => {
