@@ -67,6 +67,7 @@ const ValidateResetToken = () => {
 const App = () => {
   const [isLoading, setIsLoading] = useState(false);
   const location = useLocation();
+    const navigate = useNavigate();
  useEffect(() => {
     const checkAuth = async () => {
       const token = localStorage.getItem("token");
