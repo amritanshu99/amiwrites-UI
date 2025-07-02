@@ -88,7 +88,7 @@ const App = () => {
 
     const logout = () => {
       localStorage.removeItem("token");
-      navigate("/login");
+      navigate("/");
       
     };
 
