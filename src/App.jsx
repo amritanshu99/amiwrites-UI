@@ -103,11 +103,11 @@ const App = () => {
     initGA();
 
   }, []);
-  if (!shouldRender) return null;
+
   useEffect(() => {
     logPageView(location.pathname + location.search);
   }, [location]);
-if (false) return <Loader />;
+  if (!shouldRender) return null;
   return (
     <div className="h-screen overflow-y-scroll relative">
       <Header setLoading={setIsLoading} />
