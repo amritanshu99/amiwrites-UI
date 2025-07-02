@@ -110,14 +110,18 @@ const App = () => {
   }, [location]);
 if (!shouldRender) {
   return (
-    <div className="flex items-center justify-center h-screen bg-white dark:bg-zinc-900 text-center">
-      <div className="flex flex-col items-center space-y-4">
-        <div className="w-16 h-16 border-4 border-cyan-400 border-dashed rounded-full animate-spin" />
-        <p className="text-lg font-semibold text-zinc-700 dark:text-zinc-200">
-          🔐 Validating session...
-        </p>
-      </div>
-    </div>
+  <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-white via-cyan-50 to-white dark:from-zinc-900 dark:via-zinc-800 dark:to-zinc-900 text-center px-4">
+  <div className="flex flex-col items-center space-y-6 p-8 bg-white dark:bg-zinc-800 shadow-xl dark:shadow-lg rounded-2xl">
+    <div className="w-16 h-16 border-4 border-cyan-500 border-dashed rounded-full animate-spin" />
+    <p className="text-lg sm:text-xl font-semibold text-cyan-700 dark:text-cyan-300 tracking-wide">
+      🔐 Hang tight — Verifying your presence...
+    </p>
+    <p className="text-sm text-gray-500 dark:text-gray-400 max-w-xs">
+      We're syncing your session securely. This won't take long.
+    </p>
+  </div>
+</div>
+
   );
 }
 
