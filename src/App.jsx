@@ -108,7 +108,19 @@ const App = () => {
   useEffect(() => {
     logPageView(location.pathname + location.search);
   }, [location]);
-  if (!shouldRender) return null;
+if (!shouldRender) {
+  return (
+    <div className="flex items-center justify-center h-screen bg-white dark:bg-zinc-900 text-center">
+      <div className="flex flex-col items-center space-y-4">
+        <div className="w-16 h-16 border-4 border-cyan-400 border-dashed rounded-full animate-spin" />
+        <p className="text-lg font-semibold text-zinc-700 dark:text-zinc-200">
+          🔐 Validating session...
+        </p>
+      </div>
+    </div>
+  );
+}
+
   return (
     <div className="h-screen overflow-y-scroll relative">
       <Header setLoading={setIsLoading} />
