@@ -2,6 +2,7 @@
 import axios from 'axios';
 
 export const verifyToken = async (token) => {
+  debugger
   try {
     const res = await axios.post(
       'https://amiwrites-backend-app-1.onrender.com/api/auth/verify-token',

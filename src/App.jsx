@@ -68,7 +68,6 @@ const ValidateResetToken = () => {
 const App = () => {
   const [isLoading, setIsLoading] = useState(false);
   const location = useLocation();
-   const [checking, setChecking] = useState(true); // wait for token check
  useEffect(() => {
     const checkAuth = async () => {
       const token = localStorage.getItem("token");
@@ -84,7 +83,7 @@ const App = () => {
         return;
       }
 
-      setChecking(false); // Token valid, render app
+
     };
 
     const logout = () => {
@@ -104,7 +103,7 @@ const App = () => {
   useEffect(() => {
     logPageView(location.pathname + location.search);
   }, [location]);
-if (checking) return <Loader />;
+if (false) return <Loader />;
   return (
     <div className="h-screen overflow-y-scroll relative">
       <Header setLoading={setIsLoading} />
