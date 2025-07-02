@@ -26,7 +26,6 @@ import { Navigate } from "react-router-dom";
 import TaskManagerDetails from "./pages/TaskManagerDetails";
 import AIToolsDetails from "./pages/AIToolsDetails";
 import { isTokenExpired } from "./utils/auth";
-import { useNavigate } from "react-router-dom";
 import { verifyToken } from './utils/authApi';
 const ValidateResetToken = () => {
   const { id: token } = useParams();
