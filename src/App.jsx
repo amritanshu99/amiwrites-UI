@@ -91,6 +91,7 @@ const App = () => {
     const logout = () => {
       localStorage.removeItem("token");
       navigate("/", { replace: true });
+       setShouldRender(true);
     };
 
     checkAuth();
