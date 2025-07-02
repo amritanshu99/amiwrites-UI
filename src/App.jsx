@@ -25,6 +25,8 @@ import { initGA, logPageView } from "./analytics";
 import { Navigate } from "react-router-dom";
 import TaskManagerDetails from "./pages/TaskManagerDetails";
 import AIToolsDetails from "./pages/AIToolsDetails";
+import { isTokenExpired } from "./utils/auth";
+import { verifyToken } from './utils/authApi';
 const ValidateResetToken = () => {
   const { id: token } = useParams();
   const navigate = useNavigate();
@@ -66,15 +68,43 @@ const ValidateResetToken = () => {
 const App = () => {
   const [isLoading, setIsLoading] = useState(false);
   const location = useLocation();
+   const [checking, setChecking] = useState(true); // wait for token check
+ useEffect(() => {
+    const checkAuth = async () => {
+      const token = localStorage.getItem("token");
 
+      if (!token || isTokenExpired(token)) {
+        logout();
+        return;
+      }
+
+      const isValid = await verifyToken(token);
+      if (!isValid) {
+        logout();
+        return;
+      }
+
+      setChecking(false); // Token valid, render app
+    };
+
+    const logout = () => {
+      localStorage.removeItem("token");
+      
+    };
+
+    checkAuth();
+  }, []);
+
+  
   useEffect(() => {
     initGA();
+
   }, []);
 
   useEffect(() => {
     logPageView(location.pathname + location.search);
   }, [location]);
-
+if (checking) return <Loader />;
   return (
     <div className="h-screen overflow-y-scroll relative">
       <Header setLoading={setIsLoading} />

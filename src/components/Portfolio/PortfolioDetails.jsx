@@ -222,26 +222,27 @@ export default function Portfolio() {
   <h3 className="text-3xl font-bold text-cyan-800 dark:text-cyan-300 mb-6 border-b-4 border-cyan-300 dark:border-cyan-600 inline-block pb-1">
     Skills
   </h3>
-
-  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-5">
-    {data.skills.map(({ skill, expertise }) => (
+<div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-5">
+  {data.skills.map(({ skill, expertise }) => (
+    <Tooltip key={skill} content={expertise} placement="top">
       <div
-        key={skill}
-        className="group h-[110px] w-[110px] bg-white dark:bg-zinc-800 rounded-xl shadow-sm hover:shadow-lg hover:shadow-cyan-300/30 transition-transform duration-300 ease-in-out hover:scale-105 flex flex-col items-center justify-center mx-auto"
+        className="group h-[110px] w-[110px] bg-white dark:bg-zinc-800 rounded-xl shadow-sm hover:shadow-lg hover:shadow-cyan-300/30 transition-transform duration-300 ease-in-out hover:scale-105 flex flex-col items-center justify-center mx-auto relative cursor-pointer"
+        tabIndex={0} // enables focus for keyboard & mobile tap
       >
-        <Tooltip content={expertise}>
-          <div className="w-8 h-8 mb-2 flex items-center justify-center transition-transform duration-500 group-hover:rotate-3">
-            {skillIconMap[skill] ?? (
-              <span className="text-cyan-700 dark:text-cyan-300 text-sm">?</span>
-            )}
-          </div>
-          <span className="text-xs font-semibold text-gray-800 dark:text-gray-200 text-center truncate px-2">
-            {skill}
-          </span>
-        </Tooltip>
+        <div className="w-8 h-8 mb-2 flex items-center justify-center transition-transform duration-500 group-hover:rotate-3">
+          {skillIconMap[skill] ?? (
+            <span className="text-cyan-700 dark:text-cyan-300 text-sm">?</span>
+          )}
+        </div>
+        <span className="text-xs font-semibold text-gray-800 dark:text-gray-200 text-center truncate px-2">
+          {skill}
+        </span>
       </div>
-    ))}
-  </div>
+    </Tooltip>
+  ))}
+</div>
+
+
 </ScrollFadeIn>
 
 
