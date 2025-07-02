@@ -67,6 +67,7 @@ const ValidateResetToken = () => {
 const App = () => {
   const [isLoading, setIsLoading] = useState(false);
   const location = useLocation();
+  const [shouldRender, setShouldRender] = useState(false);
     const navigate = useNavigate();
  useEffect(() => {
     const checkAuth = async () => {
@@ -95,14 +96,14 @@ const App = () => {
     checkAuth();
   }, [navigate]);
 
-  if (!shouldRender) return null;
+
 
   
   useEffect(() => {
     initGA();
 
   }, []);
-
+  if (!shouldRender) return null;
   useEffect(() => {
     logPageView(location.pathname + location.search);
   }, [location]);
