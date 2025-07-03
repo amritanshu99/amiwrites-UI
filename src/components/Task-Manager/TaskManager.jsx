@@ -34,14 +34,28 @@ function TaskManager() {
   const [quote, setQuote] = useState("");
   const analyticsRef = useRef(null);
   const { pathname } = useLocation();
-
+ const [animate, setAnimate] = useState(false);
   const axiosAuth = axios.create({
     baseURL: API_BASE,
     headers: { Authorization: `Bearer ${token}` },
   });
 
   useEffect(() => {
-    setQuote(quotes[Math.floor(Math.random() * quotes.length)]);
+    const updateQuote = () => {
+      const randomQuote =
+        quotes[Math.floor(Math.random() * quotes.length)];
+      setQuote(
+        `${randomQuote} This message will self-destruct in 30 seconds. Good luck!`
+      );
+      setAnimate(true);
+      setTimeout(() => setAnimate(false), 1000); // reset class after 1s
+    };
+
+    updateQuote();
+
+    const intervalId = setInterval(updateQuote, 30000);
+
+    return () => clearInterval(intervalId);
   }, []);
 
   useEffect(() => {
@@ -222,9 +236,13 @@ function TaskManager() {
           {" "}
           Mission Control Dashboard
         </h1>
-        <p className="text-center italic text-lg text-gray-800 dark:text-gray-400 mb-8 max-w-3xl mx-auto">
-          {quote}
-        </p>
+        <p
+      className={`text-center italic text-lg text-gray-800 dark:text-gray-400 mb-8 max-w-3xl mx-auto ${
+        animate ? "animate-smoke" : ""
+      }`}
+    >
+      {quote}
+    </p>
 
         {isAuthenticated && (
           <div className="mb-6 text-center">

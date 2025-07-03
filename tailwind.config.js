@@ -20,6 +20,7 @@ module.exports = {
         "fade-in-slow": "fadeInSlow 3s ease-out forwards",
         glitch: "glitch 0.7s infinite linear alternate", // ✅ new
         flicker: "flicker 3s ease-in-out infinite", // ✅ new
+        smoke: "smoke 1s ease-out",
       },
       keyframes: {
         fadeInLeft: {
@@ -51,6 +52,23 @@ module.exports = {
         fadeInSlow: {
           "0%": { opacity: 0, transform: "translateY(20px)" },
           "100%": { opacity: 1, transform: "translateY(0)" },
+        },
+           smoke: {
+          "0%": {
+            opacity: "0",
+            transform: "translateY(10px) scale(0.98)",
+            filter: "blur(4px)",
+          },
+          "30%": {
+            opacity: "0.7",
+            transform: "translateY(-2px) scale(1.01)",
+            filter: "blur(1.5px)",
+          },
+          "100%": {
+            opacity: "1",
+            transform: "translateY(0px) scale(1)",
+            filter: "blur(0px)",
+          },
         },
         glitch: {
           "0%, 100%": { transform: "translate(0)" },
