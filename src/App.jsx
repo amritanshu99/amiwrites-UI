@@ -26,7 +26,7 @@ import { Navigate } from "react-router-dom";
 import TaskManagerDetails from "./pages/TaskManagerDetails";
 import AIToolsDetails from "./pages/AIToolsDetails";
 import { isTokenExpired } from "./utils/auth";
-import { verifyToken } from './utils/authApi';
+import { verifyToken } from "./utils/authApi";
 const ValidateResetToken = () => {
   const { id: token } = useParams();
   const navigate = useNavigate();
@@ -68,8 +68,13 @@ const App = () => {
   const [isLoading, setIsLoading] = useState(false);
   const location = useLocation();
   const [shouldRender, setShouldRender] = useState(false);
-    const navigate = useNavigate();
- useEffect(() => {
+  const navigate = useNavigate();
+
+  const logout = () => {
+    localStorage.removeItem("token");
+    setShouldRender(true);
+  };
+  useEffect(() => {
     const checkAuth = async () => {
       const token = localStorage.getItem("token");
 
@@ -88,42 +93,31 @@ const App = () => {
       setShouldRender(true);
     };
 
-    const logout = () => {
-      localStorage.removeItem("token");
-      navigate("/", { replace: true });
-       setShouldRender(true);
-    };
-
     checkAuth();
   }, [navigate]);
 
-
-
-  
   useEffect(() => {
     initGA();
-
   }, []);
 
   useEffect(() => {
     logPageView(location.pathname + location.search);
   }, [location]);
-if (!shouldRender) {
-  return (
-  <div className="flex items-center justify-center min-h-screen bg-black text-center px-4">
-      <div className="flex flex-col items-center space-y-6 p-8 bg-zinc-900 bg-opacity-90 backdrop-blur-lg border border-zinc-800 shadow-2xl rounded-3xl">
-        <div className="w-16 h-16 border-4 border-cyan-400 border-dashed rounded-full animate-spin" />
-        <p className="text-lg sm:text-xl font-semibold text-cyan-300 tracking-wide">
-          🔐 Verifying your session
-        </p>
-        <p className="text-sm text-zinc-400 max-w-xs">
-          We're syncing your access securely. Please hold on...
-        </p>
+  if (!shouldRender) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-black text-center px-4">
+        <div className="flex flex-col items-center space-y-6 p-8 bg-zinc-900 bg-opacity-90 backdrop-blur-lg border border-zinc-800 shadow-2xl rounded-3xl">
+          <div className="w-16 h-16 border-4 border-cyan-400 border-dashed rounded-full animate-spin" />
+          <p className="text-lg sm:text-xl font-semibold text-cyan-300 tracking-wide">
+            🔐 Verifying your session
+          </p>
+          <p className="text-sm text-zinc-400 max-w-xs">
+            We're syncing your access securely. Please hold on...
+          </p>
+        </div>
       </div>
-    </div>
-
-  );
-}
+    );
+  }
 
   return (
     <div className="h-screen overflow-y-scroll relative">
@@ -160,7 +154,7 @@ if (!shouldRender) {
           <Route path="/tech-byte" element={<TechByte />} />
           <Route path="/reset-password/:id" element={<ValidateResetToken />} />
           <Route path="/ai-tools" element={<AIToolsDetails />} />
-           <Route path="/task-manager" element={<TaskManagerDetails />} />
+          <Route path="/task-manager" element={<TaskManagerDetails />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
