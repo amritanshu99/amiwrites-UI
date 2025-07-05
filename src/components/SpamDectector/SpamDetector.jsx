@@ -35,7 +35,7 @@ const SpamDetector = () => {
         <h1 className="text-3xl font-bold mb-4 text-center text-cyan-700 dark:text-cyan-400">📨 Spam Email Detector</h1>
 
         <p className="text-center text-sm md:text-base text-gray-600 dark:text-gray-400 mb-6">
-          Built with a <span className="font-semibold text-indigo-600 dark:text-indigo-400">state-of-the-art machine learning model</span> trained on thousands of emails using TF-IDF and Logistic Regression.{" "}
+          Built with a <span className="font-semibold text-indigo-600 dark:text-indigo-400">state-of-the-art machine learning model</span> trained on thousands of English emails using TF-IDF and Logistic Regression.{" "}
           <br className="hidden sm:block" />
           ⚡ Fast, accurate & privacy-friendly.
         </p>
