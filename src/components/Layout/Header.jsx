@@ -83,7 +83,6 @@ export default function Header({ setLoading }) {
   const navLinks = [
     { name: "My Portfolio", to: "/" },
     { name: "My Blogs", to: "/blogs" },
-    { name: "AI Chat", to: "/ai-chat" },
     { name: "Tech Byte", to: "/tech-byte" },
     { name: "AI Tools", to: "/ai-tools" },
     { name: "Task Manager", to: "/task-manager" },

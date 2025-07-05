@@ -27,6 +27,7 @@ import TaskManagerDetails from "./pages/TaskManagerDetails";
 import AIToolsDetails from "./pages/AIToolsDetails";
 import { isTokenExpired } from "./utils/auth";
 import { verifyToken } from "./utils/authApi";
+import SpamDetectorDetails from "./pages/SpamDetectorDetails";
 const ValidateResetToken = () => {
   const { id: token } = useParams();
   const navigate = useNavigate();
@@ -155,6 +156,7 @@ const App = () => {
           <Route path="/reset-password/:id" element={<ValidateResetToken />} />
           <Route path="/ai-tools" element={<AIToolsDetails />} />
           <Route path="/task-manager" element={<TaskManagerDetails />} />
+           <Route path="/spam-check" element={<SpamDetectorDetails />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
