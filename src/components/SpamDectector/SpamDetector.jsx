@@ -31,9 +31,14 @@ const SpamDetector = () => {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen px-4 py-10 bg-gradient-to-br from-cyan-300 via-pink-300 to-yellow-200 text-black dark:bg-gradient-to-br dark:from-zinc-950 dark:via-zinc-900 dark:to-zinc-950 dark:text-white transition-colors duration-300">
-
       <div className="w-full max-w-xl bg-white dark:bg-zinc-900 p-8 rounded-2xl shadow-2xl border border-zinc-300 dark:border-zinc-700">
-        <h1 className="text-3xl font-bold mb-6 text-center text-cyan-700 dark:text-cyan-400">📨 Spam Email Detector</h1>
+        <h1 className="text-3xl font-bold mb-4 text-center text-cyan-700 dark:text-cyan-400">📨 Spam Email Detector</h1>
+
+        <p className="text-center text-sm md:text-base text-gray-600 dark:text-gray-400 mb-6">
+          Built with a <span className="font-semibold text-indigo-600 dark:text-indigo-400">state-of-the-art machine learning model</span> trained on thousands of emails using TF-IDF and Logistic Regression.{" "}
+          <br className="hidden sm:block" />
+          ⚡ Fast, accurate & privacy-friendly.
+        </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
