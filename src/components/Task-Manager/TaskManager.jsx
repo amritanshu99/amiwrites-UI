@@ -34,7 +34,7 @@ function TaskManager() {
   const [quote, setQuote] = useState("");
   const analyticsRef = useRef(null);
   const { pathname } = useLocation();
- const [animate, setAnimate] = useState(false);
+  const [animate, setAnimate] = useState(false);
   const axiosAuth = axios.create({
     baseURL: API_BASE,
     headers: { Authorization: `Bearer ${token}` },
@@ -42,8 +42,7 @@ function TaskManager() {
 
   useEffect(() => {
     const updateQuote = () => {
-      const randomQuote =
-        quotes[Math.floor(Math.random() * quotes.length)];
+      const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
       setQuote(
         `${randomQuote} This message will self-destruct in 30 seconds. Good luck!`
       );
@@ -220,7 +219,7 @@ function TaskManager() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-cyan-300 via-pink-300 to-yellow-200 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-6 transition-colors duration-500">
+    <div className="min-h-screen bg-gradient-to-br from-cyan-300 via-pink-300 to-yellow-200 dark:from-[#0a0a0a] dark:via-[#111111] dark:to-black p-6 transition-colors duration-500">
       <div className="max-w-5xl mx-auto">
         {loading && (
           <div className="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-sm bg-black/30">
@@ -237,12 +236,12 @@ function TaskManager() {
           Mission Control Dashboard
         </h1>
         <p
-      className={`text-center italic text-lg text-gray-800 dark:text-gray-400 mb-8 max-w-3xl mx-auto ${
-        animate ? "animate-smoke" : ""
-      }`}
-    >
-      {quote}
-    </p>
+          className={`text-center italic text-lg text-gray-800 dark:text-gray-400 mb-8 max-w-3xl mx-auto ${
+            animate ? "animate-smoke" : ""
+          }`}
+        >
+          {quote}
+        </p>
 
         {isAuthenticated && (
           <div className="mb-6 text-center">
