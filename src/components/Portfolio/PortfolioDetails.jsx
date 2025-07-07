@@ -108,7 +108,7 @@ export default function Portfolio() {
 
     const loaderTimer = setTimeout(() => {
       setShowLoader(false);
-    }, 1400);
+    }, 1600);
 
     axios
       .get(`https://amiwrites-backend-app-1.onrender.com/api/portfolio`)
