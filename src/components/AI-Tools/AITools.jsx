@@ -1,9 +1,9 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Bot, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
 import clsx from "clsx";
 import { Link } from "react-router-dom";
-
+import { useLocation } from "react-router-dom";
 const toolLinks = [
   {
     path: "/ai-chat",
@@ -15,9 +15,24 @@ const toolLinks = [
     label: "📬 AI Spam Detector",
     color: "from-pink-400 via-pink-500 to-pink-600",
   },
+  {
+    path: "/movie-recommender",
+    label: "🎥 AI Movie Recommender",
+    color: "from-yellow-400 via-orange-500 to-red-500",
+  },
 ];
 
+
 export default function AITools() {
+  const { pathname } = useLocation();
+   useEffect(() => {
+      const scrollContainer = document.querySelector(
+        ".h-screen.overflow-y-scroll.relative"
+      );
+      if (scrollContainer) {
+        scrollContainer.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    }, [pathname]);
   return (
     <main className="relative min-h-screen flex flex-col items-center justify-center px-6 overflow-hidden font-sans text-white transition-colors duration-700
       bg-gradient-to-br from-[#1a2238] via-[#273c52] to-[#1b1f2a] dark:from-[#0a0a0a] dark:via-[#111111] dark:to-[#000000]">
