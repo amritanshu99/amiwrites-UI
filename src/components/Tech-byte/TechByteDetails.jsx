@@ -99,7 +99,7 @@ function TechNewsCards() {
                     <img
                       src={article.image || "/placeholder-image.png"}
                       alt={article.title}
-                      loading="lazy"
+                      loading="eager"
                       className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-110"
                     />
                   </div>
