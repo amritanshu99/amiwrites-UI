@@ -29,6 +29,7 @@ import { isTokenExpired } from "./utils/auth";
 import { verifyToken } from "./utils/authApi";
 import SpamDetectorDetails from "./pages/SpamDetectorDetails";
 import MoviePredictDetails from "./pages/MoviePredictDetails";
+import EmotionAnalyzerDetails from "./pages/EmotionAnalyzerDetails";
 const ValidateResetToken = () => {
   const { id: token } = useParams();
   const navigate = useNavigate();
@@ -159,6 +160,10 @@ const App = () => {
           <Route path="/task-manager" element={<TaskManagerDetails />} />
           <Route path="/spam-check" element={<SpamDetectorDetails />} />
           <Route path="/movie-recommender" element={<MoviePredictDetails />} />
+          <Route
+            path="/emotion-analyzer"
+            element={<EmotionAnalyzerDetails />}
+          />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>

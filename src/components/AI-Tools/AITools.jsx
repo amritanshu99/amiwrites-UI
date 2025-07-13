@@ -20,23 +20,28 @@ const toolLinks = [
     label: "🎥 AI Movie Recommender",
     color: "from-yellow-400 via-orange-500 to-red-500",
   },
+  {
+    path: "/emotion-analyzer",
+    label: "😊 Emotion Analyzer",
+    color: "from-purple-500 via-purple-600 to-purple-700",
+  },
 ];
-
 
 export default function AITools() {
   const { pathname } = useLocation();
-   useEffect(() => {
-      const scrollContainer = document.querySelector(
-        ".h-screen.overflow-y-scroll.relative"
-      );
-      if (scrollContainer) {
-        scrollContainer.scrollTo({ top: 0, behavior: "smooth" });
-      }
-    }, [pathname]);
+  useEffect(() => {
+    const scrollContainer = document.querySelector(
+      ".h-screen.overflow-y-scroll.relative"
+    );
+    if (scrollContainer) {
+      scrollContainer.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }, [pathname]);
   return (
-    <main className="relative min-h-screen flex flex-col items-center justify-center px-6 overflow-hidden font-sans text-white transition-colors duration-700
-      bg-gradient-to-br from-[#1a2238] via-[#273c52] to-[#1b1f2a] dark:from-[#0a0a0a] dark:via-[#111111] dark:to-[#000000]">
-
+    <main
+      className="relative min-h-screen flex flex-col items-center justify-center px-6 overflow-hidden font-sans text-white transition-colors duration-700
+      bg-gradient-to-br from-[#1a2238] via-[#273c52] to-[#1b1f2a] dark:from-[#0a0a0a] dark:via-[#111111] dark:to-[#000000]"
+    >
       {/* Neon Glows */}
       <div className="absolute top-[-120px] left-[-100px] w-[280px] h-[280px] bg-[#00ffe0] rounded-full blur-[120px] opacity-30 pointer-events-none -z-10 animate-ping dark:opacity-20" />
       <div className="absolute bottom-[-120px] right-[-100px] w-[300px] h-[300px] bg-[#ff00cc] rounded-full blur-[140px] opacity-30 pointer-events-none -z-10 animate-ping dark:opacity-20" />
@@ -57,7 +62,10 @@ export default function AITools() {
       >
         {/* Badge */}
         <motion.div
-          variants={{ hidden: { opacity: 0, y: -20 }, visible: { opacity: 1, y: 0 } }}
+          variants={{
+            hidden: { opacity: 0, y: -20 },
+            visible: { opacity: 1, y: 0 },
+          }}
           className="inline-flex items-center gap-2 bg-indigo-600/80 dark:bg-indigo-500/70 px-5 py-2 rounded-full text-sm font-semibold uppercase tracking-widest text-white shadow-xl backdrop-blur-md backdrop-saturate-150"
         >
           <motion.span className="animate-[pulse_2s_ease-in-out_infinite]">
@@ -68,7 +76,10 @@ export default function AITools() {
 
         {/* Glitch Title */}
         <motion.h1
-          variants={{ hidden: { opacity: 0, y: 40 }, visible: { opacity: 1, y: 0 } }}
+          variants={{
+            hidden: { opacity: 0, y: 40 },
+            visible: { opacity: 1, y: 0 },
+          }}
           transition={{ duration: 1 }}
           className={clsx(
             "mt-8 pb-4 text-4xl sm:text-5xl md:text-6xl font-extrabold leading-[1.2] tracking-tight relative",
@@ -88,12 +99,17 @@ export default function AITools() {
           className="mt-4 text-base sm:text-lg md:text-xl text-gray-300 dark:text-gray-400 font-medium"
         >
           Stay tuned —{" "}
-          <span className="text-indigo-400 font-semibold">the machines are thinking.</span>
+          <span className="text-indigo-400 font-semibold">
+            the machines are thinking.
+          </span>
         </motion.p>
 
         {/* Tool Buttons */}
         <motion.div
-          variants={{ hidden: { opacity: 0, scale: 0.95 }, visible: { opacity: 1, scale: 1 } }}
+          variants={{
+            hidden: { opacity: 0, scale: 0.95 },
+            visible: { opacity: 1, scale: 1 },
+          }}
           transition={{ delay: 1.2 }}
           className="mt-12 grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-md mx-auto"
         >
@@ -115,7 +131,10 @@ export default function AITools() {
 
         {/* Sparkles */}
         <motion.div
-          variants={{ hidden: { opacity: 0, scale: 0.8 }, visible: { opacity: 1, scale: 1 } }}
+          variants={{
+            hidden: { opacity: 0, scale: 0.8 },
+            visible: { opacity: 1, scale: 1 },
+          }}
           transition={{ delay: 1.6 }}
           className="flex justify-center mt-12"
         >
