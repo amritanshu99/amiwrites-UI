@@ -10,7 +10,15 @@ export default function ContactMeButton() {
   const [form, setForm] = useState({ name: "", email: "", reason: "" });
 
   const audioRef = useRef(null);
+  const [collapsed, setCollapsed] = useState(false);
+  const [hovered, setHovered] = useState(false);
 
+  useEffect(() => {
+    const timer = setTimeout(() => setCollapsed(true), 5000); // Collapse after 5 sec
+    return () => clearTimeout(timer);
+  }, []);
+
+  const isExpanded = !collapsed || hovered;
   useEffect(() => {
     audioRef.current = new Audio("/sounds/message.mp3");
     audioRef.current.load();
@@ -62,30 +70,43 @@ export default function ContactMeButton() {
   return (
     <>
       {/* Floating Button */}
-      <button
-        onClick={handleOpen}
-        aria-label="Contact Me"
-        className="fixed bottom-5 right-5 z-50 group
-             inline-flex items-center justify-center
-             px-4 py-2.5 sm:px-5 sm:py-3
-             rounded-full
-             bg-gradient-to-br from-blue-500 via-indigo-600 to-purple-600
-             text-white text-sm font-medium tracking-wide
-             shadow-md hover:shadow-xl
-             border border-white/10
-             transition-all duration-300 ease-in-out
-             hover:scale-105 active:scale-100
-             focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300
-             dark:from-blue-700 dark:via-indigo-700 dark:to-purple-700
-             dark:border-white/20"
-      >
-        <span className="relative z-10 inline-flex items-center gap-2">
-          ✉️ <span>Contact Me</span>
-        </span>
+<button
+  onClick={handleOpen}
+  aria-label="Contact Me"
+  onMouseEnter={() => setHovered(true)}
+  onMouseLeave={() => setHovered(false)}
+  className={`
+    fixed bottom-5 right-5 z-50
+    flex items-center transition-all duration-500 ease-in-out
+    rounded-full shadow-lg border border-white/10 dark:border-white/20
+    bg-gradient-to-br from-blue-500 via-indigo-600 to-purple-600 dark:from-blue-700 dark:via-indigo-700 dark:to-purple-700
+    text-white font-medium
+    focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300
+    hover:scale-105 active:scale-100
+    group overflow-hidden
+    ${isExpanded ? 'w-36 px-4 py-2' : 'w-12 h-12 justify-center'}
+  `}
+  style={{
+    transitionProperty: 'width, padding, background-color, box-shadow',
+    minHeight: '3rem',
+  }}
+>
+  {/* ✅ Icon - Always visible */}
+  <span className="text-xl z-10">✉️</span>
 
-        {/* Optional subtle shimmer overlay on hover */}
-        <span className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/10 dark:bg-white/20 blur-sm pointer-events-none"></span>
-      </button>
+  {/* ✅ Only show text when expanded */}
+  {isExpanded && (
+    <span
+      className="ml-2 text-sm z-10 whitespace-nowrap transition-opacity duration-300 opacity-100"
+      style={{ transitionDelay: '100ms' }}
+    >
+      Contact Me
+    </span>
+  )}
+
+  {/* ✅ Shimmer effect on hover */}
+  <span className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/10 dark:bg-white/20 blur-sm pointer-events-none" />
+</button>
 
       {/* Modal */}
       {open && (
