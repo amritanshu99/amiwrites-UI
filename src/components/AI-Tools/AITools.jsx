@@ -5,11 +5,11 @@ import clsx from "clsx";
 import { Link } from "react-router-dom";
 import { useLocation } from "react-router-dom";
 const toolLinks = [
-  // {
-  //   path: "/ai-chat",
-  //   label: "🤖 AI Chat for Productivity",
-  //   color: "from-cyan-400 via-cyan-500 to-cyan-600",
-  // },
+  {
+    path: "/ai-chat",
+    label: "🤖 AI Chat for Productivity",
+    color: "from-cyan-400 via-cyan-500 to-cyan-600",
+  },
   // {
   //   path: "/spam-check",
   //   label: "📬 AI Spam Detector",
