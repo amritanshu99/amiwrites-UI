@@ -84,7 +84,7 @@ export default function Header({ setLoading }) {
     { name: "My Portfolio", to: "/" },
     { name: "My Blogs", to: "/blogs" },
     { name: "Tech Byte", to: "/tech-byte" },
-    // { name: "AI Tools", to: "/ai-tools" },
+    { name: "AI Tools", to: "/ai-tools" },
     { name: "Task Manager", to: "/task-manager" },
   ];
 

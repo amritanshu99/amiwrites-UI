@@ -4,28 +4,28 @@ import { motion } from "framer-motion";
 import clsx from "clsx";
 import { Link } from "react-router-dom";
 import { useLocation } from "react-router-dom";
-const toolLinks = [
-  {
-    path: "/ai-chat",
-    label: "🤖 AI Chat for Productivity",
-    color: "from-cyan-400 via-cyan-500 to-cyan-600",
-  },
-  {
-    path: "/spam-check",
-    label: "📬 AI Spam Detector",
-    color: "from-pink-400 via-pink-500 to-pink-600",
-  },
-  {
-    path: "/movie-recommender",
-    label: "🎥 AI Movie Recommender",
-    color: "from-yellow-400 via-orange-500 to-red-500",
-  },
-  {
-    path: "/emotion-analyzer",
-    label: "😊 Emotion Analyzer",
-    color: "from-purple-500 via-purple-600 to-purple-700",
-  },
-];
+// const toolLinks = [
+//   {
+//     path: "/ai-chat",
+//     label: "🤖 AI Chat for Productivity",
+//     color: "from-cyan-400 via-cyan-500 to-cyan-600",
+//   },
+//   {
+//     path: "/spam-check",
+//     label: "📬 AI Spam Detector",
+//     color: "from-pink-400 via-pink-500 to-pink-600",
+//   },
+//   {
+//     path: "/movie-recommender",
+//     label: "🎥 AI Movie Recommender",
+//     color: "from-yellow-400 via-orange-500 to-red-500",
+//   },
+//   {
+//     path: "/emotion-analyzer",
+//     label: "😊 Emotion Analyzer",
+//     color: "from-purple-500 via-purple-600 to-purple-700",
+//   },
+// ];
 
 export default function AITools() {
   const { pathname } = useLocation();
