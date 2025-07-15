@@ -17,7 +17,7 @@ const EmotionAnalyzer = () => {
     try {
       const encodedText = encodeURIComponent(text.trim());
       const res = await axios.get(
-        `https://amiwrites-backend-app-1.onrender.com/api/emotion/${encodedText}`
+        `https://amiwrites-backend-app-2lp5.onrender.com/api/emotion/${encodedText}`
       );
 
       setResult(res.data);

@@ -49,7 +49,7 @@ export default function SignUpModal({ isOpen, onClose }) {
     setIsSubmitting(true);
     try {
       const res = await fetch(
-        "https://amiwrites-backend-app-1.onrender.com/api/auth/signup",
+        "https://amiwrites-backend-app-2lp5.onrender.com/api/auth/signup",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

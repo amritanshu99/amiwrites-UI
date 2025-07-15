@@ -13,7 +13,7 @@ const BlogDetails = () => {
     setLoading(true);
     try {
       const res = await axios.get(
-        `https://amiwrites-backend-app-1.onrender.com/api/blogs/${id}`
+        `https://amiwrites-backend-app-2lp5.onrender.com/api/blogs/${id}`
       );
       setBlog(res.data);
     } catch (error) {

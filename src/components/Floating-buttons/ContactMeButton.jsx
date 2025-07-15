@@ -47,7 +47,7 @@ export default function ContactMeButton() {
     setLoading(true);
     try {
       const response = await axios.post(
-        "https://amiwrites-backend-app-1.onrender.com/api/contact",
+        "https://amiwrites-backend-app-2lp5.onrender.com/api/contact",
         form
       );
       if (response.status === 200 || response.status === 201) {

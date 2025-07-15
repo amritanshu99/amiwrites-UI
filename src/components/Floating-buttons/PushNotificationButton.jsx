@@ -55,7 +55,7 @@ const PushNotificationButton = () => {
         applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
       });
 
-      await fetch('https://amiwrites-backend-app-1.onrender.com/api/subscribe', {
+      await fetch('https://amiwrites-backend-app-2lp5.onrender.com/api/subscribe', {
         method: 'POST',
         body: JSON.stringify(subscription),
         headers: {

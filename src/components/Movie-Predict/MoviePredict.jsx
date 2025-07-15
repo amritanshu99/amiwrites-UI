@@ -26,7 +26,7 @@ const MoviePredict = () => {
 
     try {
       const response = await axios.post(
-        "https://amiwrites-backend-app-1.onrender.com/api/recommender/recommend",
+        "https://amiwrites-backend-app-2lp5.onrender.com/api/recommender/recommend",
         { movie, top_n: 5 }
       );
       setResults(response.data.recommendations);

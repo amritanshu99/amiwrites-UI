@@ -111,7 +111,7 @@ export default function Portfolio() {
     }, 1600);
 
     axios
-      .get(`https://amiwrites-backend-app-1.onrender.com/api/portfolio`)
+      .get(`https://amiwrites-backend-app-2lp5.onrender.com/api/portfolio`)
       .then((res) => setData(res.data))
       .catch((err) => console.error("Error fetching portfolio:", err));
 
@@ -143,7 +143,7 @@ export default function Portfolio() {
         <article className="bg-white dark:bg-zinc-900 text-black dark:text-white bg-opacity-90 backdrop-blur-md rounded-xl shadow-xl max-w-4xl w-full p-6 md:p-10">
           <section className="flex flex-col sm:flex-row items-center gap-6 sm:gap-10">
             <motion.img
-              src={`https://amiwrites-backend-app-1.onrender.com${data.photoUrl}`}
+              src={`https://amiwrites-backend-app-2lp5.onrender.com${data.photoUrl}`}
               alt="Amritanshu Mishra"
               loading="eager"
               width={192}

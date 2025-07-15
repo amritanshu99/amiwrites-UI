@@ -25,7 +25,7 @@ const SpamDetector = () => {
 
     try {
       const response = await axios.post(
-        "https://amiwrites-backend-app-1.onrender.com/api/spam-check",
+        "https://amiwrites-backend-app-2lp5.onrender.com/api/spam-check",
         {
           subject,
           body,

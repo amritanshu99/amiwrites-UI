@@ -5,7 +5,7 @@ import { useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
 import ProductivityAnalytics from "./ProductivityAnalytics";
 
-const API_BASE = "https://amiwrites-backend-app-1.onrender.com/api/tasks";
+const API_BASE = "https://amiwrites-backend-app-2lp5.onrender.com/api/tasks";
 
 const quotes = [
   "🕶️ Your mission, should you choose to accept it, is to conquer your tasks and crush the day.",

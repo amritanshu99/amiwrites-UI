@@ -5,7 +5,7 @@ export const verifyToken = async (token) => {
   debugger
   try {
     const res = await axios.post(
-      'https://amiwrites-backend-app-1.onrender.com/api/auth/verify-token',
+      'https://amiwrites-backend-app-2lp5.onrender.com/api/auth/verify-token',
       {},
       {
         headers: {

@@ -2,7 +2,7 @@ self.addEventListener('push', event => {
   let data = {
     title: 'Notification',
     body: 'You have a new message.',
-    icon: 'https://amiwrites-backend-app-1.onrender.com/images/favicon.ico', // FULL URL here
+    icon: 'https://amiwrites-backend-app-2lp5.onrender.com/images/favicon.ico', // FULL URL here
     url: 'https://www.amiverse.in/blogs'
   };
 

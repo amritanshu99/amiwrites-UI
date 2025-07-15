@@ -36,7 +36,7 @@ function TechNewsCards() {
     let isMounted = true;
 
     axios
-      .get("https://amiwrites-backend-app-1.onrender.com/api/tech-news")
+      .get("https://amiwrites-backend-app-2lp5.onrender.com/api/tech-news")
       .then((res) => {
         if (isMounted) {
           setArticles(res.data.articles);

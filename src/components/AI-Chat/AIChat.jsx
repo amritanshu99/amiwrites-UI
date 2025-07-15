@@ -93,7 +93,7 @@ const AIChat = () => {
 
     try {
       const response = await fetch(
-        "https://amiwrites-backend-app-1.onrender.com/api/gemini/generate",
+        "https://amiwrites-backend-app-2lp5.onrender.com/api/gemini/generate",
         {
           method: "POST",
           headers: {

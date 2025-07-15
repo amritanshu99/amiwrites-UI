@@ -53,7 +53,7 @@ export default function AddBlog() {
 
     try {
       await axios.post(
-        "https://amiwrites-backend-app-1.onrender.com/api/blogs",
+        "https://amiwrites-backend-app-2lp5.onrender.com/api/blogs",
         { title, content },
         {
           headers: {

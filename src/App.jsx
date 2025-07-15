@@ -38,7 +38,7 @@ const ValidateResetToken = () => {
     const validateToken = async () => {
       try {
         const res = await axios.get(
-          `https://amiwrites-backend-app-1.onrender.com/api/auth/validate-reset-token/${token}`
+          `https://amiwrites-backend-app-2lp5.onrender.com/api/auth/validate-reset-token/${token}`
         );
 
         if (res.data.valid) {

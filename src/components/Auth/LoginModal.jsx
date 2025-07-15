@@ -47,7 +47,7 @@ export default function LoginModal({ isOpen, onClose }) {
     setIsLoading(true);
     try {
       const response = await axios.post(
-        "https://amiwrites-backend-app-1.onrender.com/api/auth/login",
+        "https://amiwrites-backend-app-2lp5.onrender.com/api/auth/login",
         { username, password }
       );
 
@@ -80,7 +80,7 @@ export default function LoginModal({ isOpen, onClose }) {
 
     try {
       await axios.post(
-        "https://amiwrites-backend-app-1.onrender.com/api/auth/request-reset",
+        "https://amiwrites-backend-app-2lp5.onrender.com/api/auth/request-reset",
         { email }
       );
 
