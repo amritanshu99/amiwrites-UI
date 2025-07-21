@@ -3,12 +3,29 @@ import { useLocation } from "react-router-dom";
 
 const Amibot = () => {
   const { pathname } = useLocation();
-  const [messages, setMessages] = useState([
-    {
-      sender: "bot",
-      text: "Hello! I’m AmiBot. Ask me anything about Amritanshu Mishra!",
-    },
-  ]);
+const greetings = [
+  {
+    sender: "bot",
+    text: "Hello! I’m AmiBot — here to reflect the world of Amritanshu Mishra.",
+  },
+  {
+    sender: "bot",
+    text: "Namaste! I’m AmiBot, your guide to everything Amritanshu Mishra.",
+  },
+  {
+    sender: "bot",
+    text: "Hey there! Curious about Amritanshu Mishra? Just ask me.",
+  },
+  {
+    sender: "bot",
+    text: "Yo! AmiBot here — your shortcut to knowing Amritanshu better.",
+  },
+];
+
+const [messages, setMessages] = useState([
+  greetings[Math.floor(Math.random() * greetings.length)],
+]);
+
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -92,7 +109,7 @@ const Amibot = () => {
         </div>
       </div>
 
-      <div className="max-w-2xl mx-auto h-[70vh] flex flex-col bg-white dark:bg-zinc-900 rounded-2xl shadow-xl p-6">
+      <div className="max-w-2xl mx-auto h-[50vh] flex flex-col bg-white dark:bg-zinc-900 rounded-2xl shadow-xl p-6">
         <h1 className="text-2xl font-semibold text-center text-gray-800 dark:text-white mb-4">
           💬 AmiBot - Personal Chat Assistant
         </h1>
