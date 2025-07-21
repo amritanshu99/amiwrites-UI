@@ -74,20 +74,20 @@ const Amibot = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-cyan-300 via-pink-300 to-yellow-200 dark:from-[#0a0a0a] dark:via-[#111111] dark:to-black p-6 transition-colors duration-500">
       <div className="max-w-2xl mx-auto mb-6">
-        <div className="bg-gradient-to-r from-purple-600 via-fuchsia-500 to-pink-500 text-white text-center py-5 px-6 rounded-2xl shadow-2xl ring-2 ring-white/20">
-          <h1 className="text-3xl font-bold mb-2 drop-shadow-lg tracking-wide">
+        <div className="bg-gradient-to-r from-indigo-100 via-purple-100 to-pink-100 dark:from-[#1a1a1a] dark:via-[#111111] dark:to-black text-gray-900 dark:text-gray-100 text-center py-5 px-6 rounded-2xl shadow-xl ring-1 ring-black/10 dark:ring-white/10 transition-colors duration-500">
+          <h1 className="text-3xl font-bold mb-2 tracking-wide drop-shadow-sm dark:drop-shadow-lg">
             🤖 Meet AmiBot
           </h1>
-          <p className="text-base sm:text-lg font-medium text-white/90 leading-relaxed">
+          <p className="text-base sm:text-lg font-medium leading-relaxed text-gray-800 dark:text-gray-300">
             AmiBot is a digital companion crafted to reflect the life and
             personality of{" "}
-            <span className="text-yellow-200 font-semibold">
+            <span className="text-purple-700 dark:text-yellow-300 font-semibold">
               Amritanshu Mishra
             </span>
             .
             <br />
-            Feel free to ask about his <em>hobbies</em>, <em>skills</em>,{" "}
-            <em>dreams, goals</em>, and more.
+            Questions can be asked about his <em>hobbies</em>, <em>skills</em>,
+            <em> dreams</em>, <em>goals</em>, and more.
           </p>
         </div>
       </div>
