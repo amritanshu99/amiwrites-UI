@@ -30,6 +30,7 @@ import { verifyToken } from "./utils/authApi";
 import SpamDetectorDetails from "./pages/SpamDetectorDetails";
 import MoviePredictDetails from "./pages/MoviePredictDetails";
 import EmotionAnalyzerDetails from "./pages/EmotionAnalyzerDetails";
+import AmiBotDetails from "./pages/AmiBotDetails";
 const ValidateResetToken = () => {
   const { id: token } = useParams();
   const navigate = useNavigate();
@@ -164,6 +165,11 @@ const App = () => {
             path="/emotion-analyzer"
             element={<EmotionAnalyzerDetails />}
           />
+            <Route
+            path="/amibot"
+            element={<AmiBotDetails />}
+          />
+          
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>

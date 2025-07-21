@@ -10,21 +10,26 @@ const toolLinks = [
     label: "🤖 AI Chat for Productivity",
     color: "from-cyan-400 via-cyan-500 to-cyan-600",
   },
-  // {
-  //   path: "/spam-check",
-  //   label: "📬 AI Spam Detector",
-  //   color: "from-pink-400 via-pink-500 to-pink-600",
-  // },
-  // {
-  //   path: "/movie-recommender",
-  //   label: "🎥 AI Movie Recommender",
-  //   color: "from-yellow-400 via-orange-500 to-red-500",
-  // },
-  // {
-  //   path: "/emotion-analyzer",
-  //   label: "😊 Emotion Analyzer",
-  //   color: "from-purple-500 via-purple-600 to-purple-700",
-  // },
+  {
+    path: "/spam-check",
+    label: "📬 AI Spam Detector",
+    color: "from-pink-400 via-pink-500 to-pink-600",
+  },
+  {
+    path: "/movie-recommender",
+    label: "🎥 AI Movie Recommender",
+    color: "from-yellow-400 via-orange-500 to-red-500",
+  },
+  {
+    path: "/emotion-analyzer",
+    label: "😊 Emotion Analyzer",
+    color: "from-purple-500 via-purple-600 to-purple-700",
+  },
+  {
+    path: "/amibot",
+    label: "AmiBot, know more about Amritanshu Mishra",
+    color: "from-purple-500 via-purple-600 to-purple-700",
+  },
 ];
 
 export default function AITools() {
