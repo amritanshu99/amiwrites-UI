@@ -55,7 +55,7 @@ const [messages, setMessages] = useState([
 
     try {
       const response = await fetch(
-        "https://amiwrites-backend-app-2lp5.onrender.com/api/amibot",
+        "https://amiwrites-backend-app-2lp5.onrender.com/api/ask",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
