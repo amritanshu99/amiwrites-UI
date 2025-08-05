@@ -90,7 +90,7 @@ const [messages, setMessages] = useState([
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-cyan-300 via-pink-300 to-yellow-200 dark:from-[#0a0a0a] dark:via-[#111111] dark:to-black p-6 transition-colors duration-500">
-      <div className="max-w-2xl mx-auto mb-6">
+      <div className="max-w-4xl mx-auto mb-6">
         <div className="bg-gradient-to-r from-indigo-100 via-purple-100 to-pink-100 dark:from-[#1a1a1a] dark:via-[#111111] dark:to-black text-gray-900 dark:text-gray-100 text-center py-5 px-6 rounded-2xl shadow-xl ring-1 ring-black/10 dark:ring-white/10 transition-colors duration-500">
           <h1 className="text-3xl font-bold mb-2 tracking-wide drop-shadow-sm dark:drop-shadow-lg">
             🤖 Meet AmiBot
@@ -109,7 +109,7 @@ const [messages, setMessages] = useState([
         </div>
       </div>
 
-      <div className="max-w-2xl mx-auto h-[50vh] flex flex-col bg-white dark:bg-zinc-900 rounded-2xl shadow-xl p-6">
+      <div className="max-w-4xl mx-auto h-[50vh] flex flex-col bg-white dark:bg-zinc-900 rounded-2xl shadow-xl p-6">
         <h1 className="text-2xl font-semibold text-center text-gray-800 dark:text-white mb-4">
           💬 AmiBot - Personal Chat Assistant
         </h1>
