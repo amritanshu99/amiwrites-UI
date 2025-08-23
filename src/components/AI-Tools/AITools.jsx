@@ -157,8 +157,12 @@ export default function AITools() {
           transition={{ duration: 1 }}
           className={clsx(
             "mt-8 pb-4 text-4xl sm:text-5xl md:text-6xl font-extrabold leading-[1.2] tracking-tight relative",
+            // Base text gradient
             "text-transparent bg-clip-text bg-gradient-to-r from-[#00ffe0] via-[#a855f7] to-[#ff00cc]",
-            "drop-shadow-[0_10px_35px_rgba(168,85,247,0.35)]"
+            // Glitch layer using ::before (relies on your existing animate-glitch keyframes)
+            "before:content-['AI_Era_Has_Begun.'] before:absolute before:top-0 before:left-0 before:w-full before:h-full",
+            "before:text-transparent before:bg-clip-text before:bg-gradient-to-r before:from-[#ff00cc] before:via-[#a855f7] before:to-[#00ffe0]",
+            "before:opacity-50 before:mix-blend-screen before:animate-glitch"
           )}
         >
           AI Era Has Begun.
