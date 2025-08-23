@@ -149,7 +149,8 @@ export default function Header({ setLoading }) {
             <img
               src="/favicon.ico"
               alt="AmiVerse logo"
-              className="h-7 w-7 rounded-md object-contain ring-1 ring-black/5 dark:ring-white/10 
+              className="h-10 w-10 sm:h-7 sm:w-7 rounded-xl object-contain 
+             ring-1 ring-black/10 dark:ring-white/20 shadow-sm
              transition-transform duration-300 md:group-hover:rotate-6 md:group-hover:scale-[1.05]"
               draggable="false"
             />
