@@ -30,6 +30,7 @@ export default function Header({ setLoading }) {
   const location = useLocation();
   const userMenuRef = useRef(null);
   const mobileMenuRef = useRef(null);
+  const userButtonRef = useRef(null);
 
   useEffect(() => {
     if (darkMode) {
@@ -80,6 +81,27 @@ export default function Header({ setLoading }) {
     setMenuOpen(false);
   }, [location.pathname]);
 
+  // Close menus with Escape
+  useEffect(() => {
+    const onKeyDown = (e) => {
+      if (e.key === "Escape") {
+        setUserMenuOpen(false);
+        setMenuOpen(false);
+      }
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, []);
+
+  // Prevent body scroll when mobile menu open
+  useEffect(() => {
+    if (menuOpen) {
+      document.body.classList.add("overflow-hidden");
+    } else {
+      document.body.classList.remove("overflow-hidden");
+    }
+  }, [menuOpen]);
+
   const navLinks = [
     { name: "My Portfolio", to: "/" },
     { name: "My Blogs", to: "/blogs" },
@@ -87,6 +109,7 @@ export default function Header({ setLoading }) {
     { name: "Tech Byte", to: "/tech-byte" },
     { name: "AI Tools", to: "/ai-tools" },
     { name: "Task Manager", to: "/task-manager" },
+    { name: "AI Chat", to: "/ai-chat" },
   ];
 
   const handleLogout = async () => {
@@ -117,14 +140,27 @@ export default function Header({ setLoading }) {
        sticky top-0 z-50 px-6 py-3 w-full"
       >
         <div className="flex flex-wrap justify-between items-center gap-y-4">
+          {/* Brand: favicon + title */}
           <Link
             to="/"
-            className="text-2xl font-bold tracking-tight hover:scale-105 text-gray-900 dark:text-white hover:text-sky-600 dark:hover:text-cyan-400 transition cursor-pointer select-none"
+            className="group flex items-center gap-2 select-none cursor-pointer"
+            aria-label="AmiVerse Home"
           >
-            AmiVerse
+            <img
+              src="/favicon.ico"
+              alt="AmiVerse logo"
+              className="h-7 w-7 rounded-md object-contain ring-1 ring-black/5 dark:ring-white/10 transition-transform duration-300 group-hover:rotate-6 group-hover:scale-[1.05]"
+              draggable="false"
+            />
+            <span
+              className="text-2xl font-semibold tracking-tight text-gray-900 dark:text-white 
+                         transition-colors duration-300 group-hover:text-sky-700 dark:group-hover:text-cyan-300"
+            >
+              AmiVerse
+            </span>
           </Link>
 
-          <nav className="hidden md:flex flex-wrap gap-x-6">
+          <nav className="hidden md:flex flex-wrap gap-x-6" aria-label="Primary">
             {navLinks.map((link) => (
               <Link
                 key={link.name}
@@ -134,6 +170,7 @@ export default function Header({ setLoading }) {
                     ? "text-sky-700 dark:text-cyan-300 after:scale-x-100"
                     : "text-gray-700 hover:text-sky-600 dark:text-gray-300 dark:hover:text-cyan-400"
                 } after:content-[''] after:absolute after:left-0 after:-bottom-1 after:h-[2px] after:w-full after:bg-sky-500 after:scale-x-0 after:origin-left after:transition-transform after:duration-300 hover:after:scale-x-100`}
+                aria-current={isActive(link.to) ? "page" : undefined}
               >
                 {link.name}
               </Link>
@@ -143,8 +180,9 @@ export default function Header({ setLoading }) {
           <div className="flex items-center flex-wrap gap-2">
             <button
               onClick={() => setDarkMode((prev) => !prev)}
-              className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-800 transition"
+              className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-800 transition outline-none focus-visible:ring-2 focus-visible:ring-sky-500"
               aria-label="Toggle Dark Mode"
+              type="button"
             >
               {darkMode ? (
                 <svg
@@ -153,6 +191,7 @@ export default function Header({ setLoading }) {
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
+                  aria-hidden="true"
                 >
                   <path
                     strokeLinecap="round"
@@ -168,6 +207,7 @@ export default function Header({ setLoading }) {
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
+                  aria-hidden="true"
                 >
                   <path
                     strokeLinecap="round"
@@ -182,9 +222,14 @@ export default function Header({ setLoading }) {
             {isAuthenticated ? (
               <div className="relative" ref={userMenuRef}>
                 <button
+                  ref={userButtonRef}
                   onClick={() => setUserMenuOpen((prev) => !prev)}
-                  className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-800 transition text-gray-800 dark:text-white"
+                  className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-800 transition text-gray-800 dark:text-white outline-none focus-visible:ring-2 focus-visible:ring-sky-500"
                   aria-label="User menu"
+                  aria-haspopup="menu"
+                  aria-expanded={userMenuOpen}
+                  aria-controls="user-menu"
+                  type="button"
                 >
                   <UserCircle size={32} />
                 </button>
@@ -197,6 +242,9 @@ export default function Header({ setLoading }) {
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.95 }}
                       transition={{ duration: 0.2 }}
+                      id="user-menu"
+                      role="menu"
+                      aria-labelledby="user-menu-button"
                       className="absolute right-0 mt-2 w-44 bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-50 origin-top-right"
                     >
                       <div className="px-4 py-2 text-sm text-gray-700 dark:text-gray-200 border-b border-gray-200 dark:border-gray-600">
@@ -204,7 +252,9 @@ export default function Header({ setLoading }) {
                       </div>
                       <button
                         onClick={handleLogout}
+                        role="menuitem"
                         className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+                        type="button"
                       >
                         <LogOut size={16} />
                         Logout
@@ -217,13 +267,15 @@ export default function Header({ setLoading }) {
               <div className="flex gap-2">
                 <button
                   onClick={() => setLoginOpen(true)}
-                  className="px-4 py-2 rounded-md bg-sky-600 text-white hover:bg-sky-700 transition shadow-sm"
+                  className="px-4 py-2 rounded-md bg-sky-600 text-white hover:bg-sky-700 transition shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-sky-500"
+                  type="button"
                 >
                   Login
                 </button>
                 <button
                   onClick={() => setSignupOpen(true)}
-                  className="px-4 py-2 rounded-md bg-emerald-600 text-white hover:bg-emerald-700 transition shadow-sm"
+                  className="px-4 py-2 rounded-md bg-emerald-600 text-white hover:bg-emerald-700 transition shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-emerald-500"
+                  type="button"
                 >
                   Sign Up
                 </button>
@@ -232,8 +284,11 @@ export default function Header({ setLoading }) {
 
             <button
               onClick={() => setMenuOpen(!menuOpen)}
-              className="md:hidden text-gray-700 dark:text-gray-200 hover:text-sky-700 dark:hover:text-cyan-400 transition"
+              className="md:hidden text-gray-700 dark:text-gray-200 hover:text-sky-700 dark:hover:text-cyan-400 transition outline-none focus-visible:ring-2 focus-visible:ring-sky-500"
               aria-label="Toggle menu"
+              aria-expanded={menuOpen}
+              aria-controls="mobile-menu"
+              type="button"
             >
               {menuOpen ? <X size={28} /> : <Menu size={28} />}
             </button>
@@ -249,7 +304,9 @@ export default function Header({ setLoading }) {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ duration: 0.2 }}
+              id="mobile-menu"
               className="md:hidden bg-white dark:bg-[#121212] border-t border-gray-200 dark:border-gray-700 px-6 pb-4 pt-2 origin-top"
+              role="menu"
             >
               {navLinks.map((link) => (
                 <Link
@@ -261,6 +318,8 @@ export default function Header({ setLoading }) {
                       ? "text-sky-700 bg-sky-100 dark:bg-gray-800"
                       : "text-gray-700 dark:text-gray-300 hover:text-sky-600 dark:hover:text-cyan-400"
                   }`}
+                  role="menuitem"
+                  aria-current={isActive(link.to) ? "page" : undefined}
                 >
                   {link.name}
                 </Link>
@@ -273,7 +332,8 @@ export default function Header({ setLoading }) {
                       setLoginOpen(true);
                       setMenuOpen(false);
                     }}
-                    className="flex-1 px-4 py-2 rounded-md bg-sky-600 text-white hover:bg-sky-700 transition shadow-sm"
+                    className="flex-1 px-4 py-2 rounded-md bg-sky-600 text-white hover:bg-sky-700 transition shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-sky-500"
+                    type="button"
                   >
                     Login
                   </button>
@@ -282,7 +342,8 @@ export default function Header({ setLoading }) {
                       setSignupOpen(true);
                       setMenuOpen(false);
                     }}
-                    className="flex-1 px-4 py-2 rounded-md bg-emerald-600 text-white hover:bg-emerald-700 transition shadow-sm"
+                    className="flex-1 px-4 py-2 rounded-md bg-emerald-600 text-white hover:bg-emerald-700 transition shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-emerald-500"
+                    type="button"
                   >
                     Sign Up
                   </button>

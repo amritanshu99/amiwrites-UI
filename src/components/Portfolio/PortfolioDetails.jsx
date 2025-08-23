@@ -18,7 +18,6 @@ import {
   SiMongodb,
   SiGraphql,
 } from "react-icons/si";
-import clsx from "clsx";
 import { motion, AnimatePresence, useInView } from "framer-motion";
 import InitialLoader from "./InitialLoader";
 import { useLocation } from "react-router-dom";
