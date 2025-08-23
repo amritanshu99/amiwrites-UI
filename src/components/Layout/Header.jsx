@@ -153,7 +153,7 @@ export default function Header({ setLoading }) {
               draggable="false"
             />
             <span
-              className="text-2xl font-semibold tracking-tight text-gray-900 dark:text-white 
+              className="hidden sm:inline text-2xl font-semibold tracking-tight text-gray-900 dark:text-white 
                          transition-colors duration-300 group-hover:text-sky-700 dark:group-hover:text-cyan-300"
             >
               AmiVerse
