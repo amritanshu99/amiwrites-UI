@@ -149,7 +149,8 @@ export default function Header({ setLoading }) {
             <img
               src="/favicon.ico"
               alt="AmiVerse logo"
-              className="h-7 w-7 rounded-md object-contain ring-1 ring-black/5 dark:ring-white/10 transition-transform duration-300 group-hover:rotate-6 group-hover:scale-[1.05]"
+              className="h-7 w-7 rounded-md object-contain ring-1 ring-black/5 dark:ring-white/10 
+             transition-transform duration-300 md:group-hover:rotate-6 md:group-hover:scale-[1.05]"
               draggable="false"
             />
             <span
@@ -160,7 +161,10 @@ export default function Header({ setLoading }) {
             </span>
           </Link>
 
-          <nav className="hidden md:flex flex-wrap gap-x-6" aria-label="Primary">
+          <nav
+            className="hidden md:flex flex-wrap gap-x-6"
+            aria-label="Primary"
+          >
             {navLinks.map((link) => (
               <Link
                 key={link.name}
