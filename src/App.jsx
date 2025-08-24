@@ -171,7 +171,7 @@ const App = () => {
             element={<AmiBotDetails />}
           />
              <Route
-            path="/RL"
+            path="/Reinforcement-Learning"
             element={<ReinforcementLearningDetails />}
           />
           <Route path="*" element={<Navigate to="/" replace />} />

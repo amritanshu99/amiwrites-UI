@@ -30,7 +30,7 @@ function makeGridEnv({
   rewards={ step:-1, goal:+10, trap:-5, wallBump:-2 },
   slipProb=0, maxSteps=50
 }){
-  const S = size * size; // ✅ fixed
+  const S = size * size;
   const isTrap=i=>traps.includes(i);
   const isWall=i=>walls.includes(i);
   const inBounds=(r,c)=>r>=0&&r<size&&c>=0&&c<size;
@@ -93,6 +93,8 @@ function simulateGreedy(env, selector){
     const { ns } = env.step(s,a,()=>1); // no slip
     if(ns===env.goal){ outcome="goal"; path.push(ns); break; }
     if(env.isTrap(ns)){ outcome="trap"; path.push(ns); break; }
+    // guard against stuck-on-same-cell loops (shouldn't happen with masking, but safe)
+    if (ns === s) { steps++; path.push(ns); break; }
     path.push(ns);
     s=ns; steps++;
   }
@@ -235,8 +237,10 @@ function Grid({ env, agentState, policy, values, showValues=false, edit=false, o
               {policy && (
                 <div className="absolute inset-0 grid grid-cols-2 grid-rows-2 text-[10px] p-1">
                   {[0,1,2,3].map(a=>{
-                    const p=policy[i]?.[a] ?? 0; const w=clamp(Math.abs(p),0,1);
-                    const label=ACTION_LABEL[a]; const style={opacity:0.18+0.82*w};
+                    const p=policy[i]?.[a] ?? 0;
+                    const w=clamp(Math.abs(p),0,1);
+                    const label=ACTION_LABEL[a];
+                    const style={opacity:0.18+0.82*w};
                     return (
                       <div key={a} className="flex items-center justify-center">
                         <div className="px-1 py-0.5 rounded bg-white/70" style={style}>{label}</div>
@@ -320,7 +324,6 @@ function QLearningTab({ envConfig }) {
   const [epsHistory,setEpsHistory]=useState([0.3]);
   const exploredRef=useRef(0); const exploitedRef=useRef(0);
 
-  // keep env & BFS in sync
   useEffect(()=>{ const e=makeGridEnv(envConfig); setEnv(e); setOptPath(shortestPathStates(e)); resetAll(true,e); },[envConfig]);
 
   function resetAll(hard=false, e=env){
@@ -329,7 +332,7 @@ function QLearningTab({ envConfig }) {
     if(hard) { setReturns([]); setEpisodeLog([]); setLearned(false); setLearnedAtEp(null); setOptStreak(0); setGreedyPath(null); setEps(0.3); setEpsHistory([0.3]); setShowLearnedPath(true); }
     exploredRef.current=0; exploitedRef.current=0;
     setOptPath(shortestPathStates(e));
-    setAutoShowOptimal(false); // ✅ hide on new run
+    setAutoShowOptimal(false);
   }
 
   function greedyAction(si){
@@ -357,13 +360,13 @@ function QLearningTab({ envConfig }) {
     setOptStreak(k=> optimal ? k+1 : 0);
     if(optimal && (optStreak+1)>=3 && !learned){
       setLearned(true); setLearnedAtEp(ep+1);
-      setAutoShowOptimal(true); // ✅ show BFS when learned
+      setAutoShowOptimal(true);
     }
 
     setEp(e=>e+1); setEpRet(0); setStepsInEp(0); setEpPath([env.start]);
     setEps(e=>{ const v=Math.max(0.05, e*0.995); setEpsHistory(h=>[...h.slice(-199), v]); return v; });
     exploredRef.current=0; exploitedRef.current=0;
-    if(auto && ep+1>=epCap){ setAuto(false); setAutoShowOptimal(true); } // ✅ show shortest at end
+    if(auto && ep+1>=epCap){ setAuto(false); setAutoShowOptimal(true); }
   }
 
   function stepOnce(){
@@ -409,7 +412,7 @@ function QLearningTab({ envConfig }) {
     <div className="flex flex-col gap-3">
       <ControlBar
         auto={auto}
-        onToggleAuto={()=>setAuto(a=>{ const next=!a; if(next) setAutoShowOptimal(false); return next; })} // ✅ hide overlay during training
+        onToggleAuto={()=>setAuto(a=>{ const next=!a; if(next) setAutoShowOptimal(false); return next; })}
         onStep={stepOnce}
         onReset={()=>resetAll(true)}
         speed={speed}
@@ -438,10 +441,9 @@ function QLearningTab({ envConfig }) {
             values={values}
             showValues={showValues}
             highlightPath={
-              autoShowOptimal ? optPath :
               showLastPath ? epPath :
-              (showLearnedPath && learned) ? greedyPath :
-              showBFS ? optPath : null
+              (showLearnedPath && greedyPath) ? greedyPath :
+              (showBFS || autoShowOptimal) ? optPath : null
             }
             showPathOrder={showLastPath}
             edit
@@ -527,6 +529,13 @@ function PGTab({ envConfig }){
   const [returns,setReturns]=useState([]);
   const [epCap,setEpCap]=useState(200);
   const [episodeLog,setEpisodeLog]=useState([]);
+
+  // NEW: live movement replay state
+  const [agentS, setAgentS] = useState(env.start);
+  const [replayPath, setReplayPath] = useState(null);
+  const [replayIdx, setReplayIdx] = useState(0);
+  const [animateAfterRollout, setAnimateAfterRollout] = useState(true);
+
   const [lastPath,setLastPath]=useState(null);
   const [showLastPath,setShowLastPath]=useState(false);
   const [showLearnedPath,setShowLearnedPath]=useState(true);
@@ -536,6 +545,8 @@ function PGTab({ envConfig }){
   const [learnedAtEp,setLearnedAtEp]=useState(null);
   const [entropyHist,setEntropyHist]=useState([]);
 
+  const [greedyPath, setGreedyPath] = useState(null);
+
   useEffect(()=>{ const e=makeGridEnv(envConfig); setEnv(e); resetAll(true,e); },[envConfig]);
   function resetAll(hard=false,e=env){
     setTheta(Array.from({length:e.S},()=>[0,0,0,0]));
@@ -543,7 +554,9 @@ function PGTab({ envConfig }){
     setEp(0); setEpRet(0);
     if(hard){ setReturns([]); setEpisodeLog([]); setLearned(false); setLearnedAtEp(null); setOptStreak(0); setLastPath(null); setEntropyHist([]); setShowLearnedPath(true); }
     setOptPath(shortestPathStates(e));
-    setAutoShowOptimal(false); // ✅ hide overlay on reset
+    setAutoShowOptimal(false);
+    setAgentS(e.start); setReplayPath(null); setReplayIdx(0);
+    setGreedyPath(null);
   }
 
   const policyProbs = s => softmax(theta[s]);
@@ -584,18 +597,45 @@ function PGTab({ envConfig }){
     setEntropyHist(h=>[...h.slice(-199), avgEntropy]);
     setLastPath(path);
 
-    const selector = (s)=>{ const p=softmax(newT[s]); let best=0,bv=-1; for(let a=0;a<4;a++){ if(p[a]>bv){bv=p[a]; best=a;} } return best; };
+    if (animateAfterRollout) {
+      setReplayPath(path);
+      setReplayIdx(0);
+      setAgentS(path[0] ?? env.start);
+    }
+
+    const selector = (s)=>{
+      const p=softmax(newT[s]);
+      const acts = env.validActions(s);
+      let best=acts[0], bv=-Infinity;
+      for (const a of acts){ if(p[a]>bv){ bv=p[a]; best=a; } }
+      return best;
+    };
     const gp = simulateGreedy(env, selector);
+    setGreedyPath(gp.path);
     const optimal = (gp.outcome==="goal" && optPath && gp.path.length===optPath.length);
     setOptStreak(k=> optimal ? k+1 : 0);
     if(optimal && (optStreak+1)>=3 && !learned){
       setLearned(true); setLearnedAtEp(ep+1);
-      setAutoShowOptimal(true); // ✅ show BFS when learned
+      setAutoShowOptimal(true);
     }
 
-    if(auto && ep+1>=epCap){ setAuto(false); setAutoShowOptimal(true); } // ✅ show BFS at cap
+    if(auto && ep+1>=epCap){ setAuto(false); setAutoShowOptimal(true); }
   }
-  useInterval(()=>{ for(let i=0;i<speed;i++) trainOneEpisode(); }, 60, auto);
+
+  useInterval(() => {
+    if (!replayPath) return;
+    setReplayIdx(i => {
+      const next = i + 1;
+      if (replayPath && next < replayPath.length) {
+        setAgentS(replayPath[next]);
+        return next;
+      }
+      setReplayPath(null);
+      return i;
+    });
+  }, Math.max(60, 1000 / (4 + speed)), !!replayPath);
+
+  useInterval(()=>{ for(let i=0;i<speed;i++) trainOneEpisode(); }, 60, auto && !replayPath);
 
   const policy=useMemo(()=> theta.map(logits=>softmax(logits)),[theta]);
   const values=V;
@@ -621,7 +661,7 @@ function PGTab({ envConfig }){
         onReset={()=>resetAll(true)}
         speed={speed}
         setSpeed={setSpeed}
-        note={<span><b>Policy Gradient:</b> Per-episode updates; <i>entropy</i> shows exploration level.</span>}
+        note={<span><b>Policy Gradient:</b> Per-episode updates; watch the agent replay its sampled path after each rollout. <i>Entropy</i> shows exploration.</span>}
       />
 
       <div className="grid md:grid-cols-3 gap-3">
@@ -638,17 +678,17 @@ function PGTab({ envConfig }){
               <Toggle label="Shortest path (BFS)" value={showBFS} onChange={setShowBFS} />
             </div>
           </div>
+
           <Grid
             env={env}
-            agentState={env.start}
+            agentState={agentS}
             policy={policy}
             values={values}
             showValues={showValues}
             highlightPath={
-              autoShowOptimal ? optPath :
               showLastPath ? lastPath :
-              (showLearnedPath && learned) ? shortestPathStates(env) :
-              showBFS ? optPath : null
+              (showLearnedPath && greedyPath) ? greedyPath :
+              (showBFS || autoShowOptimal) ? optPath : null
             }
             showPathOrder={showLastPath}
             edit
@@ -706,6 +746,7 @@ function PGTab({ envConfig }){
   );
 }
 
+
 /* ========== DQN (Deep Q-Network) ========== */
 const oneHot16=i=>{ const v=new Array(16).fill(0); v[i]=1; return v; };
 // Huber
@@ -759,6 +800,17 @@ function DQNTab({ envConfig }){
   const [epsHistory,setEpsHistory]=useState([0.35]);
   const exploredRef=useRef(0); const exploitedRef=useRef(0);
 
+  // ---- helpers (with masking)
+  const maskedArgmax = (qRow, acts) => {
+    let bestA = acts[0] ?? 0;
+    let bestV = -Infinity;
+    for (const a of acts) {
+      const v = qRow[a];
+      if (v > bestV) { bestV = v; bestA = a; }
+    }
+    return bestA;
+  };
+
   // init models
   useEffect(()=>{ const m=buildDQN(lr), t=buildDQN(lr); modelRef.current=m; targetRef.current=t; copyWeights(m,t); disposedRef.current=false;
     return ()=>{ disposedRef.current=true; trainingRef.current=false; if(!SHOULD_DISPOSE_TF){ modelRef.current=null; targetRef.current=null; return; }
@@ -771,10 +823,13 @@ function DQNTab({ envConfig }){
     stepRef.current=0; setBufferFill(0); setLossSmoothed(0); setEpisodeLog([]); setEpPath([e.start]);
     setOptPath(shortestPathStates(e)); setGreedyPath(null); setOptStreak(0); setLearned(false); setLearnedAtEp(null);
     exploredRef.current=0; exploitedRef.current=0; setEpsHistory([eps]); setShowLearnedPath(true);
-    setAutoShowOptimal(false); // ✅ hide overlay on env change
+    setAutoShowOptimal(false);
   },[envConfig]);
 
-  const greedyActionFromQ=q=>{ let bestA=0,bestV=-Infinity; for(let a=0;a<4;a++){ if(q[a]>bestV){bestV=q[a]; bestA=a;} } return bestA; };
+  const greedyActionFromQ=(qRow, state)=>{
+    const acts = env.validActions(state);
+    return maskedArgmax(qRow, acts);
+  };
   const predictQAllStates=model=>{ activeOpsRef.current++; try { return tf.tidy(()=>{ const xs=tf.tensor2d(Array.from({length:16},(_,i)=>oneHot16(i))); const q=model.predict(xs); return q.arraySync(); }); } finally { activeOpsRef.current--; } };
 
   async function trainBatch(){
@@ -792,7 +847,13 @@ function DQNTab({ envConfig }){
         const qcArray=tf.tidy(()=>{ const s=tf.tensor2d(states); const qc=modelRef.current.predict(s); return qc.arraySync(); });
         return [qnMaxArr,qcArray];
       })();
-      const targets=[]; for(let i=0;i<batch;i++){ const e=samples[i]; const y=qcArr[i].slice(); const targetQ=e.r + (e.done?0:gamma*qNextMax[i]); y[e.a]=targetQ; targets.push(y); }
+      const targets=[]; for(let i=0;i<batch;i++){
+        const e=samples[i];
+        const y=qcArr[i].slice();
+        const targetQ=e.r + (e.done?0:gamma*qNextMax[i]);
+        y[e.a]=targetQ;
+        targets.push(y);
+      }
       const xT=tf.tensor2d(states), yT=tf.tensor2d(targets);
       const hist=await modelRef.current.fit(xT,yT,{epochs:1,batchSize:batch,verbose:0}); xT.dispose(); yT.dispose();
       if(!disposedRef.current){ const loss=hist.history.loss[0]; setLossSmoothed(prev=>prev? prev*0.9+0.1*loss : loss); }
@@ -808,31 +869,36 @@ function DQNTab({ envConfig }){
 
     if(modelRef.current){
       const qAll=predictQAllStates(modelRef.current);
-      const selector=(state)=> greedyActionFromQ(qAll[state]);
+      const selector=(state)=> greedyActionFromQ(qAll[state], state); // ✅ masked
       const gp = simulateGreedy(env, selector);
       setGreedyPath(gp.path);
       const optimal = (gp.outcome==="goal" && optPath && gp.path.length===optPath.length);
       setOptStreak(k=> optimal ? k+1 : 0);
       if(optimal && (optStreak+1)>=3 && !learned){
         setLearned(true); setLearnedAtEp(ep+1);
-        setAutoShowOptimal(true); // ✅ show BFS when learned
+        setAutoShowOptimal(true);
       }
     }
 
     setEp(e=>e+1); setEpRet(0); setStepsInEp(0); setEpPath([env.start]);
     setEps(e=>{ const v=Math.max(EPS_MIN, e*0.995); setEpsHistory(h=>[...h.slice(-199), v]); return v; });
     exploredRef.current=0; exploitedRef.current=0;
-    if(auto && ep+1>=epCap){ setAuto(false); setAutoShowOptimal(true); } // ✅ show BFS at cap
+    if(auto && ep+1>=epCap){ setAuto(false); setAutoShowOptimal(true); }
   }
 
   async function stepOnce(){
     if(disposedRef.current || !modelRef.current) return;
     let a;
-    if(Math.random()<eps){ const acts=env.validActions(s); a=acts[Math.floor(Math.random()*acts.length)]; exploredRef.current += 1; }
-    else{
+    const acts = env.validActions(s);
+    if(Math.random()<eps){
+      a=acts[Math.floor(Math.random()*acts.length)];
+      exploredRef.current += 1;
+    } else {
       activeOpsRef.current++;
-      try{ const arr=tf.tidy(()=>{ const x=tf.tensor2d([oneHot16(s)]); const y=modelRef.current.predict(x); return y.arraySync()[0]; }); a=greedyActionFromQ(arr); }
-      finally{ activeOpsRef.current--; }
+      try{
+        const arr=tf.tidy(()=>{ const x=tf.tensor2d([oneHot16(s)]); const y=modelRef.current.predict(x); return y.arraySync()[0]; });
+        a=maskedArgmax(arr, acts); // ✅ masked exploit
+      } finally { activeOpsRef.current--; }
       exploitedRef.current += 1;
     }
     const {ns,r,done}=env.step(s,a,Math.random);
@@ -846,10 +912,31 @@ function DQNTab({ envConfig }){
   useInterval(()=>{ (async()=>{ for(let i=0;i<speed;i++) await stepOnce(); })(); }, 60, auto);
 
   const [policy,setPolicy]=useState(null); const [values,setValues]=useState(null);
-  useEffect(()=>{ if(!modelRef.current || disposedRef.current) return; const qAll=predictQAllStates(modelRef.current);
-    const vals=qAll.map(r=>Math.max(...r)); const flat=qAll.flat(), min=Math.min(...flat), max=Math.max(...flat);
-    const pol=qAll.map(row=>row.map(v=>(max-min? (v-min)/(max-min):0))); setPolicy(pol); setValues(vals);
-  },[lossSmoothed,ep,s,eps]);
+  useEffect(()=>{
+    if(!modelRef.current || disposedRef.current) return;
+    const qAll=predictQAllStates(modelRef.current);
+
+    // Normalize per-row and zero-out invalid actions for display;
+    // Values = max over valid actions only
+    const pol = qAll.map((row, sIdx) => {
+      const acts = env.validActions(sIdx);
+      const allowedVals = acts.map(a => row[a]);
+      const minR = Math.min(...allowedVals);
+      const maxR = Math.max(...allowedVals);
+      const norm = (v)=> (maxR===minR ? 0.5 : (v - minR) / (maxR - minR));
+      const out = [0,0,0,0];
+      for (let a=0;a<4;a++){
+        out[a] = acts.includes(a) ? clamp(norm(row[a]), 0, 1) : 0;
+      }
+      return out;
+    });
+    const vals = qAll.map((row, sIdx) => {
+      const acts = env.validActions(sIdx);
+      return Math.max(...acts.map(a=>row[a]));
+    });
+
+    setPolicy(pol); setValues(vals);
+  },[lossSmoothed,ep,s,eps,env]);
 
   useEffect(()=>{ if (learned && auto) setAuto(false); }, [learned, auto]);
 
@@ -887,7 +974,15 @@ function DQNTab({ envConfig }){
         auto={auto}
         onToggleAuto={()=>setAuto(a=>{ const next=!a; if(next) setAutoShowOptimal(false); return next; })}
         onStep={stepOnce}
-        onReset={()=>{ bufferRef.current=[]; setBufferFill(0); setEp(0); setEpRet(0); setStepsInEp(0); setReturns([]); setEps(0.35); setEpisodeLog([]); setEpPath([env.start]); setLearned(false); setLearnedAtEp(null); setOptStreak(0); exploredRef.current=0; exploitedRef.current=0; setEpsHistory([0.35]); setShowLearnedPath(true); setAutoShowOptimal(false); }}
+        onReset={()=>{
+          bufferRef.current=[]; setBufferFill(0);
+          setEp(0); setEpRet(0); setStepsInEp(0); setReturns([]);
+          setEps(0.35); setEpisodeLog([]); setEpPath([env.start]);
+          setLearned(false); setLearnedAtEp(null); setOptStreak(0);
+          exploredRef.current=0; exploitedRef.current=0; setEpsHistory([0.35]);
+          setShowLearnedPath(true); setAutoShowOptimal(false);
+          setGreedyPath(null); // ✅ clear learned path
+        }}
         speed={speed}
         setSpeed={setSpeed}
         note={<span><b>DQN:</b> Neural net Q(s,·) + replay + target net. Auto-stops after matching BFS 3×.</span>}
@@ -902,7 +997,7 @@ function DQNTab({ envConfig }){
               const e = makeGridEnv({ ...env, traps: [], walls: [], slipProb: 0.0, rewards: { ...env.rewards, goal: 12, trap: -6, step: -1, wallBump: -2 } });
               setEnv(e); setOptPath(shortestPathStates(e));
               setLr(0.0007); setEps(0.35); setEpsHistory([0.35]); setBatch(64); setBufferCap(5000); setTargetSync(800); setEpCap(1200);
-              bufferRef.current = []; setEpisodeLog([]); setReturns([]); setEp(0); setEpRet(0); setStepsInEp(0); setS(e.start); setEpPath([e.start]); setLearned(false); setLearnedAtEp(null); setOptStreak(0); setShowLearnedPath(true); setAutoShowOptimal(false); setAuto(true);
+              bufferRef.current = []; setEpisodeLog([]); setReturns([]); setEp(0); setEpRet(0); setStepsInEp(0); setS(e.start); setEpPath([e.start]); setLearned(false); setLearnedAtEp(null); setOptStreak(0); setShowLearnedPath(true); setAutoShowOptimal(false); setGreedyPath(null); setAuto(true);
             }}
             title="Sets an easy environment & tuned hyperparams, then starts training."
           >
@@ -936,10 +1031,9 @@ function DQNTab({ envConfig }){
             values={values}
             showValues={showValues}
             highlightPath={
-              autoShowOptimal ? optPath :
               showLastPath ? epPath :
               (learned && showLearnedPath) ? greedyPath :
-              showBFS ? optPath : null
+              (showBFS || autoShowOptimal) ? optPath : null
             }
             showPathOrder={showLastPath}
             edit
