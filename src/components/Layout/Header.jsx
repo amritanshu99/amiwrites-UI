@@ -110,6 +110,7 @@ export default function Header({ setLoading }) {
     { name: "AI Tools", to: "/ai-tools" },
     { name: "Task Manager", to: "/task-manager" },
     { name: "AI Chat", to: "/ai-chat" },
+    { name: "Reinforcement Learning", to: "/RL" },
   ];
 
   const handleLogout = async () => {

@@ -31,6 +31,7 @@ import SpamDetectorDetails from "./pages/SpamDetectorDetails";
 import MoviePredictDetails from "./pages/MoviePredictDetails";
 import EmotionAnalyzerDetails from "./pages/EmotionAnalyzerDetails";
 import AmiBotDetails from "./pages/AmiBotDetails";
+import ReinforcementLearningDetails from "./pages/ReinforcementLearning";
 const ValidateResetToken = () => {
   const { id: token } = useParams();
   const navigate = useNavigate();
@@ -169,7 +170,10 @@ const App = () => {
             path="/amibot"
             element={<AmiBotDetails />}
           />
-          
+             <Route
+            path="/RL"
+            element={<ReinforcementLearningDetails />}
+          />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
