@@ -2,11 +2,10 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import * as tf from "@tensorflow/tfjs";
 
-/** RL GridWorld — Beginner Mode
+/** RL GridWorld — Beginner Mode (Dark-mode friendly)
  * Tabs: Q-Learning, DQN, Policy Gradient
- * Beginner-friendly: mobile responsive grid, BFS overlay fixed,
- * overflow guards, quick tips, newbie preset, auto-stopping when optimal,
- * auto-show shortest path at the end for clarity.
+ * Beginner-friendly UI with Tailwind dark: variants.
+ * NOTE: Only styles were changed; learning logic is untouched.
  */
 
 /* ========== Utilities ========== */
@@ -93,7 +92,6 @@ function simulateGreedy(env, selector){
     const { ns } = env.step(s,a,()=>1); // no slip
     if(ns===env.goal){ outcome="goal"; path.push(ns); break; }
     if(env.isTrap(ns)){ outcome="trap"; path.push(ns); break; }
-    // guard against stuck-on-same-cell loops (shouldn't happen with masking, but safe)
     if (ns === s) { steps++; path.push(ns); break; }
     path.push(ns);
     s=ns; steps++;
@@ -102,14 +100,19 @@ function simulateGreedy(env, selector){
   return { path, outcome, steps:path.length-1 };
 }
 
-/* ========== Small UI ========== */
+/* ========== Small UI (dark-ready) ========== */
 function Card({ title, subtitle, children }) {
   return (
-    <div className="rounded-xl border bg-white p-3">
+    <div
+      className="rounded-2xl border border-zinc-200/70 dark:border-zinc-800/70
+                 bg-white/90 supports-[backdrop-filter]:bg-white/70
+                 dark:bg-zinc-900/85 supports-[backdrop-filter]:backdrop-blur
+                 shadow-sm dark:shadow-[0_0_0_1px_rgba(255,255,255,0.02)] p-3"
+    >
       {(title||subtitle) && (
         <div className="mb-2">
-          {title && <div className="font-semibold">{title}</div>}
-          {subtitle && <div className="text-xs text-zinc-500">{subtitle}</div>}
+          {title && <div className="font-semibold text-zinc-900 dark:text-zinc-100">{title}</div>}
+          {subtitle && <div className="text-xs text-zinc-500 dark:text-zinc-400">{subtitle}</div>}
         </div>
       )}
       {children}
@@ -118,7 +121,7 @@ function Card({ title, subtitle, children }) {
 }
 function Toggle({ label, value, onChange }) {
   return (
-    <label className="flex items-center gap-2 text-sm">
+    <label className="flex items-center gap-2 text-sm text-zinc-800 dark:text-zinc-200">
       <input aria-label={label} type="checkbox" checked={value} onChange={e=>onChange(e.target.checked)} />
       <span>{label}</span>
     </label>
@@ -127,28 +130,47 @@ function Toggle({ label, value, onChange }) {
 function Slider({ label, value, onChange, min, max, step }) {
   return (
     <label className="flex items-center gap-3 text-sm">
-      <span className="w-28 sm:w-24 text-zinc-600">{label}</span>
-      <input aria-label={label} type="range" min={min} max={max} step={step} value={value} onChange={e=>onChange(Number(e.target.value))} className="w-40 sm:w-48" />
-      <span className="w-10 text-right tabular-nums">{value}</span>
+      <span className="w-28 sm:w-24 text-zinc-700 dark:text-zinc-300">{label}</span>
+      <input
+        aria-label={label}
+        type="range"
+        min={min}
+        max={max}
+        step={step}
+        value={value}
+        onChange={e=>onChange(Number(e.target.value))}
+        className="w-40 sm:w-48 accent-zinc-900 dark:accent-zinc-200"
+      />
+      <span className="w-10 text-right tabular-nums text-zinc-900 dark:text-zinc-100">{value}</span>
     </label>
   );
 }
 function Num({ label, value, onChange, step=1, min, max, w="w-24" }) {
   return (
     <label className="flex items-center gap-2 text-sm">
-      <span className="w-32 sm:w-28 text-zinc-600">{label}</span>
-      <input aria-label={label} type="number" value={Number.isFinite(value)?value:""} onChange={e=>onChange(Number(e.target.value))} step={step} min={min} max={max} className={`rounded-md border px-2 py-1 bg-white ${w}`} />
+      <span className="w-32 sm:w-28 text-zinc-700 dark:text-zinc-300">{label}</span>
+      <input
+        aria-label={label}
+        type="number"
+        value={Number.isFinite(value)?value:""}
+        onChange={e=>onChange(Number(e.target.value))}
+        step={step}
+        min={min}
+        max={max}
+        className={`rounded-md border border-zinc-200 dark:border-zinc-800 px-2 py-1 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 ${w}
+                    focus:outline-none focus:ring-2 focus:ring-blue-400`}
+      />
     </label>
   );
 }
 function Pill({ children, tone="zinc" }) {
   const tones = {
-    zinc: "bg-zinc-100 text-zinc-800",
-    green: "bg-emerald-100 text-emerald-800",
-    yellow: "bg-amber-100 text-amber-900",
-    red: "bg-rose-100 text-rose-800",
-    blue: "bg-sky-100 text-sky-800",
-    violet: "bg-violet-100 text-violet-800",
+    zinc: "bg-zinc-100 dark:bg-zinc-800/60 text-zinc-800 dark:text-zinc-200",
+    green: "bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-200",
+    yellow: "bg-amber-100 dark:bg-amber-900/40 text-amber-900 dark:text-amber-200",
+    red: "bg-rose-100 dark:bg-rose-900/40 text-rose-800 dark:text-rose-200",
+    blue: "bg-sky-100 dark:bg-sky-900/40 text-sky-800 dark:text-sky-200",
+    violet: "bg-violet-100 dark:bg-violet-900/40 text-violet-800 dark:text-violet-200",
   };
   return <span className={`px-2 py-0.5 rounded text-[11px] ${tones[tone]||tones.zinc}`}>{children}</span>;
 }
@@ -161,15 +183,27 @@ function Sparkline({ series }) {
     if(!series.length) return;
     const max=Math.max(...series,1), min=Math.min(...series,0);
     const norm=v=> (max===min?0.5:(v-min)/(max-min));
+
+    // line
     ctx.beginPath();
     series.forEach((v,i)=>{
       const x=(i/(series.length-1||1))*(w-2)+1;
       const y=h-1 - norm(v)*(h-2);
       if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
     });
-    ctx.lineWidth=2; ctx.strokeStyle="#111827"; ctx.stroke();
+    ctx.lineWidth=2;
+    ctx.strokeStyle = getComputedStyle(canvas).color || "#111827";
+    ctx.stroke();
+
+    // subtle baseline
+    ctx.beginPath();
+    ctx.moveTo(1, h-1);
+    ctx.lineTo(w-1, h-1);
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = getComputedStyle(canvas).borderColor || "rgba(0,0,0,0.08)";
+    ctx.stroke();
   },[series]);
-  return <canvas ref={ref} className="w-full h-10" />;
+  return <canvas ref={ref} className="w-full h-10 text-zinc-900 dark:text-zinc-100 border-b border-zinc-200 dark:border-zinc-800" />;
 }
 
 /* ✅ ControlBar & Legend */
@@ -177,14 +211,42 @@ function ControlBar({ auto, onToggleAuto, onStep, onReset, speed, setSpeed, note
   return (
     <Card>
       <div className="flex flex-wrap items-center gap-2">
-        <button onClick={onToggleAuto} className={`px-3 py-2 rounded-md border text-sm ${auto?"bg-rose-600 text-white":"bg-emerald-600 text-white"}`}>
+        <button
+          onClick={onToggleAuto}
+          className={`px-3 py-2 rounded-md text-sm font-medium
+                      focus:outline-none focus:ring-2 focus:ring-offset-2
+                      dark:focus:ring-offset-zinc-900
+                      ${auto
+                        ? "bg-rose-600 hover:bg-rose-700 text-white focus:ring-rose-400"
+                        : "bg-emerald-600 hover:bg-emerald-700 text-white focus:ring-emerald-400"}`}
+        >
           {auto ? "Pause" : "Play"}
         </button>
-        <button onClick={onStep} className="px-3 py-2 rounded-md border text-sm bg-white">Step</button>
-        <button onClick={onReset} className="px-3 py-2 rounded-md border text-sm bg-white">Reset</button>
-        <div className="ml-0 sm:ml-2"><Slider label="Speed" value={speed} onChange={setSpeed} min={1} max={200} step={1} /></div>
+        <button
+          onClick={onStep}
+          className="px-3 py-2 rounded-md text-sm
+                     bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700
+                     text-zinc-900 dark:text-zinc-100
+                     hover:bg-zinc-50 dark:hover:bg-zinc-700
+                     focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 dark:focus:ring-offset-zinc-900"
+        >
+          Step
+        </button>
+        <button
+          onClick={onReset}
+          className="px-3 py-2 rounded-md text-sm
+                     bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700
+                     text-zinc-900 dark:text-zinc-100
+                     hover:bg-zinc-50 dark:hover:bg-zinc-700
+                     focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 dark:focus:ring-offset-zinc-900"
+        >
+          Reset
+        </button>
+        <div className="ml-0 sm:ml-2">
+          <Slider label="Speed" value={speed} onChange={setSpeed} min={1} max={200} step={1} />
+        </div>
       </div>
-      <div className="mt-2 text-xs text-zinc-600">
+      <div className="mt-2 text-xs text-zinc-600 dark:text-zinc-400">
         {note || "Play runs many steps automatically. Step does one update. Reset clears learning."}
       </div>
     </Card>
@@ -193,12 +255,12 @@ function ControlBar({ auto, onToggleAuto, onStep, onReset, speed, setSpeed, note
 function Legend() {
   return (
     <div className="flex flex-wrap gap-2 text-xs">
-      <span className="px-2 py-0.5 rounded border bg-indigo-100">Agent</span>
-      <span className="px-2 py-0.5 rounded border bg-emerald-100">Goal</span>
-      <span className="px-2 py-0.5 rounded border bg-rose-100">Trap</span>
-      <span className="px-2 py-0.5 rounded border bg-zinc-200">Wall</span>
-      <span className="px-2 py-0.5 rounded border">Arrows = policy</span>
-      <span className="px-2 py-0.5 rounded border bg-amber-100">Amber ring = path</span>
+      <span className="px-2 py-0.5 rounded border border-zinc-200 dark:border-zinc-800 bg-indigo-100 dark:bg-indigo-900/30 text-zinc-900 dark:text-zinc-100">Agent</span>
+      <span className="px-2 py-0.5 rounded border border-zinc-200 dark:border-zinc-800 bg-emerald-100 dark:bg-emerald-900/30 text-zinc-900 dark:text-zinc-100">Goal</span>
+      <span className="px-2 py-0.5 rounded border border-zinc-200 dark:border-zinc-800 bg-rose-100 dark:bg-rose-900/30 text-zinc-900 dark:text-zinc-100">Trap</span>
+      <span className="px-2 py-0.5 rounded border border-zinc-200 dark:border-zinc-800 bg-zinc-200 dark:bg-zinc-700/60 text-zinc-900 dark:text-zinc-100">Wall</span>
+      <span className="px-2 py-0.5 rounded border border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-100">Arrows = policy</span>
+      <span className="px-2 py-0.5 rounded border border-zinc-200 dark:border-zinc-800 bg-amber-100 dark:bg-amber-900/30 text-zinc-900 dark:text-zinc-100">Amber ring = path</span>
     </div>
   );
 }
@@ -220,19 +282,30 @@ function Grid({ env, agentState, policy, values, showValues=false, edit=false, o
         {Array.from({ length: env.S }, (_, i)=>{
           const isAgent=i===agentState, isGoal=i===env.goal, isTrap=env.traps.includes(i), isWall=env.walls.includes(i);
           const inPath = !!highlightPath && highlightPath.includes(i);
-          const bg = isGoal?"bg-emerald-100": isAgent?"bg-indigo-100": isWall?"bg-zinc-200": isTrap?"bg-rose-100":"bg-white";
+          const bg = isGoal
+            ? "bg-emerald-100 dark:bg-emerald-950/40"
+            : isAgent
+            ? "bg-indigo-100 dark:bg-indigo-950/40"
+            : isWall
+            ? "bg-zinc-200 dark:bg-zinc-800"
+            : isTrap
+            ? "bg-rose-100 dark:bg-rose-950/40"
+            : "bg-white dark:bg-zinc-900";
           const ring = inPath ? "ring-2 ring-amber-400 shadow-[0_0_0_2px_rgba(251,191,36,0.25)_inset]" : "";
           return (
             <div
               key={i}
-              className={`relative rounded-lg border p-1 select-none ${bg} ${ring}`}
+              className={`relative rounded-lg border p-1 select-none
+                          border-zinc-200 dark:border-zinc-800
+                          hover:border-zinc-300 dark:hover:border-zinc-700
+                          ${bg} ${ring}`}
               style={{ aspectRatio: "1/1", minHeight: 56 }}
               onClick={()=>{ if (!edit) return; if (isGoal) return; if (isWall) onToggleWall?.(i); else onToggleTrap?.(i); }}
               onContextMenu={(e)=>{ e.preventDefault(); if (edit) onToggleWall?.(i); }}
               onDoubleClick={()=> edit && onSetGoal?.(i)}
               title={`Cell ${i}`}
             >
-              <div className="absolute top-1 left-1 text-[10px] text-zinc-500">{i}</div>
+              <div className="absolute top-1 left-1 text-[10px] text-zinc-500 dark:text-zinc-400">{i}</div>
 
               {policy && (
                 <div className="absolute inset-0 grid grid-cols-2 grid-rows-2 text-[10px] p-1">
@@ -243,7 +316,7 @@ function Grid({ env, agentState, policy, values, showValues=false, edit=false, o
                     const style={opacity:0.18+0.82*w};
                     return (
                       <div key={a} className="flex items-center justify-center">
-                        <div className="px-1 py-0.5 rounded bg-white/70" style={style}>{label}</div>
+                        <div className="px-1 py-0.5 rounded bg-white/80 dark:bg-zinc-800/80 text-zinc-900 dark:text-zinc-100" style={style}>{label}</div>
                       </div>
                     );
                   })}
@@ -251,13 +324,13 @@ function Grid({ env, agentState, policy, values, showValues=false, edit=false, o
               )}
 
               {showValues && values && (
-                <div className="absolute bottom-1 right-1 text-[10px] px-1 py-0.5 rounded bg-black/5">
+                <div className="absolute bottom-1 right-1 text-[10px] px-1 py-0.5 rounded bg-black/5 dark:bg-white/10 text-zinc-800 dark:text-zinc-200">
                   {Number.isFinite(values?.[i])? values[i].toFixed(2):""}
                 </div>
               )}
 
               {showPathOrder && inPath && (
-                <div className="absolute bottom-1 left-1 text-[10px] px-1 py-0.5 rounded bg-amber-200/80">
+                <div className="absolute bottom-1 left-1 text-[10px] px-1 py-0.5 rounded bg-amber-200/80 dark:bg-amber-900/45 text-zinc-900 dark:text-zinc-100">
                   {order[i]}
                 </div>
               )}
@@ -272,7 +345,7 @@ function Grid({ env, agentState, policy, values, showValues=false, edit=false, o
 /* ========== Shared “theory blocks” ========== */
 function Glossary() {
   return (
-    <ul className="text-xs leading-5 text-zinc-700 list-disc pl-5">
+    <ul className="text-xs leading-5 text-zinc-700 dark:text-zinc-300 list-disc pl-5">
       <li><b>State (s)</b>: the current cell.</li>
       <li><b>Action (a)</b>: ↑ → ↓ ←.</li>
       <li><b>Reward (r)</b>: step cost, trap penalty, or goal bonus.</li>
@@ -284,8 +357,8 @@ function Glossary() {
 }
 function TheoryCard({ title, notes }) {
   return (
-    <div className="text-sm text-zinc-700">
-      <div className="font-semibold mb-1">{title}</div>
+    <div className="text-sm text-zinc-700 dark:text-zinc-300">
+      <div className="font-semibold mb-1 text-zinc-900 dark:text-zinc-100">{title}</div>
       <div className="space-y-2 text-xs leading-5">
         {notes.map((n,i)=>(<div key={i}>{n}</div>))}
       </div>
@@ -397,13 +470,13 @@ function QLearningTab({ envConfig }) {
   const values=useMemo(()=> Q.map(row=>Math.max(...row)),[Q]);
 
   const learnedBanner = learned ? (
-    <div className="mt-2 p-2 rounded bg-amber-50 text-amber-900 text-xs">
+    <div className="mt-2 p-2 rounded bg-amber-50 dark:bg-amber-900/30 text-amber-900 dark:text-amber-200 text-xs">
       <b>Learned optimal path</b> (matched BFS 3×) {learnedAtEp ? `at episode ${learnedAtEp}` : ""}. Toggle “My learned path” to compare.
     </div>
   ) : null;
 
   const doneBanner = (autoShowOptimal && optPath) ? (
-    <div className="mt-2 p-2 rounded bg-emerald-50 text-emerald-900 text-xs">
+    <div className="mt-2 p-2 rounded bg-emerald-50 dark:bg-emerald-900/30 text-emerald-900 dark:text-emerald-200 text-xs">
       <b>Finished!</b> Showing the <b>shortest (BFS) path</b>. Press Play to train again (this overlay will hide).
     </div>
   ) : null;
@@ -417,7 +490,7 @@ function QLearningTab({ envConfig }) {
         onReset={()=>resetAll(true)}
         speed={speed}
         setSpeed={setSpeed}
-        note={<span><b>Q-Learning:</b> Update Q toward <code>r + γ·max Q(s′,·)</code>. Log tracks explore/exploit.</span>}
+        note={<span className="text-zinc-800 dark:text-zinc-200"><b>Q-Learning:</b> Update Q toward <code>r + γ·max Q(s′,·)</code>. Log tracks explore/exploit.</span>}
       />
 
       <div className="grid md:grid-cols-3 gap-3">
@@ -451,18 +524,18 @@ function QLearningTab({ envConfig }) {
             onToggleWall={i=>{ const walls=env.walls.includes(i)? env.walls.filter(t=>t!==i):[...env.walls,i]; const e=makeGridEnv({...env,walls}); setEnv(e); setOptPath(shortestPathStates(e)); }}
             onSetGoal={i=>{ const e=makeGridEnv({...env,goal:i}); setEnv(e); setOptPath(shortestPathStates(e)); }}
           />
-          <div className="mt-2 text-xs text-zinc-600">Tap = trap • Long-press/right-click = wall • Double-tap = goal.</div>
+          <div className="mt-2 text-xs text-zinc-600 dark:text-zinc-400">Tap = trap • Long-press/right-click = wall • Double-tap = goal.</div>
           {learnedBanner}
           {doneBanner}
         </Card>
 
         <Card title="Progress" subtitle="Returns & ε">
-          <div className="text-xs text-zinc-600 mb-2">
+          <div className="text-xs text-zinc-600 dark:text-zinc-400 mb-2">
             Episode {ep} / {epCap} • Steps {stepsInEp} • Return {epRet.toFixed(1)} • ε {eps.toFixed(3)}
           </div>
           <Sparkline series={returns} />
           <div className="mt-2">
-            <div className="text-xs text-zinc-600 mb-1">ε history</div>
+            <div className="text-xs text-zinc-600 dark:text-zinc-400 mb-1">ε history</div>
             <Sparkline series={epsHistory} />
           </div>
           <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -471,24 +544,24 @@ function QLearningTab({ envConfig }) {
             <Num label="γ (discount)" value={gamma} onChange={setGamma} step={0.01} min={0} max={0.999} />
             <Num label="ε (start)" value={eps} onChange={(v)=>{ setEps(v); setEpsHistory(h=>[...h, v]); }} step={0.01} min={0.01} max={1} />
           </div>
-          <div className="mt-2 text-xs">
+          <div className="mt-2 text-xs text-zinc-700 dark:text-zinc-300">
             {optPath ? <>Shortest steps to goal (BFS): <b>{optPath.length-1}</b></> : "Goal unreachable (BFS)."}
-            {learned && <div className="mt-1 text-emerald-700 font-medium">✓ Matched BFS 3× consecutively</div>}
+            {learned && <div className="mt-1 text-emerald-700 dark:text-emerald-300 font-medium">✓ Matched BFS 3× consecutively</div>}
           </div>
         </Card>
 
         <Card title="Episode log" subtitle="Latest first (50 max)">
-          <div className="text-xs space-y-1 max-h-56 overflow-auto">
+          <div className="text-xs space-y-1 max-h-56 overflow-auto text-zinc-800 dark:text-zinc-200">
             {episodeLog.map((e,i)=>(
               <div key={i} className="grid grid-cols-5 gap-2">
                 <span>Ep {e.ep}</span>
-                <span className={e.outcome==="goal"?"text-emerald-700":e.outcome==="trap"?"text-rose-700":"text-zinc-600"}>{e.outcome}</span>
+                <span className={e.outcome==="goal"?"text-emerald-700 dark:text-emerald-300":e.outcome==="trap"?"text-rose-700 dark:text-rose-300":"text-zinc-600 dark:text-zinc-400"}>{e.outcome}</span>
                 <span>steps {e.steps}</span>
                 <span>return {e.ret}</span>
                 <span title="explore / exploit">exp {e.explored}/{e.exploited}</span>
               </div>
             ))}
-            {episodeLog.length===0 && <div className="text-zinc-500">No episodes yet.</div>}
+            {episodeLog.length===0 && <div className="text-zinc-500 dark:text-zinc-400">No episodes yet.</div>}
           </div>
           <div className="mt-3">
             <TheoryCard
@@ -530,7 +603,6 @@ function PGTab({ envConfig }){
   const [epCap,setEpCap]=useState(200);
   const [episodeLog,setEpisodeLog]=useState([]);
 
-  // NEW: live movement replay state
   const [agentS, setAgentS] = useState(env.start);
   const [replayPath, setReplayPath] = useState(null);
   const [replayIdx, setReplayIdx] = useState(0);
@@ -641,13 +713,13 @@ function PGTab({ envConfig }){
   const values=V;
 
   const learnedBanner = learned ? (
-    <div className="mt-2 p-2 rounded bg-amber-50 text-amber-900 text-xs">
+    <div className="mt-2 p-2 rounded bg-amber-50 dark:bg-amber-900/30 text-amber-900 dark:text-amber-200 text-xs">
       <b>Learned optimal path</b> (matched BFS 3×) {learnedAtEp ? `at episode ${learnedAtEp}` : ""}.
     </div>
   ) : null;
 
   const doneBanner = (autoShowOptimal && optPath) ? (
-    <div className="mt-2 p-2 rounded bg-emerald-50 text-emerald-900 text-xs">
+    <div className="mt-2 p-2 rounded bg-emerald-50 dark:bg-emerald-900/30 text-emerald-900 dark:text-emerald-200 text-xs">
       <b>Finished!</b> Showing the <b>shortest (BFS) path</b>. Press Play to train again (this overlay will hide).
     </div>
   ) : null;
@@ -661,7 +733,7 @@ function PGTab({ envConfig }){
         onReset={()=>resetAll(true)}
         speed={speed}
         setSpeed={setSpeed}
-        note={<span><b>Policy Gradient:</b> Per-episode updates; watch the agent replay its sampled path after each rollout. <i>Entropy</i> shows exploration.</span>}
+        note={<span className="text-zinc-800 dark:text-zinc-200"><b>Policy Gradient:</b> Per-episode updates; watch the agent replay its sampled path after each rollout. <i>Entropy</i> shows exploration.</span>}
       />
 
       <div className="grid md:grid-cols-3 gap-3">
@@ -701,10 +773,10 @@ function PGTab({ envConfig }){
         </Card>
 
         <Card title="Progress" subtitle="Returns & Entropy">
-          <div className="text-xs text-zinc-600 mb-2">Episode {ep} / {epCap} • Last return {epRet.toFixed(1)}</div>
+          <div className="text-xs text-zinc-600 dark:text-zinc-400 mb-2">Episode {ep} / {epCap} • Last return {epRet.toFixed(1)}</div>
           <Sparkline series={returns} />
           <div className="mt-2">
-            <div className="text-xs text-zinc-600 mb-1">Avg entropy per episode</div>
+            <div className="text-xs text-zinc-600 dark:text-zinc-400 mb-1">Avg entropy per episode</div>
             <Sparkline series={entropyHist} />
           </div>
           <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -713,24 +785,24 @@ function PGTab({ envConfig }){
             <Num label="lr (policy)" value={lr} onChange={setLr} step={0.005} min={0.005} max={0.5} />
             <Num label="entropy coef" value={entropyCoef} onChange={setEntropyCoef} step={0.005} min={0} max={0.2} />
           </div>
-          <div className="mt-2 text-xs">
+          <div className="mt-2 text-xs text-zinc-700 dark:text-zinc-300">
             {optPath ? <>Shortest steps to goal (BFS): <b>{optPath.length-1}</b></> : "Goal unreachable (BFS)."}
-            {learned && <div className="mt-1 text-emerald-700 font-medium">✓ Matched BFS 3× consecutively</div>}
+            {learned && <div className="mt-1 text-emerald-700 dark:text-emerald-300 font-medium">✓ Matched BFS 3× consecutively</div>}
           </div>
         </Card>
 
         <Card title="Episode log" subtitle="Latest first (50 max)">
-          <div className="text-xs space-y-1 max-h-56 overflow-auto">
+          <div className="text-xs space-y-1 max-h-56 overflow-auto text-zinc-800 dark:text-zinc-200">
             {episodeLog.map((e,i)=>(
               <div key={i} className="grid grid-cols-5 gap-2">
                 <span>Ep {e.ep}</span>
-                <span className={e.outcome==="goal"?"text-emerald-700":e.outcome==="trap"?"text-rose-700":"text-zinc-600"}>{e.outcome}</span>
+                <span className={e.outcome==="goal"?"text-emerald-700 dark:text-emerald-300":e.outcome==="trap"?"text-rose-700 dark:text-rose-300":"text-zinc-600 dark:text-zinc-400"}>{e.outcome}</span>
                 <span>steps {e.steps}</span>
                 <span>return {e.ret}</span>
                 <span title="avg policy entropy">H≈{e.entropy}</span>
               </div>
             ))}
-            {episodeLog.length===0 && <div className="text-zinc-500">No episodes yet.</div>}
+            {episodeLog.length===0 && <div className="text-zinc-500 dark:text-zinc-400">No episodes yet.</div>}
           </div>
           <TheoryCard
             title="Entropy intuition"
@@ -800,7 +872,6 @@ function DQNTab({ envConfig }){
   const [epsHistory,setEpsHistory]=useState([0.35]);
   const exploredRef=useRef(0); const exploitedRef=useRef(0);
 
-  // ---- helpers (with masking)
   const maskedArgmax = (qRow, acts) => {
     let bestA = acts[0] ?? 0;
     let bestV = -Infinity;
@@ -811,7 +882,6 @@ function DQNTab({ envConfig }){
     return bestA;
   };
 
-  // init models
   useEffect(()=>{ const m=buildDQN(lr), t=buildDQN(lr); modelRef.current=m; targetRef.current=t; copyWeights(m,t); disposedRef.current=false;
     return ()=>{ disposedRef.current=true; trainingRef.current=false; if(!SHOULD_DISPOSE_TF){ modelRef.current=null; targetRef.current=null; return; }
       const wait=async()=>{ while(activeOpsRef.current>0){ await new Promise(r=>setTimeout(r,0)); } m.dispose(); t.dispose(); if(modelRef.current===m) modelRef.current=null; if(targetRef.current===t) targetRef.current=null; }; wait();
@@ -869,7 +939,7 @@ function DQNTab({ envConfig }){
 
     if(modelRef.current){
       const qAll=predictQAllStates(modelRef.current);
-      const selector=(state)=> greedyActionFromQ(qAll[state], state); // ✅ masked
+      const selector=(state)=> greedyActionFromQ(qAll[state], state);
       const gp = simulateGreedy(env, selector);
       setGreedyPath(gp.path);
       const optimal = (gp.outcome==="goal" && optPath && gp.path.length===optPath.length);
@@ -897,7 +967,7 @@ function DQNTab({ envConfig }){
       activeOpsRef.current++;
       try{
         const arr=tf.tidy(()=>{ const x=tf.tensor2d([oneHot16(s)]); const y=modelRef.current.predict(x); return y.arraySync()[0]; });
-        a=maskedArgmax(arr, acts); // ✅ masked exploit
+        a=maskedArgmax(arr, acts);
       } finally { activeOpsRef.current--; }
       exploitedRef.current += 1;
     }
@@ -916,8 +986,6 @@ function DQNTab({ envConfig }){
     if(!modelRef.current || disposedRef.current) return;
     const qAll=predictQAllStates(modelRef.current);
 
-    // Normalize per-row and zero-out invalid actions for display;
-    // Values = max over valid actions only
     const pol = qAll.map((row, sIdx) => {
       const acts = env.validActions(sIdx);
       const allowedVals = acts.map(a => row[a]);
@@ -941,25 +1009,25 @@ function DQNTab({ envConfig }){
   useEffect(()=>{ if (learned && auto) setAuto(false); }, [learned, auto]);
 
   const endSummary = (auto===false && ep>0 && (episodeLog[0]?.ep||0) >= epCap) ? (
-    <div className="mt-2 p-2 rounded bg-emerald-50 text-emerald-800 text-xs">
+    <div className="mt-2 p-2 rounded bg-emerald-50 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-200 text-xs">
       <b>Run finished.</b> ε decayed to {eps.toFixed(3)}. {learned ? "Optimal path learned 🎉" : "Try larger replay buffer or slower target sync."}
     </div>
   ) : null;
 
   const learnedBanner = learned ? (
-    <div className="mt-2 p-2 rounded bg-emerald-100 text-emerald-900 text-xs font-medium">
+    <div className="mt-2 p-2 rounded bg-emerald-100 dark:bg-emerald-900/30 text-emerald-900 dark:text-emerald-200 text-xs font-medium">
       ✓ Optimized path learned (matched BFS 3×) {learnedAtEp ? `at episode ${learnedAtEp}` : ""}.
     </div>
   ) : null;
 
   const doneBanner = (autoShowOptimal && optPath) ? (
-    <div className="mt-2 p-2 rounded bg-emerald-50 text-emerald-900 text-xs">
+    <div className="mt-2 p-2 rounded bg-emerald-50 dark:bg-emerald-900/30 text-emerald-900 dark:text-emerald-200 text-xs">
       <b>Finished!</b> Showing the <b>shortest (BFS) path</b>. Press Play to train again (this overlay will hide).
     </div>
   ) : null;
 
   const pathPanel = (
-    <div className="mt-2 text-xs text-zinc-700">
+    <div className="mt-2 text-xs text-zinc-700 dark:text-zinc-300">
       <div className="flex gap-3 flex-wrap">
         <div><b>BFS shortest</b>: {optPath ? optPath.length-1 : "—"}</div>
         <div><b>Greedy path now</b>: {greedyPath ? greedyPath.length-1 : "—"}</div>
@@ -981,18 +1049,19 @@ function DQNTab({ envConfig }){
           setLearned(false); setLearnedAtEp(null); setOptStreak(0);
           exploredRef.current=0; exploitedRef.current=0; setEpsHistory([0.35]);
           setShowLearnedPath(true); setAutoShowOptimal(false);
-          setGreedyPath(null); // ✅ clear learned path
+          setGreedyPath(null);
         }}
         speed={speed}
         setSpeed={setSpeed}
-        note={<span><b>DQN:</b> Neural net Q(s,·) + replay + target net. Auto-stops after matching BFS 3×.</span>}
+        note={<span className="text-zinc-800 dark:text-zinc-200"><b>DQN:</b> Neural net Q(s,·) + replay + target net. Auto-stops after matching BFS 3×.</span>}
       />
 
       {/* Newbie quick preset */}
       <Card>
         <div className="flex flex-wrap items-center gap-2 text-sm">
           <button
-            className="px-3 py-2 rounded-md border bg-zinc-900 text-white"
+            className="px-3 py-2 rounded-md border border-zinc-200 dark:border-zinc-700 bg-zinc-900 dark:bg-zinc-800 text-white
+                       focus:outline-none focus:ring-2 focus:ring-blue-400"
             onClick={()=>{
               const e = makeGridEnv({ ...env, traps: [], walls: [], slipProb: 0.0, rewards: { ...env.rewards, goal: 12, trap: -6, step: -1, wallBump: -2 } });
               setEnv(e); setOptPath(shortestPathStates(e));
@@ -1004,7 +1073,7 @@ function DQNTab({ envConfig }){
             Train to Optimal (Newbie)
           </button>
 
-          <span className="text-zinc-600">
+          <span className="text-zinc-600 dark:text-zinc-400">
             Tip: toggle <b>Shortest path (BFS)</b> to see the theoretical route. When the learned path matches it 3×, training pauses and the BFS overlay appears.
           </span>
         </div>
@@ -1048,40 +1117,40 @@ function DQNTab({ envConfig }){
         </Card>
 
         <Card title="Progress" subtitle="Returns, ε & Loss">
-          <div className="text-xs text-zinc-600 mb-2">
+          <div className="text-xs text-zinc-600 dark:text-zinc-400 mb-2">
             Episode {ep} / {epCap} • Steps {stepsInEp} • Return {epRet.toFixed(1)} • Loss {lossSmoothed?lossSmoothed.toFixed(4):"—"} • ε {eps.toFixed(3)}
           </div>
           <Sparkline series={returns} />
           <div className="mt-2">
-            <div className="text-xs text-zinc-600 mb-1">ε history</div>
+            <div className="text-xs text-zinc-600 dark:text-zinc-400 mb-1">ε history</div>
             <Sparkline series={epsHistory} />
           </div>
-          <div className="mt-2 text-xs text-zinc-600">Replay buffer: {Math.round(bufferFill*100)}%</div>
+          <div className="mt-2 text-xs text-zinc-600 dark:text-zinc-400">Replay buffer: {Math.round(bufferFill*100)}%</div>
           <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
             <Num label="Episode cap" value={epCap} onChange={setEpCap} step={10} min={10} max={2000} />
             <Num label="γ (discount)" value={gamma} onChange={setGamma} step={0.01} min={0} max={0.999} />
             <Num label="lr" value={lr} onChange={setLr} step={0.0005} min={0.0001} max={0.01} />
             <Num label="Target sync" value={targetSync} onChange={setTargetSync} step={50} min={50} max={2000} />
           </div>
-          <div className="mt-2 text-xs">
+          <div className="mt-2 text-xs text-zinc-700 dark:text-zinc-300">
             {optPath ? <>Shortest steps to goal (BFS): <b>{optPath.length-1}</b></> : "Goal unreachable (BFS)."}
-            {learned && <div className="mt-1 text-emerald-700 font-medium">✓ Matched BFS 3× consecutively</div>}
+            {learned && <div className="mt-1 text-emerald-700 dark:text-emerald-300 font-medium">✓ Matched BFS 3× consecutively</div>}
           </div>
         </Card>
 
         <Card title="Episode log" subtitle="Latest first (50 max)">
-          <div className="text-xs space-y-1 max-h-56 overflow-auto">
+          <div className="text-xs space-y-1 max-h-56 overflow-auto text-zinc-800 dark:text-zinc-200">
             {episodeLog.map((e,i)=>(
               <div key={i} className="grid grid-cols-6 gap-2">
                 <span>Ep {e.ep}</span>
-                <span className={e.outcome==="goal"?"text-emerald-700":e.outcome==="trap"?"text-rose-700":"text-zinc-600"}>{e.outcome}</span>
+                <span className={e.outcome==="goal"?"text-emerald-700 dark:text-emerald-300":e.outcome==="trap"?"text-rose-700 dark:text-rose-300":"text-zinc-600 dark:text-zinc-400"}>{e.outcome}</span>
                 <span>steps {e.steps}</span>
                 <span>return {e.ret}</span>
                 <span title="explore">explr {e.explored}</span>
                 <span title="exploit">explt {e.exploited}</span>
               </div>
             ))}
-            {episodeLog.length===0 && <div className="text-zinc-500">No episodes yet.</div>}
+            {episodeLog.length===0 && <div className="text-zinc-500 dark:text-zinc-400">No episodes yet.</div>}
           </div>
           <TheoryCard
             title="DQN Notes for Newbies"
@@ -1109,17 +1178,26 @@ export default function ReinforcementLearning() {
   });
 
   return (
-    <div className="mx-auto max-w-5xl p-3 sm:p-4">
-      <motion.h1 initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} transition={{duration:0.25}} className="text-xl sm:text-2xl font-bold tracking-tight mb-1">
+  <div className="min-h-screen w-full 
+                bg-gradient-to-b from-white to-zinc-50 
+                dark:from-[#0b0b0e] dark:to-black 
+                text-zinc-900 dark:text-zinc-100
+                p-3 sm:p-4">
+
+      <motion.h1
+        initial={{opacity:0,y:8}}
+        animate={{opacity:1,y:0}}
+        transition={{duration:0.25}}
+        className="text-xl sm:text-2xl font-bold tracking-tight mb-1 text-zinc-900 dark:text-zinc-100"
+      >
         RL GridWorld — Beginner Mode
       </motion.h1>
-      <div className="text-xs sm:text-sm text-zinc-600 mb-3">
+      <div className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 mb-3">
         Learn RL by editing a tiny 4×4 world. Toggle overlays to see the shortest path (BFS), your agent’s current plan, and the last episode’s path.
       </div>
 
-      {/* Beginner “How it works” quick panel */}
       <Card>
-        <div className="text-xs sm:text-sm text-zinc-700 grid gap-2 sm:grid-cols-3">
+        <div className="text-xs sm:text-sm text-zinc-700 dark:text-zinc-300 grid gap-2 sm:grid-cols-3">
           <div><b>Goal:</b> reach the green cell. Traps (red) end the episode with a penalty. Walls block movement.</div>
           <div><b>Train:</b> hit <b>Play</b>. Watch returns go up and ε/entropy go down as it commits to a route.</div>
           <div><b>Edit world:</b> tap = toggle trap • long-press/right-click = wall • double-tap = set goal.</div>
@@ -1132,7 +1210,17 @@ export default function ReinforcementLearning() {
           {id:"dqn", label:"DQN"},
           {id:"pg", label:"Policy Gradient"},
         ].map(t=>(
-          <button key={t.id} onClick={()=>setTab(t.id)} className={`rounded-md border px-3 py-2 text-sm ${tab===t.id?"bg-zinc-900 text-white":"bg-white"}`}>{t.label}</button>
+          <button
+            key={t.id}
+            onClick={()=>setTab(t.id)}
+            className={`rounded-md border px-3 py-2 text-sm font-medium transition
+                        focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-zinc-900
+              ${tab===t.id
+                ? "bg-zinc-900 text-white dark:bg-zinc-200 dark:text-zinc-900 border-zinc-900 dark:border-zinc-200 focus:ring-zinc-400 dark:focus:ring-zinc-400"
+                : "bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-700 focus:ring-blue-400"}`}
+          >
+            {t.label}
+          </button>
         ))}
       </div>
 
@@ -1146,7 +1234,7 @@ export default function ReinforcementLearning() {
             <Num label="Slip" value={envConfig.slipProb} onChange={v=>setEnvConfig({...envConfig, slipProb:clamp(v,0,0.5)})} step={0.01} min={0} max={0.5} />
             <Num label="Max steps" value={envConfig.maxSteps} onChange={v=>setEnvConfig({...envConfig, maxSteps:v})} step={1} min={5} max={200} />
           </div>
-          <div className="mt-2 text-xs text-zinc-600">Tap = trap • Long-press/right-click = wall • Double-tap = goal.</div>
+          <div className="mt-2 text-xs text-zinc-600 dark:text-zinc-400">Tap = trap • Long-press/right-click = wall • Double-tap = goal.</div>
         </Card>
 
         <Card title="Layout editor" subtitle="Click to edit">
@@ -1164,7 +1252,7 @@ export default function ReinforcementLearning() {
 
         <Card title="Quick glossary & newbie tips">
           <Glossary />
-          <div className="text-xs text-zinc-600 mt-2 space-y-1">
+          <div className="text-xs text-zinc-600 dark:text-zinc-400 mt-2 space-y-1">
             <div><b>Explore first:</b> start with higher ε / entropy.</div>
             <div><b>Commit later:</b> decay ε / entropy so the policy locks onto the good path.</div>
             <div><b>Compare:</b> toggle the BFS overlay to see the theoretical shortest route.</div>
