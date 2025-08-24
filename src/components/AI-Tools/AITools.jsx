@@ -117,7 +117,7 @@ export default function AITools() {
         className="absolute bottom-[14%] right-[10%] h-32 w-32 rounded-full blur-2xl"
         style={{
           background:
-            "linear-gradient(135deg, rgba(255,0,204,0.45), rgba(0,255,224,0.35))",
+            "linear-gradient(135deg, rgba(255,0,204,0.45), rgba(149, 225, 216, 0.35))",
         }}
       />
 
