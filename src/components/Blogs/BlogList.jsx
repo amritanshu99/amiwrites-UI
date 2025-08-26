@@ -6,6 +6,7 @@ import axios from "../../utils/api";
 import Loader from "../Loader/Loader";
 import PushNotificationButton from "../Floating-buttons/PushNotificationButton";
 import { useDebounce } from "../../hooks/useDebounce";
+
 function parseJwt(token) {
   try {
     const base64Payload = token.split(".")[1];
@@ -45,7 +46,7 @@ const BlogSkeleton = () => (
     <div className="h-5 bg-gray-300 dark:bg-zinc-700 rounded w-3/4 mb-2"></div>
     <div className="h-3 bg-gray-200 dark:bg-zinc-600 rounded w-1/3 mb-4"></div>
     <div className="flex-1 space-y-2">
-      <div className="h-3 bg-gray-200 dark:bg-zinc-600 rounded w-full"></div>
+      <div className="h-3 bg-gray-2 00 dark:bg-zinc-600 rounded w-full"></div>
       <div className="h-3 bg-gray-200 dark:bg-zinc-600 rounded w-5/6"></div>
       <div className="h-3 bg-gray-200 dark:bg-zinc-600 rounded w-4/6"></div>
     </div>
@@ -67,46 +68,90 @@ const BlogList = () => {
   const { pathname } = useLocation();
   const resetRef = useRef(false);
   const fetchedPagesRef = useRef(new Set());
-  const debouncedSearch = useDebounce(search, 500); // 👈 Debounced search
+  const debouncedSearch = useDebounce(search, 500);
 
-const fetchBlogs = async (pageNumber, currentSearch, currentFilter) => {
-  // Ensure fallback only if explicitly not passed
-  const searchQuery = currentSearch ?? "";
-  const sortOrder = currentFilter ?? "latest";
+  // Absolute backend base
+  const API_BASE = "https://amiwrites-backend-app-2lp5.onrender.com";
 
-  const cacheKey = `${pageNumber}-${searchQuery}-${sortOrder}`;
+  // trending ids state
+  const [trendingIds, setTrendingIds] = useState(() => new Set());
 
-  if (loading || fetchedPagesRef.current.has(cacheKey)) return;
+  // EXACT endpoint name
+  const CLICK_API = `${API_BASE}/api/trending-rl/events/click`;
 
-  setLoading(true);
-  try {
-    const res = await axios.get(
-      `/api/blogs?page=${pageNumber}&limit=10&search=${encodeURIComponent(searchQuery)}&sort=${sortOrder}`
-    );
+  // Navigation-safe sender
+  const trackClick = (postId) => {
+    if (!postId) return;
 
-    if (res.data.blogs && res.data.blogs.length > 0) {
-      setBlogs((prev) =>
-        pageNumber === 1
-          ? res.data.blogs
-          : [
-              ...prev,
-              ...res.data.blogs.filter((b) => !prev.some((p) => p._id === b._id)),
-            ]
-      );
-      fetchedPagesRef.current.add(cacheKey);
-      setHasMore(res.data.hasMore);
-    } else {
-      setHasMore(false);
+    if (process.env.NODE_ENV !== "production") {
+      // eslint-disable-next-line no-console
+      console.debug("trackClick →", CLICK_API, postId);
     }
-  } catch {
-    toast.error("Failed to fetch blogs");
-  } finally {
-    setLoading(false);
-    resetObserver();
-  }
-};
 
+    try {
+      fetch(CLICK_API, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ postId }),
+        mode: "cors",
+        keepalive: true,
+        credentials: "omit",
+      }).catch(() => {});
+      return;
+    } catch (_) {}
 
+    axios.post(CLICK_API, { postId }).catch(() => {});
+  };
+
+  const fetchBlogs = async (pageNumber, currentSearch, currentFilter) => {
+    const searchQuery = currentSearch ?? "";
+    const sortOrder = currentFilter ?? "latest";
+    const cacheKey = `${pageNumber}-${searchQuery}-${sortOrder}`;
+    if (loading || fetchedPagesRef.current.has(cacheKey)) return;
+
+    setLoading(true);
+    try {
+      const res = await axios.get(
+        `/api/blogs?page=${pageNumber}&limit=10&search=${encodeURIComponent(searchQuery)}&sort=${sortOrder}`
+      );
+
+      if (res.data.blogs && res.data.blogs.length > 0) {
+        setBlogs((prev) =>
+          pageNumber === 1
+            ? res.data.blogs
+            : [
+                ...prev,
+                ...res.data.blogs.filter((b) => !prev.some((p) => p._id === b._id)),
+              ]
+        );
+        fetchedPagesRef.current.add(cacheKey);
+        setHasMore(res.data.hasMore);
+      } else {
+        setHasMore(false);
+      }
+    } catch {
+      toast.error("Failed to fetch blogs");
+    } finally {
+      setLoading(false);
+      resetObserver();
+    }
+  };
+
+  // fetch trending ids
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const { data } = await axios.get(`${API_BASE}/api/trending-rl/trending?limit=24`);
+        const items = Array.isArray(data?.items) ? data.items : [];
+        const set = new Set(items.map((x) => String(x?._id)));
+        if (mounted) setTrendingIds(set);
+      } catch {
+        if (mounted) setTrendingIds(new Set());
+      }
+    })();
+    return () => { mounted = false; };
+  }, [debouncedSearch, filter]);
 
   const observerRef = useRef();
   const resetObserver = () => {
@@ -153,7 +198,7 @@ const fetchBlogs = async (pageNumber, currentSearch, currentFilter) => {
       scrollContainer.scrollTo({ top: 0, behavior: "smooth" });
   }, [pathname]);
 
-  const handleBlogClick = (id) => navigate(`/blogs/${id}`);
+  const handleBlogClick = (id) => navigate(`/blogs/${id}?src=list`);
 
   const handleDelete = async (id) => {
     const token = localStorage.getItem("token");
@@ -173,7 +218,7 @@ const fetchBlogs = async (pageNumber, currentSearch, currentFilter) => {
       setPage(1);
       setHasMore(true);
 
-      // ✅ Trigger immediate fresh fetch for page 1
+      // Trigger immediate fresh fetch for page 1
       fetchBlogs(1);
     } catch {
       toast.error("Failed to delete blog");
@@ -182,29 +227,24 @@ const fetchBlogs = async (pageNumber, currentSearch, currentFilter) => {
     }
   };
 
-  // 🔁 Reset on search/filter
-useEffect(() => {
-  resetRef.current = true;
-  setBlogs([]);
-  setHasMore(true);
-  fetchedPagesRef.current = new Set();
-  setPage(1);
-}, [debouncedSearch, filter]); // 👈 Use debouncedSearch instead of search
+  // Reset on search/filter
+  useEffect(() => {
+    resetRef.current = true;
+    setBlogs([]);
+    setHasMore(true);
+    fetchedPagesRef.current = new Set();
+    setPage(1);
+  }, [debouncedSearch, filter]);
 
-
-  // 🔁 Fetch on page change
-// 🔁 Fetch on page change
-useEffect(() => {
-  if (resetRef.current) {
-    fetchBlogs(1, debouncedSearch, filter); // ✅ Use debounced value
-    resetRef.current = false;
-  } else {
-    fetchBlogs(page, debouncedSearch, filter); // ✅ Use debounced value
-  }
-}, [page, debouncedSearch, filter]); // ✅ Also add `debouncedSearch` and `filter` as dependencies
-
-
-
+  // Fetch on page change
+  useEffect(() => {
+    if (resetRef.current) {
+      fetchBlogs(1, debouncedSearch, filter);
+      resetRef.current = false;
+    } else {
+      fetchBlogs(page, debouncedSearch, filter);
+    }
+  }, [page, debouncedSearch, filter]);
 
   const handleAddBlog = () => navigate("/add-blog");
 
@@ -213,12 +253,29 @@ useEffect(() => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-cyan-300 via-pink-300 to-yellow-200 dark:from-zinc-900 dark:via-black dark:to-zinc-900 p-4 sm:p-6">
       <PushNotificationButton />
+<div className="mb-5 text-center max-w-xl mx-auto">
+  <h1 className="text-2xl sm:text-3xl font-bold text-zinc-900 dark:text-zinc-100">
+    My Ideas · My Blogs ✍️
+  </h1>
+
+  <p className="mt-1 text-sm sm:text-base text-zinc-600 dark:text-zinc-400 leading-relaxed">
+    A space where I share thoughts and stories.  
+    <span className="block sm:inline">
+      Powered by{" "}
+      <span className="font-semibold text-pink-600 dark:text-pink-400">
+        Reinforcement Learning 🤖
+      </span>
+      , it learns from your{" "}
+      <span className="underline decoration-pink-400/40 underline-offset-2">
+        reads & clicks
+      </span>{" "}
+      to highlight what’s <span className="font-semibold">trending</span>.
+    </span>
+  </p>
+</div>
 
       <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
-        <h2 className="text-2xl sm:text-3xl font-bold text-zinc-800 dark:text-white text-center sm:text-left">
-          Latest Blogs
-        </h2>
-
+      
         {isAuthenticated && username === "amritanshu99" && (
           <button
             onClick={handleAddBlog}
@@ -261,26 +318,45 @@ useEffect(() => {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
           {filteredBlogs.map((blog) => {
-            const publishedDate = new Date(blog.date).toLocaleDateString(
-              "en-IN",
-              {
-                year: "numeric",
-                month: "short",
-                day: "numeric",
-              }
-            );
+            const publishedDate = new Date(blog.date).toLocaleDateString("en-IN", {
+              year: "numeric",
+              month: "short",
+              day: "numeric",
+            });
+
+            const isTrending = trendingIds.has(String(blog._id));
 
             return (
               <div
                 key={blog._id}
                 className="bg-white dark:bg-zinc-900 border border-gray-300 dark:border-zinc-700 shadow-lg rounded-xl p-6 cursor-pointer transition-transform duration-300 ease-in-out hover:scale-105 hover:-translate-y-1 hover:shadow-xl hover:border-pink-500 flex flex-col h-[260px] sm:h-[230px] w-full relative"
-                onClick={() => handleBlogClick(blog._id)}
+                onClick={() => { trackClick(blog._id); handleBlogClick(blog._id); }}
                 role="button"
                 tabIndex={0}
-                onKeyDown={(e) =>
-                  e.key === "Enter" && handleBlogClick(blog._id)
-                }
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") { trackClick(blog._id); handleBlogClick(blog._id); }
+                }}
               >
+                {/* Trending badge — improved spacing & responsiveness */}
+                {isTrending && (
+                  <span
+                    className="absolute -top-2 -left-2 sm:-top-2 sm:-left-2 z-10 pointer-events-none
+                               inline-flex items-center gap-1.5 px-2 py-0.5 sm:px-2.5 sm:py-1
+                               rounded-full text-[10px] sm:text-[11px] font-semibold
+                               bg-gradient-to-r from-amber-400/95 to-orange-500/95 text-zinc-900
+                               dark:from-amber-500/30 dark:to-orange-600/30 dark:text-amber-200
+                               border border-amber-300/70 dark:border-amber-700/60
+                               ring-1 ring-white/70 dark:ring-black/40 shadow-md"
+                    title="This post is currently trending"
+                    aria-label="Trending"
+                  >
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                      <path d="M13.5 0s1 2.5 1 5.5C14.5 10 10 11 10 15c0 2.761 2.239 5 5 5 3.314 0 6-2.686 6-6 0-4-3-6-3-9 0-2 1-5 1-5s-3 1-5.5 5C12 3 13.5 0 13.5 0z"/>
+                    </svg>
+                    <span className="leading-none">Trending</span>
+                  </span>
+                )}
+
                 <h3 className="text-lg sm:text-xl font-semibold text-pink-700 truncate hover:underline">
                   {blog.title}
                 </h3>
@@ -309,9 +385,7 @@ useEffect(() => {
                       handleDelete(blog._id);
                     }}
                     disabled={deletingId === blog._id}
-                    title={
-                      deletingId === blog._id ? "Deleting..." : "Delete blog"
-                    }
+                    title={deletingId === blog._id ? "Deleting..." : "Delete blog"}
                   >
                     {deletingId === blog._id ? (
                       <Loader size="small" />

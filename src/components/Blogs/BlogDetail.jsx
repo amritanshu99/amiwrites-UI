@@ -17,8 +17,16 @@ const BlogDetails = () => {
   const [summarizing, setSummarizing] = useState(false);
   const [summaryError, setSummaryError] = useState("");
 
+  // Trending badge state (ADD)
+  const [isTrending, setIsTrending] = useState(false);
+
   // Ref to the summary section for smooth scrolling
   const summaryRef = useRef(null);
+
+  // --- RL Tracking refs (already added) ---
+  const readStartRef = useRef(null);
+  const maxScrollRef = useRef(0);
+  const sentReadEndRef = useRef(false);
 
   // Memoized fetch function to satisfy react-hooks/exhaustive-deps
   const fetchBlog = useCallback(async () => {
@@ -119,6 +127,109 @@ const BlogDetails = () => {
     }
   };
 
+  // --- RL: Impression on page view ---
+  useEffect(() => {
+    const API_BASE = "https://amiwrites-backend-app-2lp5.onrender.com";
+    if (!blog?._id && !id) return; // need an identifier
+    const postId = blog?._id || id; // controller accepts _id or slug-like ref
+
+    (async () => {
+      try {
+        await axios.post(`${API_BASE}/api/trending-rl/events/impression`, { postId });
+      } catch (e) {
+        // silent fail is fine
+      }
+    })();
+  }, [blog?._id, id]);
+
+  // --- RL: Read-end analytics (dwell + scroll) ---
+  useEffect(() => {
+    const API_BASE = "https://amiwrites-backend-app-2lp5.onrender.com";
+    if (!blog?._id && !id) return;
+    const postId = blog?._id || id;
+
+    // initialize session refs
+    readStartRef.current = performance.now();
+    maxScrollRef.current = 0;
+    sentReadEndRef.current = false;
+
+    const onScroll = () => {
+      const doc = document.documentElement;
+      const total = doc.scrollHeight;
+      const visible = window.innerHeight;
+      const scrolled = Math.min(1, (window.scrollY + visible) / Math.max(1, total));
+      if (scrolled > maxScrollRef.current) maxScrollRef.current = scrolled;
+    };
+
+    const sendReadEnd = async () => {
+      if (sentReadEndRef.current) return;
+      sentReadEndRef.current = true;
+
+      const start = readStartRef.current || performance.now();
+      const dwell_ms = Math.max(0, Math.round(performance.now() - start));
+      const scroll_depth = Math.max(0, Math.min(1, maxScrollRef.current || 0));
+
+      try {
+        await axios.post(`${API_BASE}/api/trending-rl/events/read-end`, {
+          postId,
+          dwell_ms,
+          scroll_depth,
+        });
+      } catch (e) {
+        // silent fail
+      }
+    };
+
+    // send a snapshot at 10s even if user doesn’t leave
+    const timer = setTimeout(sendReadEnd, 10000);
+
+    const onVisibility = () => {
+      if (document.visibilityState === "hidden") sendReadEnd();
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    document.addEventListener("visibilitychange", onVisibility);
+    window.addEventListener("beforeunload", sendReadEnd);
+
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("scroll", onScroll);
+      document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("beforeunload", sendReadEnd);
+
+      // safety: try sending on unmount if never sent
+      if (!sentReadEndRef.current) {
+        const start = readStartRef.current || performance.now();
+        const dwell_ms = Math.max(0, Math.round(performance.now() - start));
+        const scroll_depth = Math.max(0, Math.min(1, maxScrollRef.current || 0));
+        axios
+          .post(`${API_BASE}/api/trending-rl/events/read-end`, { postId, dwell_ms, scroll_depth })
+          .catch(() => {});
+        sentReadEndRef.current = true;
+      }
+    };
+  }, [blog?._id, id]);
+
+  // --- Trending badge: check if this blog is currently in the rail (ADD) ---
+  useEffect(() => {
+    if (!blog?._id) return;
+    const API_BASE = "https://amiwrites-backend-app-2lp5.onrender.com";
+    // bump limit to reduce false negatives (diversity + randomness)
+    const url = `${API_BASE}/api/trending-rl/trending?limit=12`;
+
+    (async () => {
+      try {
+        const { data } = await axios.get(url);
+        const items = Array.isArray(data?.items) ? data.items : [];
+        const found = items.some(
+          (p) => String(p?._id) === String(blog._id) || (blog.slug && p?.slug === blog.slug)
+        );
+        setIsTrending(found);
+      } catch {
+        setIsTrending(false);
+      }
+    })();
+  }, [blog?._id, blog?.slug]);
+
   if (loading)
     return (
       <div className="min-h-screen flex items-center justify-center p-6 bg-slate-50 dark:bg-zinc-900">
@@ -141,6 +252,19 @@ const BlogDetails = () => {
         {/* Title */}
         <h1 className="text-3xl sm:text-4xl font-bold leading-snug text-slate-800 dark:text-cyan-300 mb-6 font-sans">
           {blog.title}
+          {isTrending && (
+            <span
+              className="ml-3 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold
+                         bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300 border
+                         border-amber-200/60 dark:border-amber-800 align-middle"
+              title="This post is currently in the trending rail"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M13.5 0s1 2.5 1 5.5C14.5 10 10 11 10 15c0 2.761 2.239 5 5 5 3.314 0 6-2.686 6-6 0-4-3-6-3-9 0-2 1-5 1-5s-3 1-5.5 5C12 3 13.5 0 13.5 0z"/>
+              </svg>
+              Trending
+            </span>
+          )}
         </h1>
 
         {/* Meta + Actions */}
