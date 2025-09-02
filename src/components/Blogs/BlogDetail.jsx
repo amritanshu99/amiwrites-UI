@@ -230,7 +230,7 @@ useEffect(() => {
     if (!blog?._id) return;
     const API_BASE = "https://amiwrites-backend-app-2lp5.onrender.com";
     // bump limit to reduce false negatives (diversity + randomness)
-    const url = `${API_BASE}/api/trending-rl/trending?limit=12`;
+    const url = `${API_BASE}/api/trending-rl/trending?limit=2`;
 
     (async () => {
       try {
