@@ -142,72 +142,88 @@ const BlogDetails = () => {
     })();
   }, [blog?._id, id]);
 
-  // --- RL: Read-end analytics (dwell + scroll) ---
-  useEffect(() => {
-    const API_BASE = "https://amiwrites-backend-app-2lp5.onrender.com";
-    if (!blog?._id && !id) return;
-    const postId = blog?._id || id;
+ // --- RL: Read-end analytics (dwell + scroll) ---
+useEffect(() => {
+  const API_BASE = "https://amiwrites-backend-app-2lp5.onrender.com";
+  if (!blog?._id && !id) return;
+  const postId = blog?._id || id;
 
-    // initialize session refs
-    readStartRef.current = performance.now();
-    maxScrollRef.current = 0;
-    sentReadEndRef.current = false;
+  // initialize session refs
+  readStartRef.current = performance.now();
+  maxScrollRef.current = 0;
+  sentReadEndRef.current = false;
 
-    const onScroll = () => {
-      const doc = document.documentElement;
-      const total = doc.scrollHeight;
-      const visible = window.innerHeight;
-      const scrolled = Math.min(1, (window.scrollY + visible) / Math.max(1, total));
-      if (scrolled > maxScrollRef.current) maxScrollRef.current = scrolled;
-    };
+  // pick scroll container
+  const container =
+    document.querySelector(".h-screen.overflow-y-scroll.relative") || window;
 
-    const sendReadEnd = async () => {
-      if (sentReadEndRef.current) return;
-      sentReadEndRef.current = true;
+  const onScroll = () => {
+    const total = container.scrollHeight || document.documentElement.scrollHeight;
+    const visible = container.clientHeight || window.innerHeight;
+    const scrollTop =
+      container.scrollTop !== undefined ? container.scrollTop : window.scrollY;
 
-      const start = readStartRef.current || performance.now();
-      const dwell_ms = Math.max(0, Math.round(performance.now() - start));
-      const scroll_depth = Math.max(0, Math.min(1, maxScrollRef.current || 0));
+    let scrolled = 0;
+    if (total > visible) {
+      scrolled = Math.min(1, (scrollTop + visible) / Math.max(1, total));
+    }
+    if (scrolled > maxScrollRef.current) {
+      maxScrollRef.current = scrolled;
+    }
+  };
 
-      try {
-        await axios.post(`${API_BASE}/api/trending-rl/events/read-end`, {
-          postId,
-          dwell_ms,
-          scroll_depth,
-        });
-      } catch (e) {
-        // silent fail
-      }
-    };
+  const sendReadEnd = async (reason = "manual") => {
+    if (sentReadEndRef.current) return; // guard against duplicates
+    sentReadEndRef.current = true;
 
-    // send a snapshot at 10s even if user doesn’t leave
-    const timer = setTimeout(sendReadEnd, 10000);
+    const start = readStartRef.current || performance.now();
+    const dwell_ms = Math.max(0, Math.round(performance.now() - start));
 
-    const onVisibility = () => {
-      if (document.visibilityState === "hidden") sendReadEnd();
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    document.addEventListener("visibilitychange", onVisibility);
-    window.addEventListener("beforeunload", sendReadEnd);
+    let scroll_depth = Math.max(0, Math.min(1, maxScrollRef.current || 0));
+    const total = container.scrollHeight || document.documentElement.scrollHeight;
+    const visible = container.clientHeight || window.innerHeight;
 
-    return () => {
-      clearTimeout(timer);
-      window.removeEventListener("scroll", onScroll);
-      document.removeEventListener("visibilitychange", onVisibility);
-      window.removeEventListener("beforeunload", sendReadEnd);
+    // handle short blogs
+    if (total <= visible && dwell_ms < 5000) {
+      scroll_depth = 0;
+    } else if (total <= visible) {
+      scroll_depth = 1;
+    }
 
-      // safety: try sending on unmount if never sent
-      if (!sentReadEndRef.current) {
-        const start = readStartRef.current || performance.now();
-        const dwell_ms = Math.max(0, Math.round(performance.now() - start));
-        const scroll_depth = Math.max(0, Math.min(1, maxScrollRef.current || 0));
-        axios
-          .post(`${API_BASE}/api/trending-rl/events/read-end`, { postId, dwell_ms, scroll_depth })
-          .catch(() => {});
-        sentReadEndRef.current = true;
-      }
-    };
-  }, [blog?._id, id]);
+    console.log(`📤 Sending read-end [${reason}]`, { dwell_ms, scroll_depth });
+
+    try {
+      await axios.post(`${API_BASE}/api/trending-rl/events/read-end`, {
+        postId,
+        dwell_ms,
+        scroll_depth,
+      });
+    } catch {}
+  };
+
+  // attach listeners
+  container.addEventListener("scroll", onScroll, { passive: true });
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "hidden") sendReadEnd("visibility");
+  });
+  window.addEventListener("beforeunload", () => sendReadEnd("beforeunload"));
+
+  // single timer snapshot
+  const timer = setTimeout(() => sendReadEnd("timer10s"), 10000);
+
+  return () => {
+    clearTimeout(timer);
+    container.removeEventListener("scroll", onScroll);
+    document.removeEventListener("visibilitychange", () => sendReadEnd("visibility"));
+    window.removeEventListener("beforeunload", () => sendReadEnd("beforeunload"));
+
+    // unmount safety
+    sendReadEnd("unmount");
+  };
+}, [id]); // 👈 only depend on id, not blog._id
+
+
+
 
   // --- Trending badge: check if this blog is currently in the rail (ADD) ---
   useEffect(() => {
