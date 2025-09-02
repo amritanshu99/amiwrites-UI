@@ -320,3 +320,138 @@ Manually push/pull a blog into trending.
 Adjust exploration by changing priors or decay.
 
 Control time window via windowDays.
+
+
+
+
+
+
+
+
+
+📌 Where alpha & beta live
+
+They are stored in BlogStat model:
+
+alpha: { type: Number, default: 1.5 }, // Thompson Sampling priors
+beta:  { type: Number, default: 1.0 },
+
+📌 What they mean
+
+alpha = success counter → counts “good/engaged interactions” (like positive signals).
+
+beta = failure counter → counts “bad/neutral interactions” (like skipped or unengaged).
+
+Together, they form a Beta distribution → used by Thompson Sampling to estimate the probability that this blog is engaging.
+
+📌 How they change in your code
+1. On Impression
+await BlogStat.updateOne(
+  { postId },
+  {
+    $setOnInsert: {
+      alpha: PRIORS.alpha, // = 1.5
+      beta: PRIORS.beta,   // = 1.0
+    },
+    $inc: { impressions: 1 }
+  },
+  { upsert: true }
+);
+
+
+📌 Only impressions increases.
+
+alpha and beta stay the same.
+
+2. On Click
+await BlogStat.updateOne(
+  { postId },
+  {
+    $setOnInsert: {
+      alpha: PRIORS.alpha,
+      beta: PRIORS.beta,
+    },
+    $inc: { clicks: 1 }
+  },
+  { upsert: true }
+);
+
+
+📌 Only clicks increases.
+
+alpha and beta stay the same.
+
+3. On Read-End (important)
+const engaged =
+  ratio >= 0.6 ||  // read enough time
+  scroll >= 0.7 || // scrolled enough
+  !!bookmarked ||  // saved
+  !!shared;        // shared
+
+const inc = { engaged_count: engaged ? 1 : 0 };
+if (engaged) inc.alpha = 1;  // success
+else inc.beta = 1;           // failure
+
+
+If user engaged →
+alpha = alpha + 1 ✅
+
+If user not engaged →
+beta = beta + 1 ❌
+
+4. On Decay Job
+
+In /utils/decay.js:
+
+await BlogStat.updateMany({}, {
+  $mul: {
+    alpha: DECAY,
+    beta: DECAY,
+    impressions: DECAY,
+    clicks: DECAY,
+    engaged_count: DECAY,
+  }
+});
+
+
+📌 Every night, both alpha & beta are shrunk by 0.97 (or whatever DECAY is set to).
+
+This means old stats fade away over time so recent behavior matters more.
+
+📌 Example
+
+Blog starts:
+
+alpha = 1.5
+beta = 1.0
+
+
+Gets a read where user scrolls deep + spends time:
+
+alpha = 2.5
+beta = 1.0
+
+
+Next user bounces quickly:
+
+alpha = 2.5
+beta = 2.0
+
+
+Decay runs overnight (DECAY = 0.97):
+
+alpha = 2.425
+beta = 1.94
+
+
+👉 So the blog’s “strength” is always shifting based on real engagement + fading memory.
+
+✅ Summary
+
+alpha ↑ = more engaged reads (success).
+
+beta ↑ = more non-engaged reads (failure).
+
+They don’t depend on impressions or clicks directly → only read-end engagement updates them.
+
+Decay ensures recent behavior matters more than old behavior.
