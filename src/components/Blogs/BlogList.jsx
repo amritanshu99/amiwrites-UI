@@ -142,7 +142,7 @@ const BlogList = () => {
     let mounted = true;
     (async () => {
       try {
-        const { data } = await axios.get(`${API_BASE}/api/trending-rl/trending?limit=2`);
+        const { data } = await axios.get(`${API_BASE}/api/trending-rl/trending?limit=2&all=1`);
         const items = Array.isArray(data?.items) ? data.items : [];
         const set = new Set(items.map((x) => String(x?._id)));
         if (mounted) setTrendingIds(set);
