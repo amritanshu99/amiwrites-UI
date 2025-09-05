@@ -455,3 +455,82 @@ beta ↑ = more non-engaged reads (failure).
 They don’t depend on impressions or clicks directly → only read-end engagement updates them.
 
 Decay ensures recent behavior matters more than old behavior.
+
+
+
+
+📌 Where engagement is calculated
+
+In controllers/trendingRLController.js → trackReadEnd:
+
+const words = blog.words || wordsFromBlog(blog);
+const expected = computeExpectedMs(words);   // ⬅️ here
+const dwell = Number(dwell_ms) || 0;
+const scroll = Number(scroll_depth);
+const ratio = expected > 0 ? dwell / expected : 0;
+
+const engaged =
+  ratio >= 0.6 ||         // spent enough time
+  (Number.isFinite(scroll) && scroll >= 0.7) ||  // scrolled enough
+  !!bookmarked ||
+  !!shared;
+
+📌 How expected is computed
+
+See the helper above:
+
+function computeExpectedMs(words = 0) {
+  return (Math.max(50, words) / 200) * 60 * 1000;
+}
+
+
+Assume an average reading speed = 200 words/minute.
+
+So for each blog, expected read time =
+
+(words / 200) * 60 seconds * 1000 → milliseconds
+
+
+Floor to 50 words → to avoid division by zero for tiny blogs.
+
+📌 Example calculation
+
+Suppose blog has 600 words (like your BlogStat row):
+
+expected = (600 / 200) * 60 * 1000
+         = 3 * 60 * 1000
+         = 180,000 ms
+
+
+So expected_ms = 180 seconds (~3 min).
+
+📌 Engagement rules
+
+If dwell_ms / expected_ms ≥ 0.6 → Engaged ✅
+
+Example: user stays 120s on a 180s blog → ratio = 0.66 → engaged.
+
+Or if scroll_depth ≥ 0.7 → Engaged ✅
+
+Example: user scrolls 80% of page → engaged even if time was short.
+
+Or if bookmarked/shared → Engaged ✅
+
+Else → Not engaged ❌
+
+📌 What gets stored
+
+If engaged → alpha++
+Else → beta++
+
+The actual expected_ms is not saved anywhere — it’s recomputed each time using blog’s word count.
+
+✅ Summary
+
+expected_ms is not a DB field.
+
+It’s computed dynamically based on blog word count.
+
+Engagement is then judged by comparing dwell_ms (real user time) vs expected_ms (predicted reading time).
+
+This way, long blogs don’t get unfairly punished (because they get more expected time).
