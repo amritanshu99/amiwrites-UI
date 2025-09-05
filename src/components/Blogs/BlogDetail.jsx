@@ -1,4 +1,3 @@
-// src/components/BlogDetails/BlogDetails.jsx
 import { useEffect, useState, useMemo, useRef, useCallback } from "react";
 import { useParams, useLocation } from "react-router-dom";
 import axios from "../../utils/api";
