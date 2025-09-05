@@ -46,7 +46,7 @@ const BlogSkeleton = () => (
     <div className="h-5 bg-gray-300 dark:bg-zinc-700 rounded w-3/4 mb-2"></div>
     <div className="h-3 bg-gray-200 dark:bg-zinc-600 rounded w-1/3 mb-4"></div>
     <div className="flex-1 space-y-2">
-      <div className="h-3 bg-gray-200 dark:bg-zinc-600 rounded w-full"></div>
+      <div className="h-3 bg-gray-2 00 dark:bg-zinc-600 rounded w-full"></div>
       <div className="h-3 bg-gray-200 dark:bg-zinc-600 rounded w-5/6"></div>
       <div className="h-3 bg-gray-200 dark:bg-zinc-600 rounded w-4/6"></div>
     </div>
