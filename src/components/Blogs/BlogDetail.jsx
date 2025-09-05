@@ -127,103 +127,180 @@ const BlogDetails = () => {
     }
   };
 
-  // --- RL: Impression on page view ---
+  // --- RL: Impression on page view (send once when we have an identifier) ---
   useEffect(() => {
     const API_BASE = "https://amiwrites-backend-app-2lp5.onrender.com";
     if (!blog?._id && !id) return; // need an identifier
     const postId = blog?._id || id; // controller accepts _id or slug-like ref
 
+    let cancelled = false;
     (async () => {
       try {
         await axios.post(`${API_BASE}/api/trending-rl/events/impression`, { postId });
       } catch (e) {
         // silent fail is fine
+      } finally {
+        if (!cancelled) {
+          // no-op; we keep it for potential future state updates
+        }
       }
     })();
+
+    return () => {
+      cancelled = true;
+    };
   }, [blog?._id, id]);
 
- // --- RL: Read-end analytics (dwell + scroll) ---
-useEffect(() => {
-  const API_BASE = "https://amiwrites-backend-app-2lp5.onrender.com";
-  if (!blog?._id && !id) return;
-  const postId = blog?._id || id;
+  // --- RL: Read-end analytics (dwell + scroll) ---
+  useEffect(() => {
+    const API_BASE = "https://amiwrites-backend-app-2lp5.onrender.com";
+    if (!blog?._id && !id) return;
+    const postId = blog?._id || id;
 
-  // initialize session refs
-  readStartRef.current = performance.now();
-  maxScrollRef.current = 0;
-  sentReadEndRef.current = false;
+    // initialize session refs
+    readStartRef.current = performance.now();
+    maxScrollRef.current = 0;
+    sentReadEndRef.current = false;
 
-  // pick scroll container
-  const container =
-    document.querySelector(".h-screen.overflow-y-scroll.relative") || window;
+    // pick scroll container (custom div or fallback window)
+    const containerElem = document.querySelector(".h-screen.overflow-y-scroll.relative");
+    const isWindow = !containerElem;
+    const container = containerElem || window;
 
-  const onScroll = () => {
-    const total = container.scrollHeight || document.documentElement.scrollHeight;
-    const visible = container.clientHeight || window.innerHeight;
-    const scrollTop =
-      container.scrollTop !== undefined ? container.scrollTop : window.scrollY;
+    // helpers to read sizes in both modes
+    const getTotalHeight = () =>
+      (containerElem && containerElem.scrollHeight) || document.documentElement.scrollHeight;
+    const getVisibleHeight = () =>
+      (containerElem && containerElem.clientHeight) || window.innerHeight;
+    const getScrollTop = () =>
+      containerElem && typeof containerElem.scrollTop === "number"
+        ? containerElem.scrollTop
+        : (window.scrollY || window.pageYOffset || document.documentElement.scrollTop);
 
-    let scrolled = 0;
-    if (total > visible) {
-      scrolled = Math.min(1, (scrollTop + visible) / Math.max(1, total));
+    // scroll handler (named so we can remove it)
+    const onScroll = () => {
+      const total = getTotalHeight();
+      const visible = getVisibleHeight();
+      const scrollTop = getScrollTop();
+
+      // if the page is shorter than viewport, treat specially (we'll handle it in send)
+      let scrolled = 0;
+      if (total > visible) {
+        scrolled = Math.min(1, (scrollTop + visible) / Math.max(1, total));
+      }
+      if (scrolled > maxScrollRef.current) maxScrollRef.current = scrolled;
+    };
+
+    // sendReadEnd (named)
+    const sendReadEnd = async (reason = "manual") => {
+      // synchronous guard to avoid race duplicates
+      if (sentReadEndRef.current) return;
+      sentReadEndRef.current = true;
+
+      const start = readStartRef.current || performance.now();
+      const dwell_ms = Math.max(0, Math.round(performance.now() - start));
+
+      // compute scroll depth consistently
+      const total = getTotalHeight();
+      const visible = getVisibleHeight();
+      let scroll_depth = Math.max(0, Math.min(1, maxScrollRef.current || 0));
+
+      // For short pages (no scroll possible), treat as full read only after a small dwell
+      // (keeps bots/fast bounces from counting as engaged reads)
+      const SHORT_PAGE_DWELL_MS = 5000;
+      if (total <= visible) {
+        scroll_depth = dwell_ms >= SHORT_PAGE_DWELL_MS ? 1 : 0;
+      }
+
+      // Logging for debug (safe to remove later)
+      // eslint-disable-next-line no-console
+      console.log("📤 Sending read-end", { reason, postId, dwell_ms, scroll_depth });
+
+      try {
+        // If unloading (beforeunload), prefer navigator.sendBeacon to avoid being cancelled.
+        // But if we are here for timer / visibility, do async axios.
+        if (reason === "beforeunload" && navigator.sendBeacon) {
+          const payload = JSON.stringify({ postId, dwell_ms, scroll_depth });
+          const blob = new Blob([payload], { type: "application/json" });
+          navigator.sendBeacon(`${API_BASE}/api/trending-rl/events/read-end`, blob);
+        } else {
+          await axios.post(`${API_BASE}/api/trending-rl/events/read-end`, {
+            postId,
+            dwell_ms,
+            scroll_depth,
+          });
+        }
+      } catch (e) {
+        // silent fail (as before)
+      }
+    };
+
+    // visibility handler
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "hidden") sendReadEnd("visibility");
+    };
+
+    // beforeunload handler uses sendBeacon synchronously where possible
+    const onBeforeUnload = () => {
+      // call sendReadEnd with reason 'beforeunload' so it uses sendBeacon
+      // do NOT await here; sendReadEnd uses sendBeacon when possible
+      sendReadEnd("beforeunload");
+      return undefined;
+    };
+
+    // Timer snapshot (10s)
+    const timer = setTimeout(() => sendReadEnd("timer10s"), 10000);
+
+    // Attach listeners (ensure we add named functions so removal works)
+    if (isWindow) {
+      window.addEventListener("scroll", onScroll, { passive: true });
+    } else {
+      containerElem.addEventListener("scroll", onScroll, { passive: true });
     }
-    if (scrolled > maxScrollRef.current) {
-      maxScrollRef.current = scrolled;
-    }
-  };
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    window.addEventListener("beforeunload", onBeforeUnload);
 
-  const sendReadEnd = async (reason = "manual") => {
-    if (sentReadEndRef.current) return; // guard against duplicates
-    sentReadEndRef.current = true;
+    return () => {
+      // cleanup
+      clearTimeout(timer);
+      if (isWindow) {
+        window.removeEventListener("scroll", onScroll);
+      } else {
+        containerElem.removeEventListener("scroll", onScroll);
+      }
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+      window.removeEventListener("beforeunload", onBeforeUnload);
 
-    const start = readStartRef.current || performance.now();
-    const dwell_ms = Math.max(0, Math.round(performance.now() - start));
+      // final attempt to send if nothing was sent yet — use sendBeacon when available
+      if (!sentReadEndRef.current) {
+        const start = readStartRef.current || performance.now();
+        const dwell_ms = Math.max(0, Math.round(performance.now() - start));
+        const total = getTotalHeight();
+        const visible = getVisibleHeight();
+        let scroll_depth = Math.max(0, Math.min(1, maxScrollRef.current || 0));
+        const SHORT_PAGE_DWELL_MS = 5000;
+        if (total <= visible) {
+          scroll_depth = dwell_ms >= SHORT_PAGE_DWELL_MS ? 1 : 0;
+        }
 
-    let scroll_depth = Math.max(0, Math.min(1, maxScrollRef.current || 0));
-    const total = container.scrollHeight || document.documentElement.scrollHeight;
-    const visible = container.clientHeight || window.innerHeight;
-
-    // handle short blogs
-    if (total <= visible && dwell_ms < 5000) {
-      scroll_depth = 0;
-    } else if (total <= visible) {
-      scroll_depth = 1;
-    }
-
-    console.log(`📤 Sending read-end [${reason}]`, { dwell_ms, scroll_depth });
-
-    try {
-      await axios.post(`${API_BASE}/api/trending-rl/events/read-end`, {
-        postId,
-        dwell_ms,
-        scroll_depth,
-      });
-    } catch {}
-  };
-
-  // attach listeners
-  container.addEventListener("scroll", onScroll, { passive: true });
-  document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "hidden") sendReadEnd("visibility");
-  });
-  window.addEventListener("beforeunload", () => sendReadEnd("beforeunload"));
-
-  // single timer snapshot
-  const timer = setTimeout(() => sendReadEnd("timer10s"), 10000);
-
-  return () => {
-    clearTimeout(timer);
-    container.removeEventListener("scroll", onScroll);
-    document.removeEventListener("visibilitychange", () => sendReadEnd("visibility"));
-    window.removeEventListener("beforeunload", () => sendReadEnd("beforeunload"));
-
-    // unmount safety
-    sendReadEnd("unmount");
-  };
-}, [id]); // 👈 only depend on id, not blog._id
-
-
-
+        if (navigator.sendBeacon) {
+          const payload = JSON.stringify({ postId, dwell_ms, scroll_depth });
+          const blob = new Blob([payload], { type: "application/json" });
+          navigator.sendBeacon(`${API_BASE}/api/trending-rl/events/read-end`, blob);
+        } else {
+          // best-effort async call (may be cancelled), but we still try
+          axios
+            .post(`${API_BASE}/api/trending-rl/events/read-end`, {
+              postId,
+              dwell_ms,
+              scroll_depth,
+            })
+            .catch(() => {});
+        }
+        sentReadEndRef.current = true;
+      }
+    };
+  }, [id, blog?._id]);
 
   // --- Trending badge: check if this blog is currently in the rail (ADD) ---
   useEffect(() => {
