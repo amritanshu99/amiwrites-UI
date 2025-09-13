@@ -31,6 +31,11 @@ const toolLinks = [
     label: "AmiBot, know more about Amritanshu Mishra",
     color: "from-purple-500 via-purple-600 to-purple-700",
   },
+    {
+    path: "/Reinforcement-Learning",
+    label: "Reinforcement-Learning",
+    color: "from-purple-500 via-purple-600 to-purple-700",
+  },
 ];
 
 export default function AITools() {
