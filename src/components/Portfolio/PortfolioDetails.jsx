@@ -29,11 +29,12 @@ import AchievementsModal from "./AchievementsModal";
    - Dark gradients: hand-tuned darker cousins so contrast stays comfortable
    =========================== */
 const lightGradients = [
+  "linear-gradient(-225deg, #5D9FFF 0%, #B8DCFF 48%, #6BBBFF 100%)",
   "linear-gradient(120deg, #a6c0fe 0%, #f68084 100%)",
-  "linear-gradient(to right, #fa709a 0%, #fee140 100%)",
   "linear-gradient(to top, #a8edea 0%, #fed6e3 100%)",
   "linear-gradient(to right, #eea2a2 0%, #bbc1bf 19%, #57c6e1 42%, #b49fda 79%, #7ac5d8 100%)",
-  "linear-gradient(to right, #f83600 0%, #f9d423 100%)",
+  "linear-gradient(-20deg, #d558c8 0%, #24d292 100%)",
+  "linear-gradient(to top, #fff1eb 0%, #ace0f9 100%)",
   "linear-gradient(-20deg, #ddd6f3 0%, #faaca8 100%, #faaca8 100%)",
   "linear-gradient(-225deg, #69EACB 0%, #EACCF8 48%, #6654F1 100%)",
 ];
@@ -179,12 +180,17 @@ export default function Portfolio() {
   // detect dark mode initially and on runtime toggles
   useEffect(() => {
     const checkDark = () =>
-      setIsDark(document?.documentElement?.classList?.contains?.("dark") ?? false);
+      setIsDark(
+        document?.documentElement?.classList?.contains?.("dark") ?? false
+      );
 
     checkDark();
     const obs = new MutationObserver(() => checkDark());
     if (document?.documentElement) {
-      obs.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+      obs.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ["class"],
+      });
     }
     return () => obs.disconnect();
   }, []);
@@ -223,7 +229,7 @@ export default function Portfolio() {
         setCurrentIdx(next);
         setTimeout(() => setFrontVisible(false), 140);
       }, 110);
-    }, 11_000); // comfortable 11s cadence
+    }, 8_000); // comfortable 11s cadence
 
     return () => clearInterval(intervalRef.current);
   }, [isDark, currentIdx]);
@@ -235,15 +241,23 @@ export default function Portfolio() {
   }, []);
 
   // front/back gradient strings depending on mode
-  const frontBg = useMemo(() => (isDark ? darkGradients[currentIdx] : lightGradients[currentIdx]), [
-    currentIdx,
-    isDark,
-  ]);
-  const nextIdx = useMemo(
-    () => (isDark ? currentIdx : playlistRef.current[(ptrRef.current + 1) % playlistRef.current.length]),
+  const frontBg = useMemo(
+    () => (isDark ? darkGradients[currentIdx] : lightGradients[currentIdx]),
     [currentIdx, isDark]
   );
-  const backBg = useMemo(() => (isDark ? darkGradients[nextIdx] : lightGradients[nextIdx]), [nextIdx, isDark]);
+  const nextIdx = useMemo(
+    () =>
+      isDark
+        ? currentIdx
+        : playlistRef.current[
+            (ptrRef.current + 1) % playlistRef.current.length
+          ],
+    [currentIdx, isDark]
+  );
+  const backBg = useMemo(
+    () => (isDark ? darkGradients[nextIdx] : lightGradients[nextIdx]),
+    [nextIdx, isDark]
+  );
 
   // layer style factory: only background-position animates (no layout changes)
   const makeLayerStyle = (bg, speed = 32, blend = "normal") => ({
@@ -263,13 +277,16 @@ export default function Portfolio() {
     inset: 0,
     zIndex: -5,
     pointerEvents: "none",
-    background: "radial-gradient(60% 60% at 50% 45%, rgba(255,255,255,0.04), rgba(0,0,0,0.06) 75%)",
+    background:
+      "radial-gradient(60% 60% at 50% 45%, rgba(255,255,255,0.04), rgba(0,0,0,0.06) 75%)",
     mixBlendMode: "soft-light",
   };
 
   // Keep existing scroll-to-top behavior on navigation (unchanged)
   useEffect(() => {
-    const scrollContainer = document.querySelector(".h-screen.overflow-y-scroll.relative");
+    const scrollContainer = document.querySelector(
+      ".h-screen.overflow-y-scroll.relative"
+    );
     if (scrollContainer) {
       scrollContainer.scrollTo({ top: 0, behavior: "smooth" });
     }
@@ -277,8 +294,10 @@ export default function Portfolio() {
 
   if (!data || showLoader) return <InitialLoader />;
 
-  const openModal = (title, achievements) => setModalData({ isOpen: true, title, achievements });
-  const closeModal = () => setModalData({ isOpen: false, title: "", achievements: [] });
+  const openModal = (title, achievements) =>
+    setModalData({ isOpen: true, title, achievements });
+  const closeModal = () =>
+    setModalData({ isOpen: false, title: "", achievements: [] });
 
   return (
     <>
@@ -396,7 +415,9 @@ export default function Portfolio() {
                   >
                     <div className="w-8 h-8 mb-2 flex items-center justify-center transition-transform duration-500 group-hover:rotate-3">
                       {skillIconMap[skill] ?? (
-                        <span className="text-cyan-700 dark:text-cyan-300 text-sm">?</span>
+                        <span className="text-cyan-700 dark:text-cyan-300 text-sm">
+                          ?
+                        </span>
                       )}
                     </div>
                     <span className="text-xs font-semibold text-gray-800 dark:text-gray-200 text-center truncate px-2">
@@ -416,13 +437,27 @@ export default function Portfolio() {
             <div className="space-y-6 max-w-md">
               {data.experience.map(
                 ({ company, role, duration, description, achievements }, i) => (
-                  <article key={i} className="border-l-4 border-cyan-400 dark:border-cyan-600 pl-4">
-                    <h4 className="text-xl font-semibold text-cyan-900 dark:text-cyan-200">{role}</h4>
-                    <p className="italic text-gray-600 dark:text-gray-400 mb-1">{company} • {duration}</p>
-                    <p className="text-cyan-800 dark:text-cyan-300">{description}</p>
+                  <article
+                    key={i}
+                    className="border-l-4 border-cyan-400 dark:border-cyan-600 pl-4"
+                  >
+                    <h4 className="text-xl font-semibold text-cyan-900 dark:text-cyan-200">
+                      {role}
+                    </h4>
+                    <p className="italic text-gray-600 dark:text-gray-400 mb-1">
+                      {company} • {duration}
+                    </p>
+                    <p className="text-cyan-800 dark:text-cyan-300">
+                      {description}
+                    </p>
                     {achievements?.length > 0 && (
                       <button
-                        onClick={() => openModal(`${role} at ${company} - Achievements`, achievements)}
+                        onClick={() =>
+                          openModal(
+                            `${role} at ${company} - Achievements`,
+                            achievements
+                          )
+                        }
                         className="mt-2 text-cyan-600 dark:text-cyan-400 hover:text-cyan-900 dark:hover:text-cyan-100 font-semibold underline"
                       >
                         View Achievements
@@ -442,12 +477,24 @@ export default function Portfolio() {
             <div className="space-y-6 max-w-md">
               {data.education.map(
                 ({ institution, degree, duration, achievements }, i) => (
-                  <article key={i} className="border-l-4 border-cyan-400 dark:border-cyan-600 pl-4">
-                    <h4 className="text-xl font-semibold text-cyan-900 dark:text-cyan-200">{degree}</h4>
-                    <p className="italic text-gray-600 dark:text-gray-400 mb-1">{institution} • {duration}</p>
+                  <article
+                    key={i}
+                    className="border-l-4 border-cyan-400 dark:border-cyan-600 pl-4"
+                  >
+                    <h4 className="text-xl font-semibold text-cyan-900 dark:text-cyan-200">
+                      {degree}
+                    </h4>
+                    <p className="italic text-gray-600 dark:text-gray-400 mb-1">
+                      {institution} • {duration}
+                    </p>
                     {achievements?.length > 0 && (
                       <button
-                        onClick={() => openModal(`${degree} at ${institution} - Achievements`, achievements)}
+                        onClick={() =>
+                          openModal(
+                            `${degree} at ${institution} - Achievements`,
+                            achievements
+                          )
+                        }
                         className="mt-2 text-cyan-600 dark:text-cyan-400 hover:text-cyan-900 dark:hover:text-cyan-100 font-semibold underline"
                       >
                         View Achievements
@@ -461,7 +508,12 @@ export default function Portfolio() {
         </article>
       </main>
 
-      <AchievementsModal isOpen={modalData.isOpen} onClose={closeModal} title={modalData.title} achievements={modalData.achievements} />
+      <AchievementsModal
+        isOpen={modalData.isOpen}
+        onClose={closeModal}
+        title={modalData.title}
+        achievements={modalData.achievements}
+      />
     </>
   );
 }
