@@ -229,7 +229,7 @@ export default function Portfolio() {
         setCurrentIdx(next);
         setTimeout(() => setFrontVisible(false), 140);
       }, 110);
-    }, 8_000); // comfortable 11s cadence
+    }, 12_000); // comfortable 11s cadence
 
     return () => clearInterval(intervalRef.current);
   }, [isDark, currentIdx]);
