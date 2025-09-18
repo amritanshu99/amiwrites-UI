@@ -11,6 +11,7 @@ import {
   FaGraduationCap,
   FaJs,
 } from "react-icons/fa";
+import { useReducedMotion } from "framer-motion";
 import {
   SiTensorflow,
   SiOpenai,
@@ -99,6 +100,22 @@ const Tooltip = ({ children, content }) => {
   );
 };
 
+const container = {
+  hidden: {},
+  show: {
+    transition: { staggerChildren: 0.08, delayChildren: 0.1 },
+  },
+};
+
+const item = {
+  hidden: { opacity: 0, y: 12 },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: { type: "spring", stiffness: 300, damping: 18 },
+  },
+};
+
 function ScrollFadeIn({ children, className = "" }) {
   const ref = React.useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
@@ -127,6 +144,7 @@ function shuffledIndices(len) {
 }
 
 export default function Portfolio() {
+  const reduce = useReducedMotion();
   const [data, setData] = useState(null);
   const [modalData, setModalData] = useState({
     isOpen: false,
@@ -353,51 +371,60 @@ export default function Portfolio() {
                 <p>✉️ {data.email}</p>
                 <p>📞 {data.phone}</p>
               </div>
-              <nav className="flex justify-center sm:justify-start gap-6 mt-5 text-2xl">
+              <motion.nav
+                className="flex justify-center sm:justify-start gap-6 mt-5 text-2xl"
+                variants={container}
+                initial={reduce ? false : "hidden"}
+                animate={reduce ? false : "show"}
+              >
                 <motion.a
+                  variants={item}
                   href={data.socialLinks.linkedin}
                   target="_blank"
                   rel="noreferrer"
-                  whileHover={{ scale: 1.15 }}
-                  transition={{ type: "spring", stiffness: 300 }}
-                  className="cursor-pointer text-cyan-600 dark:text-cyan-400 transition-colors hover:text-blue-700"
+                  whileHover={{ scale: 1.2, rotate: 2 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 10 }}
+                  className="cursor-pointer text-blue-700 dark:text-blue-500"
                 >
                   <FaLinkedin />
                 </motion.a>
 
                 <motion.a
+                  variants={item}
                   href={data.socialLinks.github}
                   target="_blank"
                   rel="noreferrer"
-                  whileHover={{ scale: 1.15 }}
-                  transition={{ type: "spring", stiffness: 300 }}
-                  className="cursor-pointer text-cyan-600 dark:text-cyan-400 transition-colors hover:text-gray-800"
+                  whileHover={{ scale: 1.2, rotate: -2 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 10 }}
+                  className="cursor-pointer text-gray-800 dark:text-gray-200"
                 >
                   <FaGithub />
                 </motion.a>
 
                 <motion.a
+                  variants={item}
                   href={data.socialLinks.instagram}
                   target="_blank"
                   rel="noreferrer"
-                  whileHover={{ scale: 1.15 }}
-                  transition={{ type: "spring", stiffness: 300 }}
-                  className="cursor-pointer text-cyan-600 dark:text-cyan-400 transition-colors hover:text-pink-500"
+                  whileHover={{ scale: 1.2, rotate: 2 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 10 }}
+                  className="cursor-pointer text-pink-500"
                 >
                   <FaInstagram />
                 </motion.a>
 
                 <motion.a
+                  variants={item}
                   href={data.socialLinks.facebook}
                   target="_blank"
                   rel="noreferrer"
-                  whileHover={{ scale: 1.15 }}
-                  transition={{ type: "spring", stiffness: 300 }}
-                  className="cursor-pointer text-cyan-600 dark:text-cyan-400 transition-colors hover:text-blue-600"
+                  whileHover={{ scale: 1.2, rotate: -2 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 10 }}
+                  className="cursor-pointer text-blue-600"
                 >
                   <FaFacebook />
                 </motion.a>
-              </nav>
+              </motion.nav>
             </div>
           </section>
 

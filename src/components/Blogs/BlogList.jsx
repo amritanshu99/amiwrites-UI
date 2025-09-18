@@ -46,7 +46,7 @@ const BlogSkeleton = () => (
     <div className="h-5 bg-gray-300 dark:bg-zinc-700 rounded w-3/4 mb-2"></div>
     <div className="h-3 bg-gray-200 dark:bg-zinc-600 rounded w-1/3 mb-4"></div>
     <div className="flex-1 space-y-2">
-      <div className="h-3 bg-gray-2 00 dark:bg-zinc-600 rounded w-full"></div>
+      <div className="h-3 bg-gray-200 dark:bg-zinc-600 rounded w-full"></div>
       <div className="h-3 bg-gray-200 dark:bg-zinc-600 rounded w-5/6"></div>
       <div className="h-3 bg-gray-200 dark:bg-zinc-600 rounded w-4/6"></div>
     </div>
@@ -103,13 +103,27 @@ const BlogList = () => {
     axios.post(CLICK_API, { postId }).catch(() => {});
   };
 
+  // ------------------ Robust fetch + refs to avoid stale closures ------------------
+  const loadingRef = useRef(loading);
+  const hasMoreRef = useRef(hasMore);
+  const pageRef = useRef(page);
+
+  useEffect(() => { loadingRef.current = loading; }, [loading]);
+  useEffect(() => { hasMoreRef.current = hasMore; }, [hasMore]);
+  useEffect(() => { pageRef.current = page; }, [page]);
+
   const fetchBlogs = async (pageNumber, currentSearch, currentFilter) => {
     const searchQuery = currentSearch ?? "";
     const sortOrder = currentFilter ?? "latest";
     const cacheKey = `${pageNumber}-${searchQuery}-${sortOrder}`;
-    if (loading || fetchedPagesRef.current.has(cacheKey)) return;
+
+    // Avoid duplicate requests
+    if (fetchedPagesRef.current.has(cacheKey)) return;
+    // Avoid calling while already loading the same or other page
+    if (loadingRef.current) return;
 
     setLoading(true);
+    loadingRef.current = true;
     try {
       const res = await axios.get(
         `/api/blogs?page=${pageNumber}&limit=10&search=${encodeURIComponent(searchQuery)}&sort=${sortOrder}`
@@ -125,17 +139,22 @@ const BlogList = () => {
               ]
         );
         fetchedPagesRef.current.add(cacheKey);
-        setHasMore(res.data.hasMore);
+        setHasMore(Boolean(res.data.hasMore));
+        hasMoreRef.current = Boolean(res.data.hasMore);
       } else {
         setHasMore(false);
+        hasMoreRef.current = false;
       }
-    } catch {
+    } catch (err) {
       toast.error("Failed to fetch blogs");
     } finally {
       setLoading(false);
-      resetObserver();
+      loadingRef.current = false;
+      // safe re-attach observer if needed
+      try { resetObserver(); } catch (e) {}
     }
   };
+  // ------------------ end fetch + refs ------------------
 
   // fetch trending ids
   useEffect(() => {
@@ -153,38 +172,169 @@ const BlogList = () => {
     return () => { mounted = false; };
   }, [debouncedSearch, filter]);
 
-  const observerRef = useRef();
+  // ------------------ Observer + scroll fallback with proper cleanup ------------------
+  const observerRef = useRef(null);
+  const scrollContainerRef = useRef(null); // actual scrollable element or null for viewport
+  const lastRequestedPageRef = useRef(0);
+  const throttleTimeoutRef = useRef(null);
+
+  const findScrollContainer = (startEl) => {
+    const explicit = document.querySelector(".h-screen.overflow-y-scroll.relative");
+    if (explicit) {
+      try {
+        const style = getComputedStyle(explicit);
+        if ((style.overflowY === "auto" || style.overflowY === "scroll") && explicit.scrollHeight > explicit.clientHeight) {
+          return explicit;
+        }
+      } catch (e) {}
+    }
+
+    if (!startEl) return null;
+    let node = startEl.parentElement;
+    while (node && node !== document.body) {
+      try {
+        const style = getComputedStyle(node);
+        const overflowY = style.overflowY;
+        if ((overflowY === "auto" || overflowY === "scroll") && node.scrollHeight > node.clientHeight) {
+          return node;
+        }
+      } catch (e) {}
+      node = node.parentElement;
+    }
+    return null; // viewport
+  };
+
   const resetObserver = () => {
     if (observerRef.current && loaderRef.current) {
-      observerRef.current.unobserve(loaderRef.current);
-      observerRef.current.observe(loaderRef.current);
+      try { observerRef.current.unobserve(loaderRef.current); } catch (e) {}
+      try { observerRef.current.observe(loaderRef.current); } catch (e) {}
     }
   };
 
-  const handleObserver = useCallback(
-    (entries) => {
-      const target = entries[0];
-      if (target.isIntersecting && hasMore && !loading) {
-        setPage((prev) => prev + 1);
-      }
-    },
-    [hasMore, loading]
-  );
+  const checkAndLoadByScroll = (scroller) => {
+    if (loadingRef.current || !hasMoreRef.current) return;
+
+    let distanceToBottom = Infinity;
+    if (!scroller || scroller === window || scroller === document.documentElement || scroller === document.body) {
+      const doc = document.documentElement || document.body;
+      const scrollTop = window.scrollY || window.pageYOffset || (doc && doc.scrollTop) || 0;
+      const clientHeight = window.innerHeight || doc.clientHeight;
+      const scrollHeight = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
+      distanceToBottom = scrollHeight - (scrollTop + clientHeight);
+    } else {
+      distanceToBottom = scroller.scrollHeight - (scroller.scrollTop + scroller.clientHeight);
+    }
+
+    const thresholdPx = 350;
+    if (distanceToBottom <= thresholdPx) {
+      const next = Math.max(1, pageRef.current + 1);
+      const cacheKey = `${next}-${debouncedSearch}-${filter}`;
+      if (fetchedPagesRef.current.has(cacheKey) || lastRequestedPageRef.current >= next) return;
+      lastRequestedPageRef.current = next;
+      setPage(next);
+      pageRef.current = next;
+    }
+  };
 
   useEffect(() => {
-    if (observerRef.current) observerRef.current.disconnect();
-    observerRef.current = new IntersectionObserver(handleObserver, {
-      threshold: 1.0,
-    });
+    let mounted = true;
+    let scroller = null;
+    let onScrollFn = null;
 
-    if (loaderRef.current) observerRef.current.observe(loaderRef.current);
+    const build = () => {
+      if (!mounted) return;
+
+      if (observerRef.current) {
+        try { observerRef.current.disconnect(); } catch (e) {}
+        observerRef.current = null;
+      }
+
+      scroller = findScrollContainer(loaderRef.current);
+      scrollContainerRef.current = scroller; // null => viewport
+
+      const options = {
+        root: scroller || null,
+        rootMargin: "400px 0px 400px 0px",
+        threshold: 0,
+      };
+
+      observerRef.current = new IntersectionObserver((entries) => {
+        const entry = entries[0];
+        if (!entry) return;
+        // use refs to get latest state
+        if (entry.isIntersecting && hasMoreRef.current && !loadingRef.current) {
+          const next = Math.max(1, pageRef.current + 1);
+          const cacheKey = `${next}-${debouncedSearch}-${filter}`;
+          if (fetchedPagesRef.current.has(cacheKey) || lastRequestedPageRef.current >= next) return;
+          lastRequestedPageRef.current = next;
+          setPage(next);
+          pageRef.current = next;
+        }
+      }, options);
+
+      if (loaderRef.current) {
+        try { observerRef.current.observe(loaderRef.current); } catch (e) {}
+      }
+
+      // attach scroll fallback: remove existing listener reliably, then add new
+      const scrollTarget = scroller || window;
+      // remove previous saved handler if exists
+      try {
+        const prev = scrollTarget._blogListOnScroll;
+        if (prev) scrollTarget.removeEventListener("scroll", prev);
+      } catch (e) {}
+
+      onScrollFn = () => {
+        if (throttleTimeoutRef.current) return;
+        throttleTimeoutRef.current = setTimeout(() => {
+          throttleTimeoutRef.current = null;
+          try { checkAndLoadByScroll(scroller); } catch (e) {}
+        }, 150);
+      };
+
+      try {
+        scrollTarget.addEventListener("scroll", onScrollFn, { passive: true });
+        // store for cleanup
+        scrollTarget._blogListOnScroll = onScrollFn;
+      } catch (e) {}
+    };
+
+    const t = setTimeout(build, 40);
+    const rebuild = () => {
+      clearTimeout(t);
+      setTimeout(build, 120);
+    };
+
+    window.addEventListener("resize", rebuild);
+    window.addEventListener("orientationchange", rebuild);
 
     return () => {
-      if (observerRef.current && loaderRef.current) {
-        observerRef.current.unobserve(loaderRef.current);
+      mounted = false;
+      window.removeEventListener("resize", rebuild);
+      window.removeEventListener("orientationchange", rebuild);
+
+      if (observerRef.current) {
+        try { observerRef.current.disconnect(); } catch (e) {}
+        observerRef.current = null;
+      }
+
+      const scrollerToCleanup = scrollContainerRef.current || window;
+      try {
+        const fn = scrollerToCleanup._blogListOnScroll;
+        if (fn) scrollerToCleanup.removeEventListener("scroll", fn);
+        delete scrollerToCleanup._blogListOnScroll;
+      } catch (e) {}
+
+      if (throttleTimeoutRef.current) {
+        clearTimeout(throttleTimeoutRef.current);
+        throttleTimeoutRef.current = null;
       }
     };
-  }, [handleObserver]);
+    // intentionally minimal deps to avoid frequent rebuilds; rebuild on resize/orientation
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedSearch, filter]);
+
+  // ------------------ End observer/scroll fallback ------------------
 
   useEffect(() => {
     document.title = "Amritanshu Mishra's Blogs";
@@ -216,7 +366,10 @@ const BlogList = () => {
       fetchedPagesRef.current = new Set();
       setBlogs([]);
       setPage(1);
+      pageRef.current = 1;
       setHasMore(true);
+      hasMoreRef.current = true;
+      lastRequestedPageRef.current = 0;
 
       // Trigger immediate fresh fetch for page 1
       fetchBlogs(1);
@@ -232,8 +385,11 @@ const BlogList = () => {
     resetRef.current = true;
     setBlogs([]);
     setHasMore(true);
+    hasMoreRef.current = true;
     fetchedPagesRef.current = new Set();
     setPage(1);
+    pageRef.current = 1;
+    lastRequestedPageRef.current = 0;
   }, [debouncedSearch, filter]);
 
   // Fetch on page change
@@ -241,9 +397,18 @@ const BlogList = () => {
     if (resetRef.current) {
       fetchBlogs(1, debouncedSearch, filter);
       resetRef.current = false;
+      lastRequestedPageRef.current = 1;
+      pageRef.current = 1;
     } else {
+      if (page <= 0) return;
+      // guard: if already requested/fetched, skip
+      const cacheKey = `${page}-${debouncedSearch}-${filter}`;
+      if (fetchedPagesRef.current.has(cacheKey)) return;
       fetchBlogs(page, debouncedSearch, filter);
+      lastRequestedPageRef.current = Math.max(lastRequestedPageRef.current, page);
+      pageRef.current = page;
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, debouncedSearch, filter]);
 
   const handleAddBlog = () => navigate("/add-blog");
@@ -337,7 +502,6 @@ const BlogList = () => {
                   if (e.key === "Enter") { trackClick(blog._id); handleBlogClick(blog._id); }
                 }}
               >
-                {/* Trending badge — improved spacing & responsiveness */}
                 {isTrending && (
                   <span
                     className="absolute -top-2 -left-2 sm:-top-2 sm:-left-2 z-10 pointer-events-none
@@ -364,7 +528,7 @@ const BlogList = () => {
                   {publishedDate}
                 </p>
                 <div
-                  className="text-gray-800 dark:text-gray-200 text-sm overflow-hidden line-clamp-3"
+                  className="text-gray-800 dark:text-zinc-200 text-sm overflow-hidden line-clamp-3"
                   dangerouslySetInnerHTML={{
                     __html:
                       blog.content.length > 150
@@ -397,13 +561,21 @@ const BlogList = () => {
               </div>
             );
           })}
+
+          {/* Pagination skeletons: show inline skeleton cards when loading additional pages */}
+          {loading && filteredBlogs.length > 0 && (
+            Array.from({ length: 3 }).map((_, i) => (
+              <BlogSkeleton key={`skeleton-pag-${i}`} />
+            ))
+          )}
         </div>
       )}
 
-      {loading && (
+      {/* Initial-load skeletons (only when there are no blogs yet) */}
+      {loading && filteredBlogs.length === 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 mt-6">
           {Array.from({ length: 3 }).map((_, i) => (
-            <BlogSkeleton key={i} />
+            <BlogSkeleton key={`skeleton-init-${i}`} />
           ))}
         </div>
       )}
