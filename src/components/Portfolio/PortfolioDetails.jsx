@@ -41,15 +41,15 @@ const lightGradients = [
 ];
 
 const darkGradients = [
-"linear-gradient(120deg, #0f2027 0%, #000000 100%)",
-"linear-gradient(120deg, #232526 0%, #0f0f0f 100%)",
-"linear-gradient(120deg, #1a1a2e 0%, #000000 100%)",
-"linear-gradient(120deg, #2c3e50 0%, #000000 100%)",
-"linear-gradient(120deg, #1e2024 0%, #0a0a0a 100%)",
-"linear-gradient(120deg, #3a0ca3 0%, #000000 100%)",
-"linear-gradient(120deg, #4b1d3f 0%, #000000 100%)",
+  "linear-gradient(120deg, #0f2027 0%, #000000 100%)",
+  "linear-gradient(120deg, #232526 0%, #0f0f0f 100%)",
+  "linear-gradient(120deg, #1a1a2e 0%, #000000 100%)",
+  "linear-gradient(120deg, #2c3e50 0%, #000000 100%)",
+  "linear-gradient(120deg, #1e2024 0%, #0a0a0a 100%)",
+  "linear-gradient(120deg, #3a0ca3 0%, #000000 100%)",
+  "linear-gradient(120deg, #4b1d3f 0%, #000000 100%)",
 
-"linear-gradient(120deg, #2d3436 0%, #000000 100%)",
+  "linear-gradient(120deg, #2d3436 0%, #000000 100%)",
 ];
 
 /* ===========================
@@ -341,6 +341,11 @@ export default function Portfolio() {
         <article className="bg-white dark:bg-zinc-900 text-black dark:text-white bg-opacity-90 backdrop-blur-md rounded-xl shadow-xl max-w-4xl w-full p-6 md:p-10">
           <section className="flex flex-col sm:flex-row items-center gap-6 sm:gap-10">
             <motion.img
+              key={
+                document.documentElement.classList.contains("dark")
+                  ? "dark-img"
+                  : "light-img"
+              }
               src={
                 document.documentElement.classList.contains("dark")
                   ? `https://amiwrites-backend-app-2lp5.onrender.com${data.photoUrlDark}`
@@ -353,9 +358,11 @@ export default function Portfolio() {
               className="rounded-3xl object-cover shadow-lg border-4 border-cyan-300 w-40 h-40 sm:w-48 sm:h-48 flex-shrink-0"
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
+              exit={{ opacity: 0 }} // fades out old image
               transition={{ duration: 0.8 }}
               whileHover={{ scale: 1.05, transition: { duration: 0.3 } }}
             />
+
             <div className="flex-1 text-center sm:text-left">
               <div className="text-center sm:text-left">
                 {/* Headline with shimmer + underline reveal */}
