@@ -41,16 +41,16 @@ const lightGradients = [
 ];
 
 const darkGradients = [
-  "linear-gradient(120deg, #0f2027 0%, #000000 100%)",
-  "linear-gradient(120deg, #232526 0%, #0f0f0f 100%)",
-  "linear-gradient(120deg, #1a1a2e 0%, #000000 100%)",
-  "linear-gradient(120deg, #2c3e50 0%, #000000 100%)",
-  "linear-gradient(120deg, #1e2024 0%, #0a0a0a 100%)",
-  "linear-gradient(120deg, #3a0ca3 0%, #000000 100%)",
-  "linear-gradient(120deg, #4b1d3f 0%, #000000 100%)",
-
-  "linear-gradient(120deg, #2d3436 0%, #000000 100%)",
+  "linear-gradient(120deg, #0f2027 0%, #000000 100%)", // deep blue-black
+  "linear-gradient(120deg, #232526 0%, #000000 100%)", // charcoal-black
+  "linear-gradient(120deg, #1a1a2e 0%, #000000 100%)", // midnight-blue-black
+  "linear-gradient(120deg, #2c3e50 0%, #000000 100%)", // steel-blue-black
+  "linear-gradient(120deg, #1e2024 0%, #000000 100%)", // graphite-black
+ "linear-gradient(120deg, #0f2027 0%, #000000 100%)", // deep blue-black
+  "linear-gradient(120deg, #4b1d3f 0%, #000000 100%)", // wine-black
+  "linear-gradient(120deg, #2d3436 0%, #000000 100%)", // slate-black
 ];
+
 
 /* ===========================
    Skill icons map (unchanged)
