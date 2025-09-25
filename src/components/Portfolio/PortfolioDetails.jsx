@@ -55,6 +55,8 @@ const darkGradients = [
   "linear-gradient(-20deg, #2a2337 0%, #4c2b27 100%)",
   // 6 - deep ocean dusk
   "linear-gradient(-225deg, #0b3f37 0%, #2a163c 48%, #2a2149 100%)",
+  "linear-gradient(-20deg, #1e1b29 0%, #3a2623 100%)",
+
 ];
 
 /* ===========================
@@ -358,19 +360,65 @@ export default function Portfolio() {
               whileHover={{ scale: 1.05, transition: { duration: 0.3 } }}
             />
             <div className="flex-1 text-center sm:text-left">
-              <h1 className="text-3xl sm:text-4xl font-extrabold text-cyan-900 dark:text-cyan-300 leading-tight">
-                {data.name}
-              </h1>
-              <h2 className="text-xl sm:text-2xl font-semibold text-cyan-700 dark:text-cyan-400 mt-1">
-                {data.title}
-              </h2>
-              <p className="text-cyan-800 dark:text-cyan-200 italic mt-3 max-w-md mx-auto sm:mx-0 leading-relaxed">
-                {data.description}
-              </p>
-              <div className="mt-4 space-y-1 text-cyan-700 dark:text-cyan-300 font-medium text-sm sm:text-base max-w-md mx-auto sm:mx-0">
-                <p>✉️ {data.email}</p>
-                <p>📞 {data.phone}</p>
-              </div>
+<div className="text-center sm:text-left">
+  {/* Headline with shimmer + underline reveal */}
+<h1
+  className="
+    relative inline-block
+    text-3xl sm:text-4xl font-extrabold leading-tight
+    bg-gradient-to-r from-cyan-700 via-cyan-500 to-cyan-400
+    bg-clip-text text-transparent
+    dark:from-cyan-300 dark:via-cyan-200 dark:to-cyan-100
+    motion-safe:animate-hero-entrance
+  "
+  aria-label={data.name}
+>
+  <span
+    className="
+      inline-block
+      motion-safe:animate-headline-shimmer
+      bg-[linear-gradient(90deg,#06b6d4,#0ea5e9,#06b6d4)]
+      bg-[length:200%_100%]
+      bg-clip-text text-transparent
+    "
+  >
+    {data.name}
+  </span>
+
+  <span
+    className="
+      absolute left-0 -bottom-1 h-[3px] w-full origin-left scale-x-0
+      bg-gradient-to-r from-cyan-400 to-cyan-600 motion-safe:animate-underline-reveal
+      rounded-full pointer-events-none
+    "
+    aria-hidden="true"
+  />
+</h1>
+
+  <h2
+    className="motion-safe:animate-hero-entrance-delay-1 mt-2 text-xl sm:text-2xl font-semibold text-cyan-700 dark:text-cyan-400"
+    aria-label={data.title}
+  >
+    {data.title}
+  </h2>
+
+  <p
+    className="motion-safe:animate-hero-entrance-delay-2 mt-4 max-w-md mx-auto sm:mx-0 leading-relaxed text-cyan-800 dark:text-cyan-200 italic"
+    aria-label={data.description}
+  >
+    {data.description}
+  </p>
+
+  <div
+    className="motion-safe:animate-hero-entrance-delay-3 mt-5 max-w-md mx-auto sm:mx-0 space-y-1 text-cyan-700 dark:text-cyan-300 font-medium text-sm sm:text-base"
+    aria-label="contact"
+  >
+    <p className="flex items-center gap-2">✉️ <span>{data.email}</span></p>
+    <p className="flex items-center gap-2">📞 <span>{data.phone}</span></p>
+  </div>
+</div>
+
+
               <motion.nav
                 className="flex justify-center sm:justify-start gap-6 mt-5 text-2xl"
                 variants={container}

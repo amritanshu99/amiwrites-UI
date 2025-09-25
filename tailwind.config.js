@@ -2,7 +2,7 @@
 module.exports = {
   content: ["./src/**/*.{js,jsx,ts,tsx}"],
   darkMode: "class",
-   safelist: [
+  safelist: [
     "hover:text-blue-700",
     "hover:text-gray-800",
     "hover:text-pink-500",
@@ -21,6 +21,29 @@ module.exports = {
         glitch: "glitch 0.7s infinite linear alternate", // ✅ new
         flicker: "flicker 3s ease-in-out infinite", // ✅ new
         smoke: "smoke 1s ease-out",
+
+        /* ---------- ADDED: professional hero animations & helpers ---------- */
+        "fade-in-up": "fadeInUp 0.8s ease-out forwards",
+        "fade-in-up-delay-1": "fadeInUp 0.8s ease-out 0.12s forwards",
+        "fade-in-up-delay-2": "fadeInUp 0.8s ease-out 0.24s forwards",
+        "fade-in-up-delay-3": "fadeInUp 0.8s ease-out 0.36s forwards",
+
+        "fade-in-up-pop": "fadeInUpPop 0.9s cubic-bezier(.0,.95,.12,1) forwards",
+        "fade-in-up-pop-delay-1":
+          "fadeInUpPop 0.9s cubic-bezier(.0,.95,.12,1) 0.12s forwards",
+
+        "hero-entrance": "heroEntrance 0.95s cubic-bezier(.0,.95,.12,1) both",
+        "hero-entrance-delay-1":
+          "heroEntrance 0.95s cubic-bezier(.0,.95,.12,1) 0.10s both",
+        "hero-entrance-delay-2":
+          "heroEntrance 0.95s cubic-bezier(.0,.95,.12,1) 0.20s both",
+        "hero-entrance-delay-3":
+          "heroEntrance 0.95s cubic-bezier(.0,.95,.12,1) 0.30s both",
+
+        "underline-reveal": "underlineReveal 0.6s cubic-bezier(.2,.9,.2,1) both",
+
+        /* --------- REFINED: slower, softer, professional shimmer ---------- */
+        "headline-shimmer": "headlineShimmer 3s ease-in-out infinite",
       },
       keyframes: {
         fadeInLeft: {
@@ -53,7 +76,7 @@ module.exports = {
           "0%": { opacity: 0, transform: "translateY(20px)" },
           "100%": { opacity: 1, transform: "translateY(0)" },
         },
-           smoke: {
+        smoke: {
           "0%": {
             opacity: "0",
             transform: "translateY(10px) scale(0.98)",
@@ -80,6 +103,54 @@ module.exports = {
         flicker: {
           "0%, 100%": { opacity: 1 },
           "50%": { opacity: 0.3 },
+        },
+
+        /* ---------- ADDED: fadeInUp + pop variants ---------- */
+        fadeInUp: {
+          "0%": { opacity: 0, transform: "translateY(18px) scale(0.995)" },
+          "60%": {
+            opacity: 0.92,
+            transform: "translateY(6px) scale(1.01)",
+          },
+          "100%": { opacity: 1, transform: "translateY(0) scale(1)" },
+        },
+        fadeInUpPop: {
+          "0%": { opacity: 0, transform: "translateY(20px) scale(0.985)" },
+          "55%": {
+            opacity: 0.95,
+            transform: "translateY(8px) scale(1.03)",
+          },
+          "100%": { opacity: 1, transform: "translateY(0) scale(1)" },
+        },
+
+        /* ---------- ADDED: hero entrance + underline + refined shimmer ---------- */
+        heroEntrance: {
+          "0%": {
+            opacity: 0,
+            transform: "translateY(26px) scale(0.985)",
+            filter: "blur(2px)",
+          },
+          "55%": {
+            opacity: 1,
+            transform: "translateY(-6px) scale(1.02)",
+            filter: "blur(0)",
+          },
+          "100%": {
+            opacity: 1,
+            transform: "translateY(0) scale(1)",
+            filter: "blur(0)",
+          },
+        },
+        underlineReveal: {
+          "0%": { transform: "scaleX(0)", opacity: 0 },
+          "60%": { transform: "scaleX(1.02)", opacity: 1 },
+          "100%": { transform: "scaleX(1)", opacity: 1 },
+        },
+
+        /* refined shimmer: narrower range and slower for a subtle professional look */
+        headlineShimmer: {
+          "0%": { "background-position": "-150% 0" },
+          "100%": { "background-position": "150% 0" },
         },
       },
     },
