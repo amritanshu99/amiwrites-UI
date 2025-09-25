@@ -41,22 +41,15 @@ const lightGradients = [
 ];
 
 const darkGradients = [
-  // 0 - deep cool dusk
-  "linear-gradient(120deg, #12203a 0%, #4b2430 100%)",
-  // 1 - ember dusk
-  "linear-gradient(to right, #3b1f2a 0%, #4a3a12 100%)",
-  // 2 - teal dusk
-  "linear-gradient(to top, #0e3d3a 0%, #3f2d32 100%)",
-  // 3 - complex slate dusk
-  "linear-gradient(to right, #3a2424 0%, #2a3a3e 19%, #114f57 42%, #392a48 79%, #163537 100%)",
-  // 4 - ember core
-  "linear-gradient(to right, #5f1700 0%, #3b2b09 100%)",
-  // 5 - muted lavender dusk
-  "linear-gradient(-20deg, #2a2337 0%, #4c2b27 100%)",
-  // 6 - deep ocean dusk
-  "linear-gradient(-225deg, #0b3f37 0%, #2a163c 48%, #2a2149 100%)",
-  "linear-gradient(-20deg, #1e1b29 0%, #3a2623 100%)",
+"linear-gradient(120deg, #0f2027 0%, #000000 100%)",
+"linear-gradient(120deg, #232526 0%, #0f0f0f 100%)",
+"linear-gradient(120deg, #1a1a2e 0%, #000000 100%)",
+"linear-gradient(120deg, #2c3e50 0%, #000000 100%)",
+"linear-gradient(120deg, #1e2024 0%, #0a0a0a 100%)",
+"linear-gradient(120deg, #3a0ca3 0%, #000000 100%)",
+"linear-gradient(120deg, #4b1d3f 0%, #000000 100%)",
 
+"linear-gradient(120deg, #2d3436 0%, #000000 100%)",
 ];
 
 /* ===========================
@@ -348,11 +341,11 @@ export default function Portfolio() {
         <article className="bg-white dark:bg-zinc-900 text-black dark:text-white bg-opacity-90 backdrop-blur-md rounded-xl shadow-xl max-w-4xl w-full p-6 md:p-10">
           <section className="flex flex-col sm:flex-row items-center gap-6 sm:gap-10">
             <motion.img
-          src={
-    document.documentElement.classList.contains("dark")
-      ? `https://amiwrites-backend-app-2lp5.onrender.com${data.photoUrlDark}`
-      : `https://amiwrites-backend-app-2lp5.onrender.com${data.photoUrl}`
-  }
+              src={
+                document.documentElement.classList.contains("dark")
+                  ? `https://amiwrites-backend-app-2lp5.onrender.com${data.photoUrlDark}`
+                  : `https://amiwrites-backend-app-2lp5.onrender.com${data.photoUrl}`
+              }
               alt="Amritanshu Mishra"
               loading="eager"
               width={192}
@@ -364,10 +357,10 @@ export default function Portfolio() {
               whileHover={{ scale: 1.05, transition: { duration: 0.3 } }}
             />
             <div className="flex-1 text-center sm:text-left">
-<div className="text-center sm:text-left">
-  {/* Headline with shimmer + underline reveal */}
-<h1
-  className="
+              <div className="text-center sm:text-left">
+                {/* Headline with shimmer + underline reveal */}
+                <h1
+                  className="
     relative inline-block
     text-3xl sm:text-4xl font-extrabold leading-tight
     bg-gradient-to-r from-cyan-700 via-cyan-500 to-cyan-400
@@ -375,53 +368,56 @@ export default function Portfolio() {
     dark:from-cyan-300 dark:via-cyan-200 dark:to-cyan-100
     motion-safe:animate-hero-entrance
   "
-  aria-label={data.name}
->
-  <span
-    className="
+                  aria-label={data.name}
+                >
+                  <span
+                    className="
       inline-block
       motion-safe:animate-headline-shimmer
       bg-[linear-gradient(90deg,#06b6d4,#0ea5e9,#06b6d4)]
       bg-[length:200%_100%]
       bg-clip-text text-transparent
     "
-  >
-    {data.name}
-  </span>
+                  >
+                    {data.name}
+                  </span>
 
-  <span
-    className="
+                  <span
+                    className="
       absolute left-0 -bottom-1 h-[3px] w-full origin-left scale-x-0
       bg-gradient-to-r from-cyan-400 to-cyan-600 motion-safe:animate-underline-reveal
       rounded-full pointer-events-none
     "
-    aria-hidden="true"
-  />
-</h1>
+                    aria-hidden="true"
+                  />
+                </h1>
 
-  <h2
-    className="motion-safe:animate-hero-entrance-delay-1 mt-2 text-xl sm:text-2xl font-semibold text-cyan-700 dark:text-cyan-400"
-    aria-label={data.title}
-  >
-    {data.title}
-  </h2>
+                <h2
+                  className="motion-safe:animate-hero-entrance-delay-1 mt-2 text-xl sm:text-2xl font-semibold text-cyan-700 dark:text-cyan-400"
+                  aria-label={data.title}
+                >
+                  {data.title}
+                </h2>
 
-  <p
-    className="motion-safe:animate-hero-entrance-delay-2 mt-4 max-w-md mx-auto sm:mx-0 leading-relaxed text-cyan-800 dark:text-cyan-200 italic"
-    aria-label={data.description}
-  >
-    {data.description}
-  </p>
+                <p
+                  className="motion-safe:animate-hero-entrance-delay-2 mt-4 max-w-md mx-auto sm:mx-0 leading-relaxed text-cyan-800 dark:text-cyan-200 italic"
+                  aria-label={data.description}
+                >
+                  {data.description}
+                </p>
 
-  <div
-    className="motion-safe:animate-hero-entrance-delay-3 mt-5 max-w-md mx-auto sm:mx-0 space-y-1 text-cyan-700 dark:text-cyan-300 font-medium text-sm sm:text-base"
-    aria-label="contact"
-  >
-    <p className="flex items-center gap-2">✉️ <span>{data.email}</span></p>
-    <p className="flex items-center gap-2">📞 <span>{data.phone}</span></p>
-  </div>
-</div>
-
+                <div
+                  className="motion-safe:animate-hero-entrance-delay-3 mt-5 max-w-md mx-auto sm:mx-0 space-y-1 text-cyan-700 dark:text-cyan-300 font-medium text-sm sm:text-base"
+                  aria-label="contact"
+                >
+                  <p className="flex items-center gap-2">
+                    ✉️ <span>{data.email}</span>
+                  </p>
+                  <p className="flex items-center gap-2">
+                    📞 <span>{data.phone}</span>
+                  </p>
+                </div>
+              </div>
 
               <motion.nav
                 className="flex justify-center sm:justify-start gap-6 mt-5 text-2xl"
