@@ -17,18 +17,26 @@ const BlogDetails = () => {
   const [summarizing, setSummarizing] = useState(false);
   const [summaryError, setSummaryError] = useState("");
 
-  // Trending badge state (ADD)
+  // Trending badge state
   const [isTrending, setIsTrending] = useState(false);
 
   // Ref to the summary section for smooth scrolling
   const summaryRef = useRef(null);
 
-  // --- RL Tracking refs (already added) ---
+  // --- RL Tracking refs ---
   const readStartRef = useRef(null);
   const maxScrollRef = useRef(0);
   const sentReadEndRef = useRef(false);
+  const lastPostIdRef = useRef(null);
+  const startedRef = useRef(false); // TRUE only after we started real session
 
-  // Memoized fetch function to satisfy react-hooks/exhaustive-deps
+  // NEW: impression dedupe (in-memory only)
+  const impressionGuardRef = useRef(new Set());
+
+  // ref for the article content so we can inspect images / measure after render
+  const articleRef = useRef(null);
+
+  // Memoized fetch function
   const fetchBlog = useCallback(async () => {
     setLoading(true);
     try {
@@ -123,113 +131,343 @@ const BlogDetails = () => {
     try {
       await navigator.clipboard.writeText(summary);
     } catch {
-      // noop if clipboard fails
+      // noop
     }
   };
 
-  // --- RL: Impression on page view ---
+  // --- RL: Impression on page view (DEDUPED & POST-CONTENT via double rAF) ---
   useEffect(() => {
     const API_BASE = "https://amiwrites-backend-app-2lp5.onrender.com";
-    if (!blog?._id && !id) return; // need an identifier
-    const postId = blog?._id || id; // controller accepts _id or slug-like ref
+    const postId = blog?._id || id;
 
-    (async () => {
-      try {
-        await axios.post(`${API_BASE}/api/trending-rl/events/impression`, { postId });
-      } catch (e) {
-        // silent fail is fine
+    // require a valid id and content in DOM to consider it a view
+    if (!postId || !blog?.content) return;
+
+    // Already sent during this component lifecycle?
+    if (impressionGuardRef.current.has(postId)) return;
+
+    let cancelled = false;
+    let raf1 = 0;
+    let raf2 = 0;
+
+    // Wait for layout/paint to settle without long debounces (Strict Mode safe)
+    raf1 = requestAnimationFrame(() => {
+      raf2 = requestAnimationFrame(async () => {
+        if (cancelled) return;
+        try {
+          await axios.post(`${API_BASE}/api/trending-rl/events/impression`, { postId });
+          impressionGuardRef.current.add(postId);
+          // eslint-disable-next-line no-console
+          console.log("TrendingRL: impression sent (double rAF)", { postId });
+        } catch (e) {
+          // silent
+        }
+      });
+    });
+
+    return () => {
+      cancelled = true;
+      if (raf1) cancelAnimationFrame(raf1);
+      if (raf2) cancelAnimationFrame(raf2);
+    };
+  }, [blog?.content, blog?._id, id]);
+
+  // --- RL: Read-end analytics (start only AFTER blog.content is present & layout measurable) ---
+  useEffect(() => {
+    if (!blog?.content) {
+      startedRef.current = false;
+      lastPostIdRef.current = null;
+      return;
+    }
+
+    const API_BASE = "https://amiwrites-backend-app-2lp5.onrender.com";
+    const postId = blog?._id || id;
+
+    const findScrollContainer = () => {
+      const selectors = [
+        ".h-screen.overflow-y-scroll.relative",
+        "[data-scroll-container]",
+        ".app-scroll-container",
+        "main",
+      ];
+      for (const sel of selectors) {
+        const el = document.querySelector(sel);
+        if (el) return el;
       }
-    })();
-  }, [blog?._id, id]);
+      return window;
+    };
+    const container = findScrollContainer();
 
- // --- RL: Read-end analytics (dwell + scroll) ---
-useEffect(() => {
-  const API_BASE = "https://amiwrites-backend-app-2lp5.onrender.com";
-  if (!blog?._id && !id) return;
-  const postId = blog?._id || id;
+    const computeScrollDepth = () => {
+      try {
+        if (container === window) {
+          const doc = document.documentElement;
+          const body = document.body;
+          const total = Math.max(
+            doc.scrollHeight || 0,
+            body.scrollHeight || 0,
+            doc.offsetHeight || 0,
+            body.offsetHeight || 0
+          );
+          const visible = window.innerHeight || doc.clientHeight || 0;
+          const scrollTop = window.scrollY || window.pageYOffset || doc.scrollTop || 0;
+          if (!total) return 0;
+          if (total <= visible) return 1;
+          const reached = (scrollTop + visible) / total;
+          return Math.min(1, Math.max(0, reached));
+        } else {
+          const total = container.scrollHeight || 0;
+          const visible = container.clientHeight || 0;
+          const scrollTop = container.scrollTop || 0;
+          if (!total) return 0;
+          if (total <= visible) return 1;
+          const reached = (scrollTop + visible) / total;
+          return Math.min(1, Math.max(0, reached));
+        }
+      } catch {
+        return 0;
+      }
+    };
 
-  // initialize session refs
-  readStartRef.current = performance.now();
-  maxScrollRef.current = 0;
-  sentReadEndRef.current = false;
+    let aborted = false;
+    const waitForContentReady = async (timeoutMs = 1500) => {
+      if (aborted) return false;
 
-  // pick scroll container
-  const container =
-    document.querySelector(".h-screen.overflow-y-scroll.relative") || window;
+      if (!articleRef.current) {
+        await new Promise((r) => setTimeout(r, 50));
+      }
 
-  const onScroll = () => {
-    const total = container.scrollHeight || document.documentElement.scrollHeight;
-    const visible = container.clientHeight || window.innerHeight;
-    const scrollTop =
-      container.scrollTop !== undefined ? container.scrollTop : window.scrollY;
+      const layoutMeasurable = () => {
+        const { total, visible } =
+          container === window
+            ? {
+                total: Math.max(
+                  document.documentElement.scrollHeight || 0,
+                  document.body.scrollHeight || 0
+                ),
+                visible: window.innerHeight || 0,
+              }
+            : {
+                total: container && container.scrollHeight ? container.scrollHeight : 0,
+                visible: container && container.clientHeight ? container.clientHeight : 0,
+              };
+        return total > 0 && visible > 0;
+      };
 
-    let scrolled = 0;
-    if (total > visible) {
-      scrolled = Math.min(1, (scrollTop + visible) / Math.max(1, total));
-    }
-    if (scrolled > maxScrollRef.current) {
-      maxScrollRef.current = scrolled;
-    }
-  };
+      if (layoutMeasurable()) return true;
 
-  const sendReadEnd = async (reason = "manual") => {
-    if (sentReadEndRef.current) return; // guard against duplicates
-    sentReadEndRef.current = true;
+      const imgs = articleRef.current ? Array.from(articleRef.current.querySelectorAll("img")) : [];
+      if (imgs.length === 0) {
+        let elapsed = 0;
+        const step = 50;
+        while (!aborted && elapsed < timeoutMs) {
+          if (layoutMeasurable()) return true;
+          await new Promise((r) => setTimeout(r, step));
+          elapsed += step;
+        }
+        return layoutMeasurable();
+      }
 
-    const start = readStartRef.current || performance.now();
-    const dwell_ms = Math.max(0, Math.round(performance.now() - start));
+      await new Promise((resolve) => {
+        let settled = false;
+        const to = setTimeout(() => {
+          if (!settled) {
+            settled = true;
+            removeListeners();
+            resolve();
+          }
+        }, timeoutMs);
 
-    let scroll_depth = Math.max(0, Math.min(1, maxScrollRef.current || 0));
-    const total = container.scrollHeight || document.documentElement.scrollHeight;
-    const visible = container.clientHeight || window.innerHeight;
+        const onLoadOrError = () => {
+          if (imgs.every((i) => i.complete)) {
+            if (!settled) {
+              settled = true;
+              clearTimeout(to);
+              removeListeners();
+              resolve();
+            }
+          }
+        };
+        const removeListeners = () => {
+          imgs.forEach((img) => {
+            img.removeEventListener("load", onLoadOrError);
+            img.removeEventListener("error", onLoadOrError);
+          });
+        };
 
-    // handle short blogs
-    if (total <= visible && dwell_ms < 5000) {
-      scroll_depth = 0;
-    } else if (total <= visible) {
-      scroll_depth = 1;
-    }
+        imgs.forEach((img) => {
+          img.addEventListener("load", onLoadOrError);
+          img.addEventListener("error", onLoadOrError);
+        });
 
-    console.log(`📤 Sending read-end [${reason}]`, { dwell_ms, scroll_depth });
+        onLoadOrError();
+      });
 
-    try {
-      await axios.post(`${API_BASE}/api/trending-rl/events/read-end`, {
+      return layoutMeasurable();
+    };
+
+    const wordsForTimer = plainTextContent
+      ? Math.max(50, plainTextContent.trim().split(/\s+/).length)
+      : blog?.words
+      ? Math.max(50, Number(blog.words) || 50)
+      : 200;
+    const expectedMs = (Math.max(50, wordsForTimer) / 200) * 60 * 1000;
+
+    const TIMER_MIN_MS = 10000;
+    const TIMER_MAX_MS = 120000;
+    const timerDelay = Math.min(TIMER_MAX_MS, Math.max(TIMER_MIN_MS, Math.round(expectedMs * 0.6)));
+
+    let timer = null;
+
+    async function sendReadEnd(reason = "manual") {
+      if (sentReadEndRef.current) {
+        console.log("TrendingRL: sendReadEnd skipped (already sent)", { reason, postId });
+        return;
+      }
+      sentReadEndRef.current = true;
+
+      const start = readStartRef.current || performance.now();
+      const dwell_ms = Math.max(0, Math.round(performance.now() - start));
+
+      let scroll_depth =
+        typeof maxScrollRef.current === "number" ? maxScrollRef.current : computeScrollDepth();
+
+      const total =
+        container === window
+          ? Math.max(document.documentElement.scrollHeight || 0, document.body.scrollHeight || 0)
+          : (container && container.scrollHeight) || 0;
+      const visible =
+        container === window ? window.innerHeight || 0 : (container && container.clientHeight) || 0;
+
+      if (total <= visible) {
+        scroll_depth = dwell_ms < 5000 ? 0 : 1;
+      } else {
+        scroll_depth = Math.min(1, Math.max(0, Number(scroll_depth) || 0));
+      }
+
+      console.log("TrendingRL: sendReadEnd -> payload", {
+        reason,
         postId,
         dwell_ms,
         scroll_depth,
+        wordsForTimer,
+        expectedMs,
+        timerDelay,
+        maxScrollSeen: maxScrollRef.current,
       });
-    } catch {}
-  };
 
-  // attach listeners
-  container.addEventListener("scroll", onScroll, { passive: true });
-  document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "hidden") sendReadEnd("visibility");
-  });
-  window.addEventListener("beforeunload", () => sendReadEnd("beforeunload"));
+      try {
+        await axios.post(`${API_BASE}/api/trending-rl/events/read-end`, {
+          postId,
+          dwell_ms,
+          scroll_depth,
+        });
+        console.log("TrendingRL: read-end POST success", { postId });
+      } catch (err) {
+        console.warn("TrendingRL: read-end POST failed", err?.message || err);
+      }
+    }
 
-  // single timer snapshot
-  const timer = setTimeout(() => sendReadEnd("timer10s"), 10000);
+    const onScroll = () => {
+      const sc = computeScrollDepth();
+      if (sc > maxScrollRef.current) {
+        maxScrollRef.current = sc;
+        console.log("TrendingRL: scroll update", { sc, maxSeen: maxScrollRef.current });
+      }
+    };
 
-  return () => {
-    clearTimeout(timer);
-    container.removeEventListener("scroll", onScroll);
-    document.removeEventListener("visibilitychange", () => sendReadEnd("visibility"));
-    window.removeEventListener("beforeunload", () => sendReadEnd("beforeunload"));
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "hidden") sendReadEnd("visibility");
+    };
+    const onBeforeUnload = () => sendReadEnd("beforeunload");
 
-    // unmount safety
-    sendReadEnd("unmount");
-  };
-}, [id]); // 👈 only depend on id, not blog._id
+    let attached = false;
+    let localAborted = false;
 
+    (async () => {
+      const ready = await waitForContentReady();
+      if (localAborted) return;
 
+      const isNewPost = lastPostIdRef.current !== postId;
+      if (isNewPost) {
+        lastPostIdRef.current = postId;
+        readStartRef.current = performance.now();
+        maxScrollRef.current = 0;
+        sentReadEndRef.current = false;
+        console.log("TrendingRL: starting session after content ready", { postId, ready });
+      } else {
+        console.log("TrendingRL: session already started for post (no restart)", { postId });
+      }
 
+      if (container === window) {
+        window.addEventListener("scroll", onScroll, { passive: true });
+      } else {
+        container.addEventListener("scroll", onScroll, { passive: true });
+      }
+      document.addEventListener("visibilitychange", onVisibilityChange);
+      // FIX: use the correctly cased handler name
+      window.addEventListener("beforeunload", onBeforeUnload);
 
-  // --- Trending badge: check if this blog is currently in the rail (ADD) ---
+      attached = true;
+
+      try {
+        const immediate = computeScrollDepth();
+        if (immediate > maxScrollRef.current) maxScrollRef.current = immediate;
+        console.log("TrendingRL: initial scroll sample (post-layout)", {
+          immediate,
+          maxNow: maxScrollRef.current,
+          postId,
+        });
+      } catch {
+        // noop
+      }
+
+      startedRef.current = true;
+
+      if (!sentReadEndRef.current) {
+        console.log("TrendingRL: timer set", { timerDelay, wordsForTimer, expectedMs, postId });
+        timer = setTimeout(() => sendReadEnd("timer"), timerDelay);
+      }
+    })();
+
+    return () => {
+      localAborted = true;
+      aborted = true;
+      if (timer) clearTimeout(timer);
+
+      try {
+        if (attached) {
+          if (container === window) {
+            window.removeEventListener("scroll", onScroll);
+          } else {
+            container.removeEventListener("scroll", onScroll);
+          }
+          document.removeEventListener("visibilitychange", onVisibilityChange);
+          window.removeEventListener("beforeunload", onBeforeUnload);
+        }
+      } catch {
+        // ignore
+      }
+
+      if (startedRef.current && !sentReadEndRef.current) {
+        sendReadEnd("unmount");
+      } else {
+        console.log(
+          "TrendingRL: cleanup - session not started or already sent; skipping unmount send",
+          {
+            postId,
+            started: startedRef.current,
+            alreadySent: sentReadEndRef.current,
+          }
+        );
+      }
+    };
+  }, [blog?.content, id, plainTextContent]);
+
+  // --- Trending badge: check if this blog is currently in the rail ---
   useEffect(() => {
     if (!blog?._id) return;
     const API_BASE = "https://amiwrites-backend-app-2lp5.onrender.com";
-    // bump limit to reduce false negatives (diversity + randomness)
     const url = `${API_BASE}/api/trending-rl/trending?limit=2&all=1`;
 
     (async () => {
@@ -264,7 +502,10 @@ useEffect(() => {
 
   return (
     <main className="min-h-screen bg-slate-50 dark:bg-zinc-900 py-16 px-4 sm:px-6 lg:px-8 flex justify-center">
-      <article className="bg-white dark:bg-zinc-800 text-black dark:text-zinc-100 max-w-4xl w-full rounded-2xl shadow-xl p-6 sm:p-10 md:p-14 animate-fadeIn border border-slate-200 dark:border-zinc-700">
+      <article
+        ref={articleRef}
+        className="bg-white dark:bg-zinc-800 text-black dark:text-zinc-100 max-w-4xl w-full rounded-2xl shadow-xl p-6 sm:p-10 md:p-14 animate-fadeIn border border-slate-200 dark:border-zinc-700"
+      >
         {/* Title */}
         <h1 className="text-3xl sm:text-4xl font-bold leading-snug text-slate-800 dark:text-cyan-300 mb-6 font-sans">
           {blog.title}
