@@ -210,14 +210,28 @@ export default function Header({ setLoading }) {
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <div className="flex h-16 items-center justify-between gap-3">
             {/* Brand */}
-            <Link to="/" className="group flex items-center gap-3" aria-label="AmiVerse Home">
+            <Link
+              to="/"
+              className="group flex items-center gap-3 min-w-0"
+              aria-label="AmiVerse Home"
+            >
               <img
                 src="/favicon.ico"
                 alt="AmiVerse logo"
                 className="h-9 w-9 rounded-xl object-contain ring-1 ring-black/10 dark:ring-white/15 shadow-sm transition-transform duration-300 group-hover:rotate-3 group-hover:scale-[1.03]"
                 draggable="false"
               />
-              <span className="hidden lg:inline text-xl font-semibold tracking-tight text-gray-900 dark:text-white group-hover:text-sky-700 dark:group-hover:text-cyan-300 transition-colors">
+              {/* Always show name when there's room; truncate if tight */}
+              <span
+                className="
+                  text-xl font-semibold tracking-tight
+                  text-gray-900 dark:text-white
+                  group-hover:text-sky-700 dark:group-hover:text-cyan-300 transition-colors
+                  whitespace-nowrap truncate
+                  max-w-[40vw] sm:max-w-[45vw] md:max-w-[20rem]
+                "
+                title="AmiVerse"
+              >
                 AmiVerse
               </span>
             </Link>
