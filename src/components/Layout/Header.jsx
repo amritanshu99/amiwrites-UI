@@ -204,7 +204,7 @@ export default function Header({ setLoading }) {
           border-b border-black/5 dark:border-white/10
           bg-gradient-to-r from-sky-50 via-fuchsia-50 to-emerald-50
           supports-[backdrop-filter]:bg-white/60 backdrop-blur-md
-          dark:bg-black dark:backdrop-blur-0
+          dark:bg-black dark:bg-none dark:supports-[backdrop-filter]:bg-black dark:backdrop-blur-none
         "
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
@@ -222,7 +222,7 @@ export default function Header({ setLoading }) {
               </span>
             </Link>
 
-            {/* md+ nav with horizontal scroll + fades + nudges */}
+            {/* md+ nav with horizontal scroll; remove pill bg in dark */}
             <div className="relative hidden md:flex items-center max-w-full flex-1 justify-center">
               {/* Left gradient fade */}
               {canScrollLeft && (
@@ -245,8 +245,9 @@ export default function Header({ setLoading }) {
                 ref={navScrollRef}
                 className="
                   flex items-center gap-1 rounded-full
-                  bg-gray-50/60 dark:bg-neutral-900
-                  p-1 ring-1 ring-black/5 dark:ring-white/5
+                  bg-gray-50/60 dark:bg-transparent
+                  p-1 dark:p-0
+                  ring-1 ring-black/5 dark:ring-0
                   overflow-x-auto whitespace-nowrap scroll-px-2
                   snap-x snap-mandatory
                   [-ms-overflow-style:none] [scrollbar-width:none]
