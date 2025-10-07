@@ -37,7 +37,7 @@ export default function Header({ setLoading }) {
   const [username, setUsername] = useState(null);
   const [mounted, setMounted] = useState(false);
 
-  // For md screen tab scrolling
+  // For sm/md screen tab scrolling
   const navScrollRef = useRef(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
@@ -132,7 +132,7 @@ export default function Header({ setLoading }) {
     }
   }, [menuOpen]);
 
-  // Track scrollability of the md+ tab bar
+  // Track scrollability of the sm+/md+ tab bar
   const updateScrollButtons = () => {
     const el = navScrollRef.current;
     if (!el) return;
@@ -207,28 +207,28 @@ export default function Header({ setLoading }) {
           dark:bg-black dark:bg-none dark:supports-[backdrop-filter]:bg-black dark:backdrop-blur-none
         "
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6">
-          <div className="flex h-16 items-center justify-between gap-3">
+        <div className="mx-auto max-w-7xl px-3 sm:px-4">
+          <div className="flex h-16 items-center justify-between gap-2 sm:gap-3 flex-nowrap">
             {/* Brand */}
             <Link
               to="/"
-              className="group flex items-center gap-3 min-w-0"
+              className="group flex items-center gap-2 sm:gap-3 min-w-0 shrink"
               aria-label="AmiVerse Home"
             >
               <img
                 src="/favicon.ico"
                 alt="AmiVerse logo"
-                className="h-9 w-9 rounded-xl object-contain ring-1 ring-black/10 dark:ring-white/15 shadow-sm transition-transform duration-300 group-hover:rotate-3 group-hover:scale-[1.03]"
+                className="h-8 w-8 sm:h-9 sm:w-9 rounded-xl object-contain ring-1 ring-black/10 dark:ring-white/15 shadow-sm transition-transform duration-300 group-hover:rotate-3 group-hover:scale-[1.03]"
                 draggable="false"
               />
-              {/* Always show name when there's room; truncate if tight */}
+              {/* Always show name; truncate if tight */}
               <span
                 className="
-                  text-xl font-semibold tracking-tight
+                  text-lg sm:text-[1.1rem] md:text-xl font-semibold tracking-tight
                   text-gray-900 dark:text-white
                   group-hover:text-sky-700 dark:group-hover:text-cyan-300 transition-colors
                   whitespace-nowrap truncate
-                  max-w-[40vw] sm:max-w-[45vw] md:max-w-[20rem]
+                  max-w-[34vw] sm:max-w-[40vw] md:max-w-[22rem] lg:max-w-[26rem]
                 "
                 title="AmiVerse"
               >
@@ -236,18 +236,18 @@ export default function Header({ setLoading }) {
               </span>
             </Link>
 
-            {/* md+ nav with horizontal scroll; remove pill bg in dark */}
-            <div className="relative hidden md:flex items-center max-w-full flex-1 justify-center">
+            {/* sm+ nav with horizontal scroll */}
+            <div className="relative hidden sm:flex items-center flex-1 basis-0 min-w-0 justify-center">
               {/* Left gradient fade */}
               {canScrollLeft && (
-                <div className="pointer-events-none absolute left-0 top-0 h-full w-6 bg-gradient-to-r from-white/90 to-transparent dark:from-black z-10" />
+                <div className="pointer-events-none absolute left-0 top-0 h-full w-5 sm:w-6 bg-gradient-to-r from-white/90 to-transparent dark:from-black z-10" />
               )}
 
               {/* Left nudge */}
               {canScrollLeft && (
                 <button
                   onClick={() => scrollTabs("left")}
-                  className="absolute left-1 top-1/2 -translate-y-1/2 z-20 h-8 w-8 rounded-full bg-white/90 dark:bg-white/10 ring-1 ring-black/10 dark:ring-white/10 backdrop-blur-sm hover:bg-white dark:hover:bg-white/15 transition hidden sm:flex items-center justify-center"
+                  className="absolute left-1 top-1/2 -translate-y-1/2 z-20 h-8 w-8 rounded-full bg-white/90 dark:bg-white/10 ring-1 ring-black/10 dark:ring-white/10 backdrop-blur-sm hover:bg-white dark:hover:bg-white/15 transition hidden md:flex items-center justify-center"
                   aria-label="Scroll tabs left"
                   type="button"
                 >
@@ -260,13 +260,13 @@ export default function Header({ setLoading }) {
                 className="
                   flex items-center gap-1 rounded-full
                   bg-gray-50/60 dark:bg-transparent
-                  p-1 dark:p-0
+                  p-0.5 sm:p-1 dark:p-0
                   ring-1 ring-black/5 dark:ring-0
                   overflow-x-auto whitespace-nowrap scroll-px-2
                   snap-x snap-mandatory
                   [-ms-overflow-style:none] [scrollbar-width:none]
                   [&::-webkit-scrollbar]:hidden
-                  max-w-full
+                  max-w-full min-w-0
                 "
                 onScroll={updateScrollButtons}
                 role="tablist"
@@ -277,7 +277,7 @@ export default function Header({ setLoading }) {
                     to={link.to}
                     className={({ isActive }) =>
                       `relative rounded-full outline-none transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-sky-500/60
-                       text-[13px] md:text-sm px-3 md:px-3.5 py-2 snap-center
+                       text-[12.25px] sm:text-[12.75px] md:text-sm px-2.5 sm:px-3 md:px-3.5 py-1.5 sm:py-2 snap-center
                        ${
                          isActive
                            ? "text-sky-800 dark:text-cyan-200"
@@ -305,14 +305,14 @@ export default function Header({ setLoading }) {
 
               {/* Right gradient fade */}
               {canScrollRight && (
-                <div className="pointer-events-none absolute right-0 top-0 h-full w-6 bg-gradient-to-l from-white/90 to-transparent dark:from-black z-10" />
+                <div className="pointer-events-none absolute right-0 top-0 h-full w-5 sm:w-6 bg-gradient-to-l from-white/90 to-transparent dark:from-black z-10" />
               )}
 
               {/* Right nudge */}
               {canScrollRight && (
                 <button
                   onClick={() => scrollTabs("right")}
-                  className="absolute right-1 top-1/2 -translate-y-1/2 z-20 h-8 w-8 rounded-full bg-white/90 dark:bg-white/10 ring-1 ring-black/10 dark:ring-white/10 backdrop-blur-sm hover:bg-white dark:hover:bg-white/15 transition hidden sm:flex items-center justify-center"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 z-20 h-8 w-8 rounded-full bg-white/90 dark:bg-white/10 ring-1 ring-black/10 dark:ring-white/10 backdrop-blur-sm hover:bg-white dark:hover:bg-white/15 transition hidden md:flex items-center justify-center"
                   aria-label="Scroll tabs right"
                   type="button"
                 >
@@ -322,29 +322,29 @@ export default function Header({ setLoading }) {
             </div>
 
             {/* Right actions */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
               {/* Theme toggle */}
               <button
                 onClick={() => setDarkMode((prev) => !prev)}
-                className="relative inline-flex h-9 w-9 items-center justify-center rounded-full ring-1 ring-black/10 dark:ring-white/10 hover:bg-black/5 dark:hover:bg-white/5 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500/60"
+                className="relative inline-flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-full ring-1 ring-black/10 dark:ring-white/10 hover:bg-black/5 dark:hover:bg-white/5 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500/60"
                 aria-label="Toggle Dark Mode"
                 type="button"
               >
                 {mounted &&
                   (darkMode ? (
-                    <SunMedium className="h-5 w-5 text-amber-300" />
+                    <SunMedium className="h-5 w-5" />
                   ) : (
-                    <MoonStar className="h-5 w-5 text-gray-800 dark:text-white" />
+                    <MoonStar className="h-5 w-5" />
                   ))}
               </button>
 
-              {/* Auth */}
+              {/* Auth (hide on small tablets to keep tabs visible) */}
               {isAuthenticated ? (
                 <div className="relative" ref={userMenuRef}>
                   <button
                     ref={userButtonRef}
                     onClick={() => setUserMenuOpen((p) => !p)}
-                    className="inline-flex h-9 w-9 items-center justify-center rounded-full ring-1 ring-black/10 dark:ring-white/10 hover:bg-black/5 dark:hover:bg-white/5 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500/60 text-gray-900 dark:text-white"
+                    className="inline-flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-full ring-1 ring-black/10 dark:ring-white/10 hover:bg-black/5 dark:hover:bg-white/5 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500/60 text-gray-900 dark:text-white"
                     aria-label="User menu"
                     aria-haspopup="menu"
                     aria-expanded={userMenuOpen}
@@ -384,17 +384,17 @@ export default function Header({ setLoading }) {
                   </AnimatePresence>
                 </div>
               ) : (
-                <div className="hidden sm:flex gap-2">
+                <div className="hidden md:flex gap-2">
                   <button
                     onClick={() => setLoginOpen(true)}
-                    className="px-3.5 py-2 rounded-lg bg-sky-600 text-white hover:bg-sky-700 transition shadow-sm ring-1 ring-sky-700/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-sky-500/80"
+                    className="px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-lg bg-sky-600 text-white hover:bg-sky-700 transition shadow-sm ring-1 ring-sky-700/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-sky-500/80"
                     type="button"
                   >
                     Login
                   </button>
                   <button
                     onClick={() => setSignupOpen(true)}
-                    className="px-3.5 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition shadow-sm ring-1 ring-emerald-700/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-emerald-500/80"
+                    className="px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition shadow-sm ring-1 ring-emerald-700/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-emerald-500/80"
                     type="button"
                   >
                     Sign Up
@@ -402,10 +402,10 @@ export default function Header({ setLoading }) {
                 </div>
               )}
 
-              {/* Mobile burger */}
+              {/* Mobile burger (only on phones) */}
               <button
                 onClick={() => setMenuOpen((p) => !p)}
-                className="md:hidden inline-flex h-9 w-9 items-center justify-center rounded-full ring-1 ring-black/10 dark:ring-white/10 hover:bg-black/5 dark:hover:bg-white/5 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500/60 text-gray-800 dark:text-gray-200"
+                className="sm:hidden inline-flex h-9 w-9 items-center justify-center rounded-full ring-1 ring-black/10 dark:ring-white/10 hover:bg-black/5 dark:hover:bg-white/5 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500/60 text-gray-800 dark:text-gray-200"
                 aria-label="Toggle menu"
                 aria-expanded={menuOpen}
                 aria-controls="mobile-menu"
@@ -417,7 +417,7 @@ export default function Header({ setLoading }) {
           </div>
         </div>
 
-        {/* Mobile nav */}
+        {/* Mobile nav (phones only) */}
         <AnimatePresence>
           {menuOpen && (
             <motion.div
@@ -428,7 +428,7 @@ export default function Header({ setLoading }) {
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.18 }}
               id="mobile-menu"
-              className="md:hidden border-t border-black/5 dark:border-white/10 bg-white/90 dark:bg-black dark:backdrop-blur-0"
+              className="sm:hidden border-t border-black/5 dark:border-white/10 bg-white/90 dark:bg-black dark:backdrop-blur-0"
               role="menu"
             >
               <div className="mx-auto max-w-7xl px-4 sm:px-6 py-3">
