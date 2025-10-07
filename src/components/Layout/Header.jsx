@@ -1,6 +1,15 @@
 import { useState, useEffect, useRef } from "react";
-import { Link, useLocation } from "react-router-dom";
-import { Menu, X, LogOut, UserCircle } from "lucide-react";
+import { Link, NavLink, useLocation } from "react-router-dom";
+import {
+  Menu,
+  X,
+  LogOut,
+  UserCircle,
+  MoonStar,
+  SunMedium,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import SignupModal from "../Auth/SignupModal";
 import LoginModal from "../Auth/LoginModal";
@@ -16,6 +25,9 @@ function parseJwt(token) {
   }
 }
 
+// a11y-friendly animated pill
+const ActivePill = motion.create("span");
+
 export default function Header({ setLoading }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
@@ -23,8 +35,18 @@ export default function Header({ setLoading }) {
   const [signupOpen, setSignupOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [username, setUsername] = useState(null);
+  const [mounted, setMounted] = useState(false);
+
+  // For md screen tab scrolling
+  const navScrollRef = useRef(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  // Theme: localStorage + system preference
   const [darkMode, setDarkMode] = useState(() => {
-    return localStorage.getItem("theme") === "dark";
+    const saved = localStorage.getItem("theme");
+    if (saved) return saved === "dark";
+    return window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
   });
 
   const location = useLocation();
@@ -32,6 +54,9 @@ export default function Header({ setLoading }) {
   const mobileMenuRef = useRef(null);
   const userButtonRef = useRef(null);
 
+  useEffect(() => setMounted(true), []);
+
+  // Apply theme class to <html>
   useEffect(() => {
     if (darkMode) {
       document.documentElement.classList.add("dark");
@@ -63,9 +88,14 @@ export default function Header({ setLoading }) {
     return () => window.removeEventListener("tokenChanged", handleTokenChanged);
   }, []);
 
+  // Click outside to close popovers
   useEffect(() => {
     const handleClickOutside = (e) => {
-      if (userMenuRef.current && !userMenuRef.current.contains(e.target)) {
+      if (
+        userMenuRef.current &&
+        !userMenuRef.current.contains(e.target) &&
+        !userButtonRef.current?.contains(e.target)
+      ) {
         setUserMenuOpen(false);
       }
       if (mobileMenuRef.current && !mobileMenuRef.current.contains(e.target)) {
@@ -76,12 +106,12 @@ export default function Header({ setLoading }) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Close menus on route change / ESC
   useEffect(() => {
     setUserMenuOpen(false);
     setMenuOpen(false);
   }, [location.pathname]);
 
-  // Close menus with Escape
   useEffect(() => {
     const onKeyDown = (e) => {
       if (e.key === "Escape") {
@@ -102,6 +132,36 @@ export default function Header({ setLoading }) {
     }
   }, [menuOpen]);
 
+  // Track scrollability of the md+ tab bar
+  const updateScrollButtons = () => {
+    const el = navScrollRef.current;
+    if (!el) return;
+    const { scrollLeft, scrollWidth, clientWidth } = el;
+    setCanScrollLeft(scrollLeft > 4);
+    setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 4);
+  };
+
+  useEffect(() => {
+    updateScrollButtons();
+    const el = navScrollRef.current;
+    if (!el) return;
+    const onScroll = () => updateScrollButtons();
+    el.addEventListener("scroll", onScroll, { passive: true });
+    const onResize = () => updateScrollButtons();
+    window.addEventListener("resize", onResize);
+    return () => {
+      el.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onResize);
+    };
+  }, []);
+
+  const scrollTabs = (dir) => {
+    const el = navScrollRef.current;
+    if (!el) return;
+    const delta = Math.round(el.clientWidth * 0.6) * (dir === "left" ? -1 : 1);
+    el.scrollBy({ left: delta, behavior: "smooth" });
+  };
+
   const navLinks = [
     { name: "My Portfolio", to: "/" },
     { name: "My Blogs", to: "/blogs" },
@@ -110,7 +170,6 @@ export default function Header({ setLoading }) {
     { name: "AI Tools", to: "/ai-tools" },
     { name: "Task Manager", to: "/task-manager" },
     { name: "AI Chat", to: "/ai-chat" },
-    // { name: "Reinforcement Learning", to: "/Reinforcement-Learning" },
   ];
 
   const handleLogout = async () => {
@@ -129,232 +188,280 @@ export default function Header({ setLoading }) {
     }
   };
 
-  const isActive = (path) => location.pathname === path;
-
   return (
     <>
-      <header
-        className="bg-gradient-to-r from-sky-100 via-pink-100 to-lime-100 
-       dark:bg-gradient-to-br dark:from-black dark:via-black dark:to-black 
-       border-b border-gray-200 dark:border-gray-600 
-       shadow-[inset_0_-1px_0_rgba(255,255,255,0.05)] 
-       sticky top-0 z-50 px-6 py-3 w-full"
+      {/* Skip link for a11y */}
+      <a
+        href="#main"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[60] bg-black text-white rounded px-3 py-2"
       >
-        <div className="flex flex-wrap justify-between items-center gap-y-4">
-          {/* Brand: favicon + title */}
-          <Link
-            to="/"
-            className="group flex items-center gap-2 select-none cursor-pointer"
-            aria-label="AmiVerse Home"
-          >
-            <img
-              src="/favicon.ico"
-              alt="AmiVerse logo"
-              className="h-10 w-10 sm:h-7 sm:w-7 rounded-xl object-contain 
-             ring-1 ring-black/10 dark:ring-white/20 shadow-sm
-             transition-transform duration-300 md:group-hover:rotate-6 md:group-hover:scale-[1.05]"
-              draggable="false"
-            />
-            <span
-              className="hidden sm:inline text-2xl font-semibold tracking-tight text-gray-900 dark:text-white 
-                         transition-colors duration-300 group-hover:text-sky-700 dark:group-hover:text-cyan-300"
-            >
-              AmiVerse
-            </span>
-          </Link>
+        Skip to content
+      </a>
 
-          <nav
-            className="hidden md:flex flex-wrap gap-x-6"
-            aria-label="Primary"
-          >
-            {navLinks.map((link) => (
-              <Link
-                key={link.name}
-                to={link.to}
-                className={`relative text-base font-medium transition duration-300 pb-1 ${
-                  isActive(link.to)
-                    ? "text-sky-700 dark:text-cyan-300 after:scale-x-100"
-                    : "text-gray-700 hover:text-sky-600 dark:text-gray-300 dark:hover:text-cyan-400"
-                } after:content-[''] after:absolute after:left-0 after:-bottom-1 after:h-[2px] after:w-full after:bg-sky-500 after:scale-x-0 after:origin-left after:transition-transform after:duration-300 hover:after:scale-x-100`}
-                aria-current={isActive(link.to) ? "page" : undefined}
-              >
-                {link.name}
-              </Link>
-            ))}
-          </nav>
+      <header
+        className="
+          sticky top-0 z-50 w-full
+          border-b border-black/5 dark:border-white/10
+          bg-gradient-to-r from-sky-50 via-fuchsia-50 to-emerald-50
+          supports-[backdrop-filter]:bg-white/60 backdrop-blur-md
+          dark:bg-black dark:backdrop-blur-0
+        "
+      >
+        <div className="mx-auto max-w-7xl px-4 sm:px-6">
+          <div className="flex h-16 items-center justify-between gap-3">
+            {/* Brand */}
+            <Link to="/" className="group flex items-center gap-3" aria-label="AmiVerse Home">
+              <img
+                src="/favicon.ico"
+                alt="AmiVerse logo"
+                className="h-9 w-9 rounded-xl object-contain ring-1 ring-black/10 dark:ring-white/15 shadow-sm transition-transform duration-300 group-hover:rotate-3 group-hover:scale-[1.03]"
+                draggable="false"
+              />
+              <span className="hidden lg:inline text-xl font-semibold tracking-tight text-gray-900 dark:text-white group-hover:text-sky-700 dark:group-hover:text-cyan-300 transition-colors">
+                AmiVerse
+              </span>
+            </Link>
 
-          <div className="flex items-center flex-wrap gap-2">
-            <button
-              onClick={() => setDarkMode((prev) => !prev)}
-              className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-800 transition outline-none focus-visible:ring-2 focus-visible:ring-sky-500"
-              aria-label="Toggle Dark Mode"
-              type="button"
-            >
-              {darkMode ? (
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-6 w-6 text-yellow-400"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  aria-hidden="true"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M12 5a7 7 0 000 14 7 7 0 000-14z"
-                  />
-                </svg>
-              ) : (
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-6 w-6 text-gray-800 dark:text-white"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  aria-hidden="true"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"
-                  />
-                </svg>
+            {/* md+ nav with horizontal scroll + fades + nudges */}
+            <div className="relative hidden md:flex items-center max-w-full flex-1 justify-center">
+              {/* Left gradient fade */}
+              {canScrollLeft && (
+                <div className="pointer-events-none absolute left-0 top-0 h-full w-6 bg-gradient-to-r from-white/90 to-transparent dark:from-black z-10" />
               )}
-            </button>
 
-            {isAuthenticated ? (
-              <div className="relative" ref={userMenuRef}>
+              {/* Left nudge */}
+              {canScrollLeft && (
                 <button
-                  ref={userButtonRef}
-                  onClick={() => setUserMenuOpen((prev) => !prev)}
-                  className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-800 transition text-gray-800 dark:text-white outline-none focus-visible:ring-2 focus-visible:ring-sky-500"
-                  aria-label="User menu"
-                  aria-haspopup="menu"
-                  aria-expanded={userMenuOpen}
-                  aria-controls="user-menu"
+                  onClick={() => scrollTabs("left")}
+                  className="absolute left-1 top-1/2 -translate-y-1/2 z-20 h-8 w-8 rounded-full bg-white/90 dark:bg-white/10 ring-1 ring-black/10 dark:ring-white/10 backdrop-blur-sm hover:bg-white dark:hover:bg-white/15 transition hidden sm:flex items-center justify-center"
+                  aria-label="Scroll tabs left"
                   type="button"
                 >
-                  <UserCircle size={32} />
+                  <ChevronLeft className="h-4 w-4 text-gray-700 dark:text-gray-200" />
                 </button>
+              )}
 
-                <AnimatePresence>
-                  {userMenuOpen && (
-                    <motion.div
-                      key="dropdown"
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.95 }}
-                      transition={{ duration: 0.2 }}
-                      id="user-menu"
-                      role="menu"
-                      aria-labelledby="user-menu-button"
-                      className="absolute right-0 mt-2 w-44 bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-50 origin-top-right"
-                    >
-                      <div className="px-4 py-2 text-sm text-gray-700 dark:text-gray-200 border-b border-gray-200 dark:border-gray-600">
-                        Hi, <span className="font-medium">{username}</span>!
-                      </div>
-                      <button
-                        onClick={handleLogout}
-                        role="menuitem"
-                        className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
-                        type="button"
-                      >
-                        <LogOut size={16} />
-                        Logout
-                      </button>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            ) : (
-              <div className="flex gap-2">
+              <nav
+                ref={navScrollRef}
+                className="
+                  flex items-center gap-1 rounded-full
+                  bg-gray-50/60 dark:bg-neutral-900
+                  p-1 ring-1 ring-black/5 dark:ring-white/5
+                  overflow-x-auto whitespace-nowrap scroll-px-2
+                  snap-x snap-mandatory
+                  [-ms-overflow-style:none] [scrollbar-width:none]
+                  [&::-webkit-scrollbar]:hidden
+                  max-w-full
+                "
+                onScroll={updateScrollButtons}
+                role="tablist"
+              >
+                {navLinks.map((link) => (
+                  <NavLink
+                    key={link.name}
+                    to={link.to}
+                    className={({ isActive }) =>
+                      `relative rounded-full outline-none transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-sky-500/60
+                       text-[13px] md:text-sm px-3 md:px-3.5 py-2 snap-center
+                       ${
+                         isActive
+                           ? "text-sky-800 dark:text-cyan-200"
+                           : "text-gray-700 hover:text-sky-700 dark:text-gray-300 dark:hover:text-cyan-300"
+                       }`
+                    }
+                    role="tab"
+                  >
+                    {({ isActive }) => (
+                      <>
+                        <span className="relative z-10">{link.name}</span>
+                        {isActive && (
+                          <ActivePill
+                            layoutId="active-pill"
+                            className="absolute inset-0 rounded-full bg-sky-200/70 dark:bg-white/10 ring-1 ring-sky-300/60 dark:ring-white/10"
+                            transition={{ type: "spring", stiffness: 500, damping: 40, mass: 0.7 }}
+                            aria-hidden="true"
+                          />
+                        )}
+                      </>
+                    )}
+                  </NavLink>
+                ))}
+              </nav>
+
+              {/* Right gradient fade */}
+              {canScrollRight && (
+                <div className="pointer-events-none absolute right-0 top-0 h-full w-6 bg-gradient-to-l from-white/90 to-transparent dark:from-black z-10" />
+              )}
+
+              {/* Right nudge */}
+              {canScrollRight && (
                 <button
-                  onClick={() => setLoginOpen(true)}
-                  className="px-4 py-2 rounded-md bg-sky-600 text-white hover:bg-sky-700 transition shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-sky-500"
+                  onClick={() => scrollTabs("right")}
+                  className="absolute right-1 top-1/2 -translate-y-1/2 z-20 h-8 w-8 rounded-full bg-white/90 dark:bg-white/10 ring-1 ring-black/10 dark:ring-white/10 backdrop-blur-sm hover:bg-white dark:hover:bg-white/15 transition hidden sm:flex items-center justify-center"
+                  aria-label="Scroll tabs right"
                   type="button"
                 >
-                  Login
+                  <ChevronRight className="h-4 w-4 text-gray-700 dark:text-gray-200" />
                 </button>
-                <button
-                  onClick={() => setSignupOpen(true)}
-                  className="px-4 py-2 rounded-md bg-emerald-600 text-white hover:bg-emerald-700 transition shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-emerald-500"
-                  type="button"
-                >
-                  Sign Up
-                </button>
-              </div>
-            )}
+              )}
+            </div>
 
-            <button
-              onClick={() => setMenuOpen(!menuOpen)}
-              className="md:hidden text-gray-700 dark:text-gray-200 hover:text-sky-700 dark:hover:text-cyan-400 transition outline-none focus-visible:ring-2 focus-visible:ring-sky-500"
-              aria-label="Toggle menu"
-              aria-expanded={menuOpen}
-              aria-controls="mobile-menu"
-              type="button"
-            >
-              {menuOpen ? <X size={28} /> : <Menu size={28} />}
-            </button>
-          </div>
-        </div>
+            {/* Right actions */}
+            <div className="flex items-center gap-2">
+              {/* Theme toggle */}
+              <button
+                onClick={() => setDarkMode((prev) => !prev)}
+                className="relative inline-flex h-9 w-9 items-center justify-center rounded-full ring-1 ring-black/10 dark:ring-white/10 hover:bg-black/5 dark:hover:bg-white/5 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500/60"
+                aria-label="Toggle Dark Mode"
+                type="button"
+              >
+                {mounted &&
+                  (darkMode ? (
+                    <SunMedium className="h-5 w-5 text-amber-300" />
+                  ) : (
+                    <MoonStar className="h-5 w-5 text-gray-800 dark:text-white" />
+                  ))}
+              </button>
 
-        <AnimatePresence>
-          {menuOpen && (
-            <motion.div
-              ref={mobileMenuRef}
-              key="mobile-menu"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.2 }}
-              id="mobile-menu"
-              className="md:hidden bg-white dark:bg-[#121212] border-t border-gray-200 dark:border-gray-700 px-6 pb-4 pt-2 origin-top"
-              role="menu"
-            >
-              {navLinks.map((link) => (
-                <Link
-                  key={link.name}
-                  to={link.to}
-                  onClick={() => setMenuOpen(false)}
-                  className={`block py-2 text-base font-medium rounded-md transition ${
-                    isActive(link.to)
-                      ? "text-sky-700 bg-sky-100 dark:bg-gray-800"
-                      : "text-gray-700 dark:text-gray-300 hover:text-sky-600 dark:hover:text-cyan-400"
-                  }`}
-                  role="menuitem"
-                  aria-current={isActive(link.to) ? "page" : undefined}
-                >
-                  {link.name}
-                </Link>
-              ))}
-
-              {!isAuthenticated && (
-                <div className="mt-4 flex space-x-4">
+              {/* Auth */}
+              {isAuthenticated ? (
+                <div className="relative" ref={userMenuRef}>
                   <button
-                    onClick={() => {
-                      setLoginOpen(true);
-                      setMenuOpen(false);
-                    }}
-                    className="flex-1 px-4 py-2 rounded-md bg-sky-600 text-white hover:bg-sky-700 transition shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-sky-500"
+                    ref={userButtonRef}
+                    onClick={() => setUserMenuOpen((p) => !p)}
+                    className="inline-flex h-9 w-9 items-center justify-center rounded-full ring-1 ring-black/10 dark:ring-white/10 hover:bg-black/5 dark:hover:bg-white/5 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500/60 text-gray-900 dark:text-white"
+                    aria-label="User menu"
+                    aria-haspopup="menu"
+                    aria-expanded={userMenuOpen}
+                    aria-controls="user-menu"
+                    type="button"
+                  >
+                    <UserCircle className="h-6 w-6" />
+                  </button>
+
+                  <AnimatePresence>
+                    {userMenuOpen && (
+                      <motion.div
+                        key="dropdown"
+                        initial={{ opacity: 0, y: -4, scale: 0.98 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -4, scale: 0.98 }}
+                        transition={{ duration: 0.18 }}
+                        id="user-menu"
+                        role="menu"
+                        aria-labelledby="user-menu-button"
+                        className="absolute right-0 mt-2 w-48 overflow-hidden rounded-xl bg-white dark:bg-black shadow-lg ring-1 ring-black/10 dark:ring-white/10"
+                      >
+                        <div className="px-4 py-3 text-sm text-gray-800 dark:text-gray-200 border-b border-black/5 dark:border-white/10">
+                          Hi, <span className="font-medium">{username}</span>!
+                        </div>
+                        <button
+                          onClick={handleLogout}
+                          role="menuitem"
+                          className="w-full text-left px-4 py-2.5 text-sm text-gray-800 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-neutral-900 flex items-center gap-2"
+                          type="button"
+                        >
+                          <LogOut className="h-4 w-4" />
+                          Logout
+                        </button>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              ) : (
+                <div className="hidden sm:flex gap-2">
+                  <button
+                    onClick={() => setLoginOpen(true)}
+                    className="px-3.5 py-2 rounded-lg bg-sky-600 text-white hover:bg-sky-700 transition shadow-sm ring-1 ring-sky-700/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-sky-500/80"
                     type="button"
                   >
                     Login
                   </button>
                   <button
-                    onClick={() => {
-                      setSignupOpen(true);
-                      setMenuOpen(false);
-                    }}
-                    className="flex-1 px-4 py-2 rounded-md bg-emerald-600 text-white hover:bg-emerald-700 transition shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-emerald-500"
+                    onClick={() => setSignupOpen(true)}
+                    className="px-3.5 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition shadow-sm ring-1 ring-emerald-700/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-emerald-500/80"
                     type="button"
                   >
                     Sign Up
                   </button>
                 </div>
               )}
+
+              {/* Mobile burger */}
+              <button
+                onClick={() => setMenuOpen((p) => !p)}
+                className="md:hidden inline-flex h-9 w-9 items-center justify-center rounded-full ring-1 ring-black/10 dark:ring-white/10 hover:bg-black/5 dark:hover:bg-white/5 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500/60 text-gray-800 dark:text-gray-200"
+                aria-label="Toggle menu"
+                aria-expanded={menuOpen}
+                aria-controls="mobile-menu"
+                type="button"
+              >
+                {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile nav */}
+        <AnimatePresence>
+          {menuOpen && (
+            <motion.div
+              ref={mobileMenuRef}
+              key="mobile-menu"
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.18 }}
+              id="mobile-menu"
+              className="md:hidden border-t border-black/5 dark:border-white/10 bg-white/90 dark:bg-black dark:backdrop-blur-0"
+              role="menu"
+            >
+              <div className="mx-auto max-w-7xl px-4 sm:px-6 py-3">
+                <div className="grid grid-cols-1 gap-1.5">
+                  {navLinks.map((link) => (
+                    <NavLink
+                      key={link.name}
+                      to={link.to}
+                      onClick={() => setMenuOpen(false)}
+                      className={({ isActive }) =>
+                        `block w-full rounded-lg px-3 py-2 text-base font-medium transition-colors ${
+                          isActive
+                            ? "bg-sky-100 text-sky-800 dark:bg-white/10 dark:text-cyan-100 ring-1 ring-sky-300/50 dark:ring-white/10"
+                            : "text-gray-800 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-neutral-900"
+                        }`
+                      }
+                      role="menuitem"
+                    >
+                      {link.name}
+                    </NavLink>
+                  ))}
+
+                  {!isAuthenticated && (
+                    <div className="mt-2 grid grid-cols-2 gap-2">
+                      <button
+                        onClick={() => {
+                          setLoginOpen(true);
+                          setMenuOpen(false);
+                        }}
+                        className="px-3.5 py-2 rounded-lg bg-sky-600 text-white hover:bg-sky-700 transition shadow-sm ring-1 ring-sky-700/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-sky-500/80"
+                        type="button"
+                      >
+                        Login
+                      </button>
+                      <button
+                        onClick={() => {
+                          setSignupOpen(true);
+                          setMenuOpen(false);
+                        }}
+                        className="px-3.5 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition shadow-sm ring-1 ring-emerald-700/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-emerald-500/80"
+                        type="button"
+                      >
+                        Sign Up
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
