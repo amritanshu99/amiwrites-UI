@@ -6,7 +6,7 @@ import {
   LogOut,
   UserCircle,
   MoonStar,
-  SunMedium,
+  Sun,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
@@ -46,7 +46,10 @@ export default function Header({ setLoading }) {
   const [darkMode, setDarkMode] = useState(() => {
     const saved = localStorage.getItem("theme");
     if (saved) return saved === "dark";
-    return window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+    return (
+      window.matchMedia &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches
+    );
   });
 
   const location = useLocation();
@@ -293,7 +296,12 @@ export default function Header({ setLoading }) {
                           <ActivePill
                             layoutId="active-pill"
                             className="absolute inset-0 rounded-full bg-sky-200/70 dark:bg-white/10 ring-1 ring-sky-300/60 dark:ring-white/10"
-                            transition={{ type: "spring", stiffness: 500, damping: 40, mass: 0.7 }}
+                            transition={{
+                              type: "spring",
+                              stiffness: 500,
+                              damping: 40,
+                              mass: 0.7,
+                            }}
                             aria-hidden="true"
                           />
                         )}
@@ -332,9 +340,40 @@ export default function Header({ setLoading }) {
               >
                 {mounted &&
                   (darkMode ? (
-                    <SunMedium className="h-5 w-5" />
+                 <Sun
+  className="h-5 w-5 p-1.5 rounded-full
+  bg-gradient-to-tr from-yellow-200 via-amber-300 to-orange-400
+  text-white 
+  shadow-[0_0_12px_3px_rgba(255,200,0,0.55)]
+  ring-2 ring-yellow-300/50
+  hover:scale-110 hover:shadow-[0_0_16px_4px_rgba(255,200,0,0.7)]
+  transition-all duration-300 ease-out"
+/>
+
                   ) : (
-                    <MoonStar className="h-5 w-5" />
+   <div
+  className="
+    group inline-flex items-center justify-center p-2 rounded-full 
+    bg-slate-100 dark:bg-slate-800 
+    transition-all duration-300 ease-in-out
+    hover:bg-black
+  "
+>
+  <MoonStar
+    className="
+      h-5 w-5 
+      text-slate-600 dark:text-slate-200
+      transition-all duration-300 ease-in-out
+      group-hover:text-amber-300
+      group-hover:drop-shadow-[0_0_10px_#fbbf24]
+      dark:group-hover:text-yellow-400
+      dark:group-hover:drop-shadow-[0_0_12px_#facc15]
+      group-hover:scale-110
+    "
+  />
+</div>
+
+
                   ))}
               </button>
 
@@ -411,7 +450,11 @@ export default function Header({ setLoading }) {
                 aria-controls="mobile-menu"
                 type="button"
               >
-                {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+                {menuOpen ? (
+                  <X className="h-5 w-5" />
+                ) : (
+                  <Menu className="h-5 w-5" />
+                )}
               </button>
             </div>
           </div>
