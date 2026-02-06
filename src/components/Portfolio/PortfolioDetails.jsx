@@ -1,93 +1,78 @@
-import React, { useEffect, useState, useRef, useMemo } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import {
   FaLinkedin,
   FaGithub,
-  FaFacebook,
   FaInstagram,
-  FaReact,
-  FaNodeJs,
+  FaFacebook,
   FaBriefcase,
   FaGraduationCap,
+  FaReact,
+  FaNodeJs,
   FaJs,
 } from "react-icons/fa";
-import { useReducedMotion } from "framer-motion";
 import {
-  SiTensorflow,
-  SiOpenai,
-  SiExpress,
   SiMongodb,
+  SiExpress,
   SiGraphql,
+  SiOpenai,
+  SiTensorflow,
 } from "react-icons/si";
-import { motion, AnimatePresence, useInView } from "framer-motion";
+import {
+  motion,
+  useScroll,
+  useTransform,
+  useInView,
+  AnimatePresence,
+} from "framer-motion";
 import InitialLoader from "./InitialLoader";
-import { useLocation } from "react-router-dom";
 import AchievementsModal from "./AchievementsModal";
 
-/* ===========================
-   NEW: Your 7 gradients (light) + tuned dark variants
-   - Light gradients: exact inputs you provided (used directly)
-   - Dark gradients: hand-tuned darker cousins so contrast stays comfortable
-   =========================== */
-const lightGradients = [
-  "linear-gradient(-225deg, #5D9FFF 0%, #B8DCFF 48%, #6BBBFF 100%)",
-  "linear-gradient(120deg, #a6c0fe 0%, #f68084 100%)",
-  "linear-gradient(to top, #a8edea 0%, #fed6e3 100%)",
-  "linear-gradient(to right, #eea2a2 0%, #bbc1bf 19%, #57c6e1 42%, #b49fda 79%, #7ac5d8 100%)",
-  "linear-gradient(-20deg, #d558c8 0%, #24d292 100%)",
-  "linear-gradient(to top, #fff1eb 0%, #ace0f9 100%)",
-  "linear-gradient(-20deg, #ddd6f3 0%, #faaca8 100%, #faaca8 100%)",
-  "linear-gradient(-225deg, #69EACB 0%, #EACCF8 48%, #6654F1 100%)",
-];
-
-const darkGradients = [
-  "linear-gradient(120deg, #0f2027 0%, #000000 100%)", // deep blue-black
-  "linear-gradient(120deg, #232526 0%, #000000 100%)", // charcoal-black
-  "linear-gradient(120deg, #1a1a2e 0%, #000000 100%)", // midnight-blue-black
-  "linear-gradient(120deg, #2c3e50 0%, #000000 100%)", // steel-blue-black
-  "linear-gradient(120deg, #1e2024 0%, #000000 100%)", // graphite-black
- "linear-gradient(120deg, #0f2027 0%, #000000 100%)", // deep blue-black
- "linear-gradient(120deg, #232526 0%, #000000 100%)", // charcoal-black
-  "linear-gradient(120deg, #2d3436 0%, #000000 100%)", // slate-black
-];
-
-
-/* ===========================
-   Skill icons map (unchanged)
-   =========================== */
+/* ================= ICON MAP ================= */
 const skillIconMap = {
-  JavaScript: <FaJs className="text-yellow-500 w-8 h-8" />,
-  React: <FaReact className="text-cyan-500 w-8 h-8" />,
-  "Node.js": <FaNodeJs className="text-green-600 w-8 h-8" />,
-  Express: <SiExpress className="text-gray-700 dark:text-gray-200 w-8 h-8" />,
-  MongoDB: <SiMongodb className="text-green-700 w-8 h-8" />,
-  GraphQL: <SiGraphql className="text-pink-500 w-8 h-8" />,
-  AI: <SiOpenai className="text-purple-600 w-8 h-8" />,
-  ML: <SiTensorflow className="text-orange-500 w-8 h-8" />,
+  JavaScript: <FaJs />,
+  React: <FaReact />,
+  "Node.js": <FaNodeJs />,
+  MongoDB: <SiMongodb />,
+  Express: <SiExpress />,
+  GraphQL: <SiGraphql />,
+  AI: <SiOpenai />,
+  ML: <SiTensorflow />,
 };
 
-/* Tooltip + ScrollFadeIn components unchanged from your original */
+const socialColors = {
+  LinkedIn: "text-[#0A66C2]",
+  GitHub: "text-[#181717] dark:text-white",
+  Instagram: "text-[#E4405F]",
+  Facebook: "text-[#1877F2]",
+};
+
+/* ================= TOOLTIP ================= */
 const Tooltip = ({ children, content }) => {
-  const [visible, setVisible] = React.useState(false);
+  const [show, setShow] = useState(false);
 
   return (
-    <div
-      className="relative inline-block"
-      onMouseEnter={() => setVisible(true)}
-      onMouseLeave={() => setVisible(false)}
-    >
-      {children}
+    <div className="relative flex justify-center">
+      <motion.div
+        onHoverStart={() => setShow(true)}
+        onHoverEnd={() => setShow(false)}
+        onTap={() => setShow((prev) => !prev)}
+      >
+        {children}
+      </motion.div>
+
       <AnimatePresence>
-        {visible && (
+        {show && (
           <motion.div
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 6 }}
-            transition={{ duration: 0.15 }}
-            className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-gray-900 text-white dark:bg-cyan-600 px-2 py-1 text-xs font-semibold shadow-md z-50 select-none pointer-events-none"
+            initial={{ opacity: 0, y: 6, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 6, scale: 0.95 }}
+            transition={{ duration: 0.18, ease: "easeOut" }}
+            className="absolute -top-9 z-20
+                       bg-black text-white dark:bg-white dark:text-black
+                       text-xs px-2 py-1 rounded-md shadow-lg whitespace-nowrap"
           >
             {content}
-            <div className="absolute top-full left-1/2 -translate-x-1/2 w-2 h-2 rotate-45 bg-gray-900 dark:bg-cyan-600" />
           </motion.div>
         )}
       </AnimatePresence>
@@ -95,507 +80,331 @@ const Tooltip = ({ children, content }) => {
   );
 };
 
-const container = {
-  hidden: {},
-  show: {
-    transition: { staggerChildren: 0.08, delayChildren: 0.1 },
-  },
-};
 
-const item = {
-  hidden: { opacity: 0, y: 12 },
-  show: {
-    opacity: 1,
-    y: 0,
-    transition: { type: "spring", stiffness: 300, damping: 18 },
-  },
-};
-
-function ScrollFadeIn({ children, className = "" }) {
-  const ref = React.useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-100px" });
-
+/* ================= FADE ROW ================= */
+const FadeRow = ({ children }) => {
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true, margin: "-160px" });
   return (
     <motion.div
       ref={ref}
-      initial={{ opacity: 0, y: 30 }}
-      animate={isInView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.6, ease: "easeOut" }}
-      className={className}
+      initial={{ opacity: 0, y: 18 }}
+      animate={inView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.45, ease: "easeOut" }}
     >
       {children}
     </motion.div>
   );
-}
+};
 
-/* Shuffle helper (non-repeating playlist) */
-function shuffledIndices(len) {
-  const arr = Array.from({ length: len }, (_, i) => i);
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
-  return arr;
-}
+/* ================= SOCIAL MODAL ================= */
+const SocialModal = ({ isOpen, onClose, platform, url, icon }) => {
+  if (!isOpen) return null;
 
-export default function Portfolio() {
-  const reduce = useReducedMotion();
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.95 }}
+        className="bg-white dark:bg-zinc-900 rounded-xl p-5 w-[280px] text-center"
+      >
+        <div className="text-2xl mb-2">{icon}</div>
+        <h3 className="text-sm font-semibold mb-1">{platform}</h3>
+        <p className="text-xs text-zinc-600 dark:text-zinc-400 mb-4">
+          Open profile in a new tab?
+        </p>
+        <div className="flex justify-center gap-2">
+          <button
+            onClick={onClose}
+            className="px-3 py-1 text-xs rounded border border-zinc-300 dark:border-zinc-700"
+          >
+            Cancel
+          </button>
+          <a
+            href={url}
+            target="_blank"
+            rel="noreferrer"
+            className="px-3 py-1 text-xs rounded bg-black text-white dark:bg-white dark:text-black"
+          >
+            Open
+          </a>
+        </div>
+      </motion.div>
+    </div>
+  );
+};
+
+/* ================= MAIN ================= */
+export default function PortfolioDetails() {
   const [data, setData] = useState(null);
-  const [modalData, setModalData] = useState({
-    isOpen: false,
-    title: "",
-    achievements: [],
-  });
-  const [showLoader, setShowLoader] = useState(true);
-  const { pathname } = useLocation();
-
-  useEffect(() => {
-    let link = document.querySelector("link[rel='canonical']");
-    if (!link) {
-      link = document.createElement("link");
-      link.rel = "canonical";
-      document.head.appendChild(link);
-    }
-    link.href = window.location.href;
-    document.title = "Amritanshu Mishra's Portfolio";
-
-    const loaderTimer = setTimeout(() => {
-      setShowLoader(false);
-    }, 1600);
-
-    axios
-      .get(`https://amiwrites-backend-app-2lp5.onrender.com/api/portfolio`)
-      .then((res) => setData(res.data))
-      .catch((err) => console.error("Error fetching portfolio:", err));
-
-    return () => clearTimeout(loaderTimer);
-  }, []);
-
-  /* ===========================
-     Background behavior (only this area changed)
-     - smooth gentle drift (background-position only)
-     - two-layer crossfade for smooth transitions
-     - per-layer speeds differ for subtle parallax
-     - dark-mode uses tuned dark gradient variants
-     - overflow-x-hidden on main prevents horizontal scroll
-     =========================== */
+  const [loading, setLoading] = useState(true);
+  const [modal, setModal] = useState({ isOpen: false });
   const [isDark, setIsDark] = useState(false);
+  const [socialModal, setSocialModal] = useState(null);
+const [imageLoaded, setImageLoaded] = useState(false);
 
-  // playlist & pointer
-  const playlistRef = useRef(shuffledIndices(lightGradients.length));
-  const ptrRef = useRef(0);
+  const heroRef = useRef(null);
 
-  // current index and frontVisible for crossfade
-  const [currentIdx, setCurrentIdx] = useState(playlistRef.current[0] ?? 0);
-  const [frontVisible, setFrontVisible] = useState(true);
-  const intervalRef = useRef(null);
+  const heroScroll = useScroll({
+    target: heroRef,
+    offset: ["start start", "end end"],
+  });
 
-  // detect dark mode initially and on runtime toggles
+  const imageScale = useTransform(heroScroll.scrollYProgress, [0, 1], [1.12, 1]);
+  const textY = useTransform(heroScroll.scrollYProgress, [0, 1], [0, -140]);
+  const textOpacity = useTransform(
+    heroScroll.scrollYProgress,
+    [0, 0.8],
+    [1, 0.65]
+  );
+
   useEffect(() => {
-    const checkDark = () =>
-      setIsDark(
-        document?.documentElement?.classList?.contains?.("dark") ?? false
-      );
-
-    checkDark();
-    const obs = new MutationObserver(() => checkDark());
-    if (document?.documentElement) {
-      obs.observe(document.documentElement, {
-        attributes: true,
-        attributeFilter: ["class"],
-      });
-    }
+    const sync = () =>
+      setIsDark(document.documentElement.classList.contains("dark"));
+    sync();
+    const obs = new MutationObserver(sync);
+    obs.observe(document.documentElement, { attributes: true });
     return () => obs.disconnect();
   }, []);
 
-  // keyframes: gentle, very slow drift (background-position only)
-  const styleTag = `
-    @keyframes bgDrift {
-      0% { background-position: 10% 50%; }
-      50% { background-position: 90% 50%; }
-      100% { background-position: 10% 50%; }
-    }
-  `;
-
-  const incrementPtr = () => {
-    ptrRef.current = (ptrRef.current + 1) % playlistRef.current.length;
-    return playlistRef.current[ptrRef.current];
-  };
-
-  // auto-rotate (disabled in dark for stability; enable if you prefer)
   useEffect(() => {
-    if (isDark) {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-      return;
-    }
-
-    // sync pointer with current
-    const pos = playlistRef.current.indexOf(currentIdx);
-    ptrRef.current = pos >= 0 ? pos : 0;
-
-    if (intervalRef.current) clearInterval(intervalRef.current);
-
-    intervalRef.current = setInterval(() => {
-      setFrontVisible(true);
-      setTimeout(() => {
-        const next = incrementPtr();
-        setCurrentIdx(next);
-        setTimeout(() => setFrontVisible(false), 140);
-      }, 110);
-    }, 12_000); // comfortable 11s cadence
-
-    return () => clearInterval(intervalRef.current);
-  }, [isDark, currentIdx]);
-
-  // initial reveal so crossfade is visible on first paint
-  useEffect(() => {
-    const t = setTimeout(() => setFrontVisible(false), 160);
-    return () => clearTimeout(t);
+    axios
+      .get("https://amiwrites-backend-app-2lp5.onrender.com/api/portfolio")
+      .then((res) => {
+        setData(res.data);
+        setTimeout(() => setLoading(false), 1700);
+      });
   }, []);
 
-  // front/back gradient strings depending on mode
-  const frontBg = useMemo(
-    () => (isDark ? darkGradients[currentIdx] : lightGradients[currentIdx]),
-    [currentIdx, isDark]
-  );
-  const nextIdx = useMemo(
-    () =>
-      isDark
-        ? currentIdx
-        : playlistRef.current[
-            (ptrRef.current + 1) % playlistRef.current.length
-          ],
-    [currentIdx, isDark]
-  );
-  const backBg = useMemo(
-    () => (isDark ? darkGradients[nextIdx] : lightGradients[nextIdx]),
-    [nextIdx, isDark]
-  );
+  if (loading || !data) return <InitialLoader />;
 
-  // layer style factory: only background-position animates (no layout changes)
-  const makeLayerStyle = (bg, speed = 32, blend = "normal") => ({
-    backgroundImage: bg,
-    backgroundSize: "220% 220%",
-    backgroundRepeat: "no-repeat",
-    backgroundPosition: "10% 50%",
-    animation: `bgDrift ${speed}s cubic-bezier(.2,.7,.2,1) infinite`,
-    backgroundBlendMode: blend,
-    willChange: "background-position, opacity",
-    overflow: "hidden",
-  });
+  const [firstName, lastName] = data.name.split(" ");
 
-  // subtle focus vignette (above bg layers, below content)
-  const vignetteStyle = {
-    position: "absolute",
-    inset: 0,
-    zIndex: -5,
-    pointerEvents: "none",
-    background:
-      "radial-gradient(60% 60% at 50% 45%, rgba(255,255,255,0.04), rgba(0,0,0,0.06) 75%)",
-    mixBlendMode: "soft-light",
+const socials = [
+  { name: "LinkedIn", icon: <FaLinkedin size={28} />, url: data.socialLinks.linkedin },
+  { name: "GitHub", icon: <FaGithub size={28} />, url: data.socialLinks.github },
+  { name: "Instagram", icon: <FaInstagram size={28} />, url: data.socialLinks.instagram },
+  { name: "Facebook", icon: <FaFacebook size={28} />, url: data.socialLinks.facebook },
+];
+
+
+  const skillColors = {
+    JavaScript: "text-[#F7DF1E]",
+    React: "text-[#61DAFB]",
+    "Node.js": "text-[#339933]",
+    MongoDB: "text-[#47A248]",
+    Express: "text-black dark:text-white",
+    GraphQL: "text-[#E10098]",
+    AI: "text-[#10A37F]",
+    ML: "text-[#FF6F00]",
   };
 
-  // Keep existing scroll-to-top behavior on navigation (unchanged)
-  useEffect(() => {
-    const scrollContainer = document.querySelector(
-      ".h-screen.overflow-y-scroll.relative"
-    );
-    if (scrollContainer) {
-      scrollContainer.scrollTo({ top: 0, behavior: "smooth" });
-    }
-  }, [pathname]);
-
-  if (!data || showLoader) return <InitialLoader />;
-
-  const openModal = (title, achievements) =>
-    setModalData({ isOpen: true, title, achievements });
-  const closeModal = () =>
-    setModalData({ isOpen: false, title: "", achievements: [] });
-
   return (
-    <>
-      {/* gentle background drift keyframes */}
-      <style>{styleTag}</style>
+<main className="w-full bg-[#F6F8FB] dark:bg-black text-zinc-900 dark:text-zinc-100">
 
-      <main className="relative min-h-screen p-4 sm:p-8 md:p-12 flex justify-center items-center overflow-x-hidden">
-        {/* BACK LAYER: slower drift (depth) */}
-        <div
-          aria-hidden
-          className="absolute inset-0 -z-10 transition-opacity duration-[1000ms] ease-out"
-          style={makeLayerStyle(backBg, isDark ? 48 : 40, "normal")}
-        />
 
-        {/* FRONT LAYER: slightly faster drift and crossfades */}
-        <div
-          aria-hidden
-          className={`absolute inset-0 -z-10 transition-opacity duration-[1000ms] ease-out ${
-            frontVisible ? "opacity-100" : "opacity-0"
-          }`}
-          style={makeLayerStyle(frontBg, isDark ? 36 : 28, "overlay")}
-        />
 
-        {/* vignette to softly focus center */}
-        <div aria-hidden style={vignetteStyle} />
 
-        {/* CONTENT: unchanged */}
-        <article className="bg-white dark:bg-zinc-900 text-black dark:text-white bg-opacity-90 backdrop-blur-md rounded-xl shadow-xl max-w-4xl w-full p-6 md:p-10">
-          <section className="flex flex-col sm:flex-row items-center gap-6 sm:gap-10">
-            <motion.img
-              key={
-                document.documentElement.classList.contains("dark")
-                  ? "dark-img"
-                  : "light-img"
-              }
-              src={
-                document.documentElement.classList.contains("dark")
-                  ? `https://amiwrites-backend-app-2lp5.onrender.com${data.photoUrlDark}`
-                  : `https://amiwrites-backend-app-2lp5.onrender.com${data.photoUrl}`
-              }
-              alt="Amritanshu Mishra"
-              loading="eager"
-              width={192}
-              height={192}
-              className="rounded-3xl object-cover shadow-lg border-4 border-cyan-300 w-40 h-40 sm:w-48 sm:h-48 flex-shrink-0"
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ opacity: 0 }} // fades out old image
-              transition={{ duration: 0.8 }}
-              whileHover={{ scale: 1.05, transition: { duration: 0.3 } }}
-            />
+      {/* PAGE HEIGHT WRAPPER (controls sticky duration) */}
+      <div className="relative min-h-[200vh]">
 
-            <div className="flex-1 text-center sm:text-left">
-              <div className="text-center sm:text-left">
-                {/* Headline with shimmer + underline reveal */}
-                <h1
-                  className="
-    relative inline-block
-    text-3xl sm:text-4xl font-extrabold leading-tight
-    bg-gradient-to-r from-cyan-700 via-cyan-500 to-cyan-400
-    bg-clip-text text-transparent
-    dark:from-cyan-300 dark:via-cyan-200 dark:to-cyan-100
-    motion-safe:animate-hero-entrance
-  "
-                  aria-label={data.name}
-                >
-                  <span
-                    className="
-      inline-block
-      motion-safe:animate-headline-shimmer
-      bg-[linear-gradient(90deg,#06b6d4,#0ea5e9,#06b6d4)]
-      bg-[length:200%_100%]
-      bg-clip-text text-transparent
-    "
-                  >
-                    {data.name}
-                  </span>
+        {/* ================= STICKY SCROLL INDICATOR ================= */}
+        <motion.div
+          className="sticky top-24 z-20 text-white/60 text-center pointer-events-none"
+          animate={{ y: [0, 8, 0] }}
+          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+        >
+          <div className="text-[10px] tracking-widest uppercase">Scroll</div>
+          <div className="text-base leading-none">↓</div>
+        </motion.div>
 
-                  <span
-                    className="
-      absolute left-0 -bottom-1 h-[3px] w-full origin-left scale-x-0
-      bg-gradient-to-r from-cyan-400 to-cyan-600 motion-safe:animate-underline-reveal
-      rounded-full pointer-events-none
-    "
-                    aria-hidden="true"
-                  />
-                </h1>
+        {/* ================= HERO ================= */}
+        <section ref={heroRef} className="relative h-[150vh]">
+          <motion.div
+            style={{ scale: imageScale }}
+            className="sticky top-0 h-screen overflow-hidden"
+          >
+          <motion.img
+  src={`https://amiwrites-backend-app-2lp5.onrender.com${
+    isDark ? data.photoUrlDark : data.photoUrl
+  }`}
+  alt={data.name}
+  onLoad={() => setImageLoaded(true)}
+  initial={{ opacity: 0, scale: 1.03 }}
+  animate={{
+    opacity: imageLoaded ? 1 : 0,
+    scale: imageLoaded ? 1 : 1.03,
+  }}
+  transition={{ duration: 0.8, ease: "easeOut" }}
+  className="w-full h-full object-cover object-[70%_center]"
+/>
 
-                <h2
-                  className="motion-safe:animate-hero-entrance-delay-1 mt-2 text-xl sm:text-2xl font-semibold text-cyan-700 dark:text-cyan-400"
-                  aria-label={data.title}
-                >
-                  {data.title}
-                </h2>
+            <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/90" />
+          </motion.div>
 
-                <p
-                  className="motion-safe:animate-hero-entrance-delay-2 mt-4 max-w-md mx-auto sm:mx-0 leading-relaxed text-cyan-800 dark:text-cyan-200 italic"
-                  aria-label={data.description}
-                >
-                  {data.description}
-                </p>
+          <motion.div
+            style={{ y: textY, opacity: textOpacity }}
+            className="pointer-events-none sticky top-0 h-screen flex items-center px-6 md:px-20 z-10"
+          >
+            <h1 className="font-extrabold tracking-[-0.04em] leading-[0.92]
+                           text-white text-[12.5vw] md:text-[8.2vw]">
+              {firstName}
+              <br />
+              {lastName}
+            </h1>
+          </motion.div>
+        </section>
 
-                <div
-                  className="motion-safe:animate-hero-entrance-delay-3 mt-5 max-w-md mx-auto sm:mx-0 space-y-1 text-cyan-700 dark:text-cyan-300 font-medium text-sm sm:text-base"
-                  aria-label="contact"
-                >
-                  <p className="flex items-center gap-2">
-                    ✉️ <span>{data.email}</span>
-                  </p>
-                  <p className="flex items-center gap-2">
-                    📞 <span>{data.phone}</span>
-                  </p>
-                </div>
-              </div>
-
-              <motion.nav
-                className="flex justify-center sm:justify-start gap-6 mt-5 text-2xl"
-                variants={container}
-                initial={reduce ? false : "hidden"}
-                animate={reduce ? false : "show"}
-              >
-                <motion.a
-                  variants={item}
-                  href={data.socialLinks.linkedin}
-                  target="_blank"
-                  rel="noreferrer"
-                  whileHover={{ scale: 1.2, rotate: 2 }}
-                  transition={{ type: "spring", stiffness: 300, damping: 10 }}
-                  className="cursor-pointer text-blue-700 dark:text-blue-500"
-                >
-                  <FaLinkedin />
-                </motion.a>
-
-                <motion.a
-                  variants={item}
-                  href={data.socialLinks.github}
-                  target="_blank"
-                  rel="noreferrer"
-                  whileHover={{ scale: 1.2, rotate: -2 }}
-                  transition={{ type: "spring", stiffness: 300, damping: 10 }}
-                  className="cursor-pointer text-gray-800 dark:text-gray-200"
-                >
-                  <FaGithub />
-                </motion.a>
-
-                <motion.a
-                  variants={item}
-                  href={data.socialLinks.instagram}
-                  target="_blank"
-                  rel="noreferrer"
-                  whileHover={{ scale: 1.2, rotate: 2 }}
-                  transition={{ type: "spring", stiffness: 300, damping: 10 }}
-                  className="cursor-pointer text-pink-500"
-                >
-                  <FaInstagram />
-                </motion.a>
-
-                <motion.a
-                  variants={item}
-                  href={data.socialLinks.facebook}
-                  target="_blank"
-                  rel="noreferrer"
-                  whileHover={{ scale: 1.2, rotate: -2 }}
-                  transition={{ type: "spring", stiffness: 300, damping: 10 }}
-                  className="cursor-pointer text-blue-600"
-                >
-                  <FaFacebook />
-                </motion.a>
-              </motion.nav>
+        {/* ================= INTRO ================= */}
+        <section className="px-6 md:px-20 py-14 md:py-16 border-b border-zinc-200 dark:border-zinc-800">
+          <FadeRow>
+            <div className="max-w-4xl space-y-4">
+              <p className="text-lg md:text-xl font-medium leading-relaxed">
+                {data.description}
+              </p>
+            <div className="flex gap-4 text-zinc-500">
+  {socials.map((s) => (
+    <button
+      key={s.name}
+      onClick={() => setSocialModal(s)}
+      className={`${socialColors[s.name]} hover:scale-110 transition-transform`}
+    >
+      {s.icon}
+    </button>
+  ))}
+</div>
             </div>
-          </section>
+          </FadeRow>
+        </section>
 
-          {/* Skills */}
-          <ScrollFadeIn className="mt-10">
-            <h3 className="text-3xl font-bold text-cyan-800 dark:text-cyan-300 mb-6 border-b-4 border-cyan-300 dark:border-cyan-600 inline-block pb-1">
-              Skills
-            </h3>
-            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-5">
+        {/* ================= SKILLS ================= */}
+        <section className="px-6 md:px-20 py-14 md:py-16 border-b border-zinc-200 dark:border-zinc-800">
+          <FadeRow>
+            <h2 className="text-xl md:text-2xl font-semibold mb-8">
+              01 — Skills
+            </h2>
+            <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 gap-6">
               {data.skills.map(({ skill, expertise }) => (
-                <Tooltip key={skill} content={expertise} placement="top">
-                  <div
-                    className="group h-[110px] w-[110px] bg-white dark:bg-zinc-800 rounded-xl shadow-sm hover:shadow-lg hover:shadow-cyan-300/30 transition-transform duration-300 ease-in-out hover:scale-105 flex flex-col items-center justify-center mx-auto relative cursor-pointer"
-                    tabIndex={0}
-                  >
-                    <div className="w-8 h-8 mb-2 flex items-center justify-center transition-transform duration-500 group-hover:rotate-3">
-                      {skillIconMap[skill] ?? (
-                        <span className="text-cyan-700 dark:text-cyan-300 text-sm">
-                          ?
-                        </span>
-                      )}
+                <Tooltip key={skill} content={expertise}>
+                 <motion.div
+  whileHover={{ scale: 1.08 }}
+  whileTap={{ scale: 0.92 }}
+  transition={{ type: "spring", stiffness: 300, damping: 15 }}
+ className="flex flex-col items-center justify-center
+           w-24 h-28 md:w-28 md:h-32
+           gap-2 p-4 rounded-xl cursor-pointer
+           border border-zinc-200 dark:border-zinc-800
+           bg-zinc-50 dark:bg-zinc-900/40"
+>
+
+                    <div className={`text-3xl ${skillColors[skill]}`}>
+                      {skillIconMap[skill]}
                     </div>
-                    <span className="text-xs font-semibold text-gray-800 dark:text-gray-200 text-center truncate px-2">
-                      {skill}
-                    </span>
-                  </div>
+                   <span className="text-sm font-semibold text-center leading-tight">
+  {skill}
+</span>
+
+        </motion.div>
+
                 </Tooltip>
               ))}
             </div>
-          </ScrollFadeIn>
+          </FadeRow>
+        </section>
 
-          {/* Experience */}
-          <ScrollFadeIn className="mt-10">
-            <h3 className="text-2xl font-bold text-cyan-800 dark:text-cyan-300 mb-4 border-b-2 border-cyan-300 dark:border-cyan-600 pb-1 flex items-center gap-2">
-              <FaBriefcase /> Experience
-            </h3>
-            <div className="space-y-6 max-w-md">
-              {data.experience.map(
-                ({ company, role, duration, description, achievements }, i) => (
-                  <article
-                    key={i}
-                    className="border-l-4 border-cyan-400 dark:border-cyan-600 pl-4"
-                  >
-                    <h4 className="text-xl font-semibold text-cyan-900 dark:text-cyan-200">
-                      {role}
-                    </h4>
-                    <p className="italic text-gray-600 dark:text-gray-400 mb-1">
-                      {company} • {duration}
-                    </p>
-                    <p className="text-cyan-800 dark:text-cyan-300">
-                      {description}
-                    </p>
-                    {achievements?.length > 0 && (
-                      <button
-                        onClick={() =>
-                          openModal(
-                            `${role} at ${company} - Achievements`,
-                            achievements
-                          )
-                        }
-                        className="mt-2 text-cyan-600 dark:text-cyan-400 hover:text-cyan-900 dark:hover:text-cyan-100 font-semibold underline"
-                      >
-                        View Achievements
-                      </button>
-                    )}
-                  </article>
-                )
-              )}
-            </div>
-          </ScrollFadeIn>
+        {/* ================= EXPERIENCE ================= */}
+        <section className="px-6 md:px-20 py-14 md:py-16 border-b border-zinc-200 dark:border-zinc-800">
+          <FadeRow>
+            <h2 className="text-xl md:text-2xl font-semibold mb-8 flex items-center gap-2">
+              <FaBriefcase /> 02 — Experience
+            </h2>
 
-          {/* Education */}
-          <ScrollFadeIn className="mt-10">
-            <h3 className="text-2xl font-bold text-cyan-800 dark:text-cyan-300 mb-4 border-b-2 border-cyan-300 dark:border-cyan-600 pb-1 flex items-center gap-2">
-              <FaGraduationCap /> Education
-            </h3>
-            <div className="space-y-6 max-w-md">
-              {data.education.map(
-                ({ institution, degree, duration, achievements }, i) => (
-                  <article
-                    key={i}
-                    className="border-l-4 border-cyan-400 dark:border-cyan-600 pl-4"
+            {data.experience.map((exp, i) => (
+              <div
+                key={i}
+                className="grid md:grid-cols-[220px_1fr] gap-8 pb-10
+                           border-b border-zinc-200 dark:border-zinc-800 last:border-none"
+              >
+                <div className="text-sm text-zinc-500">{exp.duration}</div>
+                <div>
+                  <h3 className="text-lg font-semibold">{exp.role}</h3>
+                  <p className="text-sm text-zinc-500">{exp.company}</p>
+                  <p className="mt-2 text-base">{exp.description}</p>
+
+                  {exp.achievements?.length > 0 && (
+                    <button
+                      className="mt-2 text-sm font-medium text-zinc-600 dark:text-zinc-400"
+                      onClick={() =>
+                        setModal({
+                          isOpen: true,
+                          title: `${exp.role} @ ${exp.company}`,
+                          achievements: exp.achievements,
+                        })
+                      }
+                    >
+                      → View achievements
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </FadeRow>
+        </section>
+
+        {/* ================= EDUCATION ================= */}
+       <section className="px-6 md:px-20 py-14 md:py-16">
+        <FadeRow>
+          <h2 className="text-xl md:text-2xl font-semibold mb-8 flex items-center gap-2">
+            <FaGraduationCap /> 03 — Education
+          </h2>
+
+          {data.education.map((edu, i) => (
+            <div
+              key={i}
+              className="grid md:grid-cols-[220px_1fr] gap-8 pb-10
+                         border-b border-zinc-200 dark:border-zinc-800 last:border-none"
+            >
+              <div className="text-sm text-zinc-500">{edu.duration}</div>
+              <div>
+                <h3 className="text-lg font-semibold">{edu.degree}</h3>
+                <p className="text-sm text-zinc-500">{edu.institution}</p>
+
+                {edu.achievements?.length > 0 && (
+                  <button
+                    className="mt-2 text-sm font-medium text-zinc-600 dark:text-zinc-400"
+                    onClick={() =>
+                      setModal({
+                        isOpen: true,
+                        title: `${edu.degree} @ ${edu.institution}`,
+                        achievements: edu.achievements,
+                      })
+                    }
                   >
-                    <h4 className="text-xl font-semibold text-cyan-900 dark:text-cyan-200">
-                      {degree}
-                    </h4>
-                    <p className="italic text-gray-600 dark:text-gray-400 mb-1">
-                      {institution} • {duration}
-                    </p>
-                    {achievements?.length > 0 && (
-                      <button
-                        onClick={() =>
-                          openModal(
-                            `${degree} at ${institution} - Achievements`,
-                            achievements
-                          )
-                        }
-                        className="mt-2 text-cyan-600 dark:text-cyan-400 hover:text-cyan-900 dark:hover:text-cyan-100 font-semibold underline"
-                      >
-                        View Achievements
-                      </button>
-                    )}
-                  </article>
-                )
-              )}
+                    → View achievements
+                  </button>
+                )}
+              </div>
             </div>
-          </ScrollFadeIn>
-        </article>
-      </main>
+          ))}
+        </FadeRow>
+      </section>
+      </div>
 
       <AchievementsModal
-        isOpen={modalData.isOpen}
-        onClose={closeModal}
-        title={modalData.title}
-        achievements={modalData.achievements}
+        isOpen={modal.isOpen}
+        title={modal.title}
+        achievements={modal.achievements}
+        onClose={() => setModal({ isOpen: false })}
       />
-    </>
+
+      <SocialModal
+        isOpen={!!socialModal}
+        platform={socialModal?.name}
+        url={socialModal?.url}
+        icon={socialModal?.icon}
+        onClose={() => setSocialModal(null)}
+      />
+    </main>
   );
 }
