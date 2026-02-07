@@ -143,6 +143,9 @@ export default function PortfolioDetails() {
   const [isDark, setIsDark] = useState(false);
   const [socialModal, setSocialModal] = useState(null);
 const [imageLoaded, setImageLoaded] = useState(false);
+const [hideArrow, setHideArrow] = useState(true);
+const pageRef = useRef(null);
+const [hasScrolled, setHasScrolled] = useState(false);
 
   const heroRef = useRef(null);
 
@@ -167,6 +170,37 @@ const [imageLoaded, setImageLoaded] = useState(false);
     obs.observe(document.documentElement, { attributes: true });
     return () => obs.disconnect();
   }, []);
+useEffect(() => {
+  const scrollContainer = document.querySelector(
+    ".h-screen.overflow-y-scroll"
+  );
+
+  if (!scrollContainer) return;
+
+  const onScroll = () => {
+    const { scrollTop, clientHeight, scrollHeight } = scrollContainer;
+
+    if (scrollTop > 10) {
+      setHasScrolled(true);
+    }
+
+    const atBottom =
+      Math.ceil(scrollTop + clientHeight) >= scrollHeight;
+
+    // hide only AFTER user has scrolled at least once
+    setHideArrow(hasScrolled && atBottom);
+  };
+
+  scrollContainer.addEventListener("scroll", onScroll);
+
+  // DO NOT auto-run onScroll here
+
+  return () => {
+    scrollContainer.removeEventListener("scroll", onScroll);
+  };
+}, [hasScrolled]);
+
+
 
   useEffect(() => {
     axios
@@ -201,7 +235,7 @@ const socials = [
   };
 
   return (
-<main className="w-full bg-[#F6F8FB] dark:bg-black text-zinc-900 dark:text-zinc-100">
+<main  ref={pageRef} className="w-full bg-[#F6F8FB] dark:bg-black text-zinc-900 dark:text-zinc-100">
 
 
 
@@ -210,11 +244,22 @@ const socials = [
       <div className="relative min-h-[200vh]">
 
         {/* ================= STICKY SCROLL INDICATOR ================= */}
-        <motion.div
-          className="sticky top-24 z-20 text-white/60 text-center pointer-events-none"
-          animate={{ y: [0, 8, 0] }}
-          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-        >
+      <motion.div
+className="
+  fixed top-24 left-1/2 -translate-x-1/2
+  z-20 text-zinc-700
+  dark:text-white/70
+  text-center pointer-events-none
+"
+
+
+  animate={{
+    opacity: hideArrow ? 0 : 1,
+    y: hideArrow ? 16 : 0,
+  }}
+  transition={{ duration: 0.35, ease: "easeOut" }}
+>
+
           <div className="text-[10px] tracking-widest uppercase">Scroll</div>
           <div className="text-base leading-none">↓</div>
         </motion.div>
