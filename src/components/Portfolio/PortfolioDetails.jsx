@@ -244,25 +244,40 @@ const socials = [
       <div className="relative min-h-[200vh]">
 
         {/* ================= STICKY SCROLL INDICATOR ================= */}
-      <motion.div
-className="
-  fixed top-24 left-1/2 -translate-x-1/2
-  z-20 text-zinc-700
-  dark:text-white/70
-  text-center pointer-events-none
-"
-
-
+   <motion.div
+  className="
+    fixed top-24 left-1/2 -translate-x-1/2
+    z-20 text-zinc-700 dark:text-white/70
+    text-center pointer-events-none
+  "
   animate={{
     opacity: hideArrow ? 0 : 1,
-    y: hideArrow ? 16 : 0,
   }}
-  transition={{ duration: 0.35, ease: "easeOut" }}
+  transition={{ duration: 0.3 }}
 >
+  <div className="text-[10px] tracking-widest uppercase mb-2">
+    Scroll
+  </div>
 
-          <div className="text-[10px] tracking-widest uppercase">Scroll</div>
-          <div className="text-base leading-none">↓</div>
-        </motion.div>
+  <div className="flex flex-col items-center leading-none">
+    {[0, 1].map((i) => (
+      <motion.div
+        key={i}
+        className="text-lg"
+        animate={{ y: [0, 10, 0], opacity: [0, 1, 0] }}
+        transition={{
+          duration: 1.4,
+          delay: i * 0.2,
+          repeat: Infinity,
+          ease: "easeInOut",
+        }}
+      >
+        ↓
+      </motion.div>
+    ))}
+  </div>
+</motion.div>
+
 
         {/* ================= HERO ================= */}
         <section ref={heroRef} className="relative h-[150vh]">
@@ -270,7 +285,7 @@ className="
             style={{ scale: imageScale }}
             className="sticky top-0 h-screen overflow-hidden"
           >
-          <motion.img
+    <motion.img
   src={`https://amiwrites-backend-app-2lp5.onrender.com${
     isDark ? data.photoUrlDark : data.photoUrl
   }`}
@@ -282,8 +297,16 @@ className="
     scale: imageLoaded ? 1 : 1.03,
   }}
   transition={{ duration: 0.8, ease: "easeOut" }}
-  className="w-full h-full object-cover object-[70%_center]"
+  className="
+    max-w-full
+    w-screen
+    h-screen
+    object-cover
+    object-[70%_center]
+    block
+  "
 />
+
 
             <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/90" />
           </motion.div>
