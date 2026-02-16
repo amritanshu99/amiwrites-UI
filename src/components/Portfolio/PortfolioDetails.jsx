@@ -207,7 +207,7 @@ useEffect(() => {
       .get("https://amiwrites-backend-app-2lp5.onrender.com/api/portfolio")
       .then((res) => {
         setData(res.data);
-        setTimeout(() => setLoading(false), 1700);
+        setTimeout(() => setLoading(false), 1400);
       });
   }, []);
 
