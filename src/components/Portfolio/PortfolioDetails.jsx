@@ -207,34 +207,53 @@ export default function PortfolioDetails() {
     obs.observe(document.documentElement, { attributes: true });
     return () => obs.disconnect();
   }, []);
-  useEffect(() => {
-    const scrollContainer = document.querySelector(
-      ".h-screen.overflow-y-scroll",
-    );
+useEffect(() => {
+  const scrollContainer = document.querySelector(
+    ".h-screen.overflow-y-scroll",
+  );
 
-    if (!scrollContainer) return;
+  if (!scrollContainer) return;
 
-    const onScroll = () => {
-      const { scrollTop, clientHeight, scrollHeight } = scrollContainer;
+  const onScroll = () => {
+    const { scrollTop, clientHeight, scrollHeight } = scrollContainer;
 
-      if (scrollTop > 10) {
-        setHasScrolled(true);
-      }
+    if (scrollTop > 10) {
+      setHasScrolled(true);
+    }
 
-      const atBottom = Math.ceil(scrollTop + clientHeight) >= scrollHeight;
+    const atBottom = Math.ceil(scrollTop + clientHeight) >= scrollHeight;
 
-      // hide only AFTER user has scrolled at least once
-      setHideArrow(hasScrolled && atBottom);
-    };
+    setHideArrow(hasScrolled && atBottom);
+  };
 
-    scrollContainer.addEventListener("scroll", onScroll);
+  scrollContainer.addEventListener("scroll", onScroll);
 
-    // DO NOT auto-run onScroll here
+  return () => {
+    scrollContainer.removeEventListener("scroll", onScroll);
+  };
+}, [hasScrolled]);
+useEffect(() => {
+  const onScroll = () => {
+    const scrollTop = window.scrollY;
+    const clientHeight = window.innerHeight;
+    const scrollHeight = document.documentElement.scrollHeight;
 
-    return () => {
-      scrollContainer.removeEventListener("scroll", onScroll);
-    };
-  }, [hasScrolled]);
+    if (scrollTop > 10) {
+      setHasScrolled(true);
+    }
+
+    const atBottom = Math.ceil(scrollTop + clientHeight) >= scrollHeight;
+
+    setHideArrow(hasScrolled && atBottom);
+  };
+
+  window.addEventListener("scroll", onScroll, { passive: true });
+
+  return () => {
+    window.removeEventListener("scroll", onScroll);
+  };
+}, [hasScrolled]);
+
 
   useEffect(() => {
     axios
@@ -380,7 +399,8 @@ useEffect(() => {
 
           <motion.div
             style={{ scale: imageScale, isolation: "isolate"  }}
-             className="sticky top-0 h-[calc(var(--vh)*100)] overflow-hidden contain-paint z-10"
+            className="sticky top-0 h-screen overflow-hidden z-10"
+
 
           >
             <motion.img
