@@ -245,6 +245,22 @@ export default function PortfolioDetails() {
       });
   }, []);
 
+  /* ===== MOBILE VIEWPORT FIX ===== */
+useEffect(() => {
+  const setVH = () => {
+    document.documentElement.style.setProperty(
+      "--vh",
+      `${window.innerHeight * 0.01}px`
+    );
+  };
+
+  setVH();
+  window.addEventListener("resize", setVH);
+
+  return () => window.removeEventListener("resize", setVH);
+}, []);
+
+
   if (loading || !data) return <InitialLoader />;
 
   const [firstName, lastName] = data.name.split(" ");
@@ -290,9 +306,11 @@ export default function PortfolioDetails() {
     >
       {/* ===== PREMIUM NY BACKGROUND ===== */}
       <div
-        className="fixed inset-0 -z-10 bg-cover bg-center"
+        className="fixed inset-0 -z-10 bg-cover bg-center will-change-transform"
+
         style={{
   backgroundImage: `url(${isDark ? "/ny-dark.jpg" : "/ny-bg.png"})`,
+    transform: "translateZ(0)",
 }}
 
       >
@@ -357,7 +375,8 @@ export default function PortfolioDetails() {
         <section ref={heroRef} className="relative h-[140vh] md:h-[150vh]">
           <motion.div
             style={{ scale: imageScale }}
-            className="sticky top-0 h-[100svh] overflow-hidden"
+            className="sticky top-0 h-[calc(var(--vh)*100)] overflow-hidden contain-paint"
+
           >
             <motion.img
               src={`https://amiwrites-backend-app-2lp5.onrender.com${
