@@ -183,17 +183,20 @@ export default function PortfolioDetails() {
 
   const heroScroll = useScroll({
     target: heroRef,
-  offset: ["start start", "end start"],
+ offset: ["start start", "center start"],
+
 
   });
-  const imageScale = useTransform(
-    heroScroll.scrollYProgress,
-    [0, 1],
-[1.12, 1]
+ const imageScale = useTransform(
+  heroScroll.scrollYProgress,
+  [0, 0.6],  // 👈 animation finishes earlier
+  [1.08, 1]
+);
 
-  );
 
-  const textY = useTransform(heroScroll.scrollYProgress, [0, 1], [0, -140]);
+  const textY = useTransform(heroScroll.scrollYProgress, [0, 0.6], [0, -55]);
+
+
   const textOpacity = useTransform(
     heroScroll.scrollYProgress,
     [0, 0.8],
@@ -396,7 +399,7 @@ useEffect(() => {
 <section
   ref={heroRef}
   className="relative"
-  style={{ minHeight: "140svh" }}
+   style={{ minHeight: "100svh" }}
 >
 
 
