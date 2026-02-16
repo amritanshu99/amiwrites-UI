@@ -335,7 +335,8 @@ useEffect(() => {
       </div>
 
       {/* PAGE HEIGHT WRAPPER (controls sticky duration) */}
-      <div className="relative min-h-[200vh]">
+     <div className="relative">
+
         {/* ================= STICKY SCROLL INDICATOR ================= */}
         <motion.div
           className="
@@ -372,10 +373,14 @@ useEffect(() => {
         </motion.div>
 
         {/* ================= HERO ================= */}
-        <section ref={heroRef} className="relative h-[140vh] md:h-[150vh]">
+      <section
+  ref={heroRef}
+  className="relative h-[140vh] md:h-[150vh]"
+>
+
           <motion.div
-            style={{ scale: imageScale }}
-            className="sticky top-0 h-[calc(var(--vh)*100)] overflow-hidden contain-paint"
+            style={{ scale: imageScale, isolation: "isolate"  }}
+             className="sticky top-0 h-[calc(var(--vh)*100)] overflow-hidden contain-paint z-10"
 
           >
             <motion.img
