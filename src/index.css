@@ -65,3 +65,10 @@ html, body {
 body {
   overscroll-behavior-y: none;
 }
+
+/* Mobile stable viewport */
+@supports (height: 100svh) {
+  .h-screen {
+    height: 100svh;
+  }
+}

@@ -183,7 +183,8 @@ export default function PortfolioDetails() {
 
   const heroScroll = useScroll({
     target: heroRef,
-    offset: ["start start", "end end"],
+  offset: ["start start", "end start"],
+
   });
   const imageScale = useTransform(
     heroScroll.scrollYProgress,
@@ -392,14 +393,17 @@ useEffect(() => {
         </motion.div>
 
         {/* ================= HERO ================= */}
-      <section
+<section
   ref={heroRef}
-  className="relative h-[140vh] md:h-[150vh]"
+  className="relative"
+  style={{ minHeight: "140svh" }}
 >
 
+
+
           <motion.div
-            style={{ scale: imageScale, isolation: "isolate"  }}
-            className="sticky top-0 h-screen overflow-hidden z-10"
+           style={{ scale: imageScale }}
+className="sticky top-0 h-screen overflow-hidden z-10"
 
 
           >
@@ -423,7 +427,7 @@ useEffect(() => {
     block
    transform-gpu 
    will-change-transform
-   backface-hidden
+
   "
               loading="eager"
               fetchPriority="high"
