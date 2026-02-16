@@ -183,25 +183,29 @@ export default function PortfolioDetails() {
 
   const heroScroll = useScroll({
     target: heroRef,
- offset: ["start start", "center start"],
+offset: ["start start", "0.4 end"],
+
+
 
 
   });
- const imageScale = useTransform(
+const imageScale = useTransform(
   heroScroll.scrollYProgress,
-  [0, 0.6],  // 👈 animation finishes earlier
+  [0, 0.35],
   [1.08, 1]
+);
+const textY = useTransform(
+  heroScroll.scrollYProgress,
+  [0, 0.35],
+  [0, -55]
 );
 
 
-  const textY = useTransform(heroScroll.scrollYProgress, [0, 0.6], [0, -55]);
-
-
-  const textOpacity = useTransform(
-    heroScroll.scrollYProgress,
-    [0, 0.8],
-    [1, 0.65],
-  );
+ const textOpacity = useTransform(
+  heroScroll.scrollYProgress,
+  [0, 0.4],
+  [1, 0.65],
+);
 
   useEffect(() => {
     const sync = () =>
@@ -399,14 +403,15 @@ useEffect(() => {
 <section
   ref={heroRef}
   className="relative"
-   style={{ minHeight: "100svh" }}
+   style={{ minHeight: "120svh" }}
 >
 
 
 
           <motion.div
            style={{ scale: imageScale }}
-className="sticky top-0 h-screen overflow-hidden z-10"
+className="sticky top-0 h-[85vh] overflow-hidden z-10"
+
 
 
           >
@@ -442,7 +447,7 @@ className="sticky top-0 h-screen overflow-hidden z-10"
 
           <motion.div
             style={{ y: textY, opacity: textOpacity }}
-            className="pointer-events-none sticky top-0 h-screen flex items-center px-6 md:px-20 z-10"
+            className="pointer-events-none sticky top-0 h-[85vh] flex items-center px-6 md:px-20 z-10"
           >
             <h1
               className="
