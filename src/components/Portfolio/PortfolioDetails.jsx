@@ -297,18 +297,18 @@ const socials = [
     scale: imageLoaded ? 1 : 1.03,
   }}
   transition={{ duration: 0.8, ease: "easeOut" }}
-  className="
-    max-w-full
-    w-screen
-    h-screen
-    object-cover
-    object-[70%_center]
-    block
-  "
+ className="
+  w-full
+  h-full
+  object-cover
+  object-center
+  block
+"
+
 />
 
 
-            <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/90" />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/40 to-black/95" />
           </motion.div>
 
           <motion.div
@@ -316,7 +316,7 @@ const socials = [
             className="pointer-events-none sticky top-0 h-screen flex items-center px-6 md:px-20 z-10"
           >
             <h1 className="font-extrabold tracking-[-0.04em] leading-[0.92]
-                           text-white text-[12.5vw] md:text-[8.2vw]">
+                           text-white text-[14vw] sm:text-[11vw] md:text-[8vw] lg:text-[7vw]">
               {firstName}
               <br />
               {lastName}
@@ -352,18 +352,26 @@ const socials = [
             <h2 className="text-xl md:text-2xl font-semibold mb-8">
               01 — Skills
             </h2>
-            <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-8 gap-6">
               {data.skills.map(({ skill, expertise }) => (
                 <Tooltip key={skill} content={expertise}>
                  <motion.div
   whileHover={{ scale: 1.08 }}
   whileTap={{ scale: 0.92 }}
   transition={{ type: "spring", stiffness: 300, damping: 15 }}
- className="flex flex-col items-center justify-center
-           w-24 h-28 md:w-28 md:h-32
-           gap-2 p-4 rounded-xl cursor-pointer
-           border border-zinc-200 dark:border-zinc-800
-           bg-zinc-50 dark:bg-zinc-900/40"
+className="
+  group
+  flex flex-col items-center justify-center
+  w-[110px] h-[110px]
+  gap-2 p-3
+  rounded-2xl cursor-pointer
+  border border-zinc-200 dark:border-zinc-800
+  bg-white dark:bg-zinc-900/50
+  transition-all duration-300
+  hover:shadow-xl hover:-translate-y-1
+  hover:border-zinc-300 dark:hover:border-zinc-600
+"
+
 >
 
                     <div className={`text-3xl ${skillColors[skill]}`}>
@@ -391,7 +399,7 @@ const socials = [
             {data.experience.map((exp, i) => (
               <div
                 key={i}
-                className="grid md:grid-cols-[220px_1fr] gap-8 pb-10
+                className="grid sm:grid-cols-[160px_1fr] sm:grid-cols-[160px_1fr] md:grid-cols-[220px_1fr] gap-8 pb-10
                            border-b border-zinc-200 dark:border-zinc-800 last:border-none"
               >
                 <div className="text-sm text-zinc-500">{exp.duration}</div>
@@ -430,7 +438,7 @@ const socials = [
           {data.education.map((edu, i) => (
             <div
               key={i}
-              className="grid md:grid-cols-[220px_1fr] gap-8 pb-10
+              className="grid sm:grid-cols-[160px_1fr] sm:grid-cols-[160px_1fr] md:grid-cols-[220px_1fr] gap-8 pb-10
                          border-b border-zinc-200 dark:border-zinc-800 last:border-none"
             >
               <div className="text-sm text-zinc-500">{edu.duration}</div>
