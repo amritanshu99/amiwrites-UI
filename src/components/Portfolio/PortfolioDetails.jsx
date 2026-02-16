@@ -184,9 +184,9 @@
       target: heroRef,
       offset: ["start start", "end end"],
     });
+const imageScale = useTransform(heroScroll.scrollYProgress, [0, 1], [1.06, 1]);
 
-    const imageScale = useTransform(heroScroll.scrollYProgress, [0, 1], [1.12, 1]);
-    const textY = useTransform(heroScroll.scrollYProgress, [0, 1], [0, -140]);
+        const textY = useTransform(heroScroll.scrollYProgress, [0, 1], [0, -140]);
     const textOpacity = useTransform(
       heroScroll.scrollYProgress,
       [0, 0.8],
@@ -341,10 +341,12 @@
 
 
           {/* ================= HERO ================= */}
-          <section ref={heroRef} className="relative h-[150vh]">
+        <section ref={heroRef} className="relative h-[140vh] md:h-[150vh]">
+
             <motion.div
               style={{ scale: imageScale }}
-              className="sticky top-0 h-screen overflow-hidden"
+              className="sticky top-0 h-[100svh] overflow-hidden"
+
             >
       <motion.img
     src={`https://amiwrites-backend-app-2lp5.onrender.com${
@@ -364,6 +366,7 @@
     object-cover
     object-center
     block
+     transform-gpu
   "
 
   />
