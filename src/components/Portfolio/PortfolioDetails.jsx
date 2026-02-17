@@ -191,13 +191,13 @@ offset: ["start start", "0.4 end"],
   });
 const imageScale = useTransform(
   heroScroll.scrollYProgress,
-  [0, 0.35],
-  [1.08, 1]
+  [0, 0.2],
+  [1.05, 1]
 );
 const textY = useTransform(
   heroScroll.scrollYProgress,
-  [0, 0.35],
-  [0, -55]
+  [0, 0.2],
+  [0, -30]
 );
 
 
@@ -402,15 +402,27 @@ useEffect(() => {
         {/* ================= HERO ================= */}
 <section
   ref={heroRef}
-  className="relative"
-   style={{ minHeight: "120svh" }}
+className="relative 
+min-h-[90vh] 
+md:min-h-[120vh] 
+lg:min-h-[140vh] 
+xl:min-h-[160vh]"
+
 >
+
 
 
 
           <motion.div
            style={{ scale: imageScale }}
-className="sticky top-0 h-[85vh] overflow-hidden z-10"
+className="sticky top-0 
+h-[55vh] 
+md:h-[85vh] 
+lg:h-[95vh] 
+xl:h-[105vh] 
+overflow-hidden z-10"
+
+
 
 
 
@@ -447,7 +459,14 @@ className="sticky top-0 h-[85vh] overflow-hidden z-10"
 
           <motion.div
             style={{ y: textY, opacity: textOpacity }}
-            className="pointer-events-none sticky top-0 h-[85vh] flex items-center px-6 md:px-20 z-10"
+           className="pointer-events-none sticky top-0 
+h-[55vh] 
+md:h-[85vh] 
+lg:h-[95vh] 
+xl:h-[105vh] 
+flex items-center px-6 md:px-20 z-10"
+
+
           >
             <h1
               className="
