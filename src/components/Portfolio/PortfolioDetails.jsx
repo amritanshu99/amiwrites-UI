@@ -190,52 +190,7 @@ offset: ["start start", "0.4 end"],
 
   });
 
-  const AnimatedText = ({ text, className = "" }) => {
-  const letters = text.split("");
 
-  return (
-    <motion.span
-      initial="hidden"
-      animate="visible"
-      variants={{
-        hidden: {},
-        visible: {
-          transition: {
-          staggerChildren: 0.07,
-
-          },
-        },
-      }}
-      className={`inline-block ${className}`}
-    >
-      {letters.map((char, i) => (
-        <motion.span
-          key={i}
-          variants={{
-            hidden: {
-              y: 80,
-              opacity: 0,
-              filter: "blur(12px)",
-            },
-            visible: {
-              y: 0,
-              opacity: 1,
-              filter: "blur(0px)",
-              transition: {
-              duration: 1.3,
-
-                ease: [0.22, 1, 0.36, 1],
-              },
-            },
-          }}
-          className="inline-block"
-        >
-          {char === " " ? "\u00A0" : char}
-        </motion.span>
-      ))}
-    </motion.span>
-  );
-};
 
 const imageScale = useTransform(
   heroScroll.scrollYProgress,
@@ -509,9 +464,9 @@ overflow-hidden z-10"
             style={{ y: textY, opacity: textOpacity }}
            className="pointer-events-none sticky top-0 
 h-[22vh] 
-md:h-[22vh] 
-lg:h-[25vh] 
-xl:h-[35vh] 
+md:h-[32vh] 
+lg:h-[42vh] 
+xl:h-[52vh] 
 flex items-center px-6 md:px-20 z-10"
 
 
@@ -536,13 +491,9 @@ dark:[text-shadow:0_0_25px_rgba(255,255,255,0.35)]
 "
 
 >
-  <div className="block">
-    <AnimatedText text={firstName} />
-  </div>
+  <div className="block">{firstName}</div>
+<div className="block">{lastName}</div>
 
-  <div className="block">
-    <AnimatedText text={lastName} />
-  </div>
 </h1>
 
 
