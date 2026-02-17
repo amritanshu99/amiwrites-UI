@@ -460,10 +460,10 @@ overflow-hidden z-10"
           <motion.div
             style={{ y: textY, opacity: textOpacity }}
            className="pointer-events-none sticky top-0 
-h-[55vh] 
-md:h-[85vh] 
-lg:h-[95vh] 
-xl:h-[105vh] 
+h-[25vh] 
+md:h-[25vh] 
+lg:h-[35vh] 
+xl:h-[45vh] 
 flex items-center px-6 md:px-20 z-10"
 
 
