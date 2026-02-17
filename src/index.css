@@ -72,3 +72,13 @@ body {
     height: 100svh;
   }
 }
+
+.cinematic-name {
+  font-family: "Inter Tight", sans-serif;
+}
+
+.cinematic-last {
+  font-family: "Playfair Display", serif;
+  letter-spacing: -0.02em;
+}
+

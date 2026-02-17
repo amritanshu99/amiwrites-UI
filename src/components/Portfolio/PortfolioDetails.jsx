@@ -189,6 +189,54 @@ offset: ["start start", "0.4 end"],
 
 
   });
+
+  const AnimatedText = ({ text, className = "" }) => {
+  const letters = text.split("");
+
+  return (
+    <motion.span
+      initial="hidden"
+      animate="visible"
+      variants={{
+        hidden: {},
+        visible: {
+          transition: {
+          staggerChildren: 0.07,
+
+          },
+        },
+      }}
+      className={`inline-block ${className}`}
+    >
+      {letters.map((char, i) => (
+        <motion.span
+          key={i}
+          variants={{
+            hidden: {
+              y: 80,
+              opacity: 0,
+              filter: "blur(12px)",
+            },
+            visible: {
+              y: 0,
+              opacity: 1,
+              filter: "blur(0px)",
+              transition: {
+              duration: 1.3,
+
+                ease: [0.22, 1, 0.36, 1],
+              },
+            },
+          }}
+          className="inline-block"
+        >
+          {char === " " ? "\u00A0" : char}
+        </motion.span>
+      ))}
+    </motion.span>
+  );
+};
+
 const imageScale = useTransform(
   heroScroll.scrollYProgress,
   [0, 0.2],
@@ -468,17 +516,36 @@ flex items-center px-6 md:px-20 z-10"
 
 
           >
-            <h1
-              className="
-    font-extrabold tracking-[-0.04em] leading-[0.92]
-    text-black/80 dark:text-white
-    text-[14vw] sm:text-[11vw] md:text-[8vw] lg:text-[7vw]
-  "
-            >
-              {firstName}
-              <br />
-              {lastName}
-            </h1>
+ <h1
+className="
+leading-[0.85]
+font-extrabold
+tracking-[-0.045em]
+
+text-zinc-900 dark:text-white
+
+text-[15vw]
+sm:text-[12vw]
+md:text-[10vw]
+lg:text-[8.5vw]
+xl:text-[7vw]
+
+drop-shadow-[0_30px_80px_rgba(0,0,0,0.55)]
+dark:drop-shadow-[0_30px_80px_rgba(0,0,0,0.8)]
+dark:[text-shadow:0_0_25px_rgba(255,255,255,0.35)]
+"
+
+>
+  <div className="block">
+    <AnimatedText text={firstName} />
+  </div>
+
+  <div className="block">
+    <AnimatedText text={lastName} />
+  </div>
+</h1>
+
+
           </motion.div>
         </section>
         {/* ================= BRAND BANNER ================= */}
