@@ -301,31 +301,41 @@ useEffect(() => {
 
   useEffect(() => {
     const sections = sectionMeta
-      .map(({ id }) => sectionRefs.current[id])
-      .filter(Boolean);
+      .map(({ id }) => ({ id, element: sectionRefs.current[id] }))
+      .filter((section) => section.element);
 
     if (!sections.length) return;
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setActiveSection(entry.target.id);
-          }
-        });
-      },
-      {
-        root: null,
-        threshold: 0,
-        rootMargin: "-45% 0px -45% 0px",
-      },
-    );
+    const updateActiveSection = () => {
+      const viewportProbeLine = window.innerHeight * 0.45;
+      let nextActiveSection = sections[0].id;
 
-    sections.forEach((section) => observer.observe(section));
+      for (const section of sections) {
+        const rect = section.element.getBoundingClientRect();
+
+        if (rect.top <= viewportProbeLine && rect.bottom >= viewportProbeLine) {
+          nextActiveSection = section.id;
+          break;
+        }
+
+        if (rect.top < viewportProbeLine) {
+          nextActiveSection = section.id;
+        }
+      }
+
+      setActiveSection((prev) =>
+        prev === nextActiveSection ? prev : nextActiveSection,
+      );
+    };
+
+    updateActiveSection();
+
+    window.addEventListener("scroll", updateActiveSection, { passive: true });
+    window.addEventListener("resize", updateActiveSection);
 
     return () => {
-      sections.forEach((section) => observer.unobserve(section));
-      observer.disconnect();
+      window.removeEventListener("scroll", updateActiveSection);
+      window.removeEventListener("resize", updateActiveSection);
     };
   }, [data]);
 
