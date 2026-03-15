@@ -402,8 +402,8 @@ useEffect(() => {
       {/* PAGE HEIGHT WRAPPER (controls sticky duration) */}
      <div className="relative">
 
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-30">
-          <div className="flex items-center gap-2 rounded-full border border-zinc-200/70 dark:border-zinc-700 bg-white/85 dark:bg-zinc-900/80 px-3 py-2 backdrop-blur-xl shadow-lg">
+        <div className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] left-1/2 -translate-x-1/2 z-30 w-full px-3 sm:px-6">
+          <div className="mx-auto flex w-fit max-w-full items-center gap-1.5 overflow-x-auto rounded-full border border-zinc-200/70 bg-white/85 px-2 py-2 shadow-lg backdrop-blur-xl dark:border-zinc-700 dark:bg-zinc-900/80">
             {sectionMeta.map((section) => {
               const isActive = activeSection === section.id;
 
@@ -411,16 +411,17 @@ useEffect(() => {
                 <button
                   key={section.id}
                   type="button"
+                  aria-current={isActive ? "page" : undefined}
                   onClick={() =>
                     sectionRefs.current[section.id]?.scrollIntoView({
                       behavior: "smooth",
                       block: "start",
                     })
                   }
-                  className={`px-3 py-1 text-xs md:text-sm rounded-full transition-all duration-300 ${
+                  className={`whitespace-nowrap rounded-full px-2.5 py-1.5 text-[11px] font-medium transition-all duration-300 sm:px-3 sm:text-sm ${
                     isActive
                       ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900"
-                      : "text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                      : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
                   }`}
                 >
                   {section.label}
@@ -601,7 +602,7 @@ dark:[text-shadow:0_0_25px_rgba(255,255,255,0.35)]
                     block: "start",
                   })
                 }
-                className="mt-2 inline-flex items-center gap-2 rounded-full border border-zinc-300/70 dark:border-zinc-700 px-5 py-2 text-sm font-semibold tracking-wide bg-white/80 dark:bg-zinc-900/70 hover:bg-white dark:hover:bg-zinc-800 transition-all"
+                className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-full border border-zinc-300/70 bg-white/80 px-5 py-2 text-sm font-semibold tracking-wide transition-all hover:bg-white dark:border-zinc-700 dark:bg-zinc-900/70 dark:hover:bg-zinc-800 sm:w-auto"
               >
                 Explore my experience
                 <span>→</span>
@@ -771,7 +772,7 @@ dark:[text-shadow:0_0_25px_rgba(255,255,255,0.35)]
           ref={(el) => {
             sectionRefs.current.education = el;
           }}
-          className="px-6 md:px-20 py-14 md:py-16 pb-28"
+          className="px-6 md:px-20 py-14 md:py-16 pb-32 sm:pb-28"
         >
           <FadeRow>
             <h2 className="text-xl md:text-2xl font-semibold mb-8 flex items-center gap-2">
