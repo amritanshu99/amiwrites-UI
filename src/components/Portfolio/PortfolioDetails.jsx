@@ -167,6 +167,13 @@ const SocialModal = ({ isOpen, onClose, platform, url, icon }) => {
   );
 };
 
+const sectionMeta = [
+  { id: "intro", label: "Intro" },
+  { id: "skills", label: "Skills" },
+  { id: "experience", label: "Experience" },
+  { id: "education", label: "Education" },
+];
+
 /* ================= MAIN ================= */
 export default function PortfolioDetails() {
   const [data, setData] = useState(null);
@@ -176,8 +183,10 @@ export default function PortfolioDetails() {
   const [socialModal, setSocialModal] = useState(null);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [hideArrow, setHideArrow] = useState(true);
+  const [activeSection, setActiveSection] = useState("intro");
   const pageRef = useRef(null);
   const [hasScrolled, setHasScrolled] = useState(false);
+  const sectionRefs = useRef({});
 
   const heroRef = useRef(null);
 
@@ -290,6 +299,36 @@ useEffect(() => {
   return () => window.removeEventListener("resize", setVH);
 }, []);
 
+  useEffect(() => {
+    const sections = sectionMeta
+      .map(({ id }) => sectionRefs.current[id])
+      .filter(Boolean);
+
+    if (!sections.length) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setActiveSection(entry.target.id);
+          }
+        });
+      },
+      {
+        root: null,
+        threshold: 0,
+        rootMargin: "-45% 0px -45% 0px",
+      },
+    );
+
+    sections.forEach((section) => observer.observe(section));
+
+    return () => {
+      sections.forEach((section) => observer.unobserve(section));
+      observer.disconnect();
+    };
+  }, [data]);
+
 
   if (loading || !data) return <InitialLoader />;
 
@@ -366,6 +405,35 @@ useEffect(() => {
 
       {/* PAGE HEIGHT WRAPPER (controls sticky duration) */}
      <div className="relative">
+
+        <div className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] left-1/2 -translate-x-1/2 z-30 w-full px-3 sm:px-6">
+          <div className="mx-auto flex w-fit max-w-full items-center gap-1.5 overflow-x-auto rounded-full border border-zinc-200/70 bg-white/85 px-2 py-2 shadow-lg backdrop-blur-xl dark:border-zinc-700 dark:bg-zinc-900/80">
+            {sectionMeta.map((section) => {
+              const isActive = activeSection === section.id;
+
+              return (
+                <button
+                  key={section.id}
+                  type="button"
+                  aria-current={isActive ? "page" : undefined}
+                  onClick={() =>
+                    sectionRefs.current[section.id]?.scrollIntoView({
+                      behavior: "smooth",
+                      block: "start",
+                    })
+                  }
+                  className={`whitespace-nowrap rounded-full px-2.5 py-1.5 text-[11px] font-medium transition-all duration-300 sm:px-3 sm:text-sm ${
+                    isActive
+                      ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900"
+                      : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                  }`}
+                >
+                  {section.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
 
         {/* ================= STICKY SCROLL INDICATOR ================= */}
         <motion.div
@@ -505,7 +573,13 @@ dark:[text-shadow:0_0_25px_rgba(255,255,255,0.35)]
         </section>
 
         {/* ================= INTRO ================= */}
-        <section className="px-6 md:px-20 py-14 md:py-16 border-b border-zinc-200 dark:border-zinc-800">
+        <section
+          id="intro"
+          ref={(el) => {
+            sectionRefs.current.intro = el;
+          }}
+          className="px-6 md:px-20 py-14 md:py-16 border-b border-zinc-200 dark:border-zinc-800"
+        >
           <FadeRow>
             <div className="max-w-4xl space-y-4">
               <p className="text-lg md:text-xl font-medium leading-relaxed">
@@ -516,18 +590,39 @@ dark:[text-shadow:0_0_25px_rgba(255,255,255,0.35)]
                   <button
                     key={s.name}
                     onClick={() => setSocialModal(s)}
+                    aria-label={`Open ${s.name}`}
                     className={`${socialColors[s.name]} hover:scale-110 transition-transform`}
                   >
                     {s.icon}
                   </button>
                 ))}
               </div>
+
+              <button
+                type="button"
+                onClick={() =>
+                  sectionRefs.current.experience?.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start",
+                  })
+                }
+                className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-full border border-zinc-300/70 bg-white/80 px-5 py-2 text-sm font-semibold tracking-wide transition-all hover:bg-white dark:border-zinc-700 dark:bg-zinc-900/70 dark:hover:bg-zinc-800 sm:w-auto"
+              >
+                Explore my experience
+                <span>→</span>
+              </button>
             </div>
           </FadeRow>
         </section>
 
         {/* ================= SKILLS ================= */}
-        <section className="px-6 md:px-20 py-14 md:py-16 border-b border-zinc-200 dark:border-zinc-800">
+        <section
+          id="skills"
+          ref={(el) => {
+            sectionRefs.current.skills = el;
+          }}
+          className="px-6 md:px-20 py-14 md:py-16 border-b border-zinc-200 dark:border-zinc-800"
+        >
           <FadeRow>
             <h2 className="text-xl md:text-2xl font-semibold mb-8">
               01 — Skills
@@ -569,7 +664,13 @@ dark:[text-shadow:0_0_25px_rgba(255,255,255,0.35)]
         </section>
 
         {/* ================= EXPERIENCE ================= */}
-        <section className="px-6 md:px-20 py-14 md:py-16 border-b border-zinc-200 dark:border-zinc-800">
+        <section
+          id="experience"
+          ref={(el) => {
+            sectionRefs.current.experience = el;
+          }}
+          className="px-6 md:px-20 py-14 md:py-16 border-b border-zinc-200 dark:border-zinc-800"
+        >
           <FadeRow>
             <h2 className="text-xl md:text-2xl font-semibold mb-8 flex items-center gap-2">
               <FaBriefcase /> 02 — Experience
@@ -670,7 +771,13 @@ dark:[text-shadow:0_0_25px_rgba(255,255,255,0.35)]
         </section>
 
         {/* ================= EDUCATION ================= */}
-        <section className="px-6 md:px-20 py-14 md:py-16">
+        <section
+          id="education"
+          ref={(el) => {
+            sectionRefs.current.education = el;
+          }}
+          className="px-6 md:px-20 py-14 md:py-16 pb-32 sm:pb-28"
+        >
           <FadeRow>
             <h2 className="text-xl md:text-2xl font-semibold mb-8 flex items-center gap-2">
               <FaGraduationCap /> 03 — Education
