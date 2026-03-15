@@ -306,19 +306,46 @@ useEffect(() => {
 
     if (!sections.length) return;
 
+    const getScrollParent = (element) => {
+      let current = element?.parentElement;
+
+      while (current) {
+        const style = window.getComputedStyle(current);
+        const overflowY = style.overflowY;
+
+        if (
+          (overflowY === "auto" || overflowY === "scroll") &&
+          current.scrollHeight > current.clientHeight
+        ) {
+          return current;
+        }
+
+        current = current.parentElement;
+      }
+
+      return window;
+    };
+
+    const scrollParent = getScrollParent(pageRef.current);
+
     const updateActiveSection = () => {
-      const viewportProbeLine = window.innerHeight * 0.45;
+      const probeLine =
+        scrollParent === window
+          ? window.innerHeight * 0.45
+          : scrollParent.getBoundingClientRect().top +
+            scrollParent.clientHeight * 0.45;
+
       let nextActiveSection = sections[0].id;
 
       for (const section of sections) {
         const rect = section.element.getBoundingClientRect();
 
-        if (rect.top <= viewportProbeLine && rect.bottom >= viewportProbeLine) {
+        if (rect.top <= probeLine && rect.bottom >= probeLine) {
           nextActiveSection = section.id;
           break;
         }
 
-        if (rect.top < viewportProbeLine) {
+        if (rect.top < probeLine) {
           nextActiveSection = section.id;
         }
       }
@@ -330,11 +357,23 @@ useEffect(() => {
 
     updateActiveSection();
 
-    window.addEventListener("scroll", updateActiveSection, { passive: true });
+    if (scrollParent === window) {
+      window.addEventListener("scroll", updateActiveSection, { passive: true });
+    } else {
+      scrollParent.addEventListener("scroll", updateActiveSection, {
+        passive: true,
+      });
+    }
+
     window.addEventListener("resize", updateActiveSection);
 
     return () => {
-      window.removeEventListener("scroll", updateActiveSection);
+      if (scrollParent === window) {
+        window.removeEventListener("scroll", updateActiveSection);
+      } else {
+        scrollParent.removeEventListener("scroll", updateActiveSection);
+      }
+
       window.removeEventListener("resize", updateActiveSection);
     };
   }, [data]);
