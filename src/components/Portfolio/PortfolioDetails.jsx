@@ -333,25 +333,33 @@ useEffect(() => {
     );
     const scrollParent = explicitScrollParent || getScrollParent(pageRef.current);
 
+    const getSectionTop = (element) => {
+      const rect = element.getBoundingClientRect();
+
+      if (scrollParent === window) {
+        return rect.top + window.scrollY;
+      }
+
+      const parentRect = scrollParent.getBoundingClientRect();
+      return rect.top - parentRect.top + scrollParent.scrollTop;
+    };
+
     const updateActiveSection = () => {
-      const probeLine =
-        scrollParent === window
-          ? window.innerHeight * 0.45
-          : scrollParent.getBoundingClientRect().top +
-            scrollParent.clientHeight * 0.45;
+      const currentScroll =
+        scrollParent === window ? window.scrollY : scrollParent.scrollTop;
+      const viewportHeight =
+        scrollParent === window ? window.innerHeight : scrollParent.clientHeight;
+      const marker = currentScroll + viewportHeight * 0.35;
 
       let nextActiveSection = sections[0].id;
 
       for (const section of sections) {
-        const rect = section.element.getBoundingClientRect();
+        const sectionTop = getSectionTop(section.element);
 
-        if (rect.top <= probeLine && rect.bottom >= probeLine) {
+        if (sectionTop <= marker) {
           nextActiveSection = section.id;
+        } else {
           break;
-        }
-
-        if (rect.top < probeLine) {
-          nextActiveSection = section.id;
         }
       }
 
