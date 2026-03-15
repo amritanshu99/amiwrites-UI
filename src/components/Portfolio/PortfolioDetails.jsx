@@ -326,7 +326,10 @@ useEffect(() => {
       return window;
     };
 
-    const scrollParent = getScrollParent(pageRef.current);
+    const explicitScrollParent = document.querySelector(
+      ".h-screen.overflow-y-scroll",
+    );
+    const scrollParent = explicitScrollParent || getScrollParent(pageRef.current);
 
     const updateActiveSection = () => {
       const probeLine =
