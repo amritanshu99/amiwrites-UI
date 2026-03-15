@@ -300,6 +300,8 @@ useEffect(() => {
 }, []);
 
   useEffect(() => {
+    if (loading || !data) return;
+
     const sections = sectionMeta
       .map(({ id }) => ({ id, element: sectionRefs.current[id] }))
       .filter((section) => section.element);
@@ -379,7 +381,7 @@ useEffect(() => {
 
       window.removeEventListener("resize", updateActiveSection);
     };
-  }, [data]);
+  }, [data, loading]);
 
 
   if (loading || !data) return <InitialLoader />;
