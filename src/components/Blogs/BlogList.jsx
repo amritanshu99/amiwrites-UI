@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Trash2, Plus, Filter } from "lucide-react";
 import { toast } from "react-toastify";
@@ -15,6 +15,20 @@ function parseJwt(token) {
   } catch {
     return null;
   }
+}
+
+function getPlainTextPreview(content, maxLength = 170) {
+  if (!content) return "No preview available.";
+
+  const plainText = content
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if (!plainText) return "No preview available.";
+  return plainText.length > maxLength
+    ? `${plainText.slice(0, maxLength).trim()}...`
+    : plainText;
 }
 
 const useAuth = () => {
@@ -42,15 +56,20 @@ const useAuth = () => {
 };
 
 const BlogSkeleton = () => (
-  <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 shadow rounded-xl p-6 animate-pulse h-[260px] sm:h-[208px] w-full flex flex-col">
-    <div className="h-5 bg-gray-300 dark:bg-zinc-700 rounded w-3/4 mb-2"></div>
-    <div className="h-3 bg-gray-200 dark:bg-zinc-600 rounded w-1/3 mb-4"></div>
-    <div className="flex-1 space-y-2">
-      <div className="h-3 bg-gray-200 dark:bg-zinc-600 rounded w-full"></div>
-      <div className="h-3 bg-gray-200 dark:bg-zinc-600 rounded w-5/6"></div>
-      <div className="h-3 bg-gray-200 dark:bg-zinc-600 rounded w-4/6"></div>
+  <div className="flex h-[290px] w-full animate-pulse flex-col rounded-[1.5rem] border border-zinc-200 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+    <div className="mb-4 flex items-center justify-between gap-3">
+      <div className="h-4 w-28 rounded-full bg-zinc-200 dark:bg-zinc-700" />
+      <div className="h-7 w-7 rounded-full bg-zinc-200 dark:bg-zinc-700" />
     </div>
-    <div className="h-4 bg-gray-300 dark:bg-zinc-700 rounded w-24 mt-4"></div>
+    <div className="mb-3 h-6 w-4/5 rounded bg-zinc-300 dark:bg-zinc-700" />
+    <div className="mb-2 h-6 w-2/3 rounded bg-zinc-200 dark:bg-zinc-700" />
+    <div className="space-y-3 pt-2">
+      <div className="h-3 rounded bg-zinc-200 dark:bg-zinc-600" />
+      <div className="h-3 w-11/12 rounded bg-zinc-200 dark:bg-zinc-600" />
+      <div className="h-3 w-5/6 rounded bg-zinc-200 dark:bg-zinc-600" />
+      <div className="h-3 w-3/5 rounded bg-zinc-200 dark:bg-zinc-600" />
+    </div>
+    <div className="mt-auto h-4 w-24 rounded bg-zinc-300 dark:bg-zinc-700" />
   </div>
 );
 
@@ -70,22 +89,16 @@ const BlogList = () => {
   const fetchedPagesRef = useRef(new Set());
   const debouncedSearch = useDebounce(search, 500);
 
-  // Absolute backend base
   const API_BASE = "https://amiwrites-backend-app-2lp5.onrender.com";
-
-  // trending ids state
   const [trendingIds, setTrendingIds] = useState(() => new Set());
-
-  // EXACT endpoint name
   const CLICK_API = `${API_BASE}/api/trending-rl/events/click`;
 
-  // Navigation-safe sender
   const trackClick = (postId) => {
     if (!postId) return;
 
     if (process.env.NODE_ENV !== "production") {
       // eslint-disable-next-line no-console
-      console.debug("trackClick →", CLICK_API, postId);
+      console.debug("trackClick ->", CLICK_API, postId);
     }
 
     try {
@@ -103,30 +116,37 @@ const BlogList = () => {
     axios.post(CLICK_API, { postId }).catch(() => {});
   };
 
-  // ------------------ Robust fetch + refs to avoid stale closures ------------------
   const loadingRef = useRef(loading);
   const hasMoreRef = useRef(hasMore);
   const pageRef = useRef(page);
 
-  useEffect(() => { loadingRef.current = loading; }, [loading]);
-  useEffect(() => { hasMoreRef.current = hasMore; }, [hasMore]);
-  useEffect(() => { pageRef.current = page; }, [page]);
+  useEffect(() => {
+    loadingRef.current = loading;
+  }, [loading]);
+
+  useEffect(() => {
+    hasMoreRef.current = hasMore;
+  }, [hasMore]);
+
+  useEffect(() => {
+    pageRef.current = page;
+  }, [page]);
 
   const fetchBlogs = async (pageNumber, currentSearch, currentFilter) => {
     const searchQuery = currentSearch ?? "";
     const sortOrder = currentFilter ?? "latest";
     const cacheKey = `${pageNumber}-${searchQuery}-${sortOrder}`;
 
-    // Avoid duplicate requests
     if (fetchedPagesRef.current.has(cacheKey)) return;
-    // Avoid calling while already loading the same or other page
     if (loadingRef.current) return;
 
     setLoading(true);
     loadingRef.current = true;
     try {
       const res = await axios.get(
-        `/api/blogs?page=${pageNumber}&limit=10&search=${encodeURIComponent(searchQuery)}&sort=${sortOrder}`
+        `/api/blogs?page=${pageNumber}&limit=10&search=${encodeURIComponent(
+          searchQuery
+        )}&sort=${sortOrder}`
       );
 
       if (res.data.blogs && res.data.blogs.length > 0) {
@@ -150,18 +170,19 @@ const BlogList = () => {
     } finally {
       setLoading(false);
       loadingRef.current = false;
-      // safe re-attach observer if needed
-      try { resetObserver(); } catch (e) {}
+      try {
+        resetObserver();
+      } catch (e) {}
     }
   };
-  // ------------------ end fetch + refs ------------------
 
-  // fetch trending ids
   useEffect(() => {
     let mounted = true;
     (async () => {
       try {
-        const { data } = await axios.get(`${API_BASE}/api/trending-rl/trending?limit=2&all=1`);
+        const { data } = await axios.get(
+          `${API_BASE}/api/trending-rl/trending?limit=2&all=1`
+        );
         const items = Array.isArray(data?.items) ? data.items : [];
         const set = new Set(items.map((x) => String(x?._id)));
         if (mounted) setTrendingIds(set);
@@ -169,12 +190,13 @@ const BlogList = () => {
         if (mounted) setTrendingIds(new Set());
       }
     })();
-    return () => { mounted = false; };
+    return () => {
+      mounted = false;
+    };
   }, [debouncedSearch, filter]);
 
-  // ------------------ Observer + scroll fallback with proper cleanup ------------------
   const observerRef = useRef(null);
-  const scrollContainerRef = useRef(null); // actual scrollable element or null for viewport
+  const scrollContainerRef = useRef(null);
   const lastRequestedPageRef = useRef(0);
   const throttleTimeoutRef = useRef(null);
 
@@ -183,7 +205,10 @@ const BlogList = () => {
     if (explicit) {
       try {
         const style = getComputedStyle(explicit);
-        if ((style.overflowY === "auto" || style.overflowY === "scroll") && explicit.scrollHeight > explicit.clientHeight) {
+        if (
+          (style.overflowY === "auto" || style.overflowY === "scroll") &&
+          explicit.scrollHeight > explicit.clientHeight
+        ) {
           return explicit;
         }
       } catch (e) {}
@@ -195,19 +220,26 @@ const BlogList = () => {
       try {
         const style = getComputedStyle(node);
         const overflowY = style.overflowY;
-        if ((overflowY === "auto" || overflowY === "scroll") && node.scrollHeight > node.clientHeight) {
+        if (
+          (overflowY === "auto" || overflowY === "scroll") &&
+          node.scrollHeight > node.clientHeight
+        ) {
           return node;
         }
       } catch (e) {}
       node = node.parentElement;
     }
-    return null; // viewport
+    return null;
   };
 
   const resetObserver = () => {
     if (observerRef.current && loaderRef.current) {
-      try { observerRef.current.unobserve(loaderRef.current); } catch (e) {}
-      try { observerRef.current.observe(loaderRef.current); } catch (e) {}
+      try {
+        observerRef.current.unobserve(loaderRef.current);
+      } catch (e) {}
+      try {
+        observerRef.current.observe(loaderRef.current);
+      } catch (e) {}
     }
   };
 
@@ -215,21 +247,35 @@ const BlogList = () => {
     if (loadingRef.current || !hasMoreRef.current) return;
 
     let distanceToBottom = Infinity;
-    if (!scroller || scroller === window || scroller === document.documentElement || scroller === document.body) {
+    if (
+      !scroller ||
+      scroller === window ||
+      scroller === document.documentElement ||
+      scroller === document.body
+    ) {
       const doc = document.documentElement || document.body;
-      const scrollTop = window.scrollY || window.pageYOffset || (doc && doc.scrollTop) || 0;
+      const scrollTop = window.scrollY || window.pageYOffset || doc.scrollTop || 0;
       const clientHeight = window.innerHeight || doc.clientHeight;
-      const scrollHeight = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
+      const scrollHeight = Math.max(
+        document.body.scrollHeight,
+        document.documentElement.scrollHeight
+      );
       distanceToBottom = scrollHeight - (scrollTop + clientHeight);
     } else {
-      distanceToBottom = scroller.scrollHeight - (scroller.scrollTop + scroller.clientHeight);
+      distanceToBottom =
+        scroller.scrollHeight - (scroller.scrollTop + scroller.clientHeight);
     }
 
     const thresholdPx = 350;
     if (distanceToBottom <= thresholdPx) {
       const next = Math.max(1, pageRef.current + 1);
       const cacheKey = `${next}-${debouncedSearch}-${filter}`;
-      if (fetchedPagesRef.current.has(cacheKey) || lastRequestedPageRef.current >= next) return;
+      if (
+        fetchedPagesRef.current.has(cacheKey) ||
+        lastRequestedPageRef.current >= next
+      ) {
+        return;
+      }
       lastRequestedPageRef.current = next;
       setPage(next);
       pageRef.current = next;
@@ -245,12 +291,14 @@ const BlogList = () => {
       if (!mounted) return;
 
       if (observerRef.current) {
-        try { observerRef.current.disconnect(); } catch (e) {}
+        try {
+          observerRef.current.disconnect();
+        } catch (e) {}
         observerRef.current = null;
       }
 
       scroller = findScrollContainer(loaderRef.current);
-      scrollContainerRef.current = scroller; // null => viewport
+      scrollContainerRef.current = scroller;
 
       const options = {
         root: scroller || null,
@@ -261,11 +309,15 @@ const BlogList = () => {
       observerRef.current = new IntersectionObserver((entries) => {
         const entry = entries[0];
         if (!entry) return;
-        // use refs to get latest state
         if (entry.isIntersecting && hasMoreRef.current && !loadingRef.current) {
           const next = Math.max(1, pageRef.current + 1);
           const cacheKey = `${next}-${debouncedSearch}-${filter}`;
-          if (fetchedPagesRef.current.has(cacheKey) || lastRequestedPageRef.current >= next) return;
+          if (
+            fetchedPagesRef.current.has(cacheKey) ||
+            lastRequestedPageRef.current >= next
+          ) {
+            return;
+          }
           lastRequestedPageRef.current = next;
           setPage(next);
           pageRef.current = next;
@@ -273,12 +325,12 @@ const BlogList = () => {
       }, options);
 
       if (loaderRef.current) {
-        try { observerRef.current.observe(loaderRef.current); } catch (e) {}
+        try {
+          observerRef.current.observe(loaderRef.current);
+        } catch (e) {}
       }
 
-      // attach scroll fallback: remove existing listener reliably, then add new
       const scrollTarget = scroller || window;
-      // remove previous saved handler if exists
       try {
         const prev = scrollTarget._blogListOnScroll;
         if (prev) scrollTarget.removeEventListener("scroll", prev);
@@ -288,13 +340,14 @@ const BlogList = () => {
         if (throttleTimeoutRef.current) return;
         throttleTimeoutRef.current = setTimeout(() => {
           throttleTimeoutRef.current = null;
-          try { checkAndLoadByScroll(scroller); } catch (e) {}
+          try {
+            checkAndLoadByScroll(scroller);
+          } catch (e) {}
         }, 150);
       };
 
       try {
         scrollTarget.addEventListener("scroll", onScrollFn, { passive: true });
-        // store for cleanup
         scrollTarget._blogListOnScroll = onScrollFn;
       } catch (e) {}
     };
@@ -314,7 +367,9 @@ const BlogList = () => {
       window.removeEventListener("orientationchange", rebuild);
 
       if (observerRef.current) {
-        try { observerRef.current.disconnect(); } catch (e) {}
+        try {
+          observerRef.current.disconnect();
+        } catch (e) {}
         observerRef.current = null;
       }
 
@@ -330,11 +385,7 @@ const BlogList = () => {
         throttleTimeoutRef.current = null;
       }
     };
-    // intentionally minimal deps to avoid frequent rebuilds; rebuild on resize/orientation
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedSearch, filter]);
-
-  // ------------------ End observer/scroll fallback ------------------
 
   useEffect(() => {
     document.title = "Amritanshu Mishra's Blogs";
@@ -362,7 +413,6 @@ const BlogList = () => {
 
       toast.success("Blog deleted");
 
-      // Reset state
       fetchedPagesRef.current = new Set();
       setBlogs([]);
       setPage(1);
@@ -371,7 +421,6 @@ const BlogList = () => {
       hasMoreRef.current = true;
       lastRequestedPageRef.current = 0;
 
-      // Trigger immediate fresh fetch for page 1
       fetchBlogs(1);
     } catch {
       toast.error("Failed to delete blog");
@@ -380,7 +429,6 @@ const BlogList = () => {
     }
   };
 
-  // Reset on search/filter
   useEffect(() => {
     resetRef.current = true;
     setBlogs([]);
@@ -392,7 +440,6 @@ const BlogList = () => {
     lastRequestedPageRef.current = 0;
   }, [debouncedSearch, filter]);
 
-  // Fetch on page change
   useEffect(() => {
     if (resetRef.current) {
       fetchBlogs(1, debouncedSearch, filter);
@@ -401,187 +448,244 @@ const BlogList = () => {
       pageRef.current = 1;
     } else {
       if (page <= 0) return;
-      // guard: if already requested/fetched, skip
       const cacheKey = `${page}-${debouncedSearch}-${filter}`;
       if (fetchedPagesRef.current.has(cacheKey)) return;
       fetchBlogs(page, debouncedSearch, filter);
       lastRequestedPageRef.current = Math.max(lastRequestedPageRef.current, page);
       pageRef.current = page;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, debouncedSearch, filter]);
 
   const handleAddBlog = () => navigate("/add-blog");
 
   const filteredBlogs = blogs;
+  const resultLabel =
+    filteredBlogs.length === 1 ? "1 blog" : `${filteredBlogs.length} blogs`;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-cyan-300 via-pink-300 to-yellow-200 dark:from-zinc-900 dark:via-black dark:to-zinc-900 p-4 sm:p-6">
+    <div className="min-h-screen bg-[linear-gradient(180deg,_#f8fafc_0%,_#edf3f8_35%,_#f8fafc_100%)] px-4 py-5 dark:bg-[linear-gradient(180deg,_#09090b_0%,_#111827_42%,_#09090b_100%)] sm:px-6 lg:px-8 lg:py-8">
       <PushNotificationButton />
-<div className="mb-5 text-center max-w-xl mx-auto">
-  <h1 className="text-2xl sm:text-3xl font-bold text-zinc-900 dark:text-zinc-100">
-    My Ideas · My Blogs ✍️
-  </h1>
 
-  <p className="mt-1 text-sm sm:text-base text-zinc-600 dark:text-zinc-400 leading-relaxed">
-    A space where I share thoughts and stories.  
-    <span className="block sm:inline">
-      Powered by{" "}
-      <span className="font-semibold text-pink-600 dark:text-pink-400">
-        Reinforcement Learning 🤖
-      </span>
-      , it learns from your{" "}
-      <span className="underline decoration-pink-400/40 underline-offset-2">
-        reads & clicks
-      </span>{" "}
-      to highlight what’s <span className="font-semibold">trending</span>.
-    </span>
-  </p>
-</div>
+      <div className="mx-auto flex w-full max-w-7xl flex-col gap-5">
+        <section className="overflow-hidden rounded-[1.75rem] border border-white/70 bg-white/85 px-5 py-6 shadow-[0_24px_70px_-42px_rgba(15,23,42,0.24)] backdrop-blur-sm dark:border-white/10 dark:bg-zinc-900/82 dark:shadow-[0_24px_70px_-42px_rgba(0,0,0,0.65)] sm:px-7 sm:py-7">
+          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-sky-300/60 to-transparent dark:via-sky-400/30" />
+          <div className="relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+            <div className="max-w-3xl">
+              <span className="inline-flex items-center rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-700 dark:border-sky-500/30 dark:bg-sky-500/10 dark:text-sky-200">
+                Editorial Notes
+              </span>
+              <h1 className="mt-3 max-w-2xl text-xl font-semibold tracking-tight text-zinc-950 dark:text-white sm:text-[1.75rem] lg:text-[2rem]">
+                A clean, focused reading space for thoughts, stories, and experiments.
+              </h1>
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-600 dark:text-zinc-300">
+                Browse the latest posts, search by title, and explore articles shaped by reader interest. The layout is tuned for comfortable reading across mobile, tablet, and desktop.
+              </p>
+            </div>
 
-      <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
-      
-        {isAuthenticated && username === "amritanshu99" && (
-          <button
-            onClick={handleAddBlog}
-            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-pink-500 to-yellow-500 text-white text-sm font-medium rounded-full hover:from-yellow-500 hover:to-pink-500 transition duration-300 shadow-md"
-          >
-            <Plus className="w-4 h-4" />
-            Add Blog
-          </button>
-        )}
-      </div>
-
-      <div className="flex flex-col md:flex-row gap-4 justify-between items-center mb-6">
-        <input
-          type="text"
-          placeholder="🔍 Search by title..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="px-5 py-2 rounded-full border border-gray-300 bg-white/80 dark:bg-zinc-800 text-gray-800 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-pink-500 w-full md:w-2/3"
-        />
-
-        <div className="relative w-full md:w-auto">
-          <select
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-            className="appearance-none w-full md:w-44 px-5 py-2 pr-10 rounded-full border border-gray-300 bg-white/80 dark:bg-zinc-800 text-gray-700 dark:text-white shadow-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-pink-500 cursor-pointer"
-          >
-            <option value="latest">🆕 Latest</option>
-            <option value="oldest">📜 Oldest</option>
-          </select>
-          <div className="pointer-events-none absolute inset-y-0 right-4 flex items-center">
-            <Filter size={18} className="text-pink-600" />
-          </div>
-        </div>
-      </div>
-
-      {filteredBlogs.length === 0 && !loading ? (
-        <p className="text-center text-gray-700 dark:text-gray-300 italic text-lg">
-          No blogs available.
-        </p>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
-          {filteredBlogs.map((blog) => {
-            const publishedDate = new Date(blog.date).toLocaleDateString("en-IN", {
-              year: "numeric",
-              month: "short",
-              day: "numeric",
-            });
-
-            const isTrending = trendingIds.has(String(blog._id));
-
-            return (
-              <div
-                key={blog._id}
-                className="bg-white dark:bg-zinc-900 border border-gray-300 dark:border-zinc-700 shadow-lg rounded-xl p-6 cursor-pointer transition-transform duration-300 ease-in-out hover:scale-105 hover:-translate-y-1 hover:shadow-xl hover:border-pink-500 flex flex-col h-[260px] sm:h-[230px] w-full relative"
-                onClick={() => { trackClick(blog._id); handleBlogClick(blog._id); }}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") { trackClick(blog._id); handleBlogClick(blog._id); }
-                }}
-              >
-                {isTrending && (
-                  <span
-                    className="absolute -top-2 -left-2 sm:-top-2 sm:-left-2 z-10 pointer-events-none
-                               inline-flex items-center gap-1.5 px-2 py-0.5 sm:px-2.5 sm:py-1
-                               rounded-full text-[10px] sm:text-[11px] font-semibold
-                               bg-gradient-to-r from-amber-400/95 to-orange-500/95 text-zinc-900
-                               dark:from-amber-500/30 dark:to-orange-600/30 dark:text-amber-200
-                               border border-amber-300/70 dark:border-amber-700/60
-                               ring-1 ring-white/70 dark:ring-black/40 shadow-md"
-                    title="This post is currently trending"
-                    aria-label="Trending"
-                  >
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                      <path d="M13.5 0s1 2.5 1 5.5C14.5 10 10 11 10 15c0 2.761 2.239 5 5 5 3.314 0 6-2.686 6-6 0-4-3-6-3-9 0-2 1-5 1-5s-3 1-5.5 5C12 3 13.5 0 13.5 0z"/>
-                    </svg>
-                    <span className="leading-none">Trending</span>
-                  </span>
-                )}
-
-                <h3 className="text-lg sm:text-xl font-semibold text-pink-700 truncate hover:underline">
-                  {blog.title}
-                </h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">
-                  {publishedDate}
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:min-w-[320px]">
+              <div className="rounded-2xl border border-zinc-200/80 bg-zinc-50/90 px-4 py-4 dark:border-zinc-800 dark:bg-zinc-950/80">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-500 dark:text-zinc-400">
+                  Showing
                 </p>
-                <div
-                  className="text-gray-800 dark:text-zinc-200 text-sm overflow-hidden line-clamp-3"
-                  dangerouslySetInnerHTML={{
-                    __html:
-                      blog.content.length > 150
-                        ? blog.content.slice(0, 150) + "..."
-                        : blog.content,
-                  }}
-                />
-                <span className="text-pink-600 mt-auto font-semibold hover:text-pink-800 text-sm">
-                  Read more →
-                </span>
-
-                {isAuthenticated && username === "amritanshu99" && (
-                  <button
-                    aria-label={`Delete blog titled ${blog.title}`}
-                    className="absolute top-4 right-4 text-red-500 hover:text-red-700"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDelete(blog._id);
-                    }}
-                    disabled={deletingId === blog._id}
-                    title={deletingId === blog._id ? "Deleting..." : "Delete blog"}
-                  >
-                    {deletingId === blog._id ? (
-                      <Loader size="small" />
-                    ) : (
-                      <Trash2 size={20} />
-                    )}
-                  </button>
-                )}
+                <p className="mt-2 text-base font-semibold text-zinc-950 dark:text-zinc-100">
+                  {resultLabel}
+                </p>
               </div>
-            );
-          })}
+              <div className="rounded-2xl border border-zinc-200/80 bg-zinc-50/90 px-4 py-4 dark:border-zinc-800 dark:bg-zinc-950/80">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-500 dark:text-zinc-400">
+                  Sort
+                </p>
+                <p className="mt-2 text-base font-semibold capitalize text-zinc-950 dark:text-zinc-100">
+                  {filter}
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
 
-          {/* Pagination skeletons: show inline skeleton cards when loading additional pages */}
-          {loading && filteredBlogs.length > 0 && (
-            Array.from({ length: 3 }).map((_, i) => (
-              <BlogSkeleton key={`skeleton-pag-${i}`} />
-            ))
+        <div className="flex flex-col items-stretch justify-between gap-3 sm:flex-row sm:items-center">
+          {isAuthenticated && username === "amritanshu99" && (
+            <button
+              onClick={handleAddBlog}
+              className="inline-flex items-center justify-center gap-2 self-start rounded-full bg-zinc-950 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200"
+            >
+              <Plus className="h-4 w-4" />
+              Add Blog
+            </button>
           )}
         </div>
-      )}
 
-      {/* Initial-load skeletons (only when there are no blogs yet) */}
-      {loading && filteredBlogs.length === 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 mt-6">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <BlogSkeleton key={`skeleton-init-${i}`} />
-          ))}
-        </div>
-      )}
+        <section className="rounded-[1.5rem] border border-white/70 bg-white/85 p-4 shadow-[0_16px_40px_-32px_rgba(15,23,42,0.2)] backdrop-blur-sm dark:border-white/10 dark:bg-zinc-900/82 dark:shadow-[0_16px_40px_-32px_rgba(0,0,0,0.6)]">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <div className="w-full lg:max-w-2xl">
+              <label
+                htmlFor="blog-search"
+                className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-zinc-500 dark:text-zinc-400"
+              >
+                Search
+              </label>
+              <input
+                id="blog-search"
+                type="text"
+                placeholder="Search by title..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full rounded-2xl border border-zinc-300/90 bg-white/95 px-4 py-2.5 text-sm text-zinc-900 outline-none transition focus:border-sky-600 focus:ring-4 focus:ring-sky-100 dark:border-zinc-700 dark:bg-zinc-950/95 dark:text-white dark:focus:border-sky-400 dark:focus:ring-sky-500/10"
+              />
+            </div>
 
-      {/* IntersectionObserver trigger div */}
-      <div ref={loaderRef} className="h-10" />
+            <div className="flex w-full flex-col gap-3 sm:flex-row lg:w-auto lg:items-end">
+              <div className="w-full sm:w-52">
+                <label
+                  htmlFor="blog-sort"
+                  className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-zinc-500 dark:text-zinc-400"
+                >
+                  Sort by
+                </label>
+                <div className="relative">
+                  <select
+                    id="blog-sort"
+                    value={filter}
+                    onChange={(e) => setFilter(e.target.value)}
+                    className="min-h-[44px] w-full appearance-none rounded-2xl border border-zinc-300/90 bg-white/95 px-4 py-2.5 pr-11 text-sm font-medium text-zinc-800 outline-none transition focus:border-sky-600 focus:ring-4 focus:ring-sky-100 dark:border-zinc-700 dark:bg-zinc-950/95 dark:text-white dark:focus:border-sky-400 dark:focus:ring-sky-500/10"
+                  >
+                    <option value="latest">Latest</option>
+                    <option value="oldest">Oldest</option>
+                  </select>
+                  <div className="pointer-events-none absolute inset-y-0 right-4 flex items-center">
+                    <Filter size={16} className="text-zinc-500" />
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex min-h-[44px] items-end">
+                <div className="w-full rounded-2xl border border-zinc-200/80 bg-zinc-50/90 px-4 py-2.5 text-sm text-zinc-600 dark:border-zinc-800 dark:bg-zinc-950/80 dark:text-zinc-300">
+                  Infinite scrolling stays enabled as you browse.
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {filteredBlogs.length === 0 && !loading ? (
+          <div className="rounded-[1.75rem] border border-dashed border-zinc-300 bg-white/85 px-6 py-16 text-center shadow-sm backdrop-blur-sm dark:border-zinc-700 dark:bg-zinc-900/82">
+            <p className="text-lg font-semibold text-zinc-700 dark:text-zinc-200">
+              No blogs available.
+            </p>
+            <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
+              Try a different search or check back for new writing.
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 2xl:grid-cols-3">
+            {filteredBlogs.map((blog) => {
+              const publishedDate = blog.date
+                ? new Date(blog.date).toLocaleDateString("en-IN", {
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric",
+                  })
+                : "Date unavailable";
+
+              const isTrending = trendingIds.has(String(blog._id));
+              const previewText = getPlainTextPreview(blog.content);
+
+              return (
+                <article
+                  key={blog._id}
+                  className="group flex min-h-[290px] w-full cursor-pointer flex-col rounded-[1.5rem] border border-white/80 bg-white/90 p-5 shadow-[0_18px_40px_-34px_rgba(15,23,42,0.18)] backdrop-blur-sm transition hover:-translate-y-1 hover:border-sky-100 hover:shadow-[0_24px_50px_-34px_rgba(15,23,42,0.24)] dark:border-white/10 dark:bg-zinc-900/85 dark:hover:border-sky-500/20 dark:shadow-[0_18px_40px_-34px_rgba(0,0,0,0.6)]"
+                  onClick={() => {
+                    trackClick(blog._id);
+                    handleBlogClick(blog._id);
+                  }}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      trackClick(blog._id);
+                      handleBlogClick(blog._id);
+                    }
+                  }}
+                >
+                  <div className="mb-4 flex items-start justify-between gap-3">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-600 dark:bg-zinc-800 dark:text-zinc-300">
+                        Blog
+                      </p>
+                      {isTrending && (
+                        <span
+                          className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-3 py-1 text-[11px] font-semibold text-amber-800 dark:bg-amber-500/15 dark:text-amber-200"
+                          title="This post is currently trending"
+                          aria-label="Trending"
+                        >
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                            <path d="M13.5 0s1 2.5 1 5.5C14.5 10 10 11 10 15c0 2.761 2.239 5 5 5 3.314 0 6-2.686 6-6 0-4-3-6-3-9 0-2 1-5 1-5s-3 1-5.5 5C12 3 13.5 0 13.5 0z" />
+                          </svg>
+                          Trending
+                        </span>
+                      )}
+                    </div>
+
+                    {isAuthenticated && username === "amritanshu99" && (
+                      <button
+                        aria-label={`Delete blog titled ${blog.title}`}
+                        className="rounded-full border border-zinc-200 bg-white/90 p-1.5 text-red-500 transition hover:border-red-200 hover:bg-red-50 hover:text-red-700 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:border-red-500/30 dark:hover:bg-red-500/10"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDelete(blog._id);
+                        }}
+                        disabled={deletingId === blog._id}
+                        title={deletingId === blog._id ? "Deleting..." : "Delete blog"}
+                      >
+                        {deletingId === blog._id ? (
+                          <Loader size="small" />
+                        ) : (
+                          <Trash2 size={16} />
+                        )}
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="flex h-full flex-col">
+                    <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                      {publishedDate}
+                    </p>
+
+                    <h3 className="mt-2.5 line-clamp-2 text-base font-semibold leading-6 text-zinc-950 transition group-hover:text-sky-700 dark:text-zinc-100 dark:group-hover:text-sky-300 sm:text-[1.05rem]">
+                      {blog.title}
+                    </h3>
+
+                    <p className="mt-3 line-clamp-5 text-sm leading-6 text-zinc-600 dark:text-zinc-300">
+                      {previewText}
+                    </p>
+
+                    <span className="mt-auto inline-flex items-center pt-6 text-sm font-semibold text-sky-700 transition group-hover:translate-x-1 dark:text-sky-300">
+                      Read article
+                    </span>
+                  </div>
+                </article>
+              );
+            })}
+
+            {loading &&
+              filteredBlogs.length > 0 &&
+              Array.from({ length: 3 }).map((_, i) => (
+                <BlogSkeleton key={`skeleton-pag-${i}`} />
+              ))}
+          </div>
+        )}
+
+        {loading && filteredBlogs.length === 0 && (
+          <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <BlogSkeleton key={`skeleton-init-${i}`} />
+            ))}
+          </div>
+        )}
+
+        <div ref={loaderRef} className="h-10" />
+      </div>
     </div>
   );
 };
