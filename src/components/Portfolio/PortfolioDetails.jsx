@@ -349,17 +349,26 @@ useEffect(() => {
         scrollParent === window ? window.scrollY : scrollParent.scrollTop;
       const viewportHeight =
         scrollParent === window ? window.innerHeight : scrollParent.clientHeight;
-      const marker = currentScroll + viewportHeight * 0.35;
+      const scrollHeight =
+        scrollParent === window
+          ? document.documentElement.scrollHeight
+          : scrollParent.scrollHeight;
+      const marker = currentScroll + viewportHeight * 0.45;
+      const isNearBottom = currentScroll + viewportHeight >= scrollHeight - 8;
 
       let nextActiveSection = sections[0].id;
 
-      for (const section of sections) {
-        const sectionTop = getSectionTop(section.element);
+      if (isNearBottom) {
+        nextActiveSection = sections[sections.length - 1].id;
+      } else {
+        for (const section of sections) {
+          const sectionTop = getSectionTop(section.element);
 
-        if (sectionTop <= marker) {
-          nextActiveSection = section.id;
-        } else {
-          break;
+          if (sectionTop <= marker) {
+            nextActiveSection = section.id;
+          } else {
+            break;
+          }
         }
       }
 
