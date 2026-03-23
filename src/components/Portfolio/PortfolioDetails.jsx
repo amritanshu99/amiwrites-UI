@@ -189,6 +189,59 @@ export default function PortfolioDetails() {
   const sectionRefs = useRef({});
 
   const heroRef = useRef(null);
+  const getScrollParent = (element) => {
+    let current = element?.parentElement;
+
+    while (current) {
+      const style = window.getComputedStyle(current);
+      const overflowY = style.overflowY;
+
+      if (
+        (overflowY === "auto" || overflowY === "scroll") &&
+        current.scrollHeight > current.clientHeight
+      ) {
+        return current;
+      }
+
+      current = current.parentElement;
+    }
+
+    return window;
+  };
+
+  const getSectionTop = (element, scrollParent) => {
+    const rect = element.getBoundingClientRect();
+
+    if (scrollParent === window) {
+      return rect.top + window.scrollY;
+    }
+
+    const parentRect = scrollParent.getBoundingClientRect();
+    return rect.top - parentRect.top + scrollParent.scrollTop;
+  };
+
+  const scrollToSection = (sectionId) => {
+    const targetSection = sectionRefs.current[sectionId];
+
+    if (!targetSection) return;
+
+    const explicitScrollParent = document.querySelector(
+      ".h-screen.overflow-y-scroll",
+    );
+    const scrollParent = explicitScrollParent || getScrollParent(pageRef.current);
+    const targetTop = getSectionTop(targetSection, scrollParent);
+    const sectionOffset = 96;
+    const scrollTarget = Math.max(targetTop - sectionOffset, 0);
+
+    setActiveSection(sectionId);
+
+    if (scrollParent === window) {
+      window.scrollTo({ top: scrollTarget, behavior: "smooth" });
+      return;
+    }
+
+    scrollParent.scrollTo({ top: scrollTarget, behavior: "smooth" });
+  };
 
   const heroScroll = useScroll({
     target: heroRef,
@@ -308,41 +361,10 @@ useEffect(() => {
 
     if (!sections.length) return;
 
-    const getScrollParent = (element) => {
-      let current = element?.parentElement;
-
-      while (current) {
-        const style = window.getComputedStyle(current);
-        const overflowY = style.overflowY;
-
-        if (
-          (overflowY === "auto" || overflowY === "scroll") &&
-          current.scrollHeight > current.clientHeight
-        ) {
-          return current;
-        }
-
-        current = current.parentElement;
-      }
-
-      return window;
-    };
-
     const explicitScrollParent = document.querySelector(
       ".h-screen.overflow-y-scroll",
     );
     const scrollParent = explicitScrollParent || getScrollParent(pageRef.current);
-
-    const getSectionTop = (element) => {
-      const rect = element.getBoundingClientRect();
-
-      if (scrollParent === window) {
-        return rect.top + window.scrollY;
-      }
-
-      const parentRect = scrollParent.getBoundingClientRect();
-      return rect.top - parentRect.top + scrollParent.scrollTop;
-    };
 
     const updateActiveSection = () => {
       const currentScroll =
@@ -353,7 +375,7 @@ useEffect(() => {
         scrollParent === window
           ? document.documentElement.scrollHeight
           : scrollParent.scrollHeight;
-      const marker = currentScroll + viewportHeight * 0.45;
+      const marker = currentScroll + Math.min(viewportHeight * 0.25, 160);
       const isNearBottom = currentScroll + viewportHeight >= scrollHeight - 8;
 
       let nextActiveSection = sections[0].id;
@@ -362,7 +384,7 @@ useEffect(() => {
         nextActiveSection = sections[sections.length - 1].id;
       } else {
         for (const section of sections) {
-          const sectionTop = getSectionTop(section.element);
+          const sectionTop = getSectionTop(section.element, scrollParent);
 
           if (sectionTop <= marker) {
             nextActiveSection = section.id;
@@ -487,12 +509,7 @@ useEffect(() => {
                   key={section.id}
                   type="button"
                   aria-current={isActive ? "page" : undefined}
-                  onClick={() =>
-                    sectionRefs.current[section.id]?.scrollIntoView({
-                      behavior: "smooth",
-                      block: "start",
-                    })
-                  }
+                  onClick={() => scrollToSection(section.id)}
                   className={`whitespace-nowrap rounded-full px-2.5 py-1.5 text-[11px] font-medium transition-all duration-300 sm:px-3 sm:text-sm ${
                     isActive
                       ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900"
@@ -671,12 +688,7 @@ dark:[text-shadow:0_0_25px_rgba(255,255,255,0.35)]
 
               <button
                 type="button"
-                onClick={() =>
-                  sectionRefs.current.experience?.scrollIntoView({
-                    behavior: "smooth",
-                    block: "start",
-                  })
-                }
+                onClick={() => scrollToSection("experience")}
                 className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-full border border-zinc-300/70 bg-white/80 px-5 py-2 text-sm font-semibold tracking-wide transition-all hover:bg-white dark:border-zinc-700 dark:bg-zinc-900/70 dark:hover:bg-zinc-800 sm:w-auto"
               >
                 Explore my experience
