@@ -56,20 +56,20 @@ const useAuth = () => {
 };
 
 const BlogSkeleton = () => (
-  <div className="flex h-[250px] w-full animate-pulse flex-col rounded-[1.35rem] border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 sm:h-[270px] sm:p-5">
+  <div className="flex h-[250px] w-full animate-pulse flex-col rounded-[1.35rem] border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-[#050505] sm:h-[270px] sm:p-5">
     <div className="mb-3 flex items-center justify-between gap-3 sm:mb-4">
-      <div className="h-4 w-28 rounded-full bg-zinc-200 dark:bg-zinc-700" />
-      <div className="h-7 w-7 rounded-full bg-zinc-200 dark:bg-zinc-700" />
+      <div className="h-4 w-28 rounded-full bg-zinc-200 dark:bg-zinc-800" />
+      <div className="h-7 w-7 rounded-full bg-zinc-200 dark:bg-zinc-800" />
     </div>
-    <div className="mb-2 h-5 w-4/5 rounded bg-zinc-300 dark:bg-zinc-700 sm:mb-3 sm:h-6" />
-    <div className="mb-2 h-5 w-2/3 rounded bg-zinc-200 dark:bg-zinc-700 sm:h-6" />
+    <div className="mb-2 h-5 w-4/5 rounded bg-zinc-300 dark:bg-zinc-800 sm:mb-3 sm:h-6" />
+    <div className="mb-2 h-5 w-2/3 rounded bg-zinc-200 dark:bg-zinc-800 sm:h-6" />
     <div className="space-y-2.5 pt-2 sm:space-y-3">
-      <div className="h-3 rounded bg-zinc-200 dark:bg-zinc-600" />
-      <div className="h-3 w-11/12 rounded bg-zinc-200 dark:bg-zinc-600" />
-      <div className="h-3 w-5/6 rounded bg-zinc-200 dark:bg-zinc-600" />
-      <div className="h-3 w-3/5 rounded bg-zinc-200 dark:bg-zinc-600" />
+      <div className="h-3 rounded bg-zinc-200 dark:bg-zinc-800" />
+      <div className="h-3 w-11/12 rounded bg-zinc-200 dark:bg-zinc-800" />
+      <div className="h-3 w-5/6 rounded bg-zinc-200 dark:bg-zinc-800" />
+      <div className="h-3 w-3/5 rounded bg-zinc-200 dark:bg-zinc-800" />
     </div>
-    <div className="mt-auto h-4 w-24 rounded bg-zinc-300 dark:bg-zinc-700" />
+    <div className="mt-auto h-4 w-24 rounded bg-zinc-300 dark:bg-zinc-800" />
   </div>
 );
 
