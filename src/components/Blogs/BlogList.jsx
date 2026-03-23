@@ -465,7 +465,7 @@ const BlogList = () => {
       <PushNotificationButton />
 
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-3 sm:gap-4">
-        <section className="overflow-hidden rounded-[1.25rem] border border-white/70 bg-white/85 px-4 py-4 shadow-[0_24px_70px_-42px_rgba(15,23,42,0.24)] backdrop-blur-sm dark:border-slate-700/60 dark:bg-slate-900/80 dark:shadow-[0_24px_70px_-42px_rgba(2,6,23,0.75)] sm:rounded-[1.5rem] sm:px-5 sm:py-4 lg:px-6 lg:py-5">
+        <section className="overflow-hidden rounded-[1.25rem] border border-white/70 bg-white/85 px-4 py-4 shadow-[0_24px_70px_-42px_rgba(15,23,42,0.24)] backdrop-blur-sm dark:border-slate-700/60 dark:bg-slate-950/90 dark:shadow-[0_24px_70px_-42px_rgba(2,6,23,0.82)] sm:rounded-[1.5rem] sm:px-5 sm:py-4 lg:px-6 lg:py-5">
           <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-sky-300/60 to-transparent dark:via-sky-300/35" />
           <div className="relative">
             <div className="max-w-3xl">
@@ -494,7 +494,7 @@ const BlogList = () => {
           )}
         </div>
 
-        <section className="rounded-[1.2rem] border border-white/70 bg-white/85 p-3 shadow-[0_16px_40px_-32px_rgba(15,23,42,0.2)] backdrop-blur-sm dark:border-slate-700/60 dark:bg-slate-900/80 dark:shadow-[0_16px_40px_-32px_rgba(2,6,23,0.72)] sm:rounded-[1.35rem] sm:p-3.5">
+        <section className="rounded-[1.2rem] border border-white/70 bg-white/85 p-3 shadow-[0_16px_40px_-32px_rgba(15,23,42,0.2)] backdrop-blur-sm dark:border-slate-700/60 dark:bg-slate-950/88 dark:shadow-[0_16px_40px_-32px_rgba(2,6,23,0.8)] sm:rounded-[1.35rem] sm:p-3.5">
           <div className="flex flex-col gap-2.5 lg:flex-row lg:items-end lg:justify-between">
             <div className="w-full lg:max-w-xl">
               <input
@@ -535,7 +535,7 @@ const BlogList = () => {
         </section>
 
         {filteredBlogs.length === 0 && !loading ? (
-          <div className="rounded-[1.75rem] border border-dashed border-zinc-300 bg-white/85 px-6 py-16 text-center shadow-sm backdrop-blur-sm dark:border-slate-700/70 dark:bg-slate-900/75">
+          <div className="rounded-[1.75rem] border border-dashed border-zinc-300 bg-white/85 px-6 py-16 text-center shadow-sm backdrop-blur-sm dark:border-slate-700/70 dark:bg-slate-950/82">
             <p className="text-lg font-semibold text-zinc-700 dark:text-slate-100">
               No blogs available.
             </p>
@@ -560,7 +560,7 @@ const BlogList = () => {
               return (
                 <article
                   key={blog._id}
-                  className="group flex min-h-[244px] w-full cursor-pointer flex-col rounded-[1.35rem] border border-white/80 bg-white/90 p-4 shadow-[0_18px_40px_-34px_rgba(15,23,42,0.18)] backdrop-blur-sm transition hover:-translate-y-1 hover:border-sky-100 hover:shadow-[0_24px_50px_-34px_rgba(15,23,42,0.24)] dark:border-slate-700/60 dark:bg-slate-900/78 dark:hover:border-sky-300/35 dark:shadow-[0_18px_40px_-34px_rgba(2,6,23,0.72)] sm:min-h-[270px] sm:rounded-[1.5rem] sm:p-5"
+                  className="group flex min-h-[244px] w-full cursor-pointer flex-col rounded-[1.35rem] border border-white/80 bg-white/90 p-4 shadow-[0_18px_40px_-34px_rgba(15,23,42,0.18)] backdrop-blur-sm transition hover:-translate-y-1 hover:border-sky-100 hover:shadow-[0_24px_50px_-34px_rgba(15,23,42,0.24)] dark:border-slate-700/70 dark:bg-[linear-gradient(180deg,rgba(2,6,23,0.96)_0%,rgba(15,23,42,0.94)_100%)] dark:hover:border-sky-300/35 dark:shadow-[0_20px_46px_-34px_rgba(2,6,23,0.88)] sm:min-h-[270px] sm:rounded-[1.5rem] sm:p-5"
                   onClick={() => {
                     trackClick(blog._id);
                     handleBlogClick(blog._id);
@@ -577,7 +577,7 @@ const BlogList = () => {
                 >
                   <div className="mb-3 flex items-start justify-between gap-3 sm:mb-4">
                     <div className="flex flex-wrap items-center gap-2">
-                      <p className="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-600 dark:bg-slate-800 dark:text-slate-100">
+                      <p className="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-600 dark:bg-slate-800/90 dark:text-slate-100">
                         Blog
                       </p>
                       {isTrending && (
@@ -615,19 +615,19 @@ const BlogList = () => {
                   </div>
 
                   <div className="flex h-full flex-col">
-                    <p className="text-xs font-medium uppercase tracking-[0.12em] text-zinc-500 dark:text-slate-300 sm:text-sm sm:normal-case sm:tracking-normal">
+                    <p className="text-xs font-medium uppercase tracking-[0.12em] text-zinc-500 dark:text-slate-400 sm:text-sm sm:normal-case sm:tracking-normal">
                       {publishedDate}
                     </p>
 
-                    <h3 className="mt-2 line-clamp-2 text-[15px] font-semibold leading-5 text-zinc-950 transition group-hover:text-sky-700 dark:text-slate-100 dark:group-hover:text-sky-200 sm:mt-2.5 sm:text-[1.05rem] sm:leading-6">
+                    <h3 className="mt-2 line-clamp-2 text-[15px] font-semibold leading-5 text-zinc-950 transition group-hover:text-sky-700 dark:text-slate-50 dark:group-hover:text-sky-200 sm:mt-2.5 sm:text-[1.05rem] sm:leading-6">
                       {blog.title}
                     </h3>
 
-                    <p className="mt-2.5 line-clamp-4 text-sm leading-5 text-zinc-600 dark:text-slate-100 sm:mt-3 sm:line-clamp-5 sm:leading-6">
+                    <p className="mt-2.5 line-clamp-4 text-sm leading-5 text-zinc-600 dark:text-slate-300 sm:mt-3 sm:line-clamp-5 sm:leading-6">
                       {previewText}
                     </p>
 
-                    <span className="mt-auto inline-flex items-center pt-4 text-sm font-semibold text-sky-700 transition group-hover:translate-x-1 dark:text-sky-200 sm:pt-5">
+                    <span className="mt-auto inline-flex items-center pt-4 text-sm font-semibold text-sky-700 transition group-hover:translate-x-1 dark:text-sky-300 sm:pt-5">
                       Read article
                     </span>
                   </div>
