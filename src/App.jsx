@@ -32,6 +32,7 @@ import MoviePredictDetails from "./pages/MoviePredictDetails";
 import EmotionAnalyzerDetails from "./pages/EmotionAnalyzerDetails";
 import AmiBotDetails from "./pages/AmiBotDetails";
 import ReinforcementLearningDetails from "./pages/ReinforcementLearning";
+import { applySEO, seoByRoute } from "./utils/seo";
 const ValidateResetToken = () => {
   const { id: token } = useParams();
   const navigate = useNavigate();
@@ -108,6 +109,19 @@ const App = () => {
   useEffect(() => {
     logPageView(location.pathname + location.search);
   }, [location]);
+
+  useEffect(() => {
+    const routeSeo = seoByRoute[location.pathname] || {
+      title: "AmiVerse | Portfolio, Blogs & AI Tools",
+      description:
+        "AmiVerse by Amritanshu Mishra: portfolio, practical engineering blogs, and AI-powered tools.",
+    };
+
+    applySEO({
+      path: location.pathname,
+      ...routeSeo,
+    });
+  }, [location.pathname]);
   if (!shouldRender) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-black text-center px-4">
