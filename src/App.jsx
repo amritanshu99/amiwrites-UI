@@ -32,6 +32,7 @@ import MoviePredictDetails from "./pages/MoviePredictDetails";
 import EmotionAnalyzerDetails from "./pages/EmotionAnalyzerDetails";
 import AmiBotDetails from "./pages/AmiBotDetails";
 import ReinforcementLearningDetails from "./pages/ReinforcementLearning";
+import { applySEO, seoByRoute } from "./utils/seo";
 const ValidateResetToken = () => {
   const { id: token } = useParams();
   const navigate = useNavigate();
