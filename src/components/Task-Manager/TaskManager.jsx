@@ -71,15 +71,6 @@ function TaskManager() {
     };
   }, []);
 
-  useEffect(() => {
-    document.title = "Task Manager";
-    const link =
-      document.querySelector("link[rel='canonical']") ||
-      document.createElement("link");
-    link.rel = "canonical";
-    link.href = window.location.href;
-    document.head.appendChild(link);
-  }, []);
 
   useEffect(() => {
     const scrollContainer = document.querySelector(

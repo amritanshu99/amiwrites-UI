@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import axios from "axios";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
@@ -25,13 +25,6 @@ export default function AddBlog() {
     },
   });
 
-  useEffect(() => {
-    document.title = "Add Blog";
-    const link = document.querySelector("link[rel='canonical']") || document.createElement("link");
-    link.rel = "canonical";
-    link.href = window.location.href;
-    document.head.appendChild(link);
-  }, []);
 
   const handleSubmit = async () => {
     if (!title.trim()) return setError("Title is required");

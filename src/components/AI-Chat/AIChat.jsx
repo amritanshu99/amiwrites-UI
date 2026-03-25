@@ -50,17 +50,6 @@ const AIChat = () => {
     setMessages([{ role: "ai", content: "Hello! How can I help you today?" }]);
   }, [token]);
 
-  useEffect(() => {
-    let link = document.querySelector("link[rel='canonical']");
-    if (!link) {
-      link = document.createElement("link");
-      link.rel = "canonical";
-      document.head.appendChild(link);
-    }
-    link.href = window.location.href;
-    document.title = "AI Chat";
-   
-  }, []);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });

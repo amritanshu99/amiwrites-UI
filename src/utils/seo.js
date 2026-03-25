@@ -2,6 +2,15 @@ const SITE_NAME = "AmiVerse";
 export const SITE_URL = "https://www.amiverse.in";
 const DEFAULT_OG_IMAGE = `${SITE_URL}/og-image.jpg`;
 
+const PERSON_ID = `${SITE_URL}/#person`;
+
+const SOCIAL_LINKS = [
+  "https://www.linkedin.com/in/amritanshu-mishra-568598306/",
+  "https://github.com/amritanshu99",
+  "https://www.instagram.com/ami.mishra99/",
+  "https://www.facebook.com/Ami.Mishra99",
+];
+
 const removeTrailingSlash = (url) => url.replace(/\/$/, "");
 
 const normalizeToPath = (path) => {
@@ -53,6 +62,47 @@ const upsertJsonLd = (id, data) => {
   script.textContent = JSON.stringify(data);
 };
 
+const defaultStructuredData = (title, description, canonical) => ({
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Person",
+      "@id": PERSON_ID,
+      name: "Amritanshu Mishra",
+      url: SITE_URL,
+      image: DEFAULT_OG_IMAGE,
+      sameAs: SOCIAL_LINKS,
+    },
+    {
+      "@type": "WebSite",
+      "@id": `${SITE_URL}/#website`,
+      url: SITE_URL,
+      name: SITE_NAME,
+      description: "Portfolio, blogs, and AI tools by Amritanshu Mishra.",
+      publisher: {
+        "@id": PERSON_ID,
+      },
+      potentialAction: {
+        "@type": "SearchAction",
+        target: `${SITE_URL}/blogs?search={search_term_string}`,
+        "query-input": "required name=search_term_string",
+      },
+    },
+    {
+      "@type": "WebPage",
+      name: title,
+      description,
+      url: canonical,
+      isPartOf: {
+        "@id": `${SITE_URL}/#website`,
+      },
+      about: {
+        "@id": PERSON_ID,
+      },
+    },
+  ],
+});
+
 export const applySEO = ({
   title,
   description,
@@ -68,6 +118,7 @@ export const applySEO = ({
   document.title = title;
 
   upsertMeta("meta[name='description']", { name: "description", content: description });
+  upsertMeta("meta[name='author']", { name: "author", content: "Amritanshu Mishra" });
   upsertMeta("meta[name='robots']", {
     name: "robots",
     content: noindex
@@ -87,7 +138,12 @@ export const applySEO = ({
   upsertMeta("meta[property='og:url']", { property: "og:url", content: canonical });
   upsertMeta("meta[property='og:type']", { property: "og:type", content: type });
   upsertMeta("meta[property='og:image']", { property: "og:image", content: image });
+  upsertMeta("meta[property='og:image:alt']", {
+    property: "og:image:alt",
+    content: `${SITE_NAME} preview image`,
+  });
 
+  upsertMeta("meta[name='twitter:card']", { name: "twitter:card", content: "summary_large_image" });
   upsertMeta("meta[name='twitter:title']", { name: "twitter:title", content: title });
   upsertMeta("meta[name='twitter:description']", {
     name: "twitter:description",
@@ -98,20 +154,10 @@ export const applySEO = ({
 
   upsertLink("canonical", canonical);
 
-  const baseStructuredData = {
-    "@context": "https://schema.org",
-    "@type": "WebPage",
-    name: title,
-    description,
-    url: canonical,
-    isPartOf: {
-      "@type": "WebSite",
-      name: SITE_NAME,
-      url: SITE_URL,
-    },
-  };
-
-  upsertJsonLd("route-webpage", structuredData || baseStructuredData);
+  upsertJsonLd(
+    "route-webpage",
+    structuredData || defaultStructuredData(title, description, canonical)
+  );
 };
 
 export const seoByRoute = {
@@ -120,12 +166,14 @@ export const seoByRoute = {
     description:
       "Explore AmiVerse by Amritanshu Mishra: developer portfolio, practical blogs, and AI-powered tools for productivity and creativity.",
     keywords:
-      "Amritanshu Mishra, AmiVerse, portfolio, AI tools, developer blog, productivity tools",
+      "Amritanshu Mishra, AmiVerse, developer portfolio, software engineer, AI tools, developer blog",
   },
   "/blogs": {
     title: "Developer Blogs on React, AI & Productivity | AmiVerse",
     description:
       "Read practical developer blogs by Amritanshu Mishra on React, AI workflows, engineering growth, and productivity.",
+    keywords:
+      "Amritanshu Mishra blogs, React blogs, AI blogs, developer writing, software engineering notes",
   },
   "/ai-chat": {
     title: "AI Chat Assistant | AmiVerse",

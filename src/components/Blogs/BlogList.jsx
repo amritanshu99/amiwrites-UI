@@ -387,9 +387,6 @@ const BlogList = () => {
     };
   }, [debouncedSearch, filter]);
 
-  useEffect(() => {
-    document.title = "Amritanshu Mishra's Blogs";
-  }, []);
 
   useEffect(() => {
     const scrollContainer = document.querySelector(
