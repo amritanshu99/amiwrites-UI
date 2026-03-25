@@ -714,7 +714,7 @@ dark:[text-shadow:0_0_25px_rgba(255,255,255,0.35)]
                 {data.description}
               </p>
               <div className="flex gap-4 text-zinc-500">
-                {socials.map((s) => (
+                {socialProfiles.map((s) => (
                   <button
                     key={s.name}
                     onClick={() => setSocialModal(s)}
