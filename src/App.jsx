@@ -108,6 +108,7 @@ const App = () => {
   useEffect(() => {
     logPageView(location.pathname + location.search);
   }, [location]);
+
   if (!shouldRender) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-black text-center px-4">

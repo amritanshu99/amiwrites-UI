@@ -5,6 +5,7 @@ import axios from "../../utils/api";
 import Loader from "../Loader/Loader";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { applySEO, SITE_URL } from "../../utils/seo";
 
 const BlogDetails = () => {
   const { id } = useParams();
@@ -52,16 +53,51 @@ const BlogDetails = () => {
     }
   }, [id]);
 
+  // Clean plain text from blog HTML content (memoized)
+  const plainTextContent = useMemo(() => {
+    if (!blog?.content) return "";
+    const temp = document.createElement("div");
+    temp.innerHTML = blog.content;
+    return (temp.textContent || temp.innerText || "").trim();
+  }, [blog]);
+
   useEffect(() => {
-    document.title = "Blog Details";
-    let link = document.querySelector("link[rel='canonical']");
-    if (!link) {
-      link = document.createElement("link");
-      link.rel = "canonical";
-      document.head.appendChild(link);
-    }
-    link.href = window.location.href;
-  }, []);
+    const fallbackDescription =
+      "Read this AmiVerse blog for actionable engineering insights and practical learning takeaways.";
+    const description = plainTextContent
+      ? `${plainTextContent.slice(0, 155).trim()}${plainTextContent.length > 155 ? "..." : ""}`
+      : fallbackDescription;
+
+    applySEO({
+      title: blog?.title ? `${blog.title} | AmiVerse Blog` : "Blog Details | AmiVerse",
+      description,
+      path: `/blogs/${id}`,
+      type: "article",
+      keywords: blog?.tags?.join(", "),
+      structuredData: {
+        "@context": "https://schema.org",
+        "@type": "BlogPosting",
+        headline: blog?.title || "AmiVerse Blog",
+        description,
+        mainEntityOfPage: `${SITE_URL}/blogs/${id}`,
+        url: `${SITE_URL}/blogs/${id}`,
+        author: {
+          "@type": "Person",
+          name: blog?.author || "Amritanshu Mishra",
+        },
+        datePublished: blog?.createdAt,
+        dateModified: blog?.updatedAt || blog?.createdAt,
+        publisher: {
+          "@type": "Organization",
+          name: "AmiVerse",
+          logo: {
+            "@type": "ImageObject",
+            url: `${SITE_URL}/og-image.jpg`,
+          },
+        },
+      },
+    });
+  }, [blog, id, plainTextContent]);
 
   useEffect(() => {
     const scrollContainer = document.querySelector(
@@ -83,14 +119,6 @@ const BlogDetails = () => {
   }, [fetchBlog]);
 
   const currentURL = typeof window !== "undefined" ? window.location.href : "";
-
-  // Clean plain text from blog HTML content (memoized)
-  const plainTextContent = useMemo(() => {
-    if (!blog?.content) return "";
-    const temp = document.createElement("div");
-    temp.innerHTML = blog.content;
-    return (temp.textContent || temp.innerText || "").trim();
-  }, [blog]);
 
   // Summarize handler
   const handleSummarize = async () => {
