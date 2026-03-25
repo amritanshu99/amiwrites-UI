@@ -1,8 +1,23 @@
 const SITE_NAME = "AmiVerse";
-const SITE_URL = "https://www.amiverse.com";
+export const SITE_URL = "https://www.amiverse.in";
 const DEFAULT_OG_IMAGE = `${SITE_URL}/og-image.jpg`;
 
 const removeTrailingSlash = (url) => url.replace(/\/$/, "");
+
+const normalizeToPath = (path) => {
+  if (!path) return "/";
+
+  if (/^https?:\/\//i.test(path)) {
+    try {
+      const parsed = new URL(path);
+      return `${parsed.pathname || "/"}${parsed.search || ""}${parsed.hash || ""}`;
+    } catch {
+      return "/";
+    }
+  }
+
+  return path.startsWith("/") ? path : `/${path}`;
+};
 
 const upsertMeta = (selector, attrs) => {
   let meta = document.head.querySelector(selector);
@@ -48,7 +63,7 @@ export const applySEO = ({
   keywords,
   structuredData,
 }) => {
-  const canonical = `${removeTrailingSlash(SITE_URL)}${path.startsWith("/") ? path : `/${path}`}`;
+  const canonical = `${removeTrailingSlash(SITE_URL)}${normalizeToPath(path)}`;
 
   document.title = title;
 
@@ -160,6 +175,11 @@ export const seoByRoute = {
   "/add-blog": {
     title: "Add Blog | AmiVerse Admin",
     description: "Admin area for creating and publishing AmiVerse blog posts.",
+    noindex: true,
+  },
+  "/reset-password": {
+    title: "Reset Password | AmiVerse",
+    description: "Securely reset your AmiVerse account password.",
     noindex: true,
   },
 };

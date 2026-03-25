@@ -5,7 +5,7 @@ import axios from "../../utils/api";
 import Loader from "../Loader/Loader";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { applySEO } from "../../utils/seo";
+import { applySEO, SITE_URL } from "../../utils/seo";
 
 const BlogDetails = () => {
   const { id } = useParams();
@@ -53,6 +53,14 @@ const BlogDetails = () => {
     }
   }, [id]);
 
+  // Clean plain text from blog HTML content (memoized)
+  const plainTextContent = useMemo(() => {
+    if (!blog?.content) return "";
+    const temp = document.createElement("div");
+    temp.innerHTML = blog.content;
+    return (temp.textContent || temp.innerText || "").trim();
+  }, [blog]);
+
   useEffect(() => {
     const fallbackDescription =
       "Read this AmiVerse blog for actionable engineering insights and practical learning takeaways.";
@@ -71,8 +79,8 @@ const BlogDetails = () => {
         "@type": "BlogPosting",
         headline: blog?.title || "AmiVerse Blog",
         description,
-        mainEntityOfPage: `https://www.amiverse.com/blogs/${id}`,
-        url: `https://www.amiverse.com/blogs/${id}`,
+        mainEntityOfPage: `${SITE_URL}/blogs/${id}`,
+        url: `${SITE_URL}/blogs/${id}`,
         author: {
           "@type": "Person",
           name: blog?.author || "Amritanshu Mishra",
@@ -84,7 +92,7 @@ const BlogDetails = () => {
           name: "AmiVerse",
           logo: {
             "@type": "ImageObject",
-            url: "https://www.amiverse.com/og-image.jpg",
+            url: `${SITE_URL}/og-image.jpg`,
           },
         },
       },
@@ -111,14 +119,6 @@ const BlogDetails = () => {
   }, [fetchBlog]);
 
   const currentURL = typeof window !== "undefined" ? window.location.href : "";
-
-  // Clean plain text from blog HTML content (memoized)
-  const plainTextContent = useMemo(() => {
-    if (!blog?.content) return "";
-    const temp = document.createElement("div");
-    temp.innerHTML = blog.content;
-    return (temp.textContent || temp.innerText || "").trim();
-  }, [blog]);
 
   // Summarize handler
   const handleSummarize = async () => {
