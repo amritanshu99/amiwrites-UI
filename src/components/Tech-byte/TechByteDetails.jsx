@@ -48,14 +48,6 @@ function TechNewsCards() {
   const { pathname } = useLocation();
 
   useEffect(() => {
-    document.title = "Tech-Byte";
-
-    const link =
-      document.querySelector("link[rel='canonical']") ||
-      document.head.appendChild(document.createElement("link"));
-    link.rel = "canonical";
-    link.href = window.location.href;
-
     let isMounted = true;
 
     axios

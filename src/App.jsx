@@ -33,6 +33,13 @@ import EmotionAnalyzerDetails from "./pages/EmotionAnalyzerDetails";
 import AmiBotDetails from "./pages/AmiBotDetails";
 import ReinforcementLearningDetails from "./pages/ReinforcementLearning";
 import { applySEO, seoByRoute } from "./utils/seo";
+
+const resolveRouteSeo = (pathname) => {
+  if (seoByRoute[pathname]) return seoByRoute[pathname];
+  if (pathname.startsWith("/blogs/")) return seoByRoute["/blogs"];
+  if (pathname.startsWith("/reset-password/")) return seoByRoute["/reset-password"];
+  return seoByRoute["/"];
+};
 const ValidateResetToken = () => {
   const { id: token } = useParams();
   const navigate = useNavigate();
@@ -109,6 +116,15 @@ const App = () => {
   useEffect(() => {
     logPageView(location.pathname + location.search);
   }, [location]);
+
+  useEffect(() => {
+    const routeSeo = resolveRouteSeo(location.pathname);
+    applySEO({
+      path: location.pathname,
+      ...routeSeo,
+    });
+  }, [location.pathname]);
+
 
   if (!shouldRender) {
     return (
