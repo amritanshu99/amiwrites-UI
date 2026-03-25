@@ -468,38 +468,17 @@ useEffect(() => {
             },
           ]
         : [],
-    [data],
+    [
+      data?.socialLinks?.facebook,
+      data?.socialLinks?.github,
+      data?.socialLinks?.instagram,
+      data?.socialLinks?.linkedin,
+    ],
   );
 
   if (loading || !data) return <InitialLoader />;
 
   const [firstName, lastName] = data.name.split(" ");
-
-  const socials = useMemo(
-    () => [
-      {
-        name: "LinkedIn",
-        icon: <FaLinkedin size={28} />,
-        url: data.socialLinks.linkedin,
-      },
-      {
-        name: "GitHub",
-        icon: <FaGithub size={28} />,
-        url: data.socialLinks.github,
-      },
-      {
-        name: "Instagram",
-        icon: <FaInstagram size={28} />,
-        url: data.socialLinks.instagram,
-      },
-      {
-        name: "Facebook",
-        icon: <FaFacebook size={28} />,
-        url: data.socialLinks.facebook,
-      },
-    ],
-    [data.socialLinks.facebook, data.socialLinks.github, data.socialLinks.instagram, data.socialLinks.linkedin],
-  );
 
   return (
     <main
