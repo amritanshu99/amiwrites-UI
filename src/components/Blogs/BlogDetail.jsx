@@ -53,6 +53,14 @@ const BlogDetails = () => {
     }
   }, [id]);
 
+  // Clean plain text from blog HTML content (memoized)
+  const plainTextContent = useMemo(() => {
+    if (!blog?.content) return "";
+    const temp = document.createElement("div");
+    temp.innerHTML = blog.content;
+    return (temp.textContent || temp.innerText || "").trim();
+  }, [blog]);
+
   useEffect(() => {
     const fallbackDescription =
       "Read this AmiVerse blog for actionable engineering insights and practical learning takeaways.";
@@ -111,14 +119,6 @@ const BlogDetails = () => {
   }, [fetchBlog]);
 
   const currentURL = typeof window !== "undefined" ? window.location.href : "";
-
-  // Clean plain text from blog HTML content (memoized)
-  const plainTextContent = useMemo(() => {
-    if (!blog?.content) return "";
-    const temp = document.createElement("div");
-    temp.innerHTML = blog.content;
-    return (temp.textContent || temp.innerText || "").trim();
-  }, [blog]);
 
   // Summarize handler
   const handleSummarize = async () => {

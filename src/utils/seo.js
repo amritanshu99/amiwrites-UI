@@ -162,4 +162,9 @@ export const seoByRoute = {
     description: "Admin area for creating and publishing AmiVerse blog posts.",
     noindex: true,
   },
+  "/reset-password": {
+    title: "Reset Password | AmiVerse",
+    description: "Securely reset your AmiVerse account password.",
+    noindex: true,
+  },
 };
