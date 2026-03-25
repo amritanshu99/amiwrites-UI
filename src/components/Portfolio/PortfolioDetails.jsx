@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
 import {
   FaLinkedin,
@@ -53,8 +53,50 @@ const socialColors = {
   Facebook: "text-[#1877F2]",
 };
 
+const skillColors = {
+  JavaScript: "text-[#F7DF1E]",
+  React: "text-[#61DAFB]",
+  "Node.js": "text-[#339933]",
+  MongoDB: "text-[#47A248]",
+  Express: "text-black dark:text-white",
+  GraphQL: "text-[#E10098]",
+  AI: "text-[#10A37F]",
+  ML: "text-[#FF6F00]",
+};
+
+const getScrollParent = (element) => {
+  let current = element?.parentElement;
+
+  while (current) {
+    const style = window.getComputedStyle(current);
+    const overflowY = style.overflowY;
+
+    if (
+      (overflowY === "auto" || overflowY === "scroll") &&
+      current.scrollHeight > current.clientHeight
+    ) {
+      return current;
+    }
+
+    current = current.parentElement;
+  }
+
+  return window;
+};
+
+const getSectionTop = (element, scrollParent) => {
+  const rect = element.getBoundingClientRect();
+
+  if (scrollParent === window) {
+    return rect.top + window.scrollY;
+  }
+
+  const parentRect = scrollParent.getBoundingClientRect();
+  return rect.top - parentRect.top + scrollParent.scrollTop;
+};
+
 /* ================= TOOLTIP ================= */
-const Tooltip = ({ children, content }) => {
+const Tooltip = React.memo(({ children, content }) => {
   const [show, setShow] = useState(false);
 
   return (
@@ -84,10 +126,10 @@ const Tooltip = ({ children, content }) => {
       </AnimatePresence>
     </div>
   );
-};
+});
 
 /* ================= ANIMATED BANNER ================= */
-const AnimatedBanner = () => {
+const AnimatedBanner = React.memo(() => {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: "-120px" });
 
@@ -111,10 +153,10 @@ const AnimatedBanner = () => {
       />
     </motion.div>
   );
-};
+});
 
 /* ================= FADE ROW ================= */
-const FadeRow = ({ children }) => {
+const FadeRow = React.memo(({ children }) => {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: "-160px" });
   return (
@@ -127,7 +169,7 @@ const FadeRow = ({ children }) => {
       {children}
     </motion.div>
   );
-};
+});
 
 /* ================= SOCIAL MODAL ================= */
 const SocialModal = ({ isOpen, onClose, platform, url, icon }) => {
@@ -185,42 +227,11 @@ export default function PortfolioDetails() {
   const [hideArrow, setHideArrow] = useState(true);
   const [activeSection, setActiveSection] = useState("intro");
   const pageRef = useRef(null);
-  const [hasScrolled, setHasScrolled] = useState(false);
   const sectionRefs = useRef({});
+  const hasScrolledRef = useRef(false);
 
   const heroRef = useRef(null);
-  const getScrollParent = (element) => {
-    let current = element?.parentElement;
-
-    while (current) {
-      const style = window.getComputedStyle(current);
-      const overflowY = style.overflowY;
-
-      if (
-        (overflowY === "auto" || overflowY === "scroll") &&
-        current.scrollHeight > current.clientHeight
-      ) {
-        return current;
-      }
-
-      current = current.parentElement;
-    }
-
-    return window;
-  };
-
-  const getSectionTop = (element, scrollParent) => {
-    const rect = element.getBoundingClientRect();
-
-    if (scrollParent === window) {
-      return rect.top + window.scrollY;
-    }
-
-    const parentRect = scrollParent.getBoundingClientRect();
-    return rect.top - parentRect.top + scrollParent.scrollTop;
-  };
-
-  const scrollToSection = (sectionId) => {
+  const scrollToSection = useCallback((sectionId) => {
     const targetSection = sectionRefs.current[sectionId];
 
     if (!targetSection) return;
@@ -241,7 +252,7 @@ export default function PortfolioDetails() {
     }
 
     scrollParent.scrollTo({ top: scrollTarget, behavior: "smooth" });
-  };
+  }, []);
 
   const heroScroll = useScroll({
     target: heroRef,
@@ -280,61 +291,70 @@ const textY = useTransform(
     obs.observe(document.documentElement, { attributes: true });
     return () => obs.disconnect();
   }, []);
-useEffect(() => {
-  const scrollContainer = document.querySelector(
-    ".h-screen.overflow-y-scroll",
-  );
+  useEffect(() => {
+    const explicitScrollParent = document.querySelector(
+      ".h-screen.overflow-y-scroll",
+    );
+    const scrollParent = explicitScrollParent || getScrollParent(pageRef.current);
+    const target = scrollParent === window ? window : scrollParent;
+    let rafId = null;
 
-  if (!scrollContainer) return;
+    const updateArrowVisibility = () => {
+      const scrollTop = scrollParent === window ? window.scrollY : scrollParent.scrollTop;
+      const clientHeight =
+        scrollParent === window ? window.innerHeight : scrollParent.clientHeight;
+      const scrollHeight =
+        scrollParent === window
+          ? document.documentElement.scrollHeight
+          : scrollParent.scrollHeight;
 
-  const onScroll = () => {
-    const { scrollTop, clientHeight, scrollHeight } = scrollContainer;
+      if (scrollTop > 10 && !hasScrolledRef.current) {
+        hasScrolledRef.current = true;
+      }
 
-    if (scrollTop > 10) {
-      setHasScrolled(true);
-    }
+      const atBottom = Math.ceil(scrollTop + clientHeight) >= scrollHeight;
+      setHideArrow(!(hasScrolledRef.current && !atBottom));
+    };
 
-    const atBottom = Math.ceil(scrollTop + clientHeight) >= scrollHeight;
+    const onScroll = () => {
+      if (rafId !== null) return;
+      rafId = window.requestAnimationFrame(() => {
+        rafId = null;
+        updateArrowVisibility();
+      });
+    };
 
-    setHideArrow(hasScrolled && atBottom);
-  };
+    updateArrowVisibility();
+    target.addEventListener("scroll", onScroll, { passive: true });
 
-  scrollContainer.addEventListener("scroll", onScroll);
-
-  return () => {
-    scrollContainer.removeEventListener("scroll", onScroll);
-  };
-}, [hasScrolled]);
-useEffect(() => {
-  const onScroll = () => {
-    const scrollTop = window.scrollY;
-    const clientHeight = window.innerHeight;
-    const scrollHeight = document.documentElement.scrollHeight;
-
-    if (scrollTop > 10) {
-      setHasScrolled(true);
-    }
-
-    const atBottom = Math.ceil(scrollTop + clientHeight) >= scrollHeight;
-
-    setHideArrow(hasScrolled && atBottom);
-  };
-
-  window.addEventListener("scroll", onScroll, { passive: true });
-
-  return () => {
-    window.removeEventListener("scroll", onScroll);
-  };
-}, [hasScrolled]);
+    return () => {
+      target.removeEventListener("scroll", onScroll);
+      if (rafId !== null) {
+        window.cancelAnimationFrame(rafId);
+      }
+    };
+  }, []);
 
 
   useEffect(() => {
+    const controller = new AbortController();
+    let loaderTimeout;
+
     axios
-      .get("https://amiwrites-backend-app-2lp5.onrender.com/api/portfolio")
+      .get("https://amiwrites-backend-app-2lp5.onrender.com/api/portfolio", {
+        signal: controller.signal,
+      })
       .then((res) => {
         setData(res.data);
-        setTimeout(() => setLoading(false), 1400);
+        loaderTimeout = setTimeout(() => setLoading(false), 1400);
       });
+
+    return () => {
+      controller.abort();
+      if (loaderTimeout) {
+        clearTimeout(loaderTimeout);
+      }
+    };
   }, []);
 
   /* ===== MOBILE VIEWPORT FIX ===== */
@@ -427,39 +447,31 @@ useEffect(() => {
 
   const [firstName, lastName] = data.name.split(" ");
 
-  const socials = [
-    {
-      name: "LinkedIn",
-      icon: <FaLinkedin size={28} />,
-      url: data.socialLinks.linkedin,
-    },
-    {
-      name: "GitHub",
-      icon: <FaGithub size={28} />,
-      url: data.socialLinks.github,
-    },
-    {
-      name: "Instagram",
-      icon: <FaInstagram size={28} />,
-      url: data.socialLinks.instagram,
-    },
-    {
-      name: "Facebook",
-      icon: <FaFacebook size={28} />,
-      url: data.socialLinks.facebook,
-    },
-  ];
-
-  const skillColors = {
-    JavaScript: "text-[#F7DF1E]",
-    React: "text-[#61DAFB]",
-    "Node.js": "text-[#339933]",
-    MongoDB: "text-[#47A248]",
-    Express: "text-black dark:text-white",
-    GraphQL: "text-[#E10098]",
-    AI: "text-[#10A37F]",
-    ML: "text-[#FF6F00]",
-  };
+  const socials = useMemo(
+    () => [
+      {
+        name: "LinkedIn",
+        icon: <FaLinkedin size={28} />,
+        url: data.socialLinks.linkedin,
+      },
+      {
+        name: "GitHub",
+        icon: <FaGithub size={28} />,
+        url: data.socialLinks.github,
+      },
+      {
+        name: "Instagram",
+        icon: <FaInstagram size={28} />,
+        url: data.socialLinks.instagram,
+      },
+      {
+        name: "Facebook",
+        icon: <FaFacebook size={28} />,
+        url: data.socialLinks.facebook,
+      },
+    ],
+    [data.socialLinks.facebook, data.socialLinks.github, data.socialLinks.instagram, data.socialLinks.linkedin],
+  );
 
   return (
     <main
