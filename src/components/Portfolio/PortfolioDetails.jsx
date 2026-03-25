@@ -442,7 +442,7 @@ useEffect(() => {
     };
   }, [data, loading]);
 
-  const socials = useMemo(
+  const socialProfiles = useMemo(
     () =>
       data
         ? [
