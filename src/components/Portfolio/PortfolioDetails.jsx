@@ -442,6 +442,34 @@ useEffect(() => {
     };
   }, [data, loading]);
 
+  const socials = useMemo(
+    () =>
+      data
+        ? [
+            {
+              name: "LinkedIn",
+              icon: <FaLinkedin size={28} />,
+              url: data.socialLinks.linkedin,
+            },
+            {
+              name: "GitHub",
+              icon: <FaGithub size={28} />,
+              url: data.socialLinks.github,
+            },
+            {
+              name: "Instagram",
+              icon: <FaInstagram size={28} />,
+              url: data.socialLinks.instagram,
+            },
+            {
+              name: "Facebook",
+              icon: <FaFacebook size={28} />,
+              url: data.socialLinks.facebook,
+            },
+          ]
+        : [],
+    [data],
+  );
 
   if (loading || !data) return <InitialLoader />;
 
