@@ -219,7 +219,6 @@ const sectionMeta = [
 /* ================= MAIN ================= */
 export default function PortfolioDetails() {
   const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState({ isOpen: false });
   const [isDark, setIsDark] = useState(false);
   const [socialModal, setSocialModal] = useState(null);
@@ -338,7 +337,6 @@ const textY = useTransform(
 
   useEffect(() => {
     const controller = new AbortController();
-    let loaderTimeout;
 
     axios
       .get("https://amiwrites-backend-app-2lp5.onrender.com/api/portfolio", {
@@ -346,14 +344,16 @@ const textY = useTransform(
       })
       .then((res) => {
         setData(res.data);
-        loaderTimeout = setTimeout(() => setLoading(false), 1400);
+      })
+      .catch((error) => {
+        if (error?.name === "CanceledError" || error?.code === "ERR_CANCELED") {
+          return;
+        }
+        console.error("Failed to fetch portfolio details:", error);
       });
 
     return () => {
       controller.abort();
-      if (loaderTimeout) {
-        clearTimeout(loaderTimeout);
-      }
     };
   }, []);
 
@@ -373,7 +373,7 @@ useEffect(() => {
 }, []);
 
   useEffect(() => {
-    if (loading || !data) return;
+    if (!data) return;
 
     const sections = sectionMeta
       .map(({ id }) => ({ id, element: sectionRefs.current[id] }))
@@ -440,7 +440,7 @@ useEffect(() => {
 
       window.removeEventListener("resize", updateActiveSection);
     };
-  }, [data, loading]);
+  }, [data]);
 
   const socialProfiles = useMemo(
     () =>
@@ -476,7 +476,7 @@ useEffect(() => {
     ],
   );
 
-  if (loading || !data) return <InitialLoader />;
+  if (!data) return <InitialLoader />;
 
   const [firstName, lastName] = data.name.split(" ");
 
