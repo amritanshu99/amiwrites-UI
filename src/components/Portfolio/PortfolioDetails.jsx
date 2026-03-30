@@ -219,6 +219,8 @@ const sectionMeta = [
 /* ================= MAIN ================= */
 export default function PortfolioDetails() {
   const [data, setData] = useState(null);
+  const [isLoaderMinDurationComplete, setIsLoaderMinDurationComplete] =
+    useState(false);
   const [modal, setModal] = useState({ isOpen: false });
   const [isDark, setIsDark] = useState(false);
   const [socialModal, setSocialModal] = useState(null);
@@ -334,6 +336,16 @@ const textY = useTransform(
     };
   }, []);
 
+
+  useEffect(() => {
+    const minimumLoaderTimer = window.setTimeout(() => {
+      setIsLoaderMinDurationComplete(true);
+    }, 2500);
+
+    return () => {
+      window.clearTimeout(minimumLoaderTimer);
+    };
+  }, []);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -476,7 +488,7 @@ useEffect(() => {
     ],
   );
 
-  if (!data) return <InitialLoader />;
+  if (!data || !isLoaderMinDurationComplete) return <InitialLoader />;
 
   const [firstName, lastName] = data.name.split(" ");
 
