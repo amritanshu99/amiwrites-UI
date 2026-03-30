@@ -95,49 +95,6 @@ const getSectionTop = (element, scrollParent) => {
   return rect.top - parentRect.top + scrollParent.scrollTop;
 };
 
-const getScrollableContainer = (fallbackElement) => {
-  const appScrollContainer = document.querySelector(
-    ".h-screen.overflow-y-scroll.relative",
-  );
-
-  if (
-    appScrollContainer &&
-    (!fallbackElement || appScrollContainer.contains(fallbackElement))
-  ) {
-    return appScrollContainer;
-  }
-
-  if (fallbackElement) {
-    const parent = getScrollParent(fallbackElement);
-    if (parent) return parent;
-  }
-
-  return window;
-};
-
-const getScrollMetrics = (scrollParent) => {
-  if (scrollParent === window) {
-    const root = document.documentElement;
-    const body = document.body;
-    const scrollTop = window.scrollY || root.scrollTop || body?.scrollTop || 0;
-    const clientHeight = window.innerHeight;
-    const scrollHeight = Math.max(
-      root?.scrollHeight || 0,
-      body?.scrollHeight || 0,
-      root?.offsetHeight || 0,
-      body?.offsetHeight || 0,
-    );
-
-    return { scrollTop, clientHeight, scrollHeight };
-  }
-
-  return {
-    scrollTop: scrollParent.scrollTop,
-    clientHeight: scrollParent.clientHeight,
-    scrollHeight: scrollParent.scrollHeight,
-  };
-};
-
 /* ================= TOOLTIP ================= */
 const Tooltip = React.memo(({ children, content }) => {
   const [show, setShow] = useState(false);
@@ -262,8 +219,7 @@ const sectionMeta = [
 /* ================= MAIN ================= */
 export default function PortfolioDetails() {
   const [data, setData] = useState(null);
-  const [isLoaderMinDurationComplete, setIsLoaderMinDurationComplete] =
-    useState(false);
+  const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState({ isOpen: false });
   const [isDark, setIsDark] = useState(false);
   const [socialModal, setSocialModal] = useState(null);
@@ -280,7 +236,10 @@ export default function PortfolioDetails() {
 
     if (!targetSection) return;
 
-    const scrollParent = getScrollableContainer(targetSection);
+    const explicitScrollParent = document.querySelector(
+      ".h-screen.overflow-y-scroll",
+    );
+    const scrollParent = explicitScrollParent || getScrollParent(pageRef.current);
     const targetTop = getSectionTop(targetSection, scrollParent);
     const sectionOffset = 96;
     const scrollTarget = Math.max(targetTop - sectionOffset, 0);
@@ -333,20 +292,27 @@ const textY = useTransform(
     return () => obs.disconnect();
   }, []);
   useEffect(() => {
-    const scrollParent = getScrollableContainer(pageRef.current);
+    const explicitScrollParent = document.querySelector(
+      ".h-screen.overflow-y-scroll",
+    );
+    const scrollParent = explicitScrollParent || getScrollParent(pageRef.current);
     const target = scrollParent === window ? window : scrollParent;
     let rafId = null;
 
     const updateArrowVisibility = () => {
-      const { scrollTop, clientHeight, scrollHeight } =
-        getScrollMetrics(scrollParent);
+      const scrollTop = scrollParent === window ? window.scrollY : scrollParent.scrollTop;
+      const clientHeight =
+        scrollParent === window ? window.innerHeight : scrollParent.clientHeight;
+      const scrollHeight =
+        scrollParent === window
+          ? document.documentElement.scrollHeight
+          : scrollParent.scrollHeight;
 
       if (scrollTop > 10 && !hasScrolledRef.current) {
         hasScrolledRef.current = true;
       }
 
-      const maxScrollTop = Math.max(scrollHeight - clientHeight, 0);
-      const atBottom = maxScrollTop - scrollTop <= 4;
+      const atBottom = Math.ceil(scrollTop + clientHeight) >= scrollHeight;
       setHideArrow(!(hasScrolledRef.current && !atBottom));
     };
 
@@ -371,17 +337,8 @@ const textY = useTransform(
 
 
   useEffect(() => {
-    const minimumLoaderTimer = window.setTimeout(() => {
-      setIsLoaderMinDurationComplete(true);
-    }, 2500);
-
-    return () => {
-      window.clearTimeout(minimumLoaderTimer);
-    };
-  }, []);
-
-  useEffect(() => {
     const controller = new AbortController();
+    let loaderTimeout;
 
     axios
       .get("https://amiwrites-backend-app-2lp5.onrender.com/api/portfolio", {
@@ -389,16 +346,14 @@ const textY = useTransform(
       })
       .then((res) => {
         setData(res.data);
-      })
-      .catch((error) => {
-        if (error?.name === "CanceledError" || error?.code === "ERR_CANCELED") {
-          return;
-        }
-        console.error("Failed to fetch portfolio details:", error);
+        loaderTimeout = setTimeout(() => setLoading(false), 1400);
       });
 
     return () => {
       controller.abort();
+      if (loaderTimeout) {
+        clearTimeout(loaderTimeout);
+      }
     };
   }, []);
 
@@ -418,7 +373,7 @@ useEffect(() => {
 }, []);
 
   useEffect(() => {
-    if (!data) return;
+    if (loading || !data) return;
 
     const sections = sectionMeta
       .map(({ id }) => ({ id, element: sectionRefs.current[id] }))
@@ -426,29 +381,36 @@ useEffect(() => {
 
     if (!sections.length) return;
 
-    const sectionOffset = 110;
+    const explicitScrollParent = document.querySelector(
+      ".h-screen.overflow-y-scroll",
+    );
+    const scrollParent = explicitScrollParent || getScrollParent(pageRef.current);
 
-    const pickActiveSection = () => {
-      const scrollParent = getScrollableContainer(pageRef.current);
-      const scrollTop = getScrollMetrics(scrollParent).scrollTop;
-      const cursor = scrollTop + sectionOffset;
+    const updateActiveSection = () => {
+      const currentScroll =
+        scrollParent === window ? window.scrollY : scrollParent.scrollTop;
+      const viewportHeight =
+        scrollParent === window ? window.innerHeight : scrollParent.clientHeight;
+      const scrollHeight =
+        scrollParent === window
+          ? document.documentElement.scrollHeight
+          : scrollParent.scrollHeight;
+      const marker = currentScroll + Math.min(viewportHeight * 0.25, 160);
+      const isNearBottom = currentScroll + viewportHeight >= scrollHeight - 8;
 
       let nextActiveSection = sections[0].id;
 
-      for (let i = 0; i < sections.length; i += 1) {
-        const currentSection = sections[i];
-        const nextSection = sections[i + 1];
-        const currentTop = getSectionTop(currentSection.element, scrollParent);
+      if (isNearBottom) {
+        nextActiveSection = sections[sections.length - 1].id;
+      } else {
+        for (const section of sections) {
+          const sectionTop = getSectionTop(section.element, scrollParent);
 
-        if (!nextSection) {
-          nextActiveSection = currentSection.id;
-          break;
-        }
-
-        const nextTop = getSectionTop(nextSection.element, scrollParent);
-        if (cursor >= currentTop && cursor < nextTop) {
-          nextActiveSection = currentSection.id;
-          break;
+          if (sectionTop <= marker) {
+            nextActiveSection = section.id;
+          } else {
+            break;
+          }
         }
       }
 
@@ -457,34 +419,28 @@ useEffect(() => {
       );
     };
 
-    const scrollParent = getScrollableContainer(pageRef.current);
-    const eventTargets =
-      scrollParent === window ? [window] : [scrollParent, window];
-    let rafId = null;
-    const onScrollOrResize = () => {
-      if (rafId !== null) return;
-      rafId = window.requestAnimationFrame(() => {
-        rafId = null;
-        pickActiveSection();
-      });
-    };
+    updateActiveSection();
 
-    eventTargets.forEach((target) => {
-      target.addEventListener("scroll", onScrollOrResize, { passive: true });
-    });
-    window.addEventListener("resize", onScrollOrResize, { passive: true });
-    pickActiveSection();
+    if (scrollParent === window) {
+      window.addEventListener("scroll", updateActiveSection, { passive: true });
+    } else {
+      scrollParent.addEventListener("scroll", updateActiveSection, {
+        passive: true,
+      });
+    }
+
+    window.addEventListener("resize", updateActiveSection);
 
     return () => {
-      eventTargets.forEach((target) => {
-        target.removeEventListener("scroll", onScrollOrResize);
-      });
-      window.removeEventListener("resize", onScrollOrResize);
-      if (rafId !== null) {
-        window.cancelAnimationFrame(rafId);
+      if (scrollParent === window) {
+        window.removeEventListener("scroll", updateActiveSection);
+      } else {
+        scrollParent.removeEventListener("scroll", updateActiveSection);
       }
+
+      window.removeEventListener("resize", updateActiveSection);
     };
-  }, [data]);
+  }, [data, loading]);
 
   const socialProfiles = useMemo(
     () =>
@@ -520,7 +476,7 @@ useEffect(() => {
     ],
   );
 
-  if (!data || !isLoaderMinDurationComplete) return <InitialLoader />;
+  if (loading || !data) return <InitialLoader />;
 
   const [firstName, lastName] = data.name.split(" ");
 
@@ -625,8 +581,10 @@ useEffect(() => {
 <section
   ref={heroRef}
 className="relative 
-min-h-[calc(var(--vh,1vh)*100)] 
-md:min-h-[100vh]"
+min-h-[90vh] 
+md:min-h-[120vh] 
+lg:min-h-[140vh] 
+xl:min-h-[160vh]"
 
 >
 
@@ -636,9 +594,10 @@ md:min-h-[100vh]"
           <motion.div
            style={{ scale: imageScale }}
 className="sticky top-0 
-h-[calc(var(--vh,1vh)*64)] 
-md:h-[70vh] 
-lg:h-[74vh] 
+h-[55vh] 
+md:h-[85vh] 
+lg:h-[95vh] 
+xl:h-[105vh] 
 overflow-hidden z-10"
 
 
@@ -662,9 +621,7 @@ overflow-hidden z-10"
     w-full
     h-full
     object-cover
-    object-[50%_18%]
-    md:object-[50%_22%]
-    lg:object-[50%_20%]
+    object-center
     block
    transform-gpu 
    will-change-transform
@@ -681,10 +638,10 @@ overflow-hidden z-10"
           <motion.div
             style={{ y: textY, opacity: textOpacity }}
            className="pointer-events-none sticky top-0 
-h-[20svh] 
-md:h-[28vh] 
-lg:h-[34vh] 
-xl:h-[40vh] 
+h-[22vh] 
+md:h-[32vh] 
+lg:h-[42vh] 
+xl:h-[52vh] 
 flex items-center px-6 md:px-20 z-10"
 
 
