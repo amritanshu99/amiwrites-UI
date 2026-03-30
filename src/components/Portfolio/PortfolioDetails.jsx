@@ -397,61 +397,63 @@ useEffect(() => {
     if (!sections.length) return;
 
     const scrollParent = getScrollableContainer(pageRef.current);
-    const visibilityMap = new Map();
-
-    const pickMostVisibleSection = () => {
-      const visibleSections = Array.from(visibilityMap.entries())
-        .filter(([, ratio]) => ratio > 0)
-        .sort((a, b) => b[1] - a[1]);
-
-      if (!visibleSections.length) return;
-
-      const [nextActiveSection] = visibleSections[0];
-      setActiveSection((prev) =>
-        prev === nextActiveSection ? prev : nextActiveSection,
-      );
-    };
-
-    const updateForBottomEdge = () => {
-      const scrollTop = scrollParent === window ? window.scrollY : scrollParent.scrollTop;
+    const getViewport = () => {
+      const scrollTop =
+        scrollParent === window ? window.scrollY : scrollParent.scrollTop;
       const clientHeight =
         scrollParent === window ? window.innerHeight : scrollParent.clientHeight;
       const scrollHeight =
         scrollParent === window
           ? document.documentElement.scrollHeight
           : scrollParent.scrollHeight;
-
-      if (Math.ceil(scrollTop + clientHeight) >= scrollHeight - 2) {
-        setActiveSection("education");
-      }
+      return { scrollTop, clientHeight, scrollHeight };
     };
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          visibilityMap.set(entry.target.id, entry.intersectionRatio);
-        });
-        pickMostVisibleSection();
-      },
-      {
-        root: scrollParent === window ? null : scrollParent,
-        rootMargin: "-96px 0px -45% 0px",
-        threshold: [0, 0.15, 0.3, 0.45, 0.6, 0.75, 1],
-      },
-    );
+    const updateActiveSection = () => {
+      const { scrollTop, clientHeight, scrollHeight } = getViewport();
+      const sectionOffset = 96;
+      const focusLine = scrollTop + sectionOffset + clientHeight * 0.22;
 
-    sections.forEach(({ element, id }) => {
-      visibilityMap.set(id, 0);
-      observer.observe(element);
-    });
+      if (Math.ceil(scrollTop + clientHeight) >= scrollHeight - 2) {
+        setActiveSection((prev) => (prev === "education" ? prev : "education"));
+        return;
+      }
+
+      const nextActiveSection = sections.reduce((closest, { id, element }) => {
+        const top = getSectionTop(element, scrollParent);
+
+        if (focusLine >= top) {
+          return id;
+        }
+
+        return closest;
+      }, "intro");
+
+      setActiveSection((prev) =>
+        prev === nextActiveSection ? prev : nextActiveSection,
+      );
+    };
 
     const eventTarget = scrollParent === window ? window : scrollParent;
-    eventTarget.addEventListener("scroll", updateForBottomEdge, { passive: true });
-    updateForBottomEdge();
+    let rafId = null;
+    const onScrollOrResize = () => {
+      if (rafId !== null) return;
+      rafId = window.requestAnimationFrame(() => {
+        rafId = null;
+        updateActiveSection();
+      });
+    };
+
+    eventTarget.addEventListener("scroll", onScrollOrResize, { passive: true });
+    window.addEventListener("resize", onScrollOrResize, { passive: true });
+    updateActiveSection();
 
     return () => {
-      observer.disconnect();
-      eventTarget.removeEventListener("scroll", updateForBottomEdge);
+      eventTarget.removeEventListener("scroll", onScrollOrResize);
+      window.removeEventListener("resize", onScrollOrResize);
+      if (rafId !== null) {
+        window.cancelAnimationFrame(rafId);
+      }
     };
   }, [data]);
 
