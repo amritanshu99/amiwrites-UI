@@ -397,6 +397,9 @@ useEffect(() => {
     if (!sections.length) return;
 
     const scrollParent = getScrollableContainer(pageRef.current);
+    const observerById = new Map();
+    const visibleById = new Map();
+
     const getViewport = () => {
       const scrollTop =
         scrollParent === window ? window.scrollY : scrollParent.scrollTop;
@@ -409,30 +412,49 @@ useEffect(() => {
       return { scrollTop, clientHeight, scrollHeight };
     };
 
-    const updateActiveSection = () => {
+    const pickActiveSection = () => {
       const { scrollTop, clientHeight, scrollHeight } = getViewport();
-      const sectionOffset = 96;
-      const focusLine = scrollTop + sectionOffset + clientHeight * 0.22;
 
       if (Math.ceil(scrollTop + clientHeight) >= scrollHeight - 2) {
         setActiveSection((prev) => (prev === "education" ? prev : "education"));
         return;
       }
 
-      const nextActiveSection = sections.reduce((closest, { id, element }) => {
-        const top = getSectionTop(element, scrollParent);
+      const visibleSections = sectionMeta
+        .map(({ id }) => ({
+          id,
+          ratio: visibleById.get(id) ?? 0,
+        }))
+        .filter((entry) => entry.ratio > 0);
 
-        if (focusLine >= top) {
-          return id;
-        }
+      if (!visibleSections.length) return;
 
-        return closest;
-      }, "intro");
+      const nextActiveSection = visibleSections.sort((a, b) => b.ratio - a.ratio)[0]
+        .id;
 
       setActiveSection((prev) =>
         prev === nextActiveSection ? prev : nextActiveSection,
       );
     };
+
+    sections.forEach(({ id, element }) => {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            visibleById.set(id, entry.isIntersecting ? entry.intersectionRatio : 0);
+          });
+          pickActiveSection();
+        },
+        {
+          root: scrollParent === window ? null : scrollParent,
+          rootMargin: "-96px 0px -45% 0px",
+          threshold: [0, 0.1, 0.25, 0.5, 0.75, 1],
+        },
+      );
+
+      observer.observe(element);
+      observerById.set(id, observer);
+    });
 
     const eventTarget = scrollParent === window ? window : scrollParent;
     let rafId = null;
@@ -440,15 +462,16 @@ useEffect(() => {
       if (rafId !== null) return;
       rafId = window.requestAnimationFrame(() => {
         rafId = null;
-        updateActiveSection();
+        pickActiveSection();
       });
     };
 
     eventTarget.addEventListener("scroll", onScrollOrResize, { passive: true });
     window.addEventListener("resize", onScrollOrResize, { passive: true });
-    updateActiveSection();
+    pickActiveSection();
 
     return () => {
+      observerById.forEach((observer) => observer.disconnect());
       eventTarget.removeEventListener("scroll", onScrollOrResize);
       window.removeEventListener("resize", onScrollOrResize);
       if (rafId !== null) {
