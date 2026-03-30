@@ -96,13 +96,12 @@ const getSectionTop = (element, scrollParent) => {
 };
 
 const getScrollableContainer = (fallbackElement) => {
-  const explicitContainer = document.querySelector(
-    ".h-screen.overflow-y-scroll, .h-screen.overflow-y-auto",
-  );
+  if (fallbackElement) {
+    const parent = getScrollParent(fallbackElement);
+    if (parent) return parent;
+  }
 
-  if (explicitContainer) return explicitContainer;
-
-  return getScrollParent(fallbackElement);
+  return window;
 };
 
 /* ================= TOOLTIP ================= */
@@ -413,6 +412,20 @@ useEffect(() => {
       );
     };
 
+    const updateForBottomEdge = () => {
+      const scrollTop = scrollParent === window ? window.scrollY : scrollParent.scrollTop;
+      const clientHeight =
+        scrollParent === window ? window.innerHeight : scrollParent.clientHeight;
+      const scrollHeight =
+        scrollParent === window
+          ? document.documentElement.scrollHeight
+          : scrollParent.scrollHeight;
+
+      if (Math.ceil(scrollTop + clientHeight) >= scrollHeight - 2) {
+        setActiveSection("education");
+      }
+    };
+
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -432,7 +445,14 @@ useEffect(() => {
       observer.observe(element);
     });
 
-    return () => observer.disconnect();
+    const eventTarget = scrollParent === window ? window : scrollParent;
+    eventTarget.addEventListener("scroll", updateForBottomEdge, { passive: true });
+    updateForBottomEdge();
+
+    return () => {
+      observer.disconnect();
+      eventTarget.removeEventListener("scroll", updateForBottomEdge);
+    };
   }, [data]);
 
   const socialProfiles = useMemo(
@@ -574,10 +594,8 @@ useEffect(() => {
 <section
   ref={heroRef}
 className="relative 
-min-h-[92svh] 
-md:min-h-[98vh] 
-lg:min-h-[102vh] 
-xl:min-h-[104vh]"
+min-h-[calc(var(--vh,1vh)*100)] 
+md:min-h-[100vh]"
 
 >
 
@@ -587,10 +605,9 @@ xl:min-h-[104vh]"
           <motion.div
            style={{ scale: imageScale }}
 className="sticky top-0 
-h-[58svh] 
-md:h-[64vh] 
-lg:h-[68vh] 
-xl:h-[70vh] 
+h-[calc(var(--vh,1vh)*64)] 
+md:h-[70vh] 
+lg:h-[74vh] 
 overflow-hidden z-10"
 
 
@@ -614,10 +631,9 @@ overflow-hidden z-10"
     w-full
     h-full
     object-cover
-    object-[50%_28%]
-    md:object-[50%_24%]
+    object-[50%_18%]
+    md:object-[50%_22%]
     lg:object-[50%_20%]
-    xl:object-[50%_18%]
     block
    transform-gpu 
    will-change-transform
