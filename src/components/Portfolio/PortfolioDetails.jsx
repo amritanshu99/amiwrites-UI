@@ -581,10 +581,10 @@ useEffect(() => {
 <section
   ref={heroRef}
 className="relative 
-min-h-[78svh] 
-md:min-h-[98vh] 
-lg:min-h-[112vh] 
-xl:min-h-[124vh]"
+min-h-[92svh] 
+md:min-h-[102vh] 
+lg:min-h-[108vh] 
+xl:min-h-[112vh]"
 
 >
 
@@ -594,10 +594,10 @@ xl:min-h-[124vh]"
           <motion.div
            style={{ scale: imageScale }}
 className="sticky top-0 
-h-[48svh] 
-md:h-[62vh] 
-lg:h-[70vh] 
-xl:h-[76vh] 
+h-[58svh] 
+md:h-[68vh] 
+lg:h-[74vh] 
+xl:h-[78vh] 
 overflow-hidden z-10"
 
 
@@ -621,7 +621,8 @@ overflow-hidden z-10"
     w-full
     h-full
     object-cover
-    object-top
+    object-[50%_28%]
+    md:object-[50%_24%]
     block
    transform-gpu 
    will-change-transform
