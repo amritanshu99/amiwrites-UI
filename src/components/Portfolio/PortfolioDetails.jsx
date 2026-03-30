@@ -603,8 +603,8 @@ useEffect(() => {
 className="relative 
 min-h-[90vh] 
 md:min-h-[110vh] 
-lg:min-h-[112vh] 
-xl:min-h-[118vh]"
+lg:min-h-[108vh] 
+xl:min-h-[114vh]"
 
 >
 
@@ -641,7 +641,7 @@ overflow-hidden z-10"
     w-full
     h-full
     object-cover
-    object-[center_12%]
+    object-[center_16%] md:object-[center_17%] lg:object-[center_24%]
     block
    transform-gpu 
    will-change-transform
