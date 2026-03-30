@@ -621,7 +621,7 @@ overflow-hidden z-10"
     w-full
     h-full
     object-cover
-    object-center
+    object-top
     block
    transform-gpu 
    will-change-transform
