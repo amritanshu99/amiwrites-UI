@@ -60,15 +60,15 @@ const InitialLoader = () => {
           AmiVerse
         </h1>
 
-        <p className="mx-auto max-w-[94%] text-[11px] uppercase tracking-[0.45em] text-white/55 sm:max-w-2xl sm:text-xs md:text-sm">
-          cinematic portfolio experience
-        </p>
-
         <div className="mx-auto h-px w-44 bg-gradient-to-r from-transparent via-white/70 to-transparent sm:w-56 md:w-64" />
 
-        <p className="mx-auto max-w-[92%] font-cinzel text-xs italic leading-relaxed tracking-[0.14em] text-gray-300 sm:max-w-3xl sm:text-sm md:text-base lg:text-lg">
+        <p className="mx-auto max-w-[92%] font-cinzel text-xs italic leading-relaxed tracking-[0.14em] text-gray-300 sm:max-w-3xl sm:text-sm md:text-base lg:text-lg animate-[textBreath_4.6s_ease-in-out_infinite]">
           {randomQuote}
         </p>
+
+        <div className="mx-auto mt-2 h-[2px] w-44 overflow-hidden rounded-full bg-white/15 shadow-[0_0_20px_rgba(255,255,255,0.12)] sm:w-52">
+          <span className="block h-full w-full origin-left bg-gradient-to-r from-indigo-300/70 via-white/85 to-indigo-300/70 animate-[loadSweep_1.9s_ease-in-out_infinite]" />
+        </div>
 
         <div className="mx-auto flex w-fit items-center gap-2.5 pt-2 sm:pt-3">
           <span className="h-1.5 w-1.5 rounded-full bg-white/70 animate-[pulse_1s_ease-in-out_infinite]" />
@@ -101,6 +101,33 @@ const InitialLoader = () => {
             50% {
               text-shadow: 0 14px 42px rgba(0, 0, 0, 0.95), 0 0 28px rgba(255, 255, 255, 0.34);
               letter-spacing: 0.3em;
+            }
+          }
+
+          @keyframes textBreath {
+            0%,
+            100% {
+              opacity: 0.82;
+              transform: translateY(0);
+            }
+            50% {
+              opacity: 1;
+              transform: translateY(-1px);
+            }
+          }
+
+          @keyframes loadSweep {
+            0% {
+              transform: scaleX(0.12);
+              opacity: 0.55;
+            }
+            40% {
+              transform: scaleX(0.72);
+              opacity: 0.85;
+            }
+            100% {
+              transform: scaleX(1);
+              opacity: 1;
             }
           }
 
