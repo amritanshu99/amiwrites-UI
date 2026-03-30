@@ -29,14 +29,9 @@ const Amibot = () => {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const bottomRef = useRef(null); // 🔽 Used to auto-scroll
+  const bottomRef = useRef(null);
   useEffect(() => {
-    const scrollContainer = document.querySelector(
-      ".h-screen.overflow-y-scroll.relative"
-    );
-    if (scrollContainer) {
-      scrollContainer.scrollTo({ top: 0, behavior: "smooth" });
-    }
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }, [pathname]);
 
   // 🧭 Auto-scroll to bottom when messages update
@@ -90,9 +85,9 @@ const Amibot = () => {
   };
 
   return (
-    <section className="min-h-[100dvh] bg-gradient-to-b from-slate-50 via-white to-slate-100 px-3 py-4 text-slate-900 transition-colors duration-300 dark:from-slate-950 dark:via-slate-950 dark:to-slate-900 dark:text-slate-100 sm:px-6 sm:py-6 lg:px-8">
-      <div className="mx-auto w-full max-w-5xl space-y-4 sm:space-y-6">
-        <header className="rounded-3xl border border-slate-200/90 bg-white/90 p-5 shadow-xl shadow-slate-200/50 backdrop-blur-md dark:border-slate-800 dark:bg-gradient-to-r dark:from-slate-900/95 dark:via-slate-900/95 dark:to-slate-800/95 dark:shadow-black/30 sm:p-8">
+    <section className="h-[100dvh] overflow-hidden bg-gradient-to-br from-slate-100 via-white to-slate-200 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 text-slate-900 transition-colors duration-300 dark:from-black dark:via-black dark:to-slate-950 dark:text-slate-100 sm:px-5 sm:pb-4 sm:pt-4 lg:px-8">
+      <div className="mx-auto flex h-full w-full max-w-5xl flex-col gap-3 sm:gap-4">
+        <header className="rounded-3xl border border-slate-200/80 bg-white/80 p-4 shadow-lg shadow-slate-300/40 backdrop-blur-xl dark:border-slate-800 dark:bg-black/85 dark:shadow-black/50 sm:p-6">
           <div className="inline-flex items-center gap-2 rounded-full border border-cyan-500/30 bg-cyan-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.15em] text-cyan-700 dark:border-cyan-400/30 dark:bg-cyan-400/10 dark:text-cyan-300">
             🤖 Amibot Assistant
           </div>
@@ -110,15 +105,14 @@ const Amibot = () => {
           </p>
         </header>
 
-        <div className="flex h-[min(74dvh,760px)] min-h-[440px] flex-col overflow-hidden rounded-3xl border border-slate-200/90 bg-white/90 shadow-xl shadow-slate-200/60 backdrop-blur-sm transition-colors duration-300 dark:border-slate-800 dark:bg-slate-900/80 dark:shadow-black/30 sm:h-[min(76dvh,820px)] lg:h-[min(78dvh,860px)]">
-          <div className="border-b border-slate-200 px-4 py-4 dark:border-slate-800 sm:px-6">
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-3xl border border-slate-200/80 bg-white/85 shadow-xl shadow-slate-300/30 backdrop-blur-xl transition-colors duration-300 dark:border-slate-800 dark:bg-black/90 dark:shadow-black/60">
+          <div className="border-b border-slate-200/90 px-4 py-3 dark:border-slate-800 sm:px-6">
             <h2 className="text-center text-base font-semibold text-slate-800 dark:text-slate-100 sm:text-lg">
               💬 AmiBot — Personal Chat Assistant
             </h2>
           </div>
 
-          {/* 💬 Scrollable Messages Area */}
-          <div className="flex-1 space-y-3 overflow-y-auto bg-slate-50/70 px-3 py-4 dark:bg-slate-950/40 sm:px-6">
+          <div className="flex-1 space-y-3 overflow-y-auto bg-gradient-to-b from-slate-100/70 to-white/70 px-3 py-4 dark:from-black dark:to-slate-950 sm:px-6">
             {messages.map((msg, index) => (
               <div
                 key={index}
@@ -128,7 +122,7 @@ const Amibot = () => {
                   className={`max-w-[88%] rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-md sm:max-w-[82%] md:max-w-[75%] ${
                     msg.sender === "user"
                       ? "bg-cyan-500 text-slate-950"
-                      : "border border-slate-200 bg-white text-slate-800 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+                      : "border border-slate-200 bg-white/90 text-slate-800 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
                   }`}
                 >
                   {msg.text}
@@ -137,16 +131,15 @@ const Amibot = () => {
             ))}
             {loading && (
               <div className="flex justify-start">
-                <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 shadow-md dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200">
+                <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 shadow-md dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200">
                   Typing...
                 </div>
               </div>
             )}
-            <div ref={bottomRef} /> {/* 🔽 Scroll target */}
+            <div ref={bottomRef} />
           </div>
 
-          {/* 🧾 Input */}
-          <div className="border-t border-slate-200 bg-white px-3 py-3 dark:border-slate-800 dark:bg-slate-900 sm:px-5 sm:py-4">
+          <div className="border-t border-slate-200/90 bg-white/95 px-3 py-3 dark:border-slate-800 dark:bg-black sm:px-5 sm:py-4">
             <div className="flex items-center gap-2 sm:gap-3">
               <input
                 type="text"
