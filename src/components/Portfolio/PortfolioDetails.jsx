@@ -582,9 +582,9 @@ useEffect(() => {
   ref={heroRef}
 className="relative 
 min-h-[90vh] 
-md:min-h-[120vh] 
-lg:min-h-[140vh] 
-xl:min-h-[160vh]"
+md:min-h-[110vh] 
+lg:min-h-[125vh] 
+xl:min-h-[135vh]"
 
 >
 
@@ -595,9 +595,9 @@ xl:min-h-[160vh]"
            style={{ scale: imageScale }}
 className="sticky top-0 
 h-[55vh] 
-md:h-[85vh] 
-lg:h-[95vh] 
-xl:h-[105vh] 
+md:h-[80vh] 
+lg:h-[86vh] 
+xl:h-[90vh] 
 overflow-hidden z-10"
 
 
