@@ -192,7 +192,7 @@ export default function LoginModal({ isOpen, onClose }) {
           <div className="flex items-center gap-4">
             <button
               onClick={handleLogin}
-              className="flex-1 py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:opacity-50"
+              className="flex-1 py-2 px-4 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-400 disabled:opacity-50"
               disabled={isLoading}
             >
               Login

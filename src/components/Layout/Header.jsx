@@ -426,7 +426,7 @@ export default function Header({ setLoading }) {
                 <div className="hidden md:flex gap-2">
                   <button
                     onClick={() => setLoginOpen(true)}
-                    className="px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-lg bg-sky-600 text-white hover:bg-sky-700 transition shadow-sm ring-1 ring-sky-700/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-sky-500/80"
+                    className="px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition shadow-sm ring-1 ring-red-700/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-red-500/80"
                     type="button"
                   >
                     Login
@@ -501,7 +501,7 @@ export default function Header({ setLoading }) {
                           setLoginOpen(true);
                           setMenuOpen(false);
                         }}
-                        className="px-3.5 py-2 rounded-lg bg-sky-600 text-white hover:bg-sky-700 transition shadow-sm ring-1 ring-sky-700/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-sky-500/80"
+                        className="px-3.5 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition shadow-sm ring-1 ring-red-700/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-red-500/80"
                         type="button"
                       >
                         Login
