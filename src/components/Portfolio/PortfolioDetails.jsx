@@ -338,7 +338,20 @@ const textY = useTransform(
 
   useEffect(() => {
     const controller = new AbortController();
+    const loadStart = Date.now();
     let loaderTimeout;
+    let isCancelled = false;
+
+    const finishLoading = () => {
+      const elapsed = Date.now() - loadStart;
+      const remaining = Math.max(2500 - elapsed, 0);
+
+      loaderTimeout = setTimeout(() => {
+        if (!isCancelled) {
+          setLoading(false);
+        }
+      }, remaining);
+    };
 
     axios
       .get("https://amiwrites-backend-app-2lp5.onrender.com/api/portfolio", {
@@ -346,10 +359,17 @@ const textY = useTransform(
       })
       .then((res) => {
         setData(res.data);
-        loaderTimeout = setTimeout(() => setLoading(false), 1400);
+      })
+      .catch((error) => {
+        if (axios.isCancel(error)) return;
+        setData(null);
+      })
+      .finally(() => {
+        finishLoading();
       });
 
     return () => {
+      isCancelled = true;
       controller.abort();
       if (loaderTimeout) {
         clearTimeout(loaderTimeout);
@@ -583,8 +603,8 @@ useEffect(() => {
 className="relative 
 min-h-[90vh] 
 md:min-h-[110vh] 
-lg:min-h-[125vh] 
-xl:min-h-[135vh]"
+lg:min-h-[112vh] 
+xl:min-h-[118vh]"
 
 >
 
@@ -596,8 +616,8 @@ xl:min-h-[135vh]"
 className="sticky top-0 
 h-[55vh] 
 md:h-[80vh] 
-lg:h-[86vh] 
-xl:h-[90vh] 
+lg:h-[74vh] 
+xl:h-[78vh] 
 overflow-hidden z-10"
 
 
