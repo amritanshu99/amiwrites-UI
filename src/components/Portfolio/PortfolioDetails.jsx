@@ -96,6 +96,17 @@ const getSectionTop = (element, scrollParent) => {
 };
 
 const getScrollableContainer = (fallbackElement) => {
+  const appScrollContainer = document.querySelector(
+    ".h-screen.overflow-y-scroll.relative",
+  );
+
+  if (
+    appScrollContainer &&
+    (!fallbackElement || appScrollContainer.contains(fallbackElement))
+  ) {
+    return appScrollContainer;
+  }
+
   if (fallbackElement) {
     const parent = getScrollParent(fallbackElement);
     if (parent) return parent;
@@ -415,12 +426,11 @@ useEffect(() => {
 
     if (!sections.length) return;
 
-    const scrollParent = getScrollableContainer(pageRef.current);
     const sectionOffset = 110;
-    const getScrollTop = () => getScrollMetrics(scrollParent).scrollTop;
 
     const pickActiveSection = () => {
-      const scrollTop = getScrollTop();
+      const scrollParent = getScrollableContainer(pageRef.current);
+      const scrollTop = getScrollMetrics(scrollParent).scrollTop;
       const cursor = scrollTop + sectionOffset;
 
       let nextActiveSection = sections[0].id;
@@ -447,7 +457,9 @@ useEffect(() => {
       );
     };
 
-    const eventTarget = scrollParent === window ? window : scrollParent;
+    const scrollParent = getScrollableContainer(pageRef.current);
+    const eventTargets =
+      scrollParent === window ? [window] : [scrollParent, window];
     let rafId = null;
     const onScrollOrResize = () => {
       if (rafId !== null) return;
@@ -457,12 +469,16 @@ useEffect(() => {
       });
     };
 
-    eventTarget.addEventListener("scroll", onScrollOrResize, { passive: true });
+    eventTargets.forEach((target) => {
+      target.addEventListener("scroll", onScrollOrResize, { passive: true });
+    });
     window.addEventListener("resize", onScrollOrResize, { passive: true });
     pickActiveSection();
 
     return () => {
-      eventTarget.removeEventListener("scroll", onScrollOrResize);
+      eventTargets.forEach((target) => {
+        target.removeEventListener("scroll", onScrollOrResize);
+      });
       window.removeEventListener("resize", onScrollOrResize);
       if (rafId !== null) {
         window.cancelAnimationFrame(rafId);
