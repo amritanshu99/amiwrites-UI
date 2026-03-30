@@ -416,57 +416,36 @@ useEffect(() => {
     if (!sections.length) return;
 
     const scrollParent = getScrollableContainer(pageRef.current);
-    const observerById = new Map();
-    const visibleById = new Map();
-
-    const getViewport = () => {
-      return getScrollMetrics(scrollParent);
-    };
+    const sectionOffset = 110;
+    const getScrollTop = () => getScrollMetrics(scrollParent).scrollTop;
 
     const pickActiveSection = () => {
-      const { scrollTop, clientHeight, scrollHeight } = getViewport();
+      const scrollTop = getScrollTop();
+      const cursor = scrollTop + sectionOffset;
 
-      const maxScrollTop = Math.max(scrollHeight - clientHeight, 0);
-      if (maxScrollTop - scrollTop <= 4) {
-        setActiveSection((prev) => (prev === "education" ? prev : "education"));
-        return;
+      let nextActiveSection = sections[0].id;
+
+      for (let i = 0; i < sections.length; i += 1) {
+        const currentSection = sections[i];
+        const nextSection = sections[i + 1];
+        const currentTop = getSectionTop(currentSection.element, scrollParent);
+
+        if (!nextSection) {
+          nextActiveSection = currentSection.id;
+          break;
+        }
+
+        const nextTop = getSectionTop(nextSection.element, scrollParent);
+        if (cursor >= currentTop && cursor < nextTop) {
+          nextActiveSection = currentSection.id;
+          break;
+        }
       }
-
-      const visibleSections = sectionMeta
-        .map(({ id }) => ({
-          id,
-          ratio: visibleById.get(id) ?? 0,
-        }))
-        .filter((entry) => entry.ratio > 0);
-
-      if (!visibleSections.length) return;
-
-      const nextActiveSection = visibleSections.sort((a, b) => b.ratio - a.ratio)[0]
-        .id;
 
       setActiveSection((prev) =>
         prev === nextActiveSection ? prev : nextActiveSection,
       );
     };
-
-    sections.forEach(({ id, element }) => {
-      const observer = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            visibleById.set(id, entry.isIntersecting ? entry.intersectionRatio : 0);
-          });
-          pickActiveSection();
-        },
-        {
-          root: scrollParent === window ? null : scrollParent,
-          rootMargin: "-96px 0px -45% 0px",
-          threshold: [0, 0.1, 0.25, 0.5, 0.75, 1],
-        },
-      );
-
-      observer.observe(element);
-      observerById.set(id, observer);
-    });
 
     const eventTarget = scrollParent === window ? window : scrollParent;
     let rafId = null;
@@ -483,7 +462,6 @@ useEffect(() => {
     pickActiveSection();
 
     return () => {
-      observerById.forEach((observer) => observer.disconnect());
       eventTarget.removeEventListener("scroll", onScrollOrResize);
       window.removeEventListener("resize", onScrollOrResize);
       if (rafId !== null) {
