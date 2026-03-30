@@ -95,6 +95,16 @@ const getSectionTop = (element, scrollParent) => {
   return rect.top - parentRect.top + scrollParent.scrollTop;
 };
 
+const getScrollableContainer = (fallbackElement) => {
+  const explicitContainer = document.querySelector(
+    ".h-screen.overflow-y-scroll, .h-screen.overflow-y-auto",
+  );
+
+  if (explicitContainer) return explicitContainer;
+
+  return getScrollParent(fallbackElement);
+};
+
 /* ================= TOOLTIP ================= */
 const Tooltip = React.memo(({ children, content }) => {
   const [show, setShow] = useState(false);
@@ -237,10 +247,7 @@ export default function PortfolioDetails() {
 
     if (!targetSection) return;
 
-    const explicitScrollParent = document.querySelector(
-      ".h-screen.overflow-y-scroll",
-    );
-    const scrollParent = explicitScrollParent || getScrollParent(pageRef.current);
+    const scrollParent = getScrollableContainer(targetSection);
     const targetTop = getSectionTop(targetSection, scrollParent);
     const sectionOffset = 96;
     const scrollTarget = Math.max(targetTop - sectionOffset, 0);
@@ -293,10 +300,7 @@ const textY = useTransform(
     return () => obs.disconnect();
   }, []);
   useEffect(() => {
-    const explicitScrollParent = document.querySelector(
-      ".h-screen.overflow-y-scroll",
-    );
-    const scrollParent = explicitScrollParent || getScrollParent(pageRef.current);
+    const scrollParent = getScrollableContainer(pageRef.current);
     const target = scrollParent === window ? window : scrollParent;
     let rafId = null;
 
@@ -393,65 +397,42 @@ useEffect(() => {
 
     if (!sections.length) return;
 
-    const explicitScrollParent = document.querySelector(
-      ".h-screen.overflow-y-scroll",
-    );
-    const scrollParent = explicitScrollParent || getScrollParent(pageRef.current);
+    const scrollParent = getScrollableContainer(pageRef.current);
+    const visibilityMap = new Map();
 
-    const updateActiveSection = () => {
-      const currentScroll =
-        scrollParent === window ? window.scrollY : scrollParent.scrollTop;
-      const viewportHeight =
-        scrollParent === window ? window.innerHeight : scrollParent.clientHeight;
-      const scrollHeight =
-        scrollParent === window
-          ? document.documentElement.scrollHeight
-          : scrollParent.scrollHeight;
-      const marker = currentScroll + Math.min(viewportHeight * 0.25, 160);
-      const isNearBottom = currentScroll + viewportHeight >= scrollHeight - 8;
+    const pickMostVisibleSection = () => {
+      const visibleSections = Array.from(visibilityMap.entries())
+        .filter(([, ratio]) => ratio > 0)
+        .sort((a, b) => b[1] - a[1]);
 
-      let nextActiveSection = sections[0].id;
+      if (!visibleSections.length) return;
 
-      if (isNearBottom) {
-        nextActiveSection = sections[sections.length - 1].id;
-      } else {
-        for (const section of sections) {
-          const sectionTop = getSectionTop(section.element, scrollParent);
-
-          if (sectionTop <= marker) {
-            nextActiveSection = section.id;
-          } else {
-            break;
-          }
-        }
-      }
-
+      const [nextActiveSection] = visibleSections[0];
       setActiveSection((prev) =>
         prev === nextActiveSection ? prev : nextActiveSection,
       );
     };
 
-    updateActiveSection();
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          visibilityMap.set(entry.target.id, entry.intersectionRatio);
+        });
+        pickMostVisibleSection();
+      },
+      {
+        root: scrollParent === window ? null : scrollParent,
+        rootMargin: "-96px 0px -45% 0px",
+        threshold: [0, 0.15, 0.3, 0.45, 0.6, 0.75, 1],
+      },
+    );
 
-    if (scrollParent === window) {
-      window.addEventListener("scroll", updateActiveSection, { passive: true });
-    } else {
-      scrollParent.addEventListener("scroll", updateActiveSection, {
-        passive: true,
-      });
-    }
+    sections.forEach(({ element, id }) => {
+      visibilityMap.set(id, 0);
+      observer.observe(element);
+    });
 
-    window.addEventListener("resize", updateActiveSection);
-
-    return () => {
-      if (scrollParent === window) {
-        window.removeEventListener("scroll", updateActiveSection);
-      } else {
-        scrollParent.removeEventListener("scroll", updateActiveSection);
-      }
-
-      window.removeEventListener("resize", updateActiveSection);
-    };
+    return () => observer.disconnect();
   }, [data]);
 
   const socialProfiles = useMemo(
@@ -594,9 +575,9 @@ useEffect(() => {
   ref={heroRef}
 className="relative 
 min-h-[92svh] 
-md:min-h-[102vh] 
-lg:min-h-[108vh] 
-xl:min-h-[112vh]"
+md:min-h-[98vh] 
+lg:min-h-[102vh] 
+xl:min-h-[104vh]"
 
 >
 
@@ -607,9 +588,9 @@ xl:min-h-[112vh]"
            style={{ scale: imageScale }}
 className="sticky top-0 
 h-[58svh] 
-md:h-[68vh] 
-lg:h-[74vh] 
-xl:h-[78vh] 
+md:h-[64vh] 
+lg:h-[68vh] 
+xl:h-[70vh] 
 overflow-hidden z-10"
 
 
@@ -635,6 +616,8 @@ overflow-hidden z-10"
     object-cover
     object-[50%_28%]
     md:object-[50%_24%]
+    lg:object-[50%_20%]
+    xl:object-[50%_18%]
     block
    transform-gpu 
    will-change-transform
