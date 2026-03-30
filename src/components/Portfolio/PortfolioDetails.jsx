@@ -581,10 +581,10 @@ useEffect(() => {
 <section
   ref={heroRef}
 className="relative 
-min-h-[72svh] 
-md:min-h-[90vh] 
-lg:min-h-[102vh] 
-xl:min-h-[112vh]"
+min-h-[78svh] 
+md:min-h-[98vh] 
+lg:min-h-[112vh] 
+xl:min-h-[124vh]"
 
 >
 
@@ -594,10 +594,10 @@ xl:min-h-[112vh]"
           <motion.div
            style={{ scale: imageScale }}
 className="sticky top-0 
-h-[46svh] 
-md:h-[58vh] 
-lg:h-[64vh] 
-xl:h-[68vh] 
+h-[48svh] 
+md:h-[62vh] 
+lg:h-[70vh] 
+xl:h-[76vh] 
 overflow-hidden z-10"
 
 
@@ -638,10 +638,10 @@ overflow-hidden z-10"
           <motion.div
             style={{ y: textY, opacity: textOpacity }}
            className="pointer-events-none sticky top-0 
-h-[18svh] 
-md:h-[24vh] 
-lg:h-[30vh] 
-xl:h-[34vh] 
+h-[20svh] 
+md:h-[28vh] 
+lg:h-[34vh] 
+xl:h-[40vh] 
 flex items-center px-6 md:px-20 z-10"
 
 
