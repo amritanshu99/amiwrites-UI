@@ -104,6 +104,29 @@ const getScrollableContainer = (fallbackElement) => {
   return window;
 };
 
+const getScrollMetrics = (scrollParent) => {
+  if (scrollParent === window) {
+    const root = document.documentElement;
+    const body = document.body;
+    const scrollTop = window.scrollY || root.scrollTop || body?.scrollTop || 0;
+    const clientHeight = window.innerHeight;
+    const scrollHeight = Math.max(
+      root?.scrollHeight || 0,
+      body?.scrollHeight || 0,
+      root?.offsetHeight || 0,
+      body?.offsetHeight || 0,
+    );
+
+    return { scrollTop, clientHeight, scrollHeight };
+  }
+
+  return {
+    scrollTop: scrollParent.scrollTop,
+    clientHeight: scrollParent.clientHeight,
+    scrollHeight: scrollParent.scrollHeight,
+  };
+};
+
 /* ================= TOOLTIP ================= */
 const Tooltip = React.memo(({ children, content }) => {
   const [show, setShow] = useState(false);
@@ -304,19 +327,15 @@ const textY = useTransform(
     let rafId = null;
 
     const updateArrowVisibility = () => {
-      const scrollTop = scrollParent === window ? window.scrollY : scrollParent.scrollTop;
-      const clientHeight =
-        scrollParent === window ? window.innerHeight : scrollParent.clientHeight;
-      const scrollHeight =
-        scrollParent === window
-          ? document.documentElement.scrollHeight
-          : scrollParent.scrollHeight;
+      const { scrollTop, clientHeight, scrollHeight } =
+        getScrollMetrics(scrollParent);
 
       if (scrollTop > 10 && !hasScrolledRef.current) {
         hasScrolledRef.current = true;
       }
 
-      const atBottom = Math.ceil(scrollTop + clientHeight) >= scrollHeight;
+      const maxScrollTop = Math.max(scrollHeight - clientHeight, 0);
+      const atBottom = maxScrollTop - scrollTop <= 4;
       setHideArrow(!(hasScrolledRef.current && !atBottom));
     };
 
@@ -401,21 +420,14 @@ useEffect(() => {
     const visibleById = new Map();
 
     const getViewport = () => {
-      const scrollTop =
-        scrollParent === window ? window.scrollY : scrollParent.scrollTop;
-      const clientHeight =
-        scrollParent === window ? window.innerHeight : scrollParent.clientHeight;
-      const scrollHeight =
-        scrollParent === window
-          ? document.documentElement.scrollHeight
-          : scrollParent.scrollHeight;
-      return { scrollTop, clientHeight, scrollHeight };
+      return getScrollMetrics(scrollParent);
     };
 
     const pickActiveSection = () => {
       const { scrollTop, clientHeight, scrollHeight } = getViewport();
 
-      if (Math.ceil(scrollTop + clientHeight) >= scrollHeight - 2) {
+      const maxScrollTop = Math.max(scrollHeight - clientHeight, 0);
+      if (maxScrollTop - scrollTop <= 4) {
         setActiveSection((prev) => (prev === "education" ? prev : "education"));
         return;
       }
