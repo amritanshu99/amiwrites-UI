@@ -397,6 +397,7 @@ useEffect(() => {
     if (!sections.length) return;
 
     const scrollParent = getScrollableContainer(pageRef.current);
+
     const getViewport = () => {
       const scrollTop =
         scrollParent === window ? window.scrollY : scrollParent.scrollTop;
@@ -409,24 +410,28 @@ useEffect(() => {
       return { scrollTop, clientHeight, scrollHeight };
     };
 
-    const updateActiveSection = () => {
+    const pickActiveSection = () => {
       const { scrollTop, clientHeight, scrollHeight } = getViewport();
-      const sectionOffset = 96;
-      const focusLine = scrollTop + sectionOffset + clientHeight * 0.22;
 
       if (Math.ceil(scrollTop + clientHeight) >= scrollHeight - 2) {
         setActiveSection((prev) => (prev === "education" ? prev : "education"));
         return;
       }
 
-      const nextActiveSection = sections.reduce((closest, { id, element }) => {
-        const top = getSectionTop(element, scrollParent);
+      const sectionOffset = 120;
+      const markerLine =
+        scrollParent === window
+          ? sectionOffset
+          : scrollParent.getBoundingClientRect().top + sectionOffset;
 
-        if (focusLine >= top) {
+      const nextActiveSection = sections.reduce((closestId, { id, element }) => {
+        const sectionTop = element.getBoundingClientRect().top;
+
+        if (sectionTop <= markerLine) {
           return id;
         }
 
-        return closest;
+        return closestId;
       }, "intro");
 
       setActiveSection((prev) =>
@@ -440,13 +445,13 @@ useEffect(() => {
       if (rafId !== null) return;
       rafId = window.requestAnimationFrame(() => {
         rafId = null;
-        updateActiveSection();
+        pickActiveSection();
       });
     };
 
     eventTarget.addEventListener("scroll", onScrollOrResize, { passive: true });
     window.addEventListener("resize", onScrollOrResize, { passive: true });
-    updateActiveSection();
+    pickActiveSection();
 
     return () => {
       eventTarget.removeEventListener("scroll", onScrollOrResize);
