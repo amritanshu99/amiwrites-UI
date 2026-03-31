@@ -205,13 +205,14 @@ export default function Header({ setLoading }) {
         className="
           sticky top-0 z-50 w-full
           border-b border-black/5 dark:border-white/10
-          bg-gradient-to-r from-sky-50 via-fuchsia-50 to-emerald-50
-          supports-[backdrop-filter]:bg-white/60 backdrop-blur-md
-          dark:bg-black dark:bg-none dark:supports-[backdrop-filter]:bg-black dark:backdrop-blur-none
+          bg-gradient-to-r from-sky-50/90 via-fuchsia-50/90 to-emerald-50/90
+          supports-[backdrop-filter]:bg-white/70 backdrop-blur-xl
+          shadow-[0_8px_30px_rgba(15,23,42,0.06)]
+          dark:bg-black/95 dark:bg-none dark:supports-[backdrop-filter]:bg-black/90 dark:backdrop-blur-xl dark:shadow-[0_8px_26px_rgba(0,0,0,0.4)]
         "
       >
-        <div className="mx-auto max-w-7xl px-3 sm:px-4">
-          <div className="flex h-16 items-center justify-between gap-2 sm:gap-3 flex-nowrap">
+        <div className="mx-auto max-w-7xl px-3 sm:px-4 lg:px-6">
+          <div className="flex h-14 sm:h-16 lg:h-[4.25rem] items-center justify-between gap-2 sm:gap-3 flex-nowrap">
             {/* Brand */}
             <Link
               to="/"
@@ -227,11 +228,11 @@ export default function Header({ setLoading }) {
               {/* Always show name; truncate if tight */}
               <span
                 className="
-                  text-lg sm:text-[1.1rem] md:text-xl font-semibold tracking-tight
+                  text-base sm:text-[1.05rem] md:text-xl font-semibold tracking-tight
                   text-gray-900 dark:text-white
                   group-hover:text-sky-700 dark:group-hover:text-cyan-300 transition-colors
                   whitespace-nowrap truncate
-                  max-w-[34vw] sm:max-w-[40vw] md:max-w-[22rem] lg:max-w-[26rem]
+                  max-w-[26vw] sm:max-w-[34vw] md:max-w-[22rem] lg:max-w-[26rem]
                 "
                 title="AmiVerse"
               >
@@ -262,14 +263,15 @@ export default function Header({ setLoading }) {
                 ref={navScrollRef}
                 className="
                   flex items-center gap-1 rounded-full
-                  bg-gray-50/60 dark:bg-transparent
-                  p-0.5 sm:p-1 dark:p-0
-                  ring-1 ring-black/5 dark:ring-0
+                  bg-white/70 dark:bg-white/[0.04]
+                  p-0.5 sm:p-1
+                  ring-1 ring-black/10 dark:ring-white/10
+                  shadow-inner shadow-white/70 dark:shadow-none
                   overflow-x-auto whitespace-nowrap scroll-px-2
                   snap-x snap-mandatory
                   [-ms-overflow-style:none] [scrollbar-width:none]
                   [&::-webkit-scrollbar]:hidden
-                  max-w-full min-w-0
+                  max-w-full min-w-0 md:max-w-[52vw] lg:max-w-[58ch]
                 "
                 onScroll={updateScrollButtons}
                 role="tablist"
@@ -279,8 +281,8 @@ export default function Header({ setLoading }) {
                     key={link.name}
                     to={link.to}
                     className={({ isActive }) =>
-                      `relative rounded-full outline-none transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-sky-500/60
-                       text-[12.25px] sm:text-[12.75px] md:text-sm px-2.5 sm:px-3 md:px-3.5 py-1.5 sm:py-2 snap-center
+                       `relative rounded-full outline-none transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-sky-500/60
+                       text-[12.25px] sm:text-[12.75px] md:text-sm px-2.5 sm:px-3 md:px-3.5 py-1.5 sm:py-2 md:py-2.5 snap-center
                        ${
                          isActive
                            ? "text-sky-800 dark:text-cyan-200"
@@ -295,7 +297,7 @@ export default function Header({ setLoading }) {
                         {isActive && (
                           <ActivePill
                             layoutId="active-pill"
-                            className="absolute inset-0 rounded-full bg-sky-200/70 dark:bg-white/10 ring-1 ring-sky-300/60 dark:ring-white/10"
+                            className="absolute inset-0 rounded-full bg-sky-200/70 dark:bg-cyan-500/20 ring-1 ring-sky-300/60 dark:ring-cyan-300/40 shadow-sm"
                             transition={{
                               type: "spring",
                               stiffness: 500,
@@ -330,50 +332,19 @@ export default function Header({ setLoading }) {
             </div>
 
             {/* Right actions */}
-            <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+            <div className="flex items-center gap-1 sm:gap-2 shrink-0">
               {/* Theme toggle */}
               <button
                 onClick={() => setDarkMode((prev) => !prev)}
-                className="relative inline-flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-full ring-1 ring-black/10 dark:ring-white/10 hover:bg-black/5 dark:hover:bg-white/5 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500/60"
+                className="group relative inline-flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-full bg-white/60 dark:bg-white/[0.04] ring-1 ring-black/10 dark:ring-white/10 hover:bg-white dark:hover:bg-white/10 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500/60"
                 aria-label="Toggle Dark Mode"
                 type="button"
               >
                 {mounted &&
                   (darkMode ? (
-                 <Sun
-  className="h-5 w-5 p-1.5 rounded-full
-  bg-gradient-to-tr from-yellow-200 via-amber-300 to-orange-400
-  text-white 
-  shadow-[0_0_12px_3px_rgba(255,200,0,0.55)]
-  ring-2 ring-yellow-300/50
-  hover:scale-110 hover:shadow-[0_0_16px_4px_rgba(255,200,0,0.7)]
-  transition-all duration-300 ease-out"
-/>
-
+                    <Sun className="h-5 w-5 text-amber-500 drop-shadow-[0_0_8px_rgba(245,158,11,0.65)] transition-transform duration-300 group-hover:scale-110" />
                   ) : (
-   <div
-  className="
-    group inline-flex items-center justify-center p-2 rounded-full 
-    bg-slate-100 dark:bg-slate-800 
-    transition-all duration-300 ease-in-out
-    hover:bg-black
-  "
->
-  <MoonStar
-    className="
-      h-5 w-5 
-      text-slate-600 dark:text-slate-200
-      transition-all duration-300 ease-in-out
-      group-hover:text-amber-300
-      group-hover:drop-shadow-[0_0_10px_#fbbf24]
-      dark:group-hover:text-yellow-400
-      dark:group-hover:drop-shadow-[0_0_12px_#facc15]
-      group-hover:scale-110
-    "
-  />
-</div>
-
-
+                    <MoonStar className="h-5 w-5 text-slate-600 dark:text-slate-200 transition-all duration-300 group-hover:text-violet-500 dark:group-hover:text-cyan-300 group-hover:drop-shadow-[0_0_10px_rgba(56,189,248,0.6)] group-hover:scale-110" />
                   ))}
               </button>
 
@@ -383,7 +354,7 @@ export default function Header({ setLoading }) {
                   <button
                     ref={userButtonRef}
                     onClick={() => setUserMenuOpen((p) => !p)}
-                    className="inline-flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-full ring-1 ring-black/10 dark:ring-white/10 hover:bg-black/5 dark:hover:bg-white/5 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500/60 text-gray-900 dark:text-white"
+                    className="inline-flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-full bg-white/60 dark:bg-white/[0.04] ring-1 ring-black/10 dark:ring-white/10 hover:bg-white dark:hover:bg-white/10 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500/60 text-gray-900 dark:text-white"
                     aria-label="User menu"
                     aria-haspopup="menu"
                     aria-expanded={userMenuOpen}
@@ -404,7 +375,7 @@ export default function Header({ setLoading }) {
                         id="user-menu"
                         role="menu"
                         aria-labelledby="user-menu-button"
-                        className="absolute right-0 mt-2 w-48 overflow-hidden rounded-xl bg-white dark:bg-black shadow-lg ring-1 ring-black/10 dark:ring-white/10"
+                        className="absolute right-0 mt-2 w-52 max-w-[88vw] overflow-hidden rounded-xl bg-white dark:bg-black shadow-lg ring-1 ring-black/10 dark:ring-white/10"
                       >
                         <div className="px-4 py-3 text-sm text-gray-800 dark:text-gray-200 border-b border-black/5 dark:border-white/10">
                           Hi, <span className="font-medium">{username}</span>!
@@ -423,17 +394,17 @@ export default function Header({ setLoading }) {
                   </AnimatePresence>
                 </div>
               ) : (
-                <div className="hidden md:flex gap-2">
+                <div className="hidden md:flex gap-1.5 lg:gap-2">
                   <button
                     onClick={() => setLoginOpen(true)}
-                    className="px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-lg bg-sky-600 text-white hover:bg-sky-700 transition shadow-sm ring-1 ring-sky-700/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-sky-500/80"
+                    className="px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl bg-gradient-to-r from-sky-600 to-blue-600 text-white hover:from-sky-700 hover:to-blue-700 transition shadow-sm ring-1 ring-sky-700/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-sky-500/80"
                     type="button"
                   >
                     Login
                   </button>
                   <button
                     onClick={() => setSignupOpen(true)}
-                    className="px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition shadow-sm ring-1 ring-emerald-700/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-emerald-500/80"
+                    className="px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white hover:from-emerald-700 hover:to-teal-700 transition shadow-sm ring-1 ring-emerald-700/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-emerald-500/80"
                     type="button"
                   >
                     Sign Up
@@ -444,7 +415,7 @@ export default function Header({ setLoading }) {
               {/* Mobile burger (only on phones) */}
               <button
                 onClick={() => setMenuOpen((p) => !p)}
-                className="sm:hidden inline-flex h-9 w-9 items-center justify-center rounded-full ring-1 ring-black/10 dark:ring-white/10 hover:bg-black/5 dark:hover:bg-white/5 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500/60 text-gray-800 dark:text-gray-200"
+                className="sm:hidden inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/60 dark:bg-white/[0.04] ring-1 ring-black/10 dark:ring-white/10 hover:bg-white dark:hover:bg-white/10 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500/60 text-gray-800 dark:text-gray-200"
                 aria-label="Toggle menu"
                 aria-expanded={menuOpen}
                 aria-controls="mobile-menu"
@@ -471,7 +442,7 @@ export default function Header({ setLoading }) {
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.18 }}
               id="mobile-menu"
-              className="sm:hidden border-t border-black/5 dark:border-white/10 bg-white/90 dark:bg-black dark:backdrop-blur-0"
+              className="sm:hidden border-t border-black/5 dark:border-white/10 bg-white/95 dark:bg-black/95 supports-[backdrop-filter]:backdrop-blur-lg"
               role="menu"
             >
               <div className="mx-auto max-w-7xl px-4 sm:px-6 py-3">
@@ -501,7 +472,7 @@ export default function Header({ setLoading }) {
                           setLoginOpen(true);
                           setMenuOpen(false);
                         }}
-                        className="px-3.5 py-2 rounded-lg bg-sky-600 text-white hover:bg-sky-700 transition shadow-sm ring-1 ring-sky-700/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-sky-500/80"
+                        className="px-3.5 py-2 rounded-lg bg-gradient-to-r from-sky-600 to-blue-600 text-white hover:from-sky-700 hover:to-blue-700 transition shadow-sm ring-1 ring-sky-700/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-sky-500/80"
                         type="button"
                       >
                         Login
@@ -511,7 +482,7 @@ export default function Header({ setLoading }) {
                           setSignupOpen(true);
                           setMenuOpen(false);
                         }}
-                        className="px-3.5 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition shadow-sm ring-1 ring-emerald-700/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-emerald-500/80"
+                        className="px-3.5 py-2 rounded-lg bg-gradient-to-r from-emerald-600 to-teal-600 text-white hover:from-emerald-700 hover:to-teal-700 transition shadow-sm ring-1 ring-emerald-700/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-emerald-500/80"
                         type="button"
                       >
                         Sign Up
