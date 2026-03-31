@@ -639,6 +639,9 @@ useEffect(() => {
           <motion.div
             ref={bottomCtaRef}
             layout
+            transition={{
+              layout: { duration: 0.35, ease: [0.22, 1, 0.36, 1] },
+            }}
             onMouseEnter={
               isTouchDevice ? undefined : () => setIsBottomCtaExpanded(true)
             }
@@ -659,58 +662,82 @@ useEffect(() => {
             }
             className="mx-auto flex w-fit max-w-full items-center gap-1.5 rounded-full border border-zinc-200/70 bg-white/85 p-1.5 shadow-[0_10px_30px_rgba(0,0,0,0.12)] backdrop-blur-xl dark:border-zinc-700 dark:bg-zinc-900/80"
           >
-            {!isBottomCtaExpanded ? (
-              <button
-                type="button"
-                onClick={() => setIsBottomCtaExpanded(true)}
-                onPointerDown={(event) => {
-                  if (event.pointerType === "touch") {
-                    setIsBottomCtaExpanded(true);
-                  }
-                }}
-                className="group flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold text-zinc-700 transition-all hover:bg-zinc-100 dark:text-zinc-100 dark:hover:bg-zinc-800 sm:text-sm"
-                aria-label={`Expand section switcher. Current section is ${activeSectionMeta.label}`}
-              >
-                <span className="text-zinc-400 dark:text-zinc-500">Jump to</span>
-                <span className="rounded-full bg-zinc-900 px-2.5 py-1 text-white dark:bg-white dark:text-zinc-900">
-                  {activeSectionMeta.label}
-                </span>
-                <FaChevronUp className="text-[10px] text-zinc-500 transition-transform group-hover:-translate-y-0.5 dark:text-zinc-300" />
-              </button>
-            ) : (
-              <>
-                {sectionMeta.map((section) => {
-                  const isActive = activeSection === section.id;
-
-                  return (
-                    <button
-                      key={section.id}
-                      type="button"
-                      aria-current={isActive ? "page" : undefined}
-                      onClick={() => {
-                        scrollToSection(section.id);
-                        setIsBottomCtaExpanded(false);
-                      }}
-                      className={`whitespace-nowrap rounded-full px-2.5 py-1.5 text-[11px] font-medium transition-all duration-300 sm:px-3 sm:text-sm ${
-                        isActive
-                          ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900"
-                          : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
-                      }`}
-                    >
-                      {section.label}
-                    </button>
-                  );
-                })}
-                <button
+            <AnimatePresence initial={false} mode="wait">
+              {!isBottomCtaExpanded ? (
+                <motion.button
+                  key="collapsed-cta"
                   type="button"
-                  onClick={() => setIsBottomCtaExpanded(false)}
-                  aria-label="Collapse section switcher"
-                  className="rounded-full p-2 text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800 dark:hover:text-white"
+                  initial={{ opacity: 0, y: 8, scale: 0.96 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -8, scale: 0.96 }}
+                  transition={{ duration: 0.24, ease: "easeOut" }}
+                  onClick={() => setIsBottomCtaExpanded(true)}
+                  onPointerDown={(event) => {
+                    if (event.pointerType === "touch") {
+                      setIsBottomCtaExpanded(true);
+                    }
+                  }}
+                  className="group flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold text-zinc-700 transition-all hover:bg-zinc-100 dark:text-zinc-100 dark:hover:bg-zinc-800 sm:text-sm"
+                  aria-label={`Expand section switcher. Current section is ${activeSectionMeta.label}`}
                 >
-                  <FaChevronDown className="text-[10px]" />
-                </button>
-              </>
-            )}
+                  <span className="text-zinc-400 dark:text-zinc-500">Jump to</span>
+                  <span className="rounded-full bg-zinc-900 px-2.5 py-1 text-white dark:bg-white dark:text-zinc-900">
+                    {activeSectionMeta.label}
+                  </span>
+                  <FaChevronUp className="text-[10px] text-zinc-500 transition-transform group-hover:-translate-y-0.5 dark:text-zinc-300" />
+                </motion.button>
+              ) : (
+                <motion.div
+                  key="expanded-cta"
+                  initial={{ opacity: 0, y: 10, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -10, scale: 0.98 }}
+                  transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                  className="flex items-center gap-1.5"
+                >
+                  {sectionMeta.map((section, index) => {
+                    const isActive = activeSection === section.id;
+
+                    return (
+                      <motion.button
+                        key={section.id}
+                        type="button"
+                        aria-current={isActive ? "page" : undefined}
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{
+                          duration: 0.2,
+                          delay: 0.04 * index,
+                          ease: "easeOut",
+                        }}
+                        onClick={() => {
+                          scrollToSection(section.id);
+                          setIsBottomCtaExpanded(false);
+                        }}
+                        className={`whitespace-nowrap rounded-full px-2.5 py-1.5 text-[11px] font-medium transition-all duration-300 sm:px-3 sm:text-sm ${
+                          isActive
+                            ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900"
+                            : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                        }`}
+                      >
+                        {section.label}
+                      </motion.button>
+                    );
+                  })}
+                  <motion.button
+                    type="button"
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.2, delay: 0.18, ease: "easeOut" }}
+                    onClick={() => setIsBottomCtaExpanded(false)}
+                    aria-label="Collapse section switcher"
+                    className="rounded-full p-2 text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800 dark:hover:text-white"
+                  >
+                    <FaChevronDown className="text-[10px]" />
+                  </motion.button>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </motion.div>
         </div>
 
