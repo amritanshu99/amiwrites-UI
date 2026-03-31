@@ -156,7 +156,6 @@ function TaskManager() {
   };
 
   const toggleTaskComplete = async (id, currentStatus) => {
-    debugger;
     setLoading(true);
     try {
       const res = await axiosAuth.put(`/${id}`, { completed: !currentStatus });
@@ -210,11 +209,11 @@ function TaskManager() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-cyan-300 via-pink-300 to-yellow-200 dark:from-[#0a0a0a] dark:via-[#111111] dark:to-black p-6 transition-colors duration-500">
-      <div className="max-w-5xl mx-auto">
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top,_#ecfeff_0%,_#fdf2f8_40%,_#f8fafc_100%)] dark:bg-[radial-gradient(circle_at_top,_#1f2937_0%,_#0b1120_45%,_#030712_100%)] px-4 py-6 sm:px-6 lg:px-8 transition-colors duration-500">
+      <div className="max-w-6xl mx-auto">
         {loading && (
-          <div className="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-sm bg-black/30">
-            <div className="flex flex-col items-center justify-center gap-4 bg-white dark:bg-zinc-900 shadow-2xl rounded-2xl px-8 py-6 w-80 animate-fade-in">
+          <div className="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-md bg-slate-900/30 dark:bg-black/50">
+            <div className="flex flex-col items-center justify-center gap-4 bg-white/95 dark:bg-zinc-900/95 border border-white/50 dark:border-zinc-700 shadow-2xl rounded-2xl px-8 py-6 w-80 animate-fade-in">
               <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
               <div className="text-base sm:text-lg font-semibold text-gray-700 dark:text-gray-200">
                 Loading your mission...
@@ -222,12 +221,12 @@ function TaskManager() {
             </div>
           </div>
         )}
-        <h1 className="text-5xl font-extrabold text-center mb-4 text-gray-900 dark:text-blue-200 drop-shadow tracking-tight">
+        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-center mb-4 text-slate-900 dark:text-blue-100 drop-shadow-sm tracking-tight">
           {" "}
           Mission Control Dashboard
         </h1>
         <p
-          className={`text-center italic text-lg text-gray-800 dark:text-gray-400 mb-8 max-w-3xl mx-auto ${
+          className={`text-center italic text-base sm:text-lg text-slate-700 dark:text-slate-300/90 mb-8 max-w-3xl mx-auto leading-relaxed ${
             animate ? "animate-smoke" : ""
           }`}
         >
@@ -239,7 +238,7 @@ function TaskManager() {
             <button
               onClick={() => setShowAnalytics(true)}
               disabled={loading}
-              className="bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 disabled:opacity-60 hover:brightness-110 text-white px-6 py-2 rounded-full font-bold shadow-lg transition-all duration-300 transform hover:scale-105"
+              className="bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 disabled:opacity-60 hover:brightness-110 text-white px-6 py-2.5 rounded-full font-bold shadow-lg shadow-indigo-500/20 transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-slate-900"
             >
               📊 View Productivity Snapshot
             </button>
@@ -247,14 +246,14 @@ function TaskManager() {
         )}
 
         {showAnalytics && (
-          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4 sm:px-0">
+          <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center px-4 sm:px-6">
             <div
               ref={analyticsRef}
-              className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto relative shadow-2xl"
+              className="bg-white/95 dark:bg-slate-900/95 border border-slate-200/70 dark:border-slate-700 p-4 sm:p-6 rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto relative shadow-2xl"
             >
               <button
                 onClick={() => setShowAnalytics(false)}
-                className="absolute top-2 right-3 text-gray-500 hover:text-red-600 font-bold text-2xl"
+                className="absolute top-2 right-3 text-slate-500 hover:text-rose-500 font-bold text-2xl transition-colors"
               >
                 &times;
               </button>
@@ -264,7 +263,7 @@ function TaskManager() {
         )}
 
         {!isAuthenticated ? (
-          <div className="text-center text-lg font-semibold text-gray-700 dark:text-gray-300">
+          <div className="text-center text-lg font-semibold text-slate-700 dark:text-slate-300 bg-white/70 dark:bg-slate-900/70 border border-white/50 dark:border-slate-700 rounded-2xl shadow-md px-5 py-6 max-w-2xl mx-auto">
             🔐 Please{" "}
             <span className="text-blue-600 dark:text-blue-400">Login</span> or{" "}
             <span className="text-green-600 dark:text-green-400">Signup</span>{" "}
@@ -272,11 +271,12 @@ function TaskManager() {
           </div>
         ) : (
           <>
-            <div className="flex flex-col sm:flex-row gap-3 mb-10">
+            <div className="bg-white/80 dark:bg-slate-900/75 backdrop-blur-sm border border-white/60 dark:border-slate-700 rounded-2xl p-4 sm:p-5 lg:p-6 shadow-xl mb-8">
+              <div className="flex flex-col lg:flex-row gap-3">
               <input
                 type="text"
                 placeholder="Task title"
-                className="p-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-black dark:text-white w-full"
+                className="p-3 border border-slate-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-white w-full placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/60 focus:border-blue-500"
                 value={newTask.title}
                 onChange={(e) =>
                   setNewTask({ ...newTask, title: e.target.value })
@@ -286,7 +286,7 @@ function TaskManager() {
               <input
                 type="text"
                 placeholder="Task description"
-                className="p-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-black dark:text-white w-full"
+                className="p-3 border border-slate-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-white w-full placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/60 focus:border-blue-500"
                 value={newTask.description}
                 onChange={(e) =>
                   setNewTask({ ...newTask, description: e.target.value })
@@ -294,16 +294,16 @@ function TaskManager() {
                 disabled={loading}
               />
               {editingTaskId ? (
-                <div className="flex gap-2">
+                <div className="flex gap-2 lg:flex-shrink-0">
                   <button
-                    className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-xl font-semibold transition-all disabled:opacity-50"
+                    className="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-xl font-semibold transition-all disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-amber-400"
                     onClick={handleUpdateTask}
                     disabled={loading}
                   >
                     Update
                   </button>
                   <button
-                    className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-xl font-semibold transition-all disabled:opacity-50"
+                    className="bg-slate-500 hover:bg-slate-600 text-white px-4 py-2 rounded-xl font-semibold transition-all disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-slate-400"
                     onClick={handleCancelEdit}
                     disabled={loading}
                   >
@@ -312,7 +312,7 @@ function TaskManager() {
                 </div>
               ) : (
                 <button
-                  className="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-xl font-semibold transition-all disabled:opacity-50"
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-xl font-semibold transition-all disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-emerald-500 lg:flex-shrink-0"
                   onClick={handleAddTask}
                   disabled={loading}
                 >
@@ -320,20 +320,21 @@ function TaskManager() {
                 </button>
               )}
             </div>
+            </div>
 
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-5">
               {loading ? (
                 Array.from({ length: 3 }).map((_, i) => (
                   <div
                     key={i}
-                    className="rounded-xl p-5 shadow bg-white dark:bg-zinc-900 animate-pulse"
+                    className="rounded-2xl p-5 shadow bg-white dark:bg-zinc-900 animate-pulse"
                   >
                     <div className="h-5 bg-gray-300 dark:bg-zinc-600 rounded w-3/4 mb-2" />
                     <div className="h-3 bg-gray-200 dark:bg-zinc-700 rounded w-full" />
                   </div>
                 ))
               ) : tasks.length === 0 ? (
-                <div className="text-center text-xl font-semibold text-gray-800 dark:text-gray-300 bg-white/60 dark:bg-zinc-800 p-6 rounded-2xl shadow-md">
+                <div className="text-center text-lg sm:text-xl font-semibold text-slate-800 dark:text-slate-200 bg-white/75 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 p-6 rounded-2xl shadow-md">
                   🎯{" "}
                   <em>
                     “Your mission, should you choose to accept it, begins now.
@@ -344,24 +345,24 @@ function TaskManager() {
                 tasks.map((task) => (
                   <div
                     key={task._id}
-                    className="flex flex-col sm:flex-row justify-between gap-4 bg-white/70 dark:bg-zinc-800 p-5 rounded-2xl shadow-lg transition-all hover:shadow-2xl"
+                    className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 bg-white/85 dark:bg-slate-800/85 backdrop-blur-sm border border-slate-200/80 dark:border-slate-700 p-5 rounded-2xl shadow-lg transition-all duration-300 hover:shadow-2xl hover:-translate-y-0.5"
                   >
-                    <div>
+                    <div className="min-w-0">
                       <h2
-                        className={`font-semibold text-xl ${
+                        className={`font-semibold text-lg sm:text-xl break-words ${
                           task.completed
-                            ? "line-through text-gray-400"
-                            : "text-gray-900 dark:text-blue-300"
+                            ? "line-through text-slate-400 dark:text-slate-500"
+                            : "text-slate-900 dark:text-blue-200"
                         }`}
                       >
                         {task.title}
                       </h2>
-                      <p className="text-gray-700 dark:text-gray-300 mt-1">
+                      <p className="text-slate-700 dark:text-slate-300 mt-1 break-words">
                         {task.description}
                       </p>
                     </div>
-                    <div className="flex gap-2 flex-wrap items-center">
-                      <label className="inline-flex items-center cursor-pointer">
+                    <div className="flex gap-2 flex-wrap items-center xl:justify-end">
+                      <label className="inline-flex items-center cursor-pointer rounded-full bg-slate-100 dark:bg-slate-700/70 px-2.5 py-1.5">
                         <input
                           type="checkbox"
                           className="sr-only peer"
@@ -372,19 +373,19 @@ function TaskManager() {
                           disabled={loading}
                         />
                         <div className="w-14 h-8 bg-gray-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-500 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all dark:border-gray-500 peer-checked:bg-green-500 relative"></div>
-                        <span className="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300">
+                        <span className="ml-3 text-sm font-medium text-slate-800 dark:text-slate-200">
                           {task.completed ? "Completed" : "Mark Complete"}
                         </span>
                       </label>
                       <button
-                        className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-xl font-semibold shadow transition-all"
+                        className="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-xl font-semibold shadow transition-all focus:outline-none focus:ring-2 focus:ring-amber-400"
                         onClick={() => handleEditTask(task._id)}
                         disabled={loading}
                       >
                         ✏️ Edit
                       </button>
                       <button
-                        className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl font-semibold shadow transition-all"
+                        className="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-xl font-semibold shadow transition-all focus:outline-none focus:ring-2 focus:ring-rose-400"
                         onClick={() => handleDeleteTask(task._id)}
                         disabled={loading}
                       >
