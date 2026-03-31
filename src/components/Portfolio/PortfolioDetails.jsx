@@ -226,6 +226,7 @@ export default function PortfolioDetails() {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [hideArrow, setHideArrow] = useState(true);
   const [activeSection, setActiveSection] = useState("intro");
+  const [isBottomCtaExpanded, setIsBottomCtaExpanded] = useState(true);
   const pageRef = useRef(null);
   const sectionRefs = useRef({});
   const hasScrolledRef = useRef(false);
@@ -542,6 +543,16 @@ useEffect(() => {
       document.head.removeChild(preconnect);
     };
   }, []);
+
+  useEffect(() => {
+    const collapseTimer = window.setTimeout(() => {
+      setIsBottomCtaExpanded(false);
+    }, 2000);
+
+    return () => {
+      window.clearTimeout(collapseTimer);
+    };
+  }, []);
   if (loading || !data) return <InitialLoader />;
 
   const [firstName, lastName] = data.name.split(" ");
@@ -585,7 +596,16 @@ useEffect(() => {
      <div className="relative">
 
         <div className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] left-1/2 -translate-x-1/2 z-30 w-full px-3 sm:px-6">
-          <div className="mx-auto flex w-fit max-w-full items-center gap-1.5 overflow-x-auto rounded-full border border-zinc-200/70 bg-white/85 px-2 py-2 shadow-lg backdrop-blur-xl dark:border-zinc-700 dark:bg-zinc-900/80">
+          <div
+            onMouseEnter={() => setIsBottomCtaExpanded(true)}
+            onMouseLeave={() => setIsBottomCtaExpanded(false)}
+            onFocus={() => setIsBottomCtaExpanded(true)}
+            onBlur={() => setIsBottomCtaExpanded(false)}
+            onClick={() => setIsBottomCtaExpanded(true)}
+            className={`mx-auto flex w-fit max-w-full items-center gap-1.5 overflow-x-auto rounded-full border border-zinc-200/70 bg-white/85 px-2 py-2 shadow-lg backdrop-blur-xl transition-all duration-300 dark:border-zinc-700 dark:bg-zinc-900/80 ${
+              isBottomCtaExpanded ? "max-h-20 opacity-100" : "max-h-8 opacity-85"
+            }`}
+          >
             {sectionMeta.map((section) => {
               const isActive = activeSection === section.id;
 
