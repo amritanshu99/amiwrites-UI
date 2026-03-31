@@ -140,6 +140,14 @@ export default function Header({ setLoading }) {
     const el = navScrollRef.current;
     if (!el) return;
     const { scrollLeft, scrollWidth, clientWidth } = el;
+    const hasOverflow = scrollWidth - clientWidth > 4;
+
+    if (!hasOverflow) {
+      setCanScrollLeft(false);
+      setCanScrollRight(false);
+      return;
+    }
+
     setCanScrollLeft(scrollLeft > 4);
     setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 4);
   };
@@ -272,7 +280,7 @@ export default function Header({ setLoading }) {
                   snap-x snap-mandatory
                   [-ms-overflow-style:none] [scrollbar-width:none]
                   [&::-webkit-scrollbar]:hidden
-                  max-w-full min-w-0 md:max-w-[52vw] lg:max-w-[58ch]
+                  max-w-full min-w-0
                 "
                 onScroll={updateScrollButtons}
                 role="tablist"
