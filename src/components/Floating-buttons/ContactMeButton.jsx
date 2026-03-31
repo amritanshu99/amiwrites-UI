@@ -14,7 +14,7 @@ export default function ContactMeButton() {
   const [hovered, setHovered] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => setCollapsed(true), 5000); // Collapse after 5 sec
+    const timer = setTimeout(() => setCollapsed(true), 2000); // Collapse after 2 sec
     return () => clearTimeout(timer);
   }, []);
 
