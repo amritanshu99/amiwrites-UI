@@ -229,7 +229,9 @@ export default function PortfolioDetails() {
   const [hideArrow, setHideArrow] = useState(true);
   const [activeSection, setActiveSection] = useState("intro");
   const [isBottomCtaExpanded, setIsBottomCtaExpanded] = useState(true);
+  const [isTouchDevice, setIsTouchDevice] = useState(false);
   const pageRef = useRef(null);
+  const bottomCtaRef = useRef(null);
   const sectionRefs = useRef({});
   const hasScrolledRef = useRef(false);
 
@@ -560,6 +562,37 @@ useEffect(() => {
       window.clearTimeout(collapseTimer);
     };
   }, []);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(hover: none), (pointer: coarse)");
+    const updateTouchMode = () => {
+      setIsTouchDevice(mediaQuery.matches);
+    };
+
+    updateTouchMode();
+
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener("change", updateTouchMode);
+      return () => mediaQuery.removeEventListener("change", updateTouchMode);
+    }
+
+    mediaQuery.addListener(updateTouchMode);
+    return () => mediaQuery.removeListener(updateTouchMode);
+  }, []);
+
+  useEffect(() => {
+    if (!isTouchDevice || !isBottomCtaExpanded) return;
+
+    const handlePointerDownOutside = (event) => {
+      if (!bottomCtaRef.current) return;
+      if (bottomCtaRef.current.contains(event.target)) return;
+      setIsBottomCtaExpanded(false);
+    };
+
+    document.addEventListener("pointerdown", handlePointerDownOutside);
+    return () =>
+      document.removeEventListener("pointerdown", handlePointerDownOutside);
+  }, [isBottomCtaExpanded, isTouchDevice]);
   if (loading || !data) return <InitialLoader />;
 
   const [firstName, lastName] = data.name.split(" ");
@@ -604,21 +637,37 @@ useEffect(() => {
 
         <div className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] left-1/2 -translate-x-1/2 z-30 w-full px-3 sm:px-6">
           <motion.div
+            ref={bottomCtaRef}
             layout
-            onMouseEnter={() => setIsBottomCtaExpanded(true)}
-            onMouseLeave={() => setIsBottomCtaExpanded(false)}
-            onFocusCapture={() => setIsBottomCtaExpanded(true)}
-            onBlurCapture={(event) => {
-              if (!event.currentTarget.contains(event.relatedTarget)) {
-                setIsBottomCtaExpanded(false);
-              }
-            }}
+            onMouseEnter={
+              isTouchDevice ? undefined : () => setIsBottomCtaExpanded(true)
+            }
+            onMouseLeave={
+              isTouchDevice ? undefined : () => setIsBottomCtaExpanded(false)
+            }
+            onFocusCapture={
+              isTouchDevice ? undefined : () => setIsBottomCtaExpanded(true)
+            }
+            onBlurCapture={
+              isTouchDevice
+                ? undefined
+                : (event) => {
+                    if (!event.currentTarget.contains(event.relatedTarget)) {
+                      setIsBottomCtaExpanded(false);
+                    }
+                  }
+            }
             className="mx-auto flex w-fit max-w-full items-center gap-1.5 rounded-full border border-zinc-200/70 bg-white/85 p-1.5 shadow-[0_10px_30px_rgba(0,0,0,0.12)] backdrop-blur-xl dark:border-zinc-700 dark:bg-zinc-900/80"
           >
             {!isBottomCtaExpanded ? (
               <button
                 type="button"
                 onClick={() => setIsBottomCtaExpanded(true)}
+                onPointerDown={(event) => {
+                  if (event.pointerType === "touch") {
+                    setIsBottomCtaExpanded(true);
+                  }
+                }}
                 className="group flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold text-zinc-700 transition-all hover:bg-zinc-100 dark:text-zinc-100 dark:hover:bg-zinc-800 sm:text-sm"
                 aria-label={`Expand section switcher. Current section is ${activeSectionMeta.label}`}
               >
