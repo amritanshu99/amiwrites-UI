@@ -204,6 +204,7 @@ export default function Header({ setLoading }) {
       <header
         className="
           sticky top-0 z-50 w-full
+          pt-[env(safe-area-inset-top)]
           border-b border-black/5 dark:border-white/10
           bg-gradient-to-r from-sky-50/90 via-fuchsia-50/90 to-emerald-50/90
           supports-[backdrop-filter]:bg-white/70 backdrop-blur-xl
@@ -211,12 +212,12 @@ export default function Header({ setLoading }) {
           dark:bg-black/95 dark:bg-none dark:supports-[backdrop-filter]:bg-black/90 dark:backdrop-blur-xl dark:shadow-[0_8px_26px_rgba(0,0,0,0.4)]
         "
       >
-        <div className="mx-auto max-w-7xl px-3 sm:px-4 lg:px-6">
-          <div className="flex h-14 sm:h-16 lg:h-[4.25rem] items-center justify-between gap-2 sm:gap-3 flex-nowrap">
+        <div className="mx-auto max-w-7xl px-2.5 sm:px-4 lg:px-6">
+          <div className="flex h-14 sm:h-16 lg:h-[4.25rem] items-center justify-between gap-1.5 sm:gap-3 flex-nowrap">
             {/* Brand */}
             <Link
               to="/"
-              className="group flex items-center gap-2 sm:gap-3 min-w-0 shrink"
+              className="group flex items-center gap-1.5 sm:gap-3 min-w-0 shrink"
               aria-label="AmiVerse Home"
             >
               <img
@@ -228,11 +229,11 @@ export default function Header({ setLoading }) {
               {/* Always show name; truncate if tight */}
               <span
                 className="
-                  text-base sm:text-[1.05rem] md:text-xl font-semibold tracking-tight
+                  hidden min-[420px]:inline text-[0.95rem] sm:text-[1.05rem] md:text-xl font-semibold tracking-tight
                   text-gray-900 dark:text-white
                   group-hover:text-sky-700 dark:group-hover:text-cyan-300 transition-colors
                   whitespace-nowrap truncate
-                  max-w-[26vw] sm:max-w-[34vw] md:max-w-[22rem] lg:max-w-[26rem]
+                  max-w-[22vw] sm:max-w-[30vw] md:max-w-[22rem] lg:max-w-[26rem]
                 "
                 title="AmiVerse"
               >
@@ -415,7 +416,7 @@ export default function Header({ setLoading }) {
               {/* Mobile burger (only on phones) */}
               <button
                 onClick={() => setMenuOpen((p) => !p)}
-                className="sm:hidden inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/60 dark:bg-white/[0.04] ring-1 ring-black/10 dark:ring-white/10 hover:bg-white dark:hover:bg-white/10 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500/60 text-gray-800 dark:text-gray-200"
+                className="sm:hidden inline-flex h-[2.125rem] w-[2.125rem] items-center justify-center rounded-full bg-white/60 dark:bg-white/[0.04] ring-1 ring-black/10 dark:ring-white/10 hover:bg-white dark:hover:bg-white/10 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500/60 text-gray-800 dark:text-gray-200"
                 aria-label="Toggle menu"
                 aria-expanded={menuOpen}
                 aria-controls="mobile-menu"
@@ -445,7 +446,7 @@ export default function Header({ setLoading }) {
               className="sm:hidden border-t border-black/5 dark:border-white/10 bg-white/95 dark:bg-black/95 supports-[backdrop-filter]:backdrop-blur-lg"
               role="menu"
             >
-              <div className="mx-auto max-w-7xl px-4 sm:px-6 py-3">
+              <div className="mx-auto max-w-7xl px-3.5 sm:px-6 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] max-h-[calc(100svh-3.5rem)] overflow-y-auto">
                 <div className="grid grid-cols-1 gap-1.5">
                   {navLinks.map((link) => (
                     <NavLink
