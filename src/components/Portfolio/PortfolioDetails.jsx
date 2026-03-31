@@ -496,6 +496,52 @@ useEffect(() => {
     ],
   );
 
+
+
+  const heroImageUrl = useMemo(() => {
+    if (!data) return "";
+
+    return `https://amiwrites-backend-app-2lp5.onrender.com${
+      isDark ? data.photoUrlDark : data.photoUrl
+    }`;
+  }, [data, isDark]);
+
+  useEffect(() => {
+    if (!heroImageUrl) return;
+
+    setImageLoaded(false);
+
+    const heroImage = new Image();
+    heroImage.decoding = "async";
+    heroImage.fetchPriority = "high";
+    heroImage.src = heroImageUrl;
+
+    const markLoaded = () => setImageLoaded(true);
+
+    if (heroImage.complete) {
+      markLoaded();
+      return;
+    }
+
+    heroImage.addEventListener("load", markLoaded);
+
+    return () => {
+      heroImage.removeEventListener("load", markLoaded);
+    };
+  }, [heroImageUrl]);
+
+  useEffect(() => {
+    const preconnect = document.createElement("link");
+    preconnect.rel = "preconnect";
+    preconnect.href = "https://amiwrites-backend-app-2lp5.onrender.com";
+    preconnect.crossOrigin = "anonymous";
+
+    document.head.appendChild(preconnect);
+
+    return () => {
+      document.head.removeChild(preconnect);
+    };
+  }, []);
   if (loading || !data) return <InitialLoader />;
 
   const [firstName, lastName] = data.name.split(" ");
@@ -626,9 +672,7 @@ overflow-hidden z-10"
 
           >
             <motion.img
-              src={`https://amiwrites-backend-app-2lp5.onrender.com${
-                isDark ? data.photoUrlDark : data.photoUrl
-              }`}
+              src={heroImageUrl}
               alt={data.name}
               onLoad={() => setImageLoaded(true)}
               initial={{ opacity: 0, scale: 1.03 }}
