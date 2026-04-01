@@ -640,7 +640,7 @@ useEffect(() => {
             ref={bottomCtaRef}
             layout
             transition={{
-              layout: { duration: 0.35, ease: [0.22, 1, 0.36, 1] },
+              layout: { type: "spring", stiffness: 360, damping: 30, mass: 0.75 },
             }}
             onMouseEnter={
               isTouchDevice ? undefined : () => setIsBottomCtaExpanded(true)
@@ -660,39 +660,49 @@ useEffect(() => {
                     }
                   }
             }
-            className="mx-auto flex w-fit max-w-full items-center gap-1.5 rounded-full border border-zinc-200/70 bg-white/85 p-1.5 shadow-[0_10px_30px_rgba(0,0,0,0.12)] backdrop-blur-xl dark:border-zinc-700 dark:bg-zinc-900/80"
+            className="mx-auto flex w-fit max-w-full items-center gap-1.5 rounded-full border border-zinc-200/70 bg-white/82 p-1.5 shadow-[0_14px_34px_rgba(0,0,0,0.14)] ring-1 ring-white/45 backdrop-blur-2xl dark:border-zinc-700/80 dark:bg-zinc-900/78 dark:ring-white/10"
+            animate={{
+              y: [4, 0],
+              opacity: [0.92, 1],
+              scale: [0.985, 1],
+            }}
+            transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
           >
             <AnimatePresence initial={false} mode="wait">
               {!isBottomCtaExpanded ? (
                 <motion.button
                   key="collapsed-cta"
+                  layout="position"
                   type="button"
-                  initial={{ opacity: 0, y: 8, scale: 0.96 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -8, scale: 0.96 }}
-                  transition={{ duration: 0.24, ease: "easeOut" }}
+                  initial={{ opacity: 0, y: 10, scale: 0.94, filter: "blur(2px)" }}
+                  animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
+                  exit={{ opacity: 0, y: -10, scale: 0.96, filter: "blur(2px)" }}
+                  transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
                   onClick={() => setIsBottomCtaExpanded(true)}
                   onPointerDown={(event) => {
                     if (event.pointerType === "touch") {
                       setIsBottomCtaExpanded(true);
                     }
                   }}
-                  className="group flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold text-zinc-700 transition-all hover:bg-zinc-100 dark:text-zinc-100 dark:hover:bg-zinc-800 sm:text-sm"
+                  whileHover={isTouchDevice ? undefined : { scale: 1.01, y: -1 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="group flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold text-zinc-700 transition-all duration-300 hover:bg-zinc-100/90 dark:text-zinc-100 dark:hover:bg-zinc-800/90 sm:text-sm"
                   aria-label={`Expand section switcher. Current section is ${activeSectionMeta.label}`}
                 >
                   <span className="text-zinc-400 dark:text-zinc-500">Jump to</span>
-                  <span className="rounded-full bg-zinc-900 px-2.5 py-1 text-white dark:bg-white dark:text-zinc-900">
+                  <span className="rounded-full bg-zinc-900 px-2.5 py-1 text-white shadow-sm transition-colors duration-300 dark:bg-white dark:text-zinc-900">
                     {activeSectionMeta.label}
                   </span>
-                  <FaChevronUp className="text-[10px] text-zinc-500 transition-transform group-hover:-translate-y-0.5 dark:text-zinc-300" />
+                  <FaChevronUp className="text-[10px] text-zinc-500 transition-transform duration-300 group-hover:-translate-y-0.5 dark:text-zinc-300" />
                 </motion.button>
               ) : (
                 <motion.div
                   key="expanded-cta"
-                  initial={{ opacity: 0, y: 10, scale: 0.98 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -10, scale: 0.98 }}
-                  transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                  layout="position"
+                  initial={{ opacity: 0, y: 12, scale: 0.97, filter: "blur(2px)" }}
+                  animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
+                  exit={{ opacity: 0, y: -12, scale: 0.97, filter: "blur(2px)" }}
+                  transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
                   className="flex items-center gap-1.5"
                 >
                   {sectionMeta.map((section, index) => {
@@ -703,21 +713,23 @@ useEffect(() => {
                         key={section.id}
                         type="button"
                         aria-current={isActive ? "page" : undefined}
-                        initial={{ opacity: 0, y: 8 }}
-                        animate={{ opacity: 1, y: 0 }}
+                        initial={{ opacity: 0, y: 10, scale: 0.98 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
                         transition={{
-                          duration: 0.2,
-                          delay: 0.04 * index,
-                          ease: "easeOut",
+                          duration: 0.26,
+                          delay: 0.045 * index,
+                          ease: [0.22, 1, 0.36, 1],
                         }}
+                        whileHover={isTouchDevice ? undefined : { y: -1, scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
                         onClick={() => {
                           scrollToSection(section.id);
                           setIsBottomCtaExpanded(false);
                         }}
                         className={`whitespace-nowrap rounded-full px-2.5 py-1.5 text-[11px] font-medium transition-all duration-300 sm:px-3 sm:text-sm ${
                           isActive
-                            ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900"
-                            : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                            ? "bg-zinc-900 text-white shadow-[0_6px_18px_rgba(24,24,27,0.26)] dark:bg-white dark:text-zinc-900 dark:shadow-[0_6px_18px_rgba(255,255,255,0.18)]"
+                            : "text-zinc-600 hover:bg-zinc-100/90 dark:text-zinc-300 dark:hover:bg-zinc-800/90"
                         }`}
                       >
                         {section.label}
@@ -726,12 +738,14 @@ useEffect(() => {
                   })}
                   <motion.button
                     type="button"
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.2, delay: 0.18, ease: "easeOut" }}
+                    initial={{ opacity: 0, y: 10, scale: 0.96 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    transition={{ duration: 0.24, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+                    whileHover={isTouchDevice ? undefined : { y: -1, scale: 1.03 }}
+                    whileTap={{ scale: 0.95 }}
                     onClick={() => setIsBottomCtaExpanded(false)}
                     aria-label="Collapse section switcher"
-                    className="rounded-full p-2 text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800 dark:hover:text-white"
+                    className="rounded-full p-2 text-zinc-500 transition-all duration-300 hover:bg-zinc-100/90 hover:text-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800/90 dark:hover:text-white"
                   >
                     <FaChevronDown className="text-[10px]" />
                   </motion.button>
