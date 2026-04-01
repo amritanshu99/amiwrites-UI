@@ -642,7 +642,7 @@ useEffect(() => {
             ref={bottomCtaRef}
             layout
             transition={{
-              layout: { type: "spring", stiffness: 280, damping: 30, mass: 0.9 },
+              layout: { type: "spring", stiffness: 220, damping: 28, mass: 0.95 },
             }}
             onMouseEnter={
               isTouchDevice ? undefined : () => setIsBottomCtaExpanded(true)
@@ -669,18 +669,18 @@ useEffect(() => {
                 : { opacity: 0.96, y: 6, scale: 0.985 }
             }
             animate={{ y: 0, opacity: 1, scale: 1 }}
-            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
           >
-            <AnimatePresence initial={false} mode="wait">
+            <AnimatePresence initial={false} mode="popLayout">
               {!isBottomCtaExpanded ? (
                 <motion.button
                   key="collapsed-cta"
                   layout="position"
                   type="button"
-                  initial={{ opacity: 0, y: 8, scale: 0.97 }}
+                  initial={{ opacity: 0, y: 6, scale: 0.98 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -8, scale: 0.98 }}
-                  transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+                  exit={{ opacity: 0, y: -6, scale: 0.99 }}
+                  transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
                   onClick={() => setIsBottomCtaExpanded(true)}
                   onPointerDown={(event) => {
                     if (event.pointerType === "touch") {
@@ -702,10 +702,10 @@ useEffect(() => {
                 <motion.div
                   key="expanded-cta"
                   layout="position"
-                  initial={{ opacity: 0, y: 8, scale: 0.98 }}
+                  initial={{ opacity: 0, y: 6, scale: 0.985 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -8, scale: 0.98 }}
-                  transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+                  exit={{ opacity: 0, y: -6, scale: 0.99 }}
+                  transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
                   className="flex items-center gap-1.5"
                 >
                   {sectionMeta.map((section, index) => {
@@ -719,8 +719,8 @@ useEffect(() => {
                         initial={{ opacity: 0, y: 10, scale: 0.98 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         transition={{
-                          duration: 0.26,
-                          delay: 0.045 * index,
+                          duration: 0.32,
+                          delay: 0.04 * index,
                           ease: [0.22, 1, 0.36, 1],
                         }}
                         whileHover={isTouchDevice ? undefined : { y: -1, scale: 1.02 }}
@@ -743,7 +743,7 @@ useEffect(() => {
                     type="button"
                     initial={{ opacity: 0, y: 10, scale: 0.96 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
-                    transition={{ duration: 0.24, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+                    transition={{ duration: 0.3, delay: 0.18, ease: [0.22, 1, 0.36, 1] }}
                     whileHover={isTouchDevice ? undefined : { y: -1, scale: 1.03 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => setIsBottomCtaExpanded(false)}
