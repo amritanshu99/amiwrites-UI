@@ -209,11 +209,11 @@ function TaskManager() {
   };
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top,_#ecfeff_0%,_#fdf2f8_40%,_#f8fafc_100%)] dark:bg-[radial-gradient(circle_at_top,_#1f2937_0%,_#0b1120_45%,_#030712_100%)] px-4 py-6 sm:px-6 lg:px-8 transition-colors duration-500">
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top,_#ecfeff_0%,_#fdf2f8_40%,_#f8fafc_100%)] dark:bg-[radial-gradient(circle_at_top,_#111111_0%,_#050505_45%,_#000000_100%)] px-4 py-6 sm:px-6 lg:px-8 transition-colors duration-500">
       <div className="max-w-6xl mx-auto">
         {loading && (
           <div className="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-md bg-slate-900/30 dark:bg-black/50">
-            <div className="flex flex-col items-center justify-center gap-4 bg-white/95 dark:bg-zinc-900/95 border border-white/50 dark:border-zinc-700 shadow-2xl rounded-2xl px-8 py-6 w-80 animate-fade-in">
+            <div className="flex flex-col items-center justify-center gap-4 bg-white/95 dark:bg-black/95 border border-white/50 dark:border-zinc-800 shadow-2xl rounded-2xl px-8 py-6 w-80 animate-fade-in">
               <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
               <div className="text-base sm:text-lg font-semibold text-gray-700 dark:text-gray-200">
                 Loading your mission...
@@ -249,7 +249,7 @@ function TaskManager() {
           <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center px-4 sm:px-6">
             <div
               ref={analyticsRef}
-              className="bg-white/95 dark:bg-slate-900/95 border border-slate-200/70 dark:border-slate-700 p-4 sm:p-6 rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto relative shadow-2xl"
+              className="bg-white/95 dark:bg-black/95 border border-slate-200/70 dark:border-zinc-800 p-4 sm:p-6 rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto relative shadow-2xl"
             >
               <button
                 onClick={() => setShowAnalytics(false)}
@@ -271,12 +271,12 @@ function TaskManager() {
           </div>
         ) : (
           <>
-            <div className="bg-white/80 dark:bg-slate-900/75 backdrop-blur-sm border border-white/60 dark:border-slate-700 rounded-2xl p-4 sm:p-5 lg:p-6 shadow-xl mb-8">
+            <div className="bg-white/80 dark:bg-zinc-950/85 backdrop-blur-sm border border-white/60 dark:border-zinc-800 rounded-2xl p-4 sm:p-5 lg:p-6 shadow-xl mb-8">
               <div className="flex flex-col lg:flex-row gap-3">
               <input
                 type="text"
                 placeholder="Task title"
-                className="p-3 border border-slate-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-white w-full placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/60 focus:border-blue-500"
+                className="p-3 border border-slate-300 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-900 text-slate-900 dark:text-zinc-100 w-full placeholder:text-slate-400 dark:placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500/60 focus:border-blue-500"
                 value={newTask.title}
                 onChange={(e) =>
                   setNewTask({ ...newTask, title: e.target.value })
@@ -286,7 +286,7 @@ function TaskManager() {
               <input
                 type="text"
                 placeholder="Task description"
-                className="p-3 border border-slate-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-white w-full placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/60 focus:border-blue-500"
+                className="p-3 border border-slate-300 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-900 text-slate-900 dark:text-zinc-100 w-full placeholder:text-slate-400 dark:placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500/60 focus:border-blue-500"
                 value={newTask.description}
                 onChange={(e) =>
                   setNewTask({ ...newTask, description: e.target.value })
@@ -334,7 +334,7 @@ function TaskManager() {
                   </div>
                 ))
               ) : tasks.length === 0 ? (
-                <div className="text-center text-lg sm:text-xl font-semibold text-slate-800 dark:text-slate-200 bg-white/75 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 p-6 rounded-2xl shadow-md">
+                <div className="text-center text-lg sm:text-xl font-semibold text-slate-800 dark:text-zinc-100 bg-white/75 dark:bg-zinc-950/90 border border-slate-200 dark:border-zinc-800 p-6 rounded-2xl shadow-md">
                   🎯{" "}
                   <em>
                     “Your mission, should you choose to accept it, begins now.
@@ -345,24 +345,24 @@ function TaskManager() {
                 tasks.map((task) => (
                   <div
                     key={task._id}
-                    className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 bg-white/85 dark:bg-slate-800/85 backdrop-blur-sm border border-slate-200/80 dark:border-slate-700 p-5 rounded-2xl shadow-lg transition-all duration-300 hover:shadow-2xl hover:-translate-y-0.5"
+                    className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 bg-white/85 dark:bg-zinc-950/90 backdrop-blur-sm border border-slate-200/80 dark:border-zinc-800 p-5 rounded-2xl shadow-lg transition-all duration-300 hover:shadow-2xl hover:-translate-y-0.5"
                   >
                     <div className="min-w-0">
                       <h2
                         className={`font-semibold text-lg sm:text-xl break-words ${
                           task.completed
-                            ? "line-through text-slate-400 dark:text-slate-500"
-                            : "text-slate-900 dark:text-blue-200"
+                            ? "line-through text-slate-400 dark:text-zinc-500"
+                            : "text-slate-900 dark:text-zinc-100"
                         }`}
                       >
                         {task.title}
                       </h2>
-                      <p className="text-slate-700 dark:text-slate-300 mt-1 break-words">
+                      <p className="text-slate-700 dark:text-zinc-300 mt-1 break-words">
                         {task.description}
                       </p>
                     </div>
                     <div className="flex gap-2 flex-wrap items-center xl:justify-end">
-                      <label className="inline-flex items-center cursor-pointer rounded-full bg-slate-100 dark:bg-slate-700/70 px-2.5 py-1.5">
+                      <label className="inline-flex items-center cursor-pointer rounded-full bg-slate-100 dark:bg-zinc-900 px-2.5 py-1.5">
                         <input
                           type="checkbox"
                           className="sr-only peer"
@@ -372,8 +372,8 @@ function TaskManager() {
                           }
                           disabled={loading}
                         />
-                        <div className="w-14 h-8 bg-gray-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-500 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all dark:border-gray-500 peer-checked:bg-green-500 relative"></div>
-                        <span className="ml-3 text-sm font-medium text-slate-800 dark:text-slate-200">
+                        <div className="w-14 h-8 bg-gray-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-500 dark:peer-focus:ring-blue-700 rounded-full peer dark:bg-zinc-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all dark:border-zinc-500 peer-checked:bg-green-500 relative"></div>
+                        <span className="ml-3 text-sm font-medium text-slate-800 dark:text-zinc-100">
                           {task.completed ? "Completed" : "Mark Complete"}
                         </span>
                       </label>
