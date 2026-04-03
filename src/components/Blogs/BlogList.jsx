@@ -56,20 +56,20 @@ const useAuth = () => {
 };
 
 const BlogSkeleton = () => (
-  <div className="flex h-[250px] w-full animate-pulse flex-col rounded-[1.35rem] border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-[#050505] sm:h-[270px] sm:p-5">
+  <div className="flex h-[250px] w-full animate-pulse flex-col rounded-[1.35rem] border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-900 dark:bg-black sm:h-[270px] sm:p-5">
     <div className="mb-3 flex items-center justify-between gap-3 sm:mb-4">
       <div className="h-4 w-28 rounded-full bg-zinc-200 dark:bg-zinc-800" />
       <div className="h-7 w-7 rounded-full bg-zinc-200 dark:bg-zinc-800" />
     </div>
-    <div className="mb-2 h-5 w-4/5 rounded bg-zinc-300 dark:bg-zinc-800 sm:mb-3 sm:h-6" />
-    <div className="mb-2 h-5 w-2/3 rounded bg-zinc-200 dark:bg-zinc-800 sm:h-6" />
+    <div className="mb-2 h-5 w-4/5 rounded bg-zinc-300 dark:bg-zinc-900 sm:mb-3 sm:h-6" />
+    <div className="mb-2 h-5 w-2/3 rounded bg-zinc-200 dark:bg-zinc-900 sm:h-6" />
     <div className="space-y-2.5 pt-2 sm:space-y-3">
-      <div className="h-3 rounded bg-zinc-200 dark:bg-zinc-800" />
-      <div className="h-3 w-11/12 rounded bg-zinc-200 dark:bg-zinc-800" />
-      <div className="h-3 w-5/6 rounded bg-zinc-200 dark:bg-zinc-800" />
-      <div className="h-3 w-3/5 rounded bg-zinc-200 dark:bg-zinc-800" />
+      <div className="h-3 rounded bg-zinc-200 dark:bg-zinc-900" />
+      <div className="h-3 w-11/12 rounded bg-zinc-200 dark:bg-zinc-900" />
+      <div className="h-3 w-5/6 rounded bg-zinc-200 dark:bg-zinc-900" />
+      <div className="h-3 w-3/5 rounded bg-zinc-200 dark:bg-zinc-900" />
     </div>
-    <div className="mt-auto h-4 w-24 rounded bg-zinc-300 dark:bg-zinc-800" />
+    <div className="mt-auto h-4 w-24 rounded bg-zinc-300 dark:bg-zinc-900" />
   </div>
 );
 
@@ -458,11 +458,11 @@ const BlogList = () => {
   const filteredBlogs = blogs;
 
   return (
-    <div className="min-h-screen bg-[linear-gradient(180deg,_#f8fafc_0%,_#edf3f8_35%,_#f8fafc_100%)] px-3 py-3 dark:bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.12),_transparent_28%),linear-gradient(180deg,_#020617_0%,_#0f172a_46%,_#020617_100%)] sm:px-5 sm:py-4 lg:px-8 lg:py-6">
+    <div className="min-h-screen bg-[linear-gradient(180deg,_#f8fafc_0%,_#edf3f8_35%,_#f8fafc_100%)] px-3 py-3 dark:bg-[linear-gradient(180deg,_#000000_0%,_#050505_52%,_#000000_100%)] sm:px-5 sm:py-4 lg:px-8 lg:py-6">
       <PushNotificationButton />
 
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-3 sm:gap-4">
-        <section className="overflow-hidden rounded-[1.25rem] border border-white/70 bg-white/85 px-4 py-4 shadow-[0_24px_70px_-42px_rgba(15,23,42,0.24)] backdrop-blur-sm dark:border-slate-700/60 dark:bg-slate-950/90 dark:shadow-[0_24px_70px_-42px_rgba(2,6,23,0.82)] sm:rounded-[1.5rem] sm:px-5 sm:py-4 lg:px-6 lg:py-5">
+        <section className="overflow-hidden rounded-[1.25rem] border border-white/70 bg-white/85 px-4 py-4 shadow-[0_24px_70px_-42px_rgba(15,23,42,0.24)] backdrop-blur-sm dark:border-zinc-900 dark:bg-black dark:shadow-[0_24px_70px_-42px_rgba(0,0,0,0.95)] sm:rounded-[1.5rem] sm:px-5 sm:py-4 lg:px-6 lg:py-5">
           <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-sky-300/60 to-transparent dark:via-sky-300/35" />
           <div className="relative">
             <div className="max-w-3xl">
@@ -472,7 +472,7 @@ const BlogList = () => {
               <h1 className="mt-2 max-w-2xl text-base font-semibold tracking-tight text-zinc-950 dark:text-zinc-50 sm:text-[1.35rem] lg:text-[1.65rem]">
                 Clean, focused reading across every screen.
               </h1>
-              <p className="mt-1.5 max-w-2xl text-sm leading-5 text-zinc-600 dark:text-slate-300">
+              <p className="mt-1.5 max-w-2xl text-sm leading-5 text-zinc-600 dark:text-zinc-200">
                 Browse, search, and open posts without wasting vertical space.
               </p>
             </div>
@@ -491,7 +491,7 @@ const BlogList = () => {
           )}
         </div>
 
-        <section className="rounded-[1.2rem] border border-white/70 bg-white/85 p-3 shadow-[0_16px_40px_-32px_rgba(15,23,42,0.2)] backdrop-blur-sm dark:border-slate-700/60 dark:bg-slate-950/88 dark:shadow-[0_16px_40px_-32px_rgba(2,6,23,0.8)] sm:rounded-[1.35rem] sm:p-3.5">
+        <section className="rounded-[1.2rem] border border-white/70 bg-white/85 p-3 shadow-[0_16px_40px_-32px_rgba(15,23,42,0.2)] backdrop-blur-sm dark:border-zinc-900 dark:bg-black dark:shadow-[0_16px_40px_-32px_rgba(0,0,0,0.9)] sm:rounded-[1.35rem] sm:p-3.5">
           <div className="flex flex-col gap-2.5 lg:flex-row lg:items-end lg:justify-between">
             <div className="w-full lg:max-w-xl">
               <input
@@ -500,7 +500,7 @@ const BlogList = () => {
                 placeholder="Search by title..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full rounded-xl border border-zinc-300/90 bg-white/95 px-4 py-2.5 text-sm text-zinc-900 outline-none transition focus:border-sky-600 focus:ring-4 focus:ring-sky-100 dark:border-slate-700 dark:bg-slate-950/80 dark:text-slate-100 dark:placeholder:text-slate-400 dark:focus:border-sky-300 dark:focus:ring-sky-500/20"
+                className="w-full rounded-xl border border-zinc-300/90 bg-white/95 px-4 py-2.5 text-sm text-zinc-900 outline-none transition focus:border-sky-600 focus:ring-4 focus:ring-sky-100 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:focus:border-sky-400 dark:focus:ring-sky-500/20"
               />
             </div>
 
@@ -511,7 +511,7 @@ const BlogList = () => {
                     id="blog-sort"
                     value={filter}
                     onChange={(e) => setFilter(e.target.value)}
-                    className="min-h-[42px] w-full appearance-none rounded-xl border border-zinc-300/90 bg-white/95 px-4 py-2.5 pr-11 text-sm font-medium text-zinc-800 outline-none transition focus:border-sky-600 focus:ring-4 focus:ring-sky-100 dark:border-slate-700 dark:bg-slate-950/80 dark:text-slate-100 dark:placeholder:text-slate-400 dark:focus:border-sky-300 dark:focus:ring-sky-500/20"
+                    className="min-h-[42px] w-full appearance-none rounded-xl border border-zinc-300/90 bg-white/95 px-4 py-2.5 pr-11 text-sm font-medium text-zinc-800 outline-none transition focus:border-sky-600 focus:ring-4 focus:ring-sky-100 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:focus:border-sky-400 dark:focus:ring-sky-500/20"
                   >
                     <option value="latest">Latest</option>
                     <option value="oldest">Oldest</option>
@@ -523,7 +523,7 @@ const BlogList = () => {
               </div>
 
               <div className="flex items-end">
-                <div className="w-full rounded-xl border border-zinc-200/80 bg-zinc-50/90 px-3 py-2.5 text-xs leading-5 text-zinc-600 dark:border-slate-700/80 dark:bg-slate-950/70 dark:text-slate-300 sm:px-3.5 sm:text-sm">
+                <div className="w-full rounded-xl border border-zinc-200/80 bg-zinc-50/90 px-3 py-2.5 text-xs leading-5 text-zinc-600 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-200 sm:px-3.5 sm:text-sm">
                   Infinite scroll enabled.
                 </div>
               </div>
@@ -532,11 +532,11 @@ const BlogList = () => {
         </section>
 
         {filteredBlogs.length === 0 && !loading ? (
-          <div className="rounded-[1.75rem] border border-dashed border-zinc-300 bg-white/85 px-6 py-16 text-center shadow-sm backdrop-blur-sm dark:border-slate-700/70 dark:bg-slate-950/82">
-            <p className="text-lg font-semibold text-zinc-700 dark:text-slate-100">
+          <div className="rounded-[1.75rem] border border-dashed border-zinc-300 bg-white/85 px-6 py-16 text-center shadow-sm backdrop-blur-sm dark:border-zinc-800 dark:bg-black">
+            <p className="text-lg font-semibold text-zinc-700 dark:text-zinc-100">
               No blogs available.
             </p>
-            <p className="mt-2 text-sm text-zinc-500 dark:text-slate-300">
+            <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-300">
               Try a different search or check back for new writing.
             </p>
           </div>
@@ -557,7 +557,7 @@ const BlogList = () => {
               return (
                 <article
                   key={blog._id}
-                  className="group flex min-h-[244px] w-full cursor-pointer flex-col rounded-[1.35rem] border border-white/80 bg-white/90 p-4 shadow-[0_18px_40px_-34px_rgba(15,23,42,0.18)] backdrop-blur-sm transition hover:-translate-y-1 hover:border-sky-100 hover:shadow-[0_24px_50px_-34px_rgba(15,23,42,0.24)] dark:border-slate-700/70 dark:bg-[linear-gradient(180deg,rgba(2,6,23,0.96)_0%,rgba(15,23,42,0.94)_100%)] dark:hover:border-sky-300/35 dark:shadow-[0_20px_46px_-34px_rgba(2,6,23,0.88)] sm:min-h-[270px] sm:rounded-[1.5rem] sm:p-5"
+                  className="group flex min-h-[244px] w-full cursor-pointer flex-col rounded-[1.35rem] border border-white/80 bg-white/90 p-4 shadow-[0_18px_40px_-34px_rgba(15,23,42,0.18)] backdrop-blur-sm transition hover:-translate-y-1 hover:border-sky-100 hover:shadow-[0_24px_50px_-34px_rgba(15,23,42,0.24)] dark:border-zinc-800 dark:bg-[linear-gradient(180deg,rgba(0,0,0,1)_0%,rgba(10,10,10,1)_100%)] dark:hover:border-zinc-700 dark:shadow-[0_20px_46px_-34px_rgba(0,0,0,0.95)] sm:min-h-[270px] sm:rounded-[1.5rem] sm:p-5"
                   onClick={() => {
                     trackClick(blog._id);
                     handleBlogClick(blog._id);
@@ -574,12 +574,12 @@ const BlogList = () => {
                 >
                   <div className="mb-3 flex items-start justify-between gap-3 sm:mb-4">
                     <div className="flex flex-wrap items-center gap-2">
-                      <p className="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-600 dark:bg-slate-800/90 dark:text-slate-100">
+                      <p className="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-600 dark:bg-zinc-900 dark:text-zinc-100">
                         Blog
                       </p>
                       {isTrending && (
                         <span
-                          className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-3 py-1 text-[11px] font-semibold text-amber-800 dark:bg-amber-300/20 dark:text-amber-50"
+                          className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-3 py-1 text-[11px] font-semibold text-amber-800 dark:bg-amber-400/15 dark:text-amber-200"
                           title="This post is currently trending"
                           aria-label="Trending"
                         >
@@ -594,7 +594,7 @@ const BlogList = () => {
                     {isAuthenticated && username === "amritanshu99" && (
                       <button
                         aria-label={`Delete blog titled ${blog.title}`}
-                        className="rounded-full border border-zinc-200 bg-white/90 p-1.5 text-red-500 transition hover:border-red-200 hover:bg-red-50 hover:text-red-700 dark:border-slate-700 dark:bg-slate-950/80 dark:text-red-300 dark:hover:border-red-400/40 dark:hover:bg-red-500/15 dark:hover:text-red-200"
+                        className="rounded-full border border-zinc-200 bg-white/90 p-1.5 text-red-500 transition hover:border-red-200 hover:bg-red-50 hover:text-red-700 dark:border-zinc-800 dark:bg-black dark:text-red-300 dark:hover:border-red-400/40 dark:hover:bg-red-500/15 dark:hover:text-red-200"
                         onClick={(e) => {
                           e.stopPropagation();
                           handleDelete(blog._id);
@@ -612,15 +612,15 @@ const BlogList = () => {
                   </div>
 
                   <div className="flex h-full flex-col">
-                    <p className="text-xs font-medium uppercase tracking-[0.12em] text-zinc-500 dark:text-slate-400 sm:text-sm sm:normal-case sm:tracking-normal">
+                    <p className="text-xs font-medium uppercase tracking-[0.12em] text-zinc-500 dark:text-zinc-400 sm:text-sm sm:normal-case sm:tracking-normal">
                       {publishedDate}
                     </p>
 
-                    <h3 className="mt-2 line-clamp-2 text-[15px] font-semibold leading-5 text-zinc-950 transition group-hover:text-sky-700 dark:text-slate-50 dark:group-hover:text-sky-200 sm:mt-2.5 sm:text-[1.05rem] sm:leading-6">
+                    <h3 className="mt-2 line-clamp-2 text-[15px] font-semibold leading-5 text-zinc-950 transition group-hover:text-sky-700 dark:text-zinc-50 dark:group-hover:text-zinc-200 sm:mt-2.5 sm:text-[1.05rem] sm:leading-6">
                       {blog.title}
                     </h3>
 
-                    <p className="mt-2.5 line-clamp-4 text-sm leading-5 text-zinc-600 dark:text-slate-300 sm:mt-3 sm:line-clamp-5 sm:leading-6">
+                    <p className="mt-2.5 line-clamp-4 text-sm leading-5 text-zinc-600 dark:text-zinc-300 sm:mt-3 sm:line-clamp-5 sm:leading-6">
                       {previewText}
                     </p>
 
