@@ -514,14 +514,14 @@ const BlogDetails = () => {
 
   if (loading)
     return (
-      <div className="min-h-screen flex items-center justify-center p-6 bg-slate-50 dark:bg-zinc-900">
+      <div className="min-h-screen flex items-center justify-center p-6 bg-slate-50 dark:bg-black">
         <Loader />
       </div>
     );
 
   if (!blog)
     return (
-      <div className="min-h-screen flex items-center justify-center p-6 bg-slate-50 dark:bg-zinc-900">
+      <div className="min-h-screen flex items-center justify-center p-6 bg-slate-50 dark:bg-black">
         <p className="text-red-500 dark:text-red-400 text-xl font-medium">
           Blog not found.
         </p>
@@ -529,10 +529,10 @@ const BlogDetails = () => {
     );
 
   return (
-    <main className="min-h-screen bg-slate-50 dark:bg-zinc-900 py-16 px-4 sm:px-6 lg:px-8 flex justify-center">
+    <main className="min-h-screen bg-slate-50 dark:bg-black py-16 px-4 sm:px-6 lg:px-8 flex justify-center">
       <article
         ref={articleRef}
-        className="bg-white dark:bg-zinc-800 text-black dark:text-zinc-100 max-w-4xl w-full rounded-2xl shadow-xl p-6 sm:p-10 md:p-14 animate-fadeIn border border-slate-200 dark:border-zinc-700"
+        className="bg-white dark:bg-black text-black dark:text-zinc-50 max-w-4xl w-full rounded-2xl shadow-xl p-6 sm:p-10 md:p-14 animate-fadeIn border border-slate-200 dark:border-zinc-900"
       >
         {/* Title */}
         <h1 className="text-3xl sm:text-4xl font-bold leading-snug text-slate-800 dark:text-cyan-300 mb-6 font-sans">
@@ -553,7 +553,7 @@ const BlogDetails = () => {
         </h1>
 
         {/* Meta + Actions */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between text-slate-500 dark:text-zinc-400 text-sm mb-10 gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between text-slate-500 dark:text-zinc-200 text-sm mb-10 gap-4">
           <div>
             <time dateTime={blog.date} className="italic">
               Published on{" "}
@@ -614,7 +614,7 @@ const BlogDetails = () => {
             <button
               onClick={handleCopySummary}
               disabled={!summary}
-              className="inline-flex items-center justify-center px-4 py-2 rounded-xl bg-white dark:bg-zinc-700 text-slate-700 dark:text-zinc-100 hover:bg-slate-100 dark:hover:bg-zinc-600 border border-slate-200 dark:border-zinc-600 disabled:opacity-50 disabled:cursor-not-allowed transition focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-slate-300 dark:focus-visible:ring-zinc-400"
+              className="inline-flex items-center justify-center px-4 py-2 rounded-xl bg-white dark:bg-zinc-900 text-slate-700 dark:text-zinc-50 hover:bg-slate-100 dark:hover:bg-zinc-800 border border-slate-200 dark:border-zinc-600 disabled:opacity-50 disabled:cursor-not-allowed transition focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-slate-300 dark:focus-visible:ring-zinc-700"
               aria-label="Copy AI summary"
               title={summary ? "Copy summary" : "No summary to copy yet"}
               type="button"
@@ -638,7 +638,7 @@ const BlogDetails = () => {
         {(summary || summarizing || summaryError) && (
           <section
             ref={summaryRef}
-            className="mt-12 rounded-2xl border border-slate-200 dark:border-zinc-700 bg-gradient-to-b from-slate-50/90 to-white dark:from-zinc-900/60 dark:to-zinc-800/60 p-6 sm:p-8 shadow-sm"
+            className="mt-12 rounded-2xl border border-slate-200 dark:border-zinc-900 bg-gradient-to-b from-slate-50/90 to-white dark:from-black dark:to-black p-6 sm:p-8 shadow-sm"
             aria-live="polite"
           >
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
@@ -646,7 +646,7 @@ const BlogDetails = () => {
                 <h2 className="text-xl sm:text-2xl font-semibold text-slate-800 dark:text-cyan-300">
                   AI Summary
                 </h2>
-                <p className="text-xs text-slate-500 dark:text-zinc-400 mt-1">
+                <p className="text-xs text-slate-500 dark:text-zinc-200 mt-1">
                   Quick, helpful overview generated from this article.
                 </p>
               </div>
@@ -669,19 +669,19 @@ const BlogDetails = () => {
               <p className="text-red-600 dark:text-red-400 mb-4">{summaryError}</p>
             )}
 
-            <div className="rounded-xl bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 p-4 sm:p-6">
+            <div className="rounded-xl bg-white dark:bg-black border border-slate-200 dark:border-zinc-900 p-4 sm:p-6">
               {summarizing && (
                 // Lightweight skeleton loading
                 <div className="space-y-3 animate-pulse">
-                  <div className="h-4 w-1/3 bg-slate-200 dark:bg-zinc-700 rounded"></div>
-                  <div className="h-3 w-full bg-slate-200 dark:bg-zinc-700 rounded"></div>
-                  <div className="h-3 w-11/12 bg-slate-200 dark:bg-zinc-700 rounded"></div>
-                  <div className="h-3 w-10/12 bg-slate-200 dark:bg-zinc-700 rounded"></div>
+                  <div className="h-4 w-1/3 bg-slate-200 dark:bg-zinc-900 rounded"></div>
+                  <div className="h-3 w-full bg-slate-200 dark:bg-zinc-900 rounded"></div>
+                  <div className="h-3 w-11/12 bg-slate-200 dark:bg-zinc-900 rounded"></div>
+                  <div className="h-3 w-10/12 bg-slate-200 dark:bg-zinc-900 rounded"></div>
                 </div>
               )}
 
               {!summarizing && !summary && !summaryError && (
-                <p className="text-slate-600 dark:text-zinc-300">
+                <p className="text-slate-600 dark:text-zinc-200">
                   Click <span className="font-medium">AI Summary</span> above to generate a quick overview of this article.
                 </p>
               )}
@@ -689,7 +689,7 @@ const BlogDetails = () => {
               {summary && (
                 // NOTE: No className on ReactMarkdown in v9+.
                 // Style via a wrapper and the `components` map.
-                <div className="prose max-w-none dark:prose-invert leading-relaxed text-slate-800 dark:text-zinc-100">
+                <div className="prose max-w-none dark:prose-invert leading-relaxed text-slate-800 dark:text-zinc-50">
                   <ReactMarkdown
                     remarkPlugins={[remarkGfm]}
                     components={{
@@ -704,13 +704,13 @@ const BlogDetails = () => {
                       code: ({ inline, children, ...props }) =>
                         inline ? (
                           <code
-                            className="px-1 py-0.5 rounded bg-slate-100 dark:bg-zinc-700"
+                            className="px-1 py-0.5 rounded bg-slate-100 dark:bg-zinc-900"
                             {...props}
                           >
                             {children}
                           </code>
                         ) : (
-                          <pre className="p-3 rounded-xl bg-slate-100 dark:bg-zinc-800 overflow-x-auto">
+                          <pre className="p-3 rounded-xl bg-slate-100 dark:bg-black overflow-x-auto">
                             <code {...props}>{children}</code>
                           </pre>
                         ),
