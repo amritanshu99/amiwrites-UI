@@ -295,6 +295,22 @@ const textY = useTransform(
   [1, 0.65],
 );
 
+  const nameHeartbeatAnimation = prefersReducedMotion
+    ? undefined
+    : {
+        scale: [1, 1.018, 1, 1.038, 1],
+      };
+
+  const nameHeartbeatTransition = prefersReducedMotion
+    ? undefined
+    : {
+        duration: 2.6,
+        times: [0, 0.18, 0.36, 0.54, 1],
+        ease: "easeInOut",
+        repeat: Infinity,
+        repeatDelay: 0.35,
+      };
+
   useEffect(() => {
     const sync = () =>
       setIsDark(document.documentElement.classList.contains("dark"));
@@ -860,8 +876,11 @@ flex items-center px-6 md:px-20 z-10"
 
 
           >
- <h1
-className="
+ <motion.h1
+  animate={nameHeartbeatAnimation}
+  transition={nameHeartbeatTransition}
+  style={{ transformOrigin: "left center" }}
+  className="
 leading-[0.85]
 font-extrabold
 tracking-[-0.045em]
@@ -874,16 +893,61 @@ md:text-[10vw]
 lg:text-[8.5vw]
 xl:text-[7vw]
 
+[font-variation-settings:'wght'_840]
+antialiased
+
 drop-shadow-[0_30px_80px_rgba(0,0,0,0.55)]
 dark:drop-shadow-[0_30px_80px_rgba(0,0,0,0.8)]
 dark:[text-shadow:0_0_25px_rgba(255,255,255,0.35)]
 "
-
 >
-  <div className="block">{firstName}</div>
-<div className="block">{lastName}</div>
-
-</h1>
+  <motion.span
+    className="block"
+    animate={
+      prefersReducedMotion
+        ? undefined
+        : {
+            opacity: [1, 0.96, 1, 0.94, 1],
+          }
+    }
+    transition={
+      prefersReducedMotion
+        ? undefined
+        : {
+            duration: 2.6,
+            times: [0, 0.18, 0.36, 0.54, 1],
+            ease: "easeInOut",
+            repeat: Infinity,
+            repeatDelay: 0.35,
+          }
+    }
+  >
+    {firstName}
+  </motion.span>
+  <motion.span
+    className="block"
+    animate={
+      prefersReducedMotion
+        ? undefined
+        : {
+            opacity: [1, 0.97, 1, 0.95, 1],
+          }
+    }
+    transition={
+      prefersReducedMotion
+        ? undefined
+        : {
+            duration: 2.6,
+            times: [0, 0.18, 0.36, 0.54, 1],
+            ease: "easeInOut",
+            repeat: Infinity,
+            repeatDelay: 0.35,
+          }
+    }
+  >
+    {lastName}
+  </motion.span>
+</motion.h1>
 
 
           </motion.div>
