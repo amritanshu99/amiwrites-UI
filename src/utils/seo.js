@@ -3,6 +3,8 @@ export const SITE_URL = "https://www.amiverse.in";
 const DEFAULT_OG_IMAGE = `${SITE_URL}/og-image.jpg`;
 
 const PERSON_ID = `${SITE_URL}/#person`;
+const PRIMARY_SEO_KEYWORDS =
+  "Amritanshu Mishra, Amritanshu, AmiVerse, software engineer, associate consultant, consultant, AI engineer, developer, React developer, Node.js developer, MERN stack, innovator, Mathura, Noida, Ghaziabad, RKGIT, Rajkumar Goel Institute of Technology, Raj Kumar Goel Institute of Technology, RSPS, Ramanlal Shorawala Public School, ECE, Electronics and Communication Engineering, Shivasha Estate, Migsun Ultimo";
 
 const SOCIAL_LINKS = [
   "https://www.linkedin.com/in/amritanshu-mishra-568598306/",
@@ -69,9 +71,54 @@ const defaultStructuredData = (title, description, canonical) => ({
       "@type": "Person",
       "@id": PERSON_ID,
       name: "Amritanshu Mishra",
+      alternateName: ["Amritanshu", "Ami Mishra"],
       url: SITE_URL,
       image: DEFAULT_OG_IMAGE,
+      jobTitle: "Software Engineer",
+      description:
+        "Associate Consultant, software engineer, AI engineer, MERN stack developer and innovator from Mathura/Noida, India.",
       sameAs: SOCIAL_LINKS,
+      address: {
+        "@type": "PostalAddress",
+        addressLocality: "Noida",
+        addressRegion: "Uttar Pradesh",
+        addressCountry: "IN",
+      },
+      homeLocation: {
+        "@type": "Place",
+        name: "Mathura",
+      },
+      alumniOf: [
+        {
+          "@type": "EducationalOrganization",
+          name: "Rajkumar Goel Institute of Technology",
+          alternateName: ["RKGIT", "Raj Kumar Goel Institute of Technology"],
+          address: {
+            "@type": "PostalAddress",
+            addressLocality: "Ghaziabad",
+            addressCountry: "IN",
+          },
+        },
+        {
+          "@type": "EducationalOrganization",
+          name: "Ramanlal Shorawala Public School",
+          alternateName: ["RSPS"],
+          address: {
+            "@type": "PostalAddress",
+            addressLocality: "Mathura",
+            addressCountry: "IN",
+          },
+        },
+      ],
+      knowsAbout: [
+        "Software Engineering",
+        "AI Engineering",
+        "React",
+        "Node.js",
+        "MERN Stack Development",
+        "Electronics and Communication Engineering",
+        "Innovation",
+      ],
     },
     {
       "@type": "WebSite",
@@ -118,6 +165,7 @@ export const applySEO = ({
   document.title = title;
 
   upsertMeta("meta[name='description']", { name: "description", content: description });
+  upsertMeta("meta[name='title']", { name: "title", content: title });
   upsertMeta("meta[name='author']", { name: "author", content: "Amritanshu Mishra" });
   upsertMeta("meta[name='robots']", {
     name: "robots",
@@ -127,7 +175,12 @@ export const applySEO = ({
   });
 
   if (keywords) {
-    upsertMeta("meta[name='keywords']", { name: "keywords", content: keywords });
+    upsertMeta("meta[name='keywords']", {
+      name: "keywords",
+      content: `${keywords}, ${PRIMARY_SEO_KEYWORDS}`,
+    });
+  } else {
+    upsertMeta("meta[name='keywords']", { name: "keywords", content: PRIMARY_SEO_KEYWORDS });
   }
 
   upsertMeta("meta[property='og:title']", { property: "og:title", content: title });
@@ -164,9 +217,9 @@ export const seoByRoute = {
   "/": {
     title: "Amritanshu Mishra | AmiVerse Portfolio, Blogs & AI Tools",
     description:
-      "Explore AmiVerse by Amritanshu Mishra: developer portfolio, practical blogs, and AI-powered tools for productivity and creativity.",
+      "Explore AmiVerse by Amritanshu Mishra (Amritanshu): software engineer, associate consultant, AI engineer, and MERN stack developer from Mathura/Noida.",
     keywords:
-      "Amritanshu Mishra, AmiVerse, developer portfolio, software engineer, AI tools, developer blog",
+      "Amritanshu Mishra portfolio, Amritanshu, software engineer, associate consultant, AI engineer, MERN developer, RKGIT, RSPS, Mathura, Noida, Ghaziabad",
   },
   "/blogs": {
     title: "Developer Blogs on React, AI & Productivity | AmiVerse",
