@@ -557,7 +557,7 @@ const BlogList = () => {
               return (
                 <article
                   key={blog._id}
-                  className="group flex min-h-[244px] w-full cursor-pointer flex-col rounded-[1.35rem] border border-white/80 bg-white/90 p-4 shadow-[0_18px_40px_-34px_rgba(15,23,42,0.18)] backdrop-blur-sm transition hover:-translate-y-1 hover:border-sky-100 hover:shadow-[0_24px_50px_-34px_rgba(15,23,42,0.24)] dark:border-zinc-800 dark:bg-[linear-gradient(180deg,rgba(0,0,0,1)_0%,rgba(10,10,10,1)_100%)] dark:hover:border-zinc-700 dark:shadow-[0_20px_46px_-34px_rgba(0,0,0,0.95)] sm:min-h-[270px] sm:rounded-[1.5rem] sm:p-5"
+                  className="group flex min-h-[244px] w-full cursor-pointer flex-col rounded-[1.35rem] border border-white/80 bg-white/90 p-4 shadow-[0_18px_40px_-34px_rgba(15,23,42,0.18)] backdrop-blur-sm transform-gpu transition-[transform,box-shadow,border-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1.5 hover:scale-[1.01] hover:border-sky-100 hover:shadow-[0_28px_60px_-36px_rgba(15,23,42,0.26)] focus-visible:-translate-y-1 focus-visible:scale-[1.005] dark:border-zinc-800 dark:bg-[linear-gradient(180deg,rgba(0,0,0,1)_0%,rgba(10,10,10,1)_100%)] dark:hover:border-zinc-700 dark:shadow-[0_20px_46px_-34px_rgba(0,0,0,0.95)] dark:hover:shadow-[0_30px_68px_-36px_rgba(0,0,0,0.98)] sm:min-h-[270px] sm:rounded-[1.5rem] sm:p-5 motion-reduce:transform-none motion-reduce:transition-none"
                   onClick={() => {
                     trackClick(blog._id);
                     handleBlogClick(blog._id);

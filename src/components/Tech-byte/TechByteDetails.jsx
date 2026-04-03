@@ -133,7 +133,7 @@ function TechNewsCards() {
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={`Read full article: ${featuredArticle.title}`}
-                    className="group overflow-hidden rounded-[1.45rem] border border-white/80 bg-white/92 shadow-[0_24px_60px_-38px_rgba(15,23,42,0.22)] backdrop-blur-sm transition hover:-translate-y-1 hover:border-sky-100 hover:shadow-[0_28px_70px_-38px_rgba(15,23,42,0.28)] focus:outline-none focus:ring-4 focus:ring-sky-100 dark:border-zinc-900 dark:bg-black dark:hover:border-zinc-700 dark:focus:ring-zinc-700/20 dark:shadow-[0_24px_60px_-38px_rgba(0,0,0,0.95)] sm:rounded-[1.8rem] lg:col-span-2"
+                    className="group overflow-hidden rounded-[1.45rem] border border-white/80 bg-white/92 shadow-[0_24px_60px_-38px_rgba(15,23,42,0.22)] backdrop-blur-sm transform-gpu transition-[transform,box-shadow,border-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1.5 hover:scale-[1.005] hover:border-sky-100 hover:shadow-[0_34px_84px_-42px_rgba(15,23,42,0.3)] focus:outline-none focus:ring-4 focus:ring-sky-100 focus-visible:-translate-y-1 dark:border-zinc-900 dark:bg-black dark:hover:border-zinc-700 dark:focus:ring-zinc-700/20 dark:shadow-[0_24px_60px_-38px_rgba(0,0,0,0.95)] dark:hover:shadow-[0_36px_88px_-44px_rgba(0,0,0,0.98)] sm:rounded-[1.8rem] lg:col-span-2 motion-reduce:transform-none motion-reduce:transition-none"
                   >
                     <div className="grid h-full grid-cols-1 lg:grid-cols-[1.25fr_1fr]">
                       <div className="relative min-h-[200px] overflow-hidden bg-zinc-100 dark:bg-zinc-950 sm:min-h-[280px] lg:min-h-full">
@@ -141,7 +141,7 @@ function TechNewsCards() {
                           src={featuredArticle.image || "/placeholder-image.png"}
                           alt={featuredArticle.title}
                           loading="lazy"
-                          className="h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
+                          className="h-full w-full object-cover object-center transform-gpu transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-110 motion-reduce:transform-none motion-reduce:transition-none"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/20 to-transparent dark:from-black/85 dark:via-black/30" />
                         <span className="absolute left-4 top-4 rounded-full bg-white/92 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100 sm:left-5 sm:top-5">
@@ -187,14 +187,14 @@ function TechNewsCards() {
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={`Read full article: ${article.title}`}
-                    className="group flex min-h-[250px] w-full flex-col overflow-hidden rounded-[1.35rem] border border-white/80 bg-white/92 p-0 shadow-[0_18px_40px_-34px_rgba(15,23,42,0.18)] backdrop-blur-sm transition hover:-translate-y-1 hover:border-sky-100 hover:shadow-[0_24px_50px_-34px_rgba(15,23,42,0.24)] focus:outline-none focus:ring-4 focus:ring-sky-100 dark:border-zinc-900 dark:bg-black dark:hover:border-zinc-700 dark:focus:ring-zinc-700/20 dark:shadow-[0_18px_40px_-34px_rgba(0,0,0,0.95)] sm:min-h-[290px] sm:rounded-[1.55rem]"
+                    className="group flex min-h-[250px] w-full flex-col overflow-hidden rounded-[1.35rem] border border-white/80 bg-white/92 p-0 shadow-[0_18px_40px_-34px_rgba(15,23,42,0.18)] backdrop-blur-sm transform-gpu transition-[transform,box-shadow,border-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1.5 hover:scale-[1.01] hover:border-sky-100 hover:shadow-[0_28px_60px_-36px_rgba(15,23,42,0.26)] focus:outline-none focus:ring-4 focus:ring-sky-100 focus-visible:-translate-y-1 dark:border-zinc-900 dark:bg-black dark:hover:border-zinc-700 dark:focus:ring-zinc-700/20 dark:shadow-[0_18px_40px_-34px_rgba(0,0,0,0.95)] dark:hover:shadow-[0_30px_66px_-38px_rgba(0,0,0,0.98)] sm:min-h-[290px] sm:rounded-[1.55rem] motion-reduce:transform-none motion-reduce:transition-none"
                   >
                     <div className="relative h-40 w-full overflow-hidden bg-zinc-100 dark:bg-zinc-950 sm:h-44 lg:h-48">
                       <img
                         src={article.image || "/placeholder-image.png"}
                         alt={article.title}
                         loading="lazy"
-                        className="h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
+                        className="h-full w-full object-cover object-center transform-gpu transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-110 motion-reduce:transform-none motion-reduce:transition-none"
                       />
                     </div>
 
