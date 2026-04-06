@@ -39,14 +39,15 @@ const Footer = () => {
   }, [scrollToTop]);
 
   return (
-    <footer className="relative mt-10 w-full overflow-hidden border-t border-slate-200/70 bg-gradient-to-br from-white/95 via-slate-50/95 to-cyan-50/70 text-slate-700 backdrop-blur-xl dark:border-slate-700/60 dark:from-slate-950/95 dark:via-black dark:to-cyan-950/40 dark:text-slate-300">
-      <div className="pointer-events-none absolute inset-0 opacity-70 dark:opacity-90">
-        <div className="absolute -left-24 top-10 h-56 w-56 rounded-full bg-cyan-300/30 blur-3xl dark:bg-cyan-800/30" />
-        <div className="absolute -right-24 bottom-2 h-56 w-56 rounded-full bg-sky-300/20 blur-3xl dark:bg-sky-900/30" />
+    <footer className="relative mt-10 w-full overflow-hidden border-t border-slate-200/80 bg-[radial-gradient(circle_at_top_left,rgba(59,130,246,0.16),transparent_40%),radial-gradient(circle_at_90%_20%,rgba(14,165,233,0.18),transparent_40%),linear-gradient(135deg,rgba(255,255,255,0.97),rgba(248,250,252,0.96),rgba(236,254,255,0.94))] text-slate-700 shadow-[0_-16px_50px_-35px_rgba(15,23,42,0.35)] backdrop-blur-xl dark:border-slate-700/70 dark:bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.20),transparent_40%),radial-gradient(circle_at_95%_25%,rgba(56,189,248,0.20),transparent_38%),linear-gradient(145deg,rgba(2,6,23,0.98),rgba(2,8,23,0.96),rgba(6,10,25,0.96))] dark:text-slate-300 dark:shadow-[0_-20px_60px_-35px_rgba(6,182,212,0.22)]">
+      <div className="pointer-events-none absolute inset-0 opacity-75 dark:opacity-95">
+        <div className="absolute -left-24 top-6 h-56 w-56 rounded-full bg-cyan-300/25 blur-3xl dark:bg-cyan-700/30" />
+        <div className="absolute right-[-4.5rem] top-20 h-48 w-48 rounded-full bg-sky-300/20 blur-3xl dark:bg-sky-800/35" />
+        <div className="absolute -bottom-24 left-1/3 h-56 w-56 rounded-full bg-indigo-300/15 blur-3xl dark:bg-indigo-900/25" />
       </div>
-      <div className="relative mx-auto max-w-7xl px-5 py-10 sm:px-6 sm:py-12 lg:px-8">
-        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4 lg:gap-10">
-          <section>
+      <div className="relative mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-11 lg:px-8">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-12 lg:gap-8">
+          <section className="rounded-2xl border border-white/70 bg-white/70 p-4 shadow-lg shadow-slate-300/20 backdrop-blur-md dark:border-slate-700/60 dark:bg-slate-900/55 dark:shadow-cyan-950/10 sm:p-5 lg:col-span-5">
             <div className="flex items-center gap-2">
               <img
                 src="/favicon.ico"
@@ -66,15 +67,18 @@ const Footer = () => {
             </p>
           </section>
 
-          <nav aria-label="Company links">
+          <nav
+            aria-label="Company links"
+            className="rounded-2xl border border-white/75 bg-white/65 p-4 shadow-md shadow-slate-300/20 backdrop-blur-md dark:border-slate-700/60 dark:bg-slate-900/50 sm:p-5 lg:col-span-2"
+          >
             <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-900 dark:text-white">
               Company
             </h3>
-            <ul className="mt-3 space-y-2 text-sm">
+            <ul className="mt-3 grid grid-cols-2 gap-2 text-sm sm:grid-cols-1">
               {companyLinks.map((link) => (
                 <li key={link.label}>
                   <Link
-                    className="text-slate-700 transition-colors hover:text-cyan-700 dark:text-slate-300 dark:hover:text-cyan-300"
+                    className="inline-flex rounded-md px-2 py-1.5 text-slate-700 transition-colors hover:bg-cyan-50/80 hover:text-cyan-700 dark:text-slate-200 dark:hover:bg-cyan-950/40 dark:hover:text-cyan-200"
                     to={link.href}
                     onClick={scrollToTop}
                   >
@@ -85,7 +89,7 @@ const Footer = () => {
               <li>
                 <button
                   type="button"
-                  className="text-slate-700 transition-colors hover:text-cyan-700 dark:text-slate-300 dark:hover:text-cyan-300"
+                  className="inline-flex rounded-md px-2 py-1.5 text-slate-700 transition-colors hover:bg-cyan-50/80 hover:text-cyan-700 dark:text-slate-200 dark:hover:bg-cyan-950/40 dark:hover:text-cyan-200"
                   onClick={handleContactClick}
                 >
                   Contact
@@ -94,15 +98,18 @@ const Footer = () => {
             </ul>
           </nav>
 
-          <nav aria-label="Product links">
+          <nav
+            aria-label="Product links"
+            className="rounded-2xl border border-white/75 bg-white/65 p-4 shadow-md shadow-slate-300/20 backdrop-blur-md dark:border-slate-700/60 dark:bg-slate-900/50 sm:p-5 lg:col-span-2"
+          >
             <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-900 dark:text-white">
               Product
             </h3>
-            <ul className="mt-3 space-y-2 text-sm">
+            <ul className="mt-3 grid grid-cols-2 gap-2 text-sm sm:grid-cols-1">
               {productLinks.map((link) => (
                 <li key={link.label}>
                   <Link
-                    className="text-slate-700 transition-colors hover:text-cyan-700 dark:text-slate-300 dark:hover:text-cyan-300"
+                    className="inline-flex rounded-md px-2 py-1.5 text-slate-700 transition-colors hover:bg-cyan-50/80 hover:text-cyan-700 dark:text-slate-200 dark:hover:bg-cyan-950/40 dark:hover:text-cyan-200"
                     to={link.href}
                     onClick={scrollToTop}
                   >
@@ -113,15 +120,18 @@ const Footer = () => {
             </ul>
           </nav>
 
-          <nav aria-label="Legal links">
+          <nav
+            aria-label="Legal links"
+            className="rounded-2xl border border-white/75 bg-white/65 p-4 shadow-md shadow-slate-300/20 backdrop-blur-md dark:border-slate-700/60 dark:bg-slate-900/50 sm:p-5 lg:col-span-3"
+          >
             <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-900 dark:text-white">
               Legal
             </h3>
-            <ul className="mt-3 grid grid-cols-1 gap-2 text-sm">
+            <ul className="mt-3 grid grid-cols-1 gap-2 text-sm sm:grid-cols-2 lg:grid-cols-1">
               {legalLinks.map((link) => (
                 <li key={link.label}>
                   <Link
-                    className="inline-flex w-full items-center rounded-lg border border-slate-200/90 bg-white/85 px-3 py-2 text-slate-700 shadow-sm shadow-slate-300/40 backdrop-blur-md transition-all hover:border-cyan-500/70 hover:bg-cyan-50/90 hover:text-cyan-800 hover:shadow-cyan-200/40 dark:border-slate-700/90 dark:bg-slate-900/85 dark:text-slate-200 dark:shadow-none dark:hover:border-cyan-400/80 dark:hover:bg-black dark:hover:text-cyan-200"
+                    className="inline-flex w-full items-center rounded-lg border border-slate-200/90 bg-white/88 px-3 py-2 text-slate-700 shadow-sm shadow-slate-300/40 backdrop-blur-md transition-all hover:border-cyan-500/70 hover:bg-cyan-50/90 hover:text-cyan-800 hover:shadow-cyan-200/40 dark:border-slate-700/90 dark:bg-slate-900/85 dark:text-slate-100 dark:shadow-none dark:hover:border-cyan-400/80 dark:hover:bg-black dark:hover:text-cyan-200"
                     to={link.href}
                     onClick={scrollToTop}
                   >
@@ -133,9 +143,9 @@ const Footer = () => {
           </nav>
         </div>
 
-        <div className="mt-8 flex flex-col gap-2 border-t border-slate-300/80 pt-5 text-xs text-slate-500 dark:border-slate-800 dark:text-slate-400 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:text-sm">
+        <div className="mt-6 flex flex-col gap-2 border-t border-slate-300/70 pt-4 text-xs text-slate-500 dark:border-slate-700/70 dark:text-slate-400 sm:mt-7 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:pt-5 sm:text-sm">
           <p>© {new Date().getFullYear()} Amiverse. All rights reserved.</p>
-          <p className="text-slate-500 dark:text-slate-500">Made with love by Amritanshu Mishra.</p>
+          <p className="text-slate-500 dark:text-slate-400">Made with love by Amritanshu Mishra.</p>
         </div>
       </div>
     </footer>
