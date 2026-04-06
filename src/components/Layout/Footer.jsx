@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { useCallback } from "react";
 
 const productLinks = [
   { label: "AI Chat", href: "/ai-chat" },
@@ -19,19 +20,37 @@ const legalLinks = [
 const companyLinks = [
   { label: "Home", href: "/" },
   { label: "Portfolio", href: "/" },
-  { label: "Contact", href: "mailto:amritanshu99@gmail.com" },
 ];
 
 const Footer = () => {
+  const scrollToTop = useCallback(() => {
+    const appShell = document.querySelector(".h-screen.overflow-y-scroll");
+    if (appShell) {
+      appShell.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
+
+  const handleContactClick = useCallback(() => {
+    scrollToTop();
+    window.dispatchEvent(new Event("open-contact-modal"));
+  }, [scrollToTop]);
+
   return (
     <footer className="w-full mt-10 border-t border-slate-700/70 bg-slate-950/95 text-slate-300">
       <div className="max-w-7xl mx-auto px-6 py-10 sm:py-12">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-10">
           <section>
             <h2 className="text-white text-lg font-semibold tracking-tight">Amiverse</h2>
             <p className="mt-3 text-sm leading-relaxed text-slate-400">
               Production-ready AI experiences focused on transparency, reliability, and user
               safety.
+            </p>
+            <p className="mt-4 text-xs leading-relaxed text-slate-500">
+              Designed with an accessibility-first approach, clean legal readability, and dependable
+              support pathways for every user.
             </p>
           </section>
 
@@ -40,17 +59,24 @@ const Footer = () => {
             <ul className="mt-3 space-y-2 text-sm">
               {companyLinks.map((link) => (
                 <li key={link.label}>
-                  {link.href.startsWith("mailto:") ? (
-                    <a className="hover:text-cyan-300 transition-colors" href={link.href}>
-                      {link.label}
-                    </a>
-                  ) : (
-                    <Link className="hover:text-cyan-300 transition-colors" to={link.href}>
-                      {link.label}
-                    </Link>
-                  )}
+                  <Link
+                    className="hover:text-cyan-300 transition-colors"
+                    to={link.href}
+                    onClick={scrollToTop}
+                  >
+                    {link.label}
+                  </Link>
                 </li>
               ))}
+              <li>
+                <button
+                  type="button"
+                  className="hover:text-cyan-300 transition-colors"
+                  onClick={handleContactClick}
+                >
+                  Contact
+                </button>
+              </li>
             </ul>
           </nav>
 
@@ -59,7 +85,11 @@ const Footer = () => {
             <ul className="mt-3 space-y-2 text-sm">
               {productLinks.map((link) => (
                 <li key={link.label}>
-                  <Link className="hover:text-cyan-300 transition-colors" to={link.href}>
+                  <Link
+                    className="hover:text-cyan-300 transition-colors"
+                    to={link.href}
+                    onClick={scrollToTop}
+                  >
                     {link.label}
                   </Link>
                 </li>
@@ -72,7 +102,11 @@ const Footer = () => {
             <ul className="mt-3 space-y-2 text-sm">
               {legalLinks.map((link) => (
                 <li key={link.label}>
-                  <Link className="hover:text-cyan-300 transition-colors" to={link.href}>
+                  <Link
+                    className="hover:text-cyan-300 transition-colors"
+                    to={link.href}
+                    onClick={scrollToTop}
+                  >
                     {link.label}
                   </Link>
                 </li>
@@ -83,7 +117,7 @@ const Footer = () => {
 
         <div className="mt-8 pt-5 border-t border-slate-800 text-xs sm:text-sm text-slate-400 flex flex-col sm:flex-row gap-2 sm:gap-4 sm:items-center sm:justify-between">
           <p>© {new Date().getFullYear()} Amiverse. All rights reserved.</p>
-          <p>Use of this site is subject to our Terms and Privacy Policy.</p>
+          <p className="text-slate-500">Use of this site is subject to our Terms and Privacy Policy.</p>
         </div>
       </div>
     </footer>
