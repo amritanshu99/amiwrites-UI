@@ -111,7 +111,7 @@ function TechNewsCards() {
                 Tech news that gets to the point faster.
               </h1>
               <p className="mt-1.5 max-w-2xl text-sm leading-5 text-zinc-600 dark:text-zinc-300">
-                Top stories stay visible sooner, with less scrolling on phones and desktops.
+                Get your daily tech dose with top stories visible sooner and less scrolling on phones and desktops.
               </p>
             </div>
           </div>
