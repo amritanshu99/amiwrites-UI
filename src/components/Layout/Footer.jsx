@@ -1,114 +1,89 @@
-import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 
-const quickLinks = [
-  { label: "Privacy Hub", href: "#privacy-hub" },
-  { label: "Data Use", href: "#data-use" },
-  { label: "Cookies", href: "#cookies" },
-  { label: "Trust & Safety", href: "#trust-safety" },
+const productLinks = [
+  { label: "AI Chat", href: "/ai-chat" },
+  { label: "AI Tools", href: "/ai-tools" },
+  { label: "Tech Byte", href: "/tech-byte" },
+  { label: "Blogs", href: "/blogs" },
+];
+
+const legalLinks = [
+  { label: "Privacy Policy", href: "/legal/privacy-policy" },
+  { label: "Terms of Service", href: "/legal/terms-of-service" },
+  { label: "Cookie Policy", href: "/legal/cookie-policy" },
+  { label: "Acceptable Use", href: "/legal/acceptable-use" },
+  { label: "Security", href: "/legal/security" },
+  { label: "Accessibility", href: "/legal/accessibility" },
+];
+
+const companyLinks = [
+  { label: "Home", href: "/" },
+  { label: "Portfolio", href: "/" },
   { label: "Contact", href: "mailto:amritanshu99@gmail.com" },
 ];
 
-const policyHighlights = [
-  {
-    id: "privacy-hub",
-    title: "Privacy Hub",
-    details:
-      "Amiverse only collects account, usage, and feedback data needed to run core features, improve AI quality, and secure the platform.",
-  },
-  {
-    id: "data-use",
-    title: "How We Use Data",
-    details:
-      "Your activity signals help us personalize recommendations, detect abuse, and improve model responses. Sensitive fields are minimized and protected.",
-  },
-  {
-    id: "cookies",
-    title: "Cookies & Storage",
-    details:
-      "Cookies/local storage keep you signed in, remember preferences, and power analytics that help us fix bugs and ship better product updates.",
-  },
-  {
-    id: "trust-safety",
-    title: "Trust & Safety",
-    details:
-      "Security reviews, encrypted traffic, and moderation pipelines are used to protect user content and keep the Amiverse community safe.",
-  },
-];
-
 const Footer = () => {
-  const [isVisible, setIsVisible] = useState(false);
-
-  useEffect(() => {
-    const timeout = setTimeout(() => setIsVisible(true), 100);
-    return () => clearTimeout(timeout);
-  }, []);
-
   return (
-    <footer
-      className={`w-full px-6 py-8 sm:py-10
-        bg-gradient-to-br from-indigo-900 via-sky-800 to-purple-800
-        dark:from-gray-900 dark:via-gray-950 dark:to-black
-        bg-opacity-40 dark:bg-opacity-90
-        backdrop-blur-lg
-        border-t border-white/10 dark:border-gray-700
-        shadow-[inset_0_1px_6px_rgba(255,255,255,0.08)]
-        text-gray-100 dark:text-gray-300
-        transition-all duration-700 ease-out
-        ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}
-      `}
-      style={{
-        WebkitBackdropFilter: "blur(16px)",
-        backdropFilter: "blur(16px)",
-      }}
-    >
-      <div className="max-w-7xl mx-auto space-y-7">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
-          <div className="space-y-2 text-center lg:text-left">
-            <p className="text-xl font-semibold tracking-tight text-white">Amiverse</p>
-            <p className="text-sm text-gray-200/90 max-w-xl">
-              Building practical AI experiences with transparency, responsible data use,
-              and user-first design.
+    <footer className="w-full mt-10 border-t border-slate-700/70 bg-slate-950/95 text-slate-300">
+      <div className="max-w-7xl mx-auto px-6 py-10 sm:py-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          <section>
+            <h2 className="text-white text-lg font-semibold tracking-tight">Amiverse</h2>
+            <p className="mt-3 text-sm leading-relaxed text-slate-400">
+              Production-ready AI experiences focused on transparency, reliability, and user
+              safety.
             </p>
-          </div>
+          </section>
 
-          <nav aria-label="Footer quick links" className="flex flex-wrap justify-center lg:justify-end gap-2">
-            {quickLinks.map((link) => (
-              <a
-                key={link.label}
-                href={link.href}
-                className="px-3 py-1.5 rounded-full text-xs sm:text-sm bg-white/10 hover:bg-white/20
-                  border border-white/20 hover:border-white/35 transition-colors"
-              >
-                {link.label}
-              </a>
-            ))}
+          <nav aria-label="Company links">
+            <h3 className="text-sm font-semibold text-white uppercase tracking-[0.14em]">Company</h3>
+            <ul className="mt-3 space-y-2 text-sm">
+              {companyLinks.map((link) => (
+                <li key={link.label}>
+                  {link.href.startsWith("mailto:") ? (
+                    <a className="hover:text-cyan-300 transition-colors" href={link.href}>
+                      {link.label}
+                    </a>
+                  ) : (
+                    <Link className="hover:text-cyan-300 transition-colors" to={link.href}>
+                      {link.label}
+                    </Link>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </nav>
+
+          <nav aria-label="Product links">
+            <h3 className="text-sm font-semibold text-white uppercase tracking-[0.14em]">Product</h3>
+            <ul className="mt-3 space-y-2 text-sm">
+              {productLinks.map((link) => (
+                <li key={link.label}>
+                  <Link className="hover:text-cyan-300 transition-colors" to={link.href}>
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+
+          <nav aria-label="Legal links">
+            <h3 className="text-sm font-semibold text-white uppercase tracking-[0.14em]">Legal</h3>
+            <ul className="mt-3 space-y-2 text-sm">
+              {legalLinks.map((link) => (
+                <li key={link.label}>
+                  <Link className="hover:text-cyan-300 transition-colors" to={link.href}>
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
           </nav>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-          {policyHighlights.map((item) => (
-            <section
-              id={item.id}
-              key={item.id}
-              className="rounded-xl border border-white/15 bg-black/20 px-4 py-3 shadow-sm"
-            >
-              <h3 className="text-sm font-semibold text-white mb-1">{item.title}</h3>
-              <p className="text-xs sm:text-sm text-gray-200/90 leading-relaxed">{item.details}</p>
-            </section>
-          ))}
-        </div>
-
-        <div className="pt-2 border-t border-white/10 flex flex-col sm:flex-row justify-between items-center gap-2 sm:gap-4 text-sm font-medium tracking-wide text-center sm:text-left">
-          <p className="flex items-center gap-1">
-            Built with
-            <span className="text-pink-400 animate-pulse" role="img" aria-label="heart">
-              ❤️
-            </span>
-            by AI
-          </p>
-          <p className="text-gray-200/90 sm:text-right">
-            © {new Date().getFullYear()} Amiverse. Privacy-first by design.
-          </p>
+        <div className="mt-8 pt-5 border-t border-slate-800 text-xs sm:text-sm text-slate-400 flex flex-col sm:flex-row gap-2 sm:gap-4 sm:items-center sm:justify-between">
+          <p>© {new Date().getFullYear()} Amiverse. All rights reserved.</p>
+          <p>Use of this site is subject to our Terms and Privacy Policy.</p>
         </div>
       </div>
     </footer>
