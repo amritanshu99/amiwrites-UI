@@ -4,6 +4,8 @@ import { useCallback } from "react";
 const productLinks = [
   { label: "AI Chat", href: "/ai-chat" },
   { label: "AI Tools", href: "/ai-tools" },
+  { label: "Task Manager", href: "/task-manager" },
+  { label: "Amibot", href: "/amibot" },
   { label: "Tech Byte", href: "/tech-byte" },
   { label: "Blogs", href: "/blogs" },
 ];
