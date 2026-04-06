@@ -470,10 +470,10 @@ const BlogList = () => {
                 Editorial Notes
               </span>
               <h1 className="mt-2 max-w-2xl text-base font-semibold tracking-tight text-zinc-950 dark:text-zinc-50 sm:text-[1.35rem] lg:text-[1.65rem]">
-                Clean, focused reading across every screen.
+                Reinforcement Learning Blogs, optimized for what is trending now.
               </h1>
               <p className="mt-1.5 max-w-2xl text-sm leading-5 text-zinc-600 dark:text-zinc-200">
-                Browse, search, and open posts without wasting vertical space.
+                Trending recommendations are powered by Thompson Sampling, a reinforcement learning strategy that continuously learns from blog engagement.
               </p>
             </div>
           </div>
