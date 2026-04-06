@@ -39,11 +39,15 @@ const Footer = () => {
   }, [scrollToTop]);
 
   return (
-    <footer className="w-full mt-10 border-t border-slate-200/80 bg-slate-100/95 text-slate-700 dark:border-slate-700/70 dark:bg-slate-950/95 dark:text-slate-300">
-      <div className="max-w-7xl mx-auto px-6 py-10 sm:py-12">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-10">
+    <footer className="relative mt-10 w-full overflow-hidden border-t border-slate-200/70 bg-gradient-to-br from-white/95 via-slate-50/95 to-cyan-50/70 text-slate-700 backdrop-blur-xl dark:border-slate-700/60 dark:from-slate-950/95 dark:via-black dark:to-cyan-950/40 dark:text-slate-300">
+      <div className="pointer-events-none absolute inset-0 opacity-70 dark:opacity-90">
+        <div className="absolute -left-24 top-10 h-56 w-56 rounded-full bg-cyan-300/30 blur-3xl dark:bg-cyan-800/30" />
+        <div className="absolute -right-24 bottom-2 h-56 w-56 rounded-full bg-sky-300/20 blur-3xl dark:bg-sky-900/30" />
+      </div>
+      <div className="relative mx-auto max-w-7xl px-5 py-10 sm:px-6 sm:py-12 lg:px-8">
+        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4 lg:gap-10">
           <section>
-            <h2 className="text-slate-900 dark:text-white text-lg font-semibold tracking-tight">Amiverse</h2>
+            <h2 className="text-lg font-semibold tracking-tight text-slate-900 dark:text-white">Amiverse</h2>
             <p className="mt-3 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
               Production-ready AI experiences focused on transparency, reliability, and user
               safety.
@@ -55,14 +59,14 @@ const Footer = () => {
           </section>
 
           <nav aria-label="Company links">
-            <h3 className="text-sm font-semibold text-slate-900 dark:text-white uppercase tracking-[0.14em]">
+            <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-900 dark:text-white">
               Company
             </h3>
             <ul className="mt-3 space-y-2 text-sm">
               {companyLinks.map((link) => (
                 <li key={link.label}>
                   <Link
-                    className="text-slate-700 hover:text-cyan-700 transition-colors dark:text-slate-300 dark:hover:text-cyan-300"
+                    className="text-slate-700 transition-colors hover:text-cyan-700 dark:text-slate-300 dark:hover:text-cyan-300"
                     to={link.href}
                     onClick={scrollToTop}
                   >
@@ -73,7 +77,7 @@ const Footer = () => {
               <li>
                 <button
                   type="button"
-                  className="text-slate-700 hover:text-cyan-700 transition-colors dark:text-slate-300 dark:hover:text-cyan-300"
+                  className="text-slate-700 transition-colors hover:text-cyan-700 dark:text-slate-300 dark:hover:text-cyan-300"
                   onClick={handleContactClick}
                 >
                   Contact
@@ -83,14 +87,14 @@ const Footer = () => {
           </nav>
 
           <nav aria-label="Product links">
-            <h3 className="text-sm font-semibold text-slate-900 dark:text-white uppercase tracking-[0.14em]">
+            <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-900 dark:text-white">
               Product
             </h3>
             <ul className="mt-3 space-y-2 text-sm">
               {productLinks.map((link) => (
                 <li key={link.label}>
                   <Link
-                    className="text-slate-700 hover:text-cyan-700 transition-colors dark:text-slate-300 dark:hover:text-cyan-300"
+                    className="text-slate-700 transition-colors hover:text-cyan-700 dark:text-slate-300 dark:hover:text-cyan-300"
                     to={link.href}
                     onClick={scrollToTop}
                   >
@@ -102,14 +106,14 @@ const Footer = () => {
           </nav>
 
           <nav aria-label="Legal links">
-            <h3 className="text-sm font-semibold text-slate-900 dark:text-white uppercase tracking-[0.14em]">
+            <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-900 dark:text-white">
               Legal
             </h3>
             <ul className="mt-3 grid grid-cols-1 gap-2 text-sm">
               {legalLinks.map((link) => (
                 <li key={link.label}>
                   <Link
-                    className="inline-flex w-full items-center rounded-md border border-slate-300/90 bg-white px-3 py-2 text-slate-700 shadow-sm shadow-slate-200/40 hover:border-cyan-500/70 hover:bg-cyan-50 hover:text-cyan-800 transition-colors dark:border-slate-700/90 dark:bg-slate-900 dark:text-slate-200 dark:shadow-none dark:hover:border-cyan-400/80 dark:hover:bg-black dark:hover:text-cyan-200"
+                    className="inline-flex w-full items-center rounded-lg border border-slate-200/90 bg-white/85 px-3 py-2 text-slate-700 shadow-sm shadow-slate-300/40 backdrop-blur-md transition-all hover:border-cyan-500/70 hover:bg-cyan-50/90 hover:text-cyan-800 hover:shadow-cyan-200/40 dark:border-slate-700/90 dark:bg-slate-900/85 dark:text-slate-200 dark:shadow-none dark:hover:border-cyan-400/80 dark:hover:bg-black dark:hover:text-cyan-200"
                     to={link.href}
                     onClick={scrollToTop}
                   >
@@ -121,7 +125,7 @@ const Footer = () => {
           </nav>
         </div>
 
-        <div className="mt-8 pt-5 border-t border-slate-300 dark:border-slate-800 text-xs sm:text-sm text-slate-500 dark:text-slate-400 flex flex-col sm:flex-row gap-2 sm:gap-4 sm:items-center sm:justify-between">
+        <div className="mt-8 flex flex-col gap-2 border-t border-slate-300/80 pt-5 text-xs text-slate-500 dark:border-slate-800 dark:text-slate-400 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:text-sm">
           <p>© {new Date().getFullYear()} Amiverse. All rights reserved.</p>
           <p className="text-slate-500 dark:text-slate-500">
             Use of this site is subject to our Terms and Privacy Policy.
