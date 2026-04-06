@@ -405,21 +405,6 @@ const textY = useTransform(
     };
   }, []);
 
-  /* ===== MOBILE VIEWPORT FIX ===== */
-useEffect(() => {
-  const setVH = () => {
-    document.documentElement.style.setProperty(
-      "--vh",
-      `${window.innerHeight * 0.01}px`
-    );
-  };
-
-  setVH();
-  window.addEventListener("resize", setVH);
-
-  return () => window.removeEventListener("resize", setVH);
-}, []);
-
   useEffect(() => {
     if (loading || !data) return;
 
@@ -841,12 +826,12 @@ overflow-hidden z-10"
               src={heroImageUrl}
               alt={data.name}
               onLoad={() => setImageLoaded(true)}
-              initial={{ opacity: 0, scale: 1.03 }}
+              initial={false}
               animate={{
                 opacity: imageLoaded ? 1 : 0,
-                scale: imageLoaded ? 1 : 1.03,
+                scale: 1,
               }}
-              transition={{ duration: 0.8, ease: "easeOut" }}
+              transition={{ duration: 0.28, ease: "easeOut" }}
               className="
     w-full
     h-full
