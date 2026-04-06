@@ -2,9 +2,11 @@ import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import Loader from "../Loader/Loader";
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 import "react-toastify/dist/ReactToastify.css";
 
 export default function ContactMeButton() {
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({ name: "", email: "", reason: "" });
@@ -22,6 +24,16 @@ export default function ContactMeButton() {
   useEffect(() => {
     audioRef.current = new Audio("/sounds/message.mp3");
     audioRef.current.load();
+  }, []);
+
+  useEffect(() => {
+    const openFromFooter = () => {
+      setOpen(true);
+      playSound();
+    };
+
+    window.addEventListener("open-contact-modal", openFromFooter);
+    return () => window.removeEventListener("open-contact-modal", openFromFooter);
   }, []);
 
   const playSound = () => {
@@ -194,6 +206,16 @@ export default function ContactMeButton() {
                 {loading && <Loader />}
                 <button
                   type="button"
+                  disabled={loading}
+                  onClick={() => {
+                    window.location.href = "mailto:amritanshu99@gmail.com";
+                  }}
+                  className="px-4 py-2 text-sm bg-indigo-100 dark:bg-indigo-800/60 text-indigo-700 dark:text-indigo-200 rounded-md hover:bg-indigo-200 dark:hover:bg-indigo-700 transition-colors"
+                >
+                  Email
+                </button>
+                <button
+                  type="button"
                   onClick={() => setOpen(false)}
                   disabled={loading}
                   className="px-4 py-2 text-sm bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
@@ -206,6 +228,17 @@ export default function ContactMeButton() {
                   className="px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400"
                 >
                   Submit
+                </button>
+                <button
+                  type="button"
+                  disabled={loading}
+                  onClick={() => {
+                    navigate("/");
+                    setOpen(false);
+                  }}
+                  className="px-4 py-2 text-sm bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                >
+                  Home
                 </button>
               </div>
             </form>

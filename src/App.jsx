@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Routes,
   Route,
@@ -84,6 +84,7 @@ const App = () => {
   const location = useLocation();
   const [shouldRender, setShouldRender] = useState(false);
   const navigate = useNavigate();
+  const appShellRef = useRef(null);
 
   const logout = () => {
     localStorage.removeItem("token");
@@ -127,6 +128,15 @@ const App = () => {
     });
   }, [location.pathname]);
 
+  useEffect(() => {
+    if (appShellRef.current) {
+      appShellRef.current.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [location.pathname]);
+
 
   if (!shouldRender) {
     return (
@@ -145,7 +155,7 @@ const App = () => {
   }
 
   return (
-    <div className="h-screen overflow-y-scroll relative">
+    <div ref={appShellRef} className="h-screen overflow-y-scroll relative">
       <Header setLoading={setIsLoading} />
       <ToastContainer
         position="top-right"
