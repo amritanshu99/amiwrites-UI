@@ -99,11 +99,11 @@ const Footer = () => {
 
           <nav aria-label="Legal links">
             <h3 className="text-sm font-semibold text-white uppercase tracking-[0.14em]">Legal</h3>
-            <ul className="mt-3 space-y-2 text-sm">
+            <ul className="mt-3 grid grid-cols-1 gap-2 text-sm">
               {legalLinks.map((link) => (
                 <li key={link.label}>
                   <Link
-                    className="hover:text-cyan-300 transition-colors"
+                    className="inline-flex w-full items-center rounded-md border border-slate-700/90 bg-slate-900/70 px-3 py-2 text-slate-200 hover:border-cyan-400/80 hover:bg-slate-800 hover:text-cyan-200 transition-colors"
                     to={link.href}
                     onClick={scrollToTop}
                   >

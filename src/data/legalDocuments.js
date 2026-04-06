@@ -2,34 +2,39 @@ export const legalDocuments = {
   "privacy-policy": {
     title: "Privacy Policy",
     summary:
-      "How Amiverse collects, uses, stores, and protects personal information when you use our products and services.",
+      "This policy explains what information we collect, why we collect it, and the choices you have when using Amiverse.",
     lastUpdated: "April 6, 2026",
     sections: [
       {
         heading: "1. Information We Collect",
         paragraphs: [
-          "We collect account information (such as name and email), content you submit in the product, and technical/usage data required to operate and secure the service.",
-          "We minimize sensitive data collection and limit processing to legitimate business purposes such as authentication, support, safety, billing, and quality improvements.",
+          "We collect information you provide directly, such as your name, email address, profile details, and support messages.",
+          "We also collect technical data like device type, browser details, IP address, and usage events so we can run, secure, and improve the service.",
+          "We avoid collecting sensitive personal data unless it is required for legal compliance or a feature you explicitly use.",
         ],
       },
       {
         heading: "2. How We Use Information",
         paragraphs: [
-          "We use information to provide core functionality, personalize user experience, detect abuse, troubleshoot incidents, and improve service reliability and model quality.",
-          "We may send operational notices and important updates. Marketing emails are optional and can be opted out from at any time.",
+          "We use your information to create and manage accounts, deliver product features, process requests, and provide customer support.",
+          "We use aggregated analytics to understand performance trends, detect abuse, and improve reliability and user experience.",
+          "If we send marketing updates, you can unsubscribe at any time. Service and security notices are still sent when necessary.",
         ],
       },
       {
-        heading: "3. Data Retention",
+        heading: "3. Data Sharing",
         paragraphs: [
-          "We retain data for as long as needed to provide the service, comply with legal obligations, resolve disputes, and enforce our agreements.",
+          "We do not sell your personal information.",
+          "We may share data with trusted service providers that help us host, secure, analyze, or support the platform under contractual confidentiality obligations.",
+          "We may disclose information if required by law, court order, or a valid legal request.",
         ],
       },
       {
-        heading: "4. Your Rights",
+        heading: "4. Data Retention and Your Rights",
         paragraphs: [
-          "Depending on your location, you may request access, correction, deletion, portability, restriction, or objection to certain processing activities.",
-          "To make a request, contact us at amritanshu99@gmail.com. We may ask you to verify identity before processing the request.",
+          "We keep personal information only for as long as needed for service operations, legal compliance, dispute resolution, and contract enforcement.",
+          "Depending on your location, you may have rights to access, correct, delete, or export your data, or to object to certain processing.",
+          "To submit a privacy request, email amritanshu99@gmail.com. We may verify your identity before processing your request.",
         ],
       },
     ],
@@ -37,34 +42,36 @@ export const legalDocuments = {
   "terms-of-service": {
     title: "Terms of Service",
     summary:
-      "Rules and conditions that govern your use of Amiverse websites, applications, APIs, and related services.",
+      "These terms describe the rules for using Amiverse websites, applications, APIs, and related services.",
     lastUpdated: "April 6, 2026",
     sections: [
       {
         heading: "1. Acceptance of Terms",
         paragraphs: [
-          "By accessing or using Amiverse, you agree to these Terms and any referenced policies.",
-          "If you do not agree, do not use the service.",
+          "By accessing or using Amiverse, you agree to these Terms of Service and all policies referenced in them.",
+          "If you do not agree, you must stop using the service.",
         ],
       },
       {
-        heading: "2. User Responsibilities",
+        heading: "2. Account and User Responsibilities",
         paragraphs: [
-          "You agree to provide accurate account information, maintain account security, and use the service in compliance with all applicable laws and platform policies.",
-          "You are responsible for content and actions that occur under your account.",
+          "You are responsible for keeping your account credentials secure and for all activities that occur under your account.",
+          "You agree to provide accurate information, comply with applicable laws, and use the platform responsibly.",
+          "You must not use the service to violate rights of others, break laws, or disrupt platform operations.",
         ],
       },
       {
         heading: "3. Intellectual Property",
         paragraphs: [
-          "All service content, branding, and software are protected by applicable intellectual property laws. You may not copy, reverse engineer, or redistribute without permission except where allowed by law.",
+          "Amiverse content, branding, software, and design are protected by intellectual property laws.",
+          "Except where the law permits, you may not copy, modify, reverse engineer, distribute, or publicly reuse our materials without written permission.",
         ],
       },
       {
-        heading: "4. Service Availability and Changes",
+        heading: "4. Service Availability and Liability",
         paragraphs: [
-          "We may modify, suspend, or discontinue features to improve quality, security, or compliance.",
-          "We are not liable for temporary interruptions caused by maintenance, third-party dependencies, or force majeure events.",
+          "We may update, pause, or discontinue features when needed for security, compliance, maintenance, or product improvement.",
+          "We aim for high availability, but temporary interruptions can occur. To the extent allowed by law, we are not liable for losses caused by outages beyond our reasonable control.",
         ],
       },
     ],
@@ -72,27 +79,28 @@ export const legalDocuments = {
   "cookie-policy": {
     title: "Cookie Policy",
     summary:
-      "Details on how cookies and similar technologies are used for authentication, preferences, analytics, and product performance.",
+      "This policy explains how cookies and similar technologies help us run the platform and improve your experience.",
     lastUpdated: "April 6, 2026",
     sections: [
       {
-        heading: "1. What Cookies Do",
+        heading: "1. What Cookies Are",
         paragraphs: [
-          "Cookies help keep users signed in, remember settings, and improve usability.",
-          "We also use equivalent local storage technologies for session continuity and secure features.",
+          "Cookies are small text files stored in your browser that help websites remember settings and sessions.",
+          "We may also use similar technologies, such as local storage, to support secure and consistent functionality.",
         ],
       },
       {
-        heading: "2. Cookie Categories",
+        heading: "2. How We Use Cookies",
         paragraphs: [
-          "Essential cookies are required for site operation.",
-          "Analytics cookies help us understand performance and improve reliability. Where required, these are used only with consent.",
+          "Essential cookies are used for core features such as authentication, security checks, and session continuity.",
+          "Analytics cookies help us measure performance and improve product quality. Where required, we collect consent before enabling non-essential cookies.",
         ],
       },
       {
-        heading: "3. Managing Preferences",
+        heading: "3. Managing Cookie Preferences",
         paragraphs: [
-          "You can control cookies through browser settings. Disabling essential cookies may affect functionality.",
+          "You can control cookies through your browser settings and privacy tools.",
+          "If you block essential cookies, parts of the service may not work as intended.",
         ],
       },
     ],
@@ -100,26 +108,28 @@ export const legalDocuments = {
   "acceptable-use": {
     title: "Acceptable Use Policy",
     summary:
-      "Prohibited and restricted activities to keep the platform safe, lawful, and trustworthy for all users.",
+      "These rules help keep Amiverse secure, lawful, and respectful for all users.",
     lastUpdated: "April 6, 2026",
     sections: [
       {
-        heading: "1. Prohibited Conduct",
+        heading: "1. Prohibited Activities",
         paragraphs: [
-          "You may not use the service for illegal activity, harassment, fraud, malware distribution, unauthorized access, or circumvention of technical controls.",
-          "You may not submit content that violates applicable law or third-party rights.",
+          "You may not use the service for unlawful activity, harassment, fraud, malware, unauthorized access attempts, or privacy violations.",
+          "You may not submit or distribute content that infringes intellectual property rights or violates applicable law.",
         ],
       },
       {
-        heading: "2. Abuse Prevention",
+        heading: "2. Platform Abuse and Automation",
         paragraphs: [
-          "Automated high-risk behavior, scraping beyond authorized limits, and adversarial prompt abuse may result in account restrictions or suspension.",
+          "Excessive automated requests, scraping outside approved usage, and attempts to bypass safeguards are not allowed.",
+          "We may apply rate limits, block abusive traffic, or suspend accounts involved in harmful behavior.",
         ],
       },
       {
         heading: "3. Enforcement",
         paragraphs: [
-          "We may investigate violations and take actions including warning, content removal, temporary suspension, or permanent termination.",
+          "When violations are detected, we may take action such as warnings, content removal, temporary restrictions, or account termination.",
+          "Serious or repeated violations may result in permanent loss of access.",
         ],
       },
     ],
@@ -127,25 +137,28 @@ export const legalDocuments = {
   security: {
     title: "Security Overview",
     summary:
-      "Our baseline security practices for data protection, access controls, incident response, and operational monitoring.",
+      "A practical overview of how we protect our systems, user data, and service reliability.",
     lastUpdated: "April 6, 2026",
     sections: [
       {
-        heading: "1. Platform Safeguards",
+        heading: "1. Core Security Controls",
         paragraphs: [
-          "We use HTTPS encryption in transit, access controls, environment separation, and regular dependency/security updates.",
+          "We use encryption in transit (HTTPS), role-based access controls, and environment isolation for sensitive workloads.",
+          "We regularly review dependencies and apply security updates as part of ongoing maintenance.",
         ],
       },
       {
-        heading: "2. Monitoring and Response",
+        heading: "2. Monitoring and Incident Response",
         paragraphs: [
-          "We monitor reliability and suspicious activity signals and maintain incident response processes to contain and remediate events.",
+          "We monitor system behavior for reliability issues and suspicious activity, and we maintain incident response procedures for containment and recovery.",
+          "When a significant incident occurs, we investigate promptly and apply corrective actions to reduce recurrence risk.",
         ],
       },
       {
         heading: "3. Shared Responsibility",
         paragraphs: [
-          "Users should use strong passwords, protect credentials, and promptly report vulnerabilities or suspicious account behavior.",
+          "Users should protect account credentials, use strong passwords, and report suspicious activity immediately.",
+          "Security is strongest when both platform operators and users follow best practices.",
         ],
       },
     ],
@@ -153,25 +166,28 @@ export const legalDocuments = {
   accessibility: {
     title: "Accessibility Statement",
     summary:
-      "Our commitment to inclusive design and ongoing improvements to usability and accessibility across experiences.",
+      "We are committed to making Amiverse usable, understandable, and inclusive for everyone.",
     lastUpdated: "April 6, 2026",
     sections: [
       {
-        heading: "1. Commitment",
+        heading: "1. Accessibility Commitment",
         paragraphs: [
-          "Amiverse is committed to building experiences that are usable for diverse audiences, including users who rely on assistive technologies.",
+          "We design and build with accessibility in mind, including support for keyboard navigation, clear structure, and readable content.",
+          "Our goal is to provide an inclusive experience for users with diverse abilities and assistive technology needs.",
         ],
       },
       {
-        heading: "2. Continuous Improvement",
+        heading: "2. Ongoing Improvements",
         paragraphs: [
-          "We regularly review interface contrast, keyboard navigation, semantic structure, and content readability as part of product updates.",
+          "Accessibility is an ongoing process. We regularly review contrast, focus states, labels, and content clarity as features evolve.",
+          "We prioritize improvements that reduce barriers and improve usability across devices and screen sizes.",
         ],
       },
       {
-        heading: "3. Feedback",
+        heading: "3. Feedback and Support",
         paragraphs: [
-          "If you encounter barriers, contact amritanshu99@gmail.com with details so we can investigate and improve.",
+          "If you experience an accessibility issue, email amritanshu99@gmail.com with details of the page and issue.",
+          "Your feedback helps us identify gaps and improve the product for everyone.",
         ],
       },
     ],
