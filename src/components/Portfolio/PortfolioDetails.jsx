@@ -222,7 +222,7 @@ const sectionMeta = [
   { id: "experience", label: "Experience" },
   { id: "education", label: "Education" },
 ];
-const MIN_LOADER_DURATION_MS = 350;
+const MIN_LOADER_DURATION_MS = 2500;
 
 /* ================= MAIN ================= */
 export default function PortfolioDetails() {

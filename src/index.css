@@ -60,6 +60,7 @@
 html, body {
   height: 100%;
   overflow-x: hidden;
+  scrollbar-gutter: stable;
 }
 
 body {
@@ -81,4 +82,3 @@ body {
   font-family: "Playfair Display", serif;
   letter-spacing: -0.02em;
 }
-
