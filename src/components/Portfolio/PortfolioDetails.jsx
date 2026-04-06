@@ -147,12 +147,16 @@ const AnimatedBanner = React.memo(() => {
       <img
         src="/banner.png"
         alt="Amritanshu Mishra Banner"
+        width="1920"
+        height="640"
         className="
             w-full
             h-auto
             object-cover
             shadow-xl
           "
+        loading="lazy"
+        decoding="async"
       />
     </motion.div>
   );
@@ -218,6 +222,7 @@ const sectionMeta = [
   { id: "experience", label: "Experience" },
   { id: "education", label: "Education" },
 ];
+const MIN_LOADER_DURATION_MS = 350;
 
 /* ================= MAIN ================= */
 export default function PortfolioDetails() {
@@ -372,7 +377,7 @@ const textY = useTransform(
 
     const finishLoading = () => {
       const elapsed = Date.now() - loadStart;
-      const remaining = Math.max(2500 - elapsed, 0);
+      const remaining = Math.max(MIN_LOADER_DURATION_MS - elapsed, 0);
 
       loaderTimeout = setTimeout(() => {
         if (!isCancelled) {
@@ -551,10 +556,24 @@ const textY = useTransform(
 
     document.head.appendChild(preconnect);
 
+    if (heroImageUrl) {
+      const preloadImage = document.createElement("link");
+      preloadImage.rel = "preload";
+      preloadImage.as = "image";
+      preloadImage.href = heroImageUrl;
+      preloadImage.fetchPriority = "high";
+      document.head.appendChild(preloadImage);
+
+      return () => {
+        document.head.removeChild(preconnect);
+        document.head.removeChild(preloadImage);
+      };
+    }
+
     return () => {
       document.head.removeChild(preconnect);
     };
-  }, []);
+  }, [heroImageUrl]);
 
   useEffect(() => {
     const collapseTimer = window.setTimeout(() => {
@@ -825,6 +844,8 @@ overflow-hidden z-10"
             <motion.img
               src={heroImageUrl}
               alt={data.name}
+              width="1920"
+              height="1080"
               onLoad={() => setImageLoaded(true)}
               initial={false}
               animate={{
