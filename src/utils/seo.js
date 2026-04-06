@@ -273,6 +273,11 @@ export const seoByRoute = {
     description:
       "Explore reinforcement learning demos, concepts, and project notes published on AmiVerse.",
   },
+  "/legal": {
+    title: "Legal Information | Terms, Privacy & Policies | AmiVerse",
+    description:
+      "Review AmiVerse legal documents including Terms of Service, Privacy Policy, Cookie Policy, security practices, and acceptable use requirements.",
+  },
   "/add-blog": {
     title: "Add Blog | AmiVerse Admin",
     description: "Admin area for creating and publishing AmiVerse blog posts.",

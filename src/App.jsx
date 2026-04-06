@@ -32,12 +32,14 @@ import MoviePredictDetails from "./pages/MoviePredictDetails";
 import EmotionAnalyzerDetails from "./pages/EmotionAnalyzerDetails";
 import AmiBotDetails from "./pages/AmiBotDetails";
 import ReinforcementLearningDetails from "./pages/ReinforcementLearning";
+import LegalPage from "./pages/LegalPage";
 import { applySEO, seoByRoute } from "./utils/seo";
 
 const resolveRouteSeo = (pathname) => {
   if (seoByRoute[pathname]) return seoByRoute[pathname];
   if (pathname.startsWith("/blogs/")) return seoByRoute["/blogs"];
   if (pathname.startsWith("/reset-password/")) return seoByRoute["/reset-password"];
+  if (pathname.startsWith("/legal/")) return seoByRoute["/legal"];
   return seoByRoute["/"];
 };
 const ValidateResetToken = () => {
@@ -176,6 +178,7 @@ const App = () => {
           <Route path="/blogs/:id" element={<BlogsDetails />} />
           <Route path="/tech-byte" element={<TechByte />} />
           <Route path="/reset-password/:id" element={<ValidateResetToken />} />
+          <Route path="/legal/:slug" element={<LegalPage />} />
           <Route path="/ai-tools" element={<AIToolsDetails />} />
           <Route path="/task-manager" element={<TaskManagerDetails />} />
           <Route path="/spam-check" element={<SpamDetectorDetails />} />
