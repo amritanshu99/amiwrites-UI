@@ -47,14 +47,22 @@ const Footer = () => {
       <div className="relative mx-auto max-w-7xl px-5 py-10 sm:px-6 sm:py-12 lg:px-8">
         <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4 lg:gap-10">
           <section>
-            <h2 className="text-lg font-semibold tracking-tight text-slate-900 dark:text-white">Amiverse</h2>
+            <div className="flex items-center gap-2">
+              <img
+                src="/favicon.ico"
+                alt="Amiverse logo"
+                className="h-7 w-7 rounded-lg object-contain ring-1 ring-black/10 shadow-sm dark:ring-white/15"
+                draggable="false"
+              />
+              <h2 className="text-lg font-semibold tracking-tight text-slate-900 dark:text-white">
+                Amiverse
+              </h2>
+            </div>
             <p className="mt-3 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
-              Production-ready AI experiences focused on transparency, reliability, and user
-              safety.
-            </p>
-            <p className="mt-4 text-xs leading-relaxed text-slate-500 dark:text-slate-500">
-              Designed with an accessibility-first approach, clean legal readability, and dependable
-              support pathways for every user.
+              Amiverse is the digital space of Amritanshu Mishra—a place where technology,
+              innovation, and continuous growth come together. It features his projects, ideas, and
+              practical solutions, reflecting his journey as a builder, learner, and creator, with a
+              vision to create meaningful impact through thoughtful and forward-looking work.
             </p>
           </section>
 
@@ -127,9 +135,7 @@ const Footer = () => {
 
         <div className="mt-8 flex flex-col gap-2 border-t border-slate-300/80 pt-5 text-xs text-slate-500 dark:border-slate-800 dark:text-slate-400 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:text-sm">
           <p>© {new Date().getFullYear()} Amiverse. All rights reserved.</p>
-          <p className="text-slate-500 dark:text-slate-500">
-            Use of this site is subject to our Terms and Privacy Policy.
-          </p>
+          <p className="text-slate-500 dark:text-slate-500">Made with love by Amritanshu Mishra.</p>
         </div>
       </div>
     </footer>
