@@ -41,11 +41,11 @@ const Footer = () => {
   }, [scrollToTop]);
 
   return (
-    <footer className="relative mt-10 w-full overflow-hidden border-t border-slate-200/80 bg-[radial-gradient(circle_at_top_left,rgba(59,130,246,0.16),transparent_40%),radial-gradient(circle_at_90%_20%,rgba(14,165,233,0.18),transparent_40%),linear-gradient(135deg,rgba(255,255,255,0.97),rgba(248,250,252,0.96),rgba(236,254,255,0.94))] text-slate-700 shadow-[0_-16px_50px_-35px_rgba(15,23,42,0.35)] backdrop-blur-xl dark:border-slate-700/70 dark:bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.20),transparent_40%),radial-gradient(circle_at_95%_25%,rgba(56,189,248,0.20),transparent_38%),linear-gradient(145deg,rgba(2,6,23,0.98),rgba(2,8,23,0.96),rgba(6,10,25,0.96))] dark:text-slate-300 dark:shadow-[0_-20px_60px_-35px_rgba(6,182,212,0.22)]">
+    <footer className="relative mt-10 w-full overflow-hidden border-t border-sky-200/80 bg-[radial-gradient(circle_at_12%_-10%,rgba(96,165,250,0.30),transparent_46%),radial-gradient(circle_at_88%_4%,rgba(56,189,248,0.28),transparent_44%),linear-gradient(135deg,rgba(248,252,255,0.99),rgba(236,246,255,0.98),rgba(224,242,254,0.96))] text-slate-700 shadow-[0_-16px_50px_-35px_rgba(15,23,42,0.30)] backdrop-blur-xl dark:border-zinc-800/90 dark:bg-[radial-gradient(circle_at_14%_-10%,rgba(15,23,42,0.35),transparent_45%),radial-gradient(circle_at_90%_8%,rgba(8,47,73,0.32),transparent_44%),linear-gradient(145deg,rgba(0,0,0,0.99),rgba(2,2,2,0.98),rgba(8,8,8,0.98))] dark:text-slate-300 dark:shadow-[0_-20px_60px_-35px_rgba(2,132,199,0.24)]">
       <div className="pointer-events-none absolute inset-0 opacity-75 dark:opacity-95">
-        <div className="absolute -left-24 top-6 h-56 w-56 rounded-full bg-cyan-300/25 blur-3xl dark:bg-cyan-700/30" />
-        <div className="absolute right-[-4.5rem] top-20 h-48 w-48 rounded-full bg-sky-300/20 blur-3xl dark:bg-sky-800/35" />
-        <div className="absolute -bottom-24 left-1/3 h-56 w-56 rounded-full bg-indigo-300/15 blur-3xl dark:bg-indigo-900/25" />
+        <div className="absolute -left-24 top-6 h-56 w-56 rounded-full bg-sky-300/30 blur-3xl dark:bg-slate-900/45" />
+        <div className="absolute right-[-4.5rem] top-20 h-48 w-48 rounded-full bg-cyan-300/25 blur-3xl dark:bg-sky-950/40" />
+        <div className="absolute -bottom-24 left-1/3 h-56 w-56 rounded-full bg-blue-300/20 blur-3xl dark:bg-black/55" />
       </div>
       <div className="relative mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-11 lg:px-8">
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-12 lg:gap-8">
