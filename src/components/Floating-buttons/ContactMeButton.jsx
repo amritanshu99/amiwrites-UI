@@ -16,7 +16,7 @@ export default function ContactMeButton() {
   const [hovered, setHovered] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => setCollapsed(true), 2000); // Collapse after 2 sec
+    const timer = setTimeout(() => setCollapsed(true), 2000);
     return () => clearTimeout(timer);
   }, []);
 
@@ -81,46 +81,41 @@ export default function ContactMeButton() {
 
   return (
     <>
-      {/* Floating Button */}
-<button
-  onClick={handleOpen}
-  aria-label="Contact Me"
-  onMouseEnter={() => setHovered(true)}
-  onMouseLeave={() => setHovered(false)}
-  className={`
-    fixed bottom-5 right-5 z-50
-    flex items-center transition-all duration-500 ease-in-out
-    rounded-full shadow-lg border border-white/10 dark:border-white/20
-    bg-gradient-to-br from-blue-500 via-indigo-600 to-purple-600 dark:from-blue-700 dark:via-indigo-700 dark:to-purple-700
-    text-white font-medium
-    focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300
-    hover:scale-105 active:scale-100
-    group overflow-hidden
-    ${isExpanded ? 'w-36 px-4 py-2' : 'w-12 h-12 justify-center'}
-  `}
-  style={{
-    transitionProperty: 'width, padding, background-color, box-shadow',
-    minHeight: '3rem',
-  }}
->
-  {/* ✅ Icon - Always visible */}
-  <span className="text-xl z-10">✉️</span>
+      <button
+        onClick={handleOpen}
+        aria-label="Contact Me"
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        className={`
+          fixed bottom-5 right-5 z-50
+          flex items-center transition-all duration-500 ease-in-out
+          rounded-full shadow-lg border border-white/10 dark:border-white/20
+          bg-gradient-to-br from-blue-500 via-indigo-600 to-purple-600 dark:from-blue-700 dark:via-indigo-700 dark:to-purple-700
+          text-white font-medium
+          focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300
+          hover:scale-105 active:scale-100
+          group overflow-hidden
+          ${isExpanded ? "w-36 px-4 py-2" : "w-12 h-12 justify-center"}
+        `}
+        style={{
+          transitionProperty: "width, padding, background-color, box-shadow",
+          minHeight: "3rem",
+        }}
+      >
+        <span className="text-xl z-10">✉️</span>
 
-  {/* ✅ Only show text when expanded */}
-  {isExpanded && (
-    <span
-      className="ml-2 text-sm z-10 whitespace-nowrap transition-opacity duration-300 opacity-100"
-      style={{ transitionDelay: '100ms' }}
-    >
-      Contact Me
-    </span>
-  )}
+        {isExpanded && (
+          <span
+            className="ml-2 text-sm z-10 whitespace-nowrap transition-opacity duration-300 opacity-100"
+            style={{ transitionDelay: "100ms" }}
+          >
+            Contact Me
+          </span>
+        )}
 
-  {/* ✅ Shimmer effect on hover */}
-  <span className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/10 dark:bg-white/20 blur-sm pointer-events-none" />
-</button>
+        <span className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/10 dark:bg-white/20 blur-sm pointer-events-none" />
+      </button>
 
-      {/* Modal */}
       {open && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4"
@@ -138,7 +133,6 @@ export default function ContactMeButton() {
             </p>
 
             <form onSubmit={handleSubmit} className="space-y-5 text-sm">
-              {/* Name Field */}
               <div>
                 <label
                   htmlFor="name"
@@ -159,7 +153,6 @@ export default function ContactMeButton() {
                 />
               </div>
 
-              {/* Email Field */}
               <div>
                 <label
                   htmlFor="email"
@@ -180,7 +173,6 @@ export default function ContactMeButton() {
                 />
               </div>
 
-              {/* Reason Field */}
               <div>
                 <label
                   htmlFor="reason"
@@ -201,19 +193,8 @@ export default function ContactMeButton() {
                 />
               </div>
 
-              {/* Action Buttons */}
-              <div className="flex justify-end gap-3 items-center pt-4">
+              <div className="flex flex-wrap justify-end gap-3 items-center pt-4">
                 {loading && <Loader />}
-                <button
-                  type="button"
-                  disabled={loading}
-                  onClick={() => {
-                    window.location.href = "mailto:amritanshu99@gmail.com";
-                  }}
-                  className="px-4 py-2 text-sm bg-indigo-100 dark:bg-indigo-800/60 text-indigo-700 dark:text-indigo-200 rounded-md hover:bg-indigo-200 dark:hover:bg-indigo-700 transition-colors"
-                >
-                  Email
-                </button>
                 <button
                   type="button"
                   onClick={() => setOpen(false)}
