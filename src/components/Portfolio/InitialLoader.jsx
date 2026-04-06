@@ -21,14 +21,6 @@ const InitialLoader = () => {
 
     const randomIndex = Math.floor(Math.random() * quotes.length);
     setRandomQuote(quotes[randomIndex]);
-
-    document.documentElement.classList.add("no-scroll");
-    document.body.classList.add("no-scroll");
-
-    return () => {
-      document.documentElement.classList.remove("no-scroll");
-      document.body.classList.remove("no-scroll");
-    };
   }, []);
 
   return (
