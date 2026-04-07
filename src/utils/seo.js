@@ -4,7 +4,7 @@ const DEFAULT_OG_IMAGE = `${SITE_URL}/og-image.jpg`;
 
 const PERSON_ID = `${SITE_URL}/#person`;
 const PRIMARY_SEO_KEYWORDS =
-  "Amritanshu Mishra, Amritanshu, AmiVerse, software engineer, associate consultant, consultant, AI engineer, developer, React developer, Node.js developer, MERN stack, innovator, Mathura, Noida, Ghaziabad, RKGIT, Rajkumar Goel Institute of Technology, Raj Kumar Goel Institute of Technology, RSPS, Ramanlal Shorawala Public School, ECE, Electronics and Communication Engineering, Shivasha Estate, Migsun Ultimo";
+  "Amritanshu Mishra, Amritanshu, AmiVerse, Amiverse.in, website, software engineer, associate consultant, consultant, AI engineer, developer, React developer, Node.js developer, MERN stack, innovator, engineer, Mathura, Shivasha Estate, Migsun Ultimo, Noida, Greater Noida, Ghaziabad, RKGIT, Rajkumar Goel Institute of Technology, Raj Kumar Goel Institute of Technology, RSPS, Ramanlal Shorawala Public School, ECE, Electronics and Communication Engineering, GlobalLogic, Hitachi";
 
 const SOCIAL_LINKS = [
   "https://www.linkedin.com/in/amritanshu-mishra-568598306/",
@@ -76,8 +76,16 @@ const defaultStructuredData = (title, description, canonical) => ({
       image: DEFAULT_OG_IMAGE,
       jobTitle: "Software Engineer",
       description:
-        "Associate Consultant, software engineer, AI engineer, MERN stack developer and innovator from Mathura/Noida, India.",
+        "Associate Consultant, software engineer, AI engineer, consultant, MERN stack developer and innovator from Mathura, Noida and Greater Noida, India.",
       sameAs: SOCIAL_LINKS,
+      worksFor: {
+        "@type": "Organization",
+        name: "GlobalLogic",
+        parentOrganization: {
+          "@type": "Organization",
+          name: "Hitachi",
+        },
+      },
       address: {
         "@type": "PostalAddress",
         addressLocality: "Noida",
@@ -88,6 +96,17 @@ const defaultStructuredData = (title, description, canonical) => ({
         "@type": "Place",
         name: "Mathura",
       },
+      hasOccupation: [
+        {
+          "@type": "Occupation",
+          name: "Associate Consultant",
+          occupationLocation: {
+            "@type": "City",
+            name: "Noida",
+          },
+          skills: "React, Node.js, GraphQL, AI Engineering",
+        },
+      ],
       alumniOf: [
         {
           "@type": "EducationalOrganization",
@@ -113,6 +132,7 @@ const defaultStructuredData = (title, description, canonical) => ({
       knowsAbout: [
         "Software Engineering",
         "AI Engineering",
+        "Consulting",
         "React",
         "Node.js",
         "MERN Stack Development",
@@ -219,7 +239,7 @@ export const seoByRoute = {
     description:
       "Explore AmiVerse by Amritanshu Mishra (Amritanshu): software engineer, associate consultant, AI engineer, and MERN stack developer from Mathura/Noida.",
     keywords:
-      "Amritanshu Mishra portfolio, Amritanshu, software engineer, associate consultant, AI engineer, MERN developer, RKGIT, RSPS, Mathura, Noida, Ghaziabad",
+      "Amritanshu Mishra portfolio, Amiverse.in website, software engineer, associate consultant, consultant, AI engineer, innovator, GlobalLogic, Hitachi, RKGIT, Rajkumar Goel Institute of Technology, Ramanlal Shorawala Public School, Mathura, Shivasha Estate, Migsun Ultimo, Noida, Greater Noida, Ghaziabad",
   },
   "/blogs": {
     title: "Developer Blogs on React, AI & Productivity | AmiVerse",
