@@ -1,27 +1,25 @@
-import React, { useEffect, useState } from "react";
+import React, { useMemo } from "react";
+
+const LOADER_QUOTES = [
+  "Written, Designed & Directed by Amritanshu Mishra",
+  "A vision brought to life by Amritanshu Mishra",
+  "Crafted with soul by Amritanshu Mishra",
+  "From imagination to execution — Amritanshu Mishra",
+  "By the mind and heart of Amritanshu Mishra",
+  "Created with intent by Amritanshu Mishra",
+  "The journey begins with Amritanshu Mishra",
+  "Ideas that breathe, from Amritanshu Mishra",
+  "Where thought meets form — Amritanshu Mishra",
+  "A storyteller, a maker — Amritanshu Mishra",
+  "Ink, pixels, and passion — Amritanshu Mishra",
+  "One vision. Infinite stories. Amritanshu Mishra",
+];
 
 const InitialLoader = () => {
-  const [randomQuote, setRandomQuote] = useState("");
-
-  useEffect(() => {
-    const quotes = [
-      "Written, Designed & Directed by Amritanshu Mishra",
-      "A vision brought to life by Amritanshu Mishra",
-      "Crafted with soul by Amritanshu Mishra",
-      "From imagination to execution — Amritanshu Mishra",
-      "By the mind and heart of Amritanshu Mishra",
-      "Created with intent by Amritanshu Mishra",
-      "The journey begins with Amritanshu Mishra",
-      "Ideas that breathe, from Amritanshu Mishra",
-      "Where thought meets form — Amritanshu Mishra",
-      "A storyteller, a maker — Amritanshu Mishra",
-      "Ink, pixels, and passion — Amritanshu Mishra",
-      "One vision. Infinite stories. Amritanshu Mishra",
-    ];
-
-    const randomIndex = Math.floor(Math.random() * quotes.length);
-    setRandomQuote(quotes[randomIndex]);
-  }, []);
+  const randomQuote = useMemo(
+    () => LOADER_QUOTES[Math.floor(Math.random() * LOADER_QUOTES.length)],
+    [],
+  );
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden bg-[#020202] text-white">
@@ -42,6 +40,9 @@ const InitialLoader = () => {
             src="/favicon.ico"
             alt="AmiVerse Logo"
             loading="eager"
+            width="96"
+            height="96"
+            decoding="async"
             className="mx-auto h-16 w-16 rounded-full border border-white/25 bg-black/40 p-2 shadow-[0_0_35px_rgba(255,255,255,0.32)] sm:h-20 sm:w-20 md:h-24 md:w-24"
           />
           <span className="absolute inset-0 rounded-full border border-white/30 animate-[echoRing_2.4s_ease-out_infinite]" />
@@ -71,6 +72,14 @@ const InitialLoader = () => {
 
       <style>
         {`
+          @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+              animation-duration: 0.01ms !important;
+              animation-iteration-count: 1 !important;
+              transition-duration: 0.01ms !important;
+            }
+          }
+
           @keyframes cinemaReveal {
             0% {
               transform: translateY(18px) scale(0.99);
@@ -196,4 +205,4 @@ const InitialLoader = () => {
   );
 };
 
-export default InitialLoader;
+export default React.memo(InitialLoader);
