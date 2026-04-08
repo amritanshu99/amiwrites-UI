@@ -232,6 +232,7 @@ export default function PortfolioDetails() {
   const [isDark, setIsDark] = useState(false);
   const [socialModal, setSocialModal] = useState(null);
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [backgroundImageLoaded, setBackgroundImageLoaded] = useState(false);
   const [hideArrow, setHideArrow] = useState(true);
   const [activeSection, setActiveSection] = useState("intro");
   const [isBottomCtaExpanded, setIsBottomCtaExpanded] = useState(true);
@@ -243,6 +244,9 @@ export default function PortfolioDetails() {
   const hasScrolledRef = useRef(false);
 
   const heroRef = useRef(null);
+  const portfolioBackgroundImage = `${process.env.PUBLIC_URL}${
+    isDark ? "/ny-dark.jpg" : "/ny-bg.png"
+  }`;
   const activeSectionMeta = useMemo(
     () => sectionMeta.find((section) => section.id === activeSection) || sectionMeta[0],
     [activeSection],
@@ -615,24 +619,44 @@ const textY = useTransform(
     return () =>
       document.removeEventListener("pointerdown", handlePointerDownOutside);
   }, [isBottomCtaExpanded, isTouchDevice]);
+
+  useEffect(() => {
+    setBackgroundImageLoaded(false);
+
+    const backgroundImage = new Image();
+    backgroundImage.decoding = "async";
+    backgroundImage.src = portfolioBackgroundImage;
+
+    const markLoaded = () => setBackgroundImageLoaded(true);
+
+    if (backgroundImage.complete) {
+      markLoaded();
+      return;
+    }
+
+    backgroundImage.addEventListener("load", markLoaded);
+
+    return () => {
+      backgroundImage.removeEventListener("load", markLoaded);
+    };
+  }, [portfolioBackgroundImage]);
+
   if (loading || !data) return <InitialLoader />;
 
   const [firstName, lastName] = data.name.split(" ");
-  const portfolioBackgroundImage = `${process.env.PUBLIC_URL}${
-    isDark ? "/ny-dark.jpg" : "/ny-bg.png"
-  }`;
 
   return (
     <main
       ref={pageRef}
-      className="relative w-full text-zinc-900 dark:text-zinc-100 overflow-hidden"
+      className="relative isolate w-full overflow-hidden text-zinc-900 dark:text-zinc-100"
     >
       {/* ===== PREMIUM NY BACKGROUND ===== */}
       <div
-        className="fixed inset-0 -z-10 bg-cover bg-center will-change-transform"
+        className="pointer-events-none fixed inset-0 z-0 bg-cover bg-center will-change-transform transition-opacity duration-500"
 
         style={{
           backgroundImage: `url(${portfolioBackgroundImage})`,
+          opacity: backgroundImageLoaded ? 1 : 0,
           transform: "translateZ(0)",
         }}
 
@@ -658,7 +682,7 @@ const textY = useTransform(
       </div>
 
       {/* PAGE HEIGHT WRAPPER (controls sticky duration) */}
-     <div className="relative">
+     <div className="relative z-10">
 
         <div className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] left-1/2 -translate-x-1/2 z-30 w-full px-3 sm:px-6">
           <motion.div

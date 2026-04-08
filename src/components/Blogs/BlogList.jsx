@@ -75,6 +75,10 @@ const BlogSkeleton = () => (
 
 const BlogList = () => {
   const { isAuthenticated, username } = useAuth();
+  const [isDark, setIsDark] = useState(() =>
+    typeof document !== "undefined" &&
+    document.documentElement.classList.contains("dark")
+  );
   const [blogs, setBlogs] = useState([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
@@ -456,12 +460,38 @@ const BlogList = () => {
   const handleAddBlog = () => navigate("/add-blog");
 
   const filteredBlogs = blogs;
+  const blogBackgroundImage = `${process.env.PUBLIC_URL}${
+    isDark ? "/ny-dark.jpg" : "/ny-bg.png"
+  }`;
+
+  useEffect(() => {
+    if (typeof document === "undefined") return undefined;
+
+    const root = document.documentElement;
+    const syncTheme = () => setIsDark(root.classList.contains("dark"));
+
+    syncTheme();
+
+    const observer = new MutationObserver(syncTheme);
+    observer.observe(root, { attributes: true, attributeFilter: ["class"] });
+
+    return () => observer.disconnect();
+  }, []);
 
   return (
-    <div className="min-h-screen bg-[linear-gradient(180deg,_#f8fafc_0%,_#edf3f8_35%,_#f8fafc_100%)] px-3 py-3 dark:bg-[linear-gradient(180deg,_#000000_0%,_#050505_52%,_#000000_100%)] sm:px-5 sm:py-4 lg:px-8 lg:py-6">
+    <div className="relative min-h-screen overflow-hidden px-3 py-3 sm:px-5 sm:py-4 lg:px-8 lg:py-6">
+      <div
+        className="absolute inset-0 -z-20 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: `url(${blogBackgroundImage})` }}
+        aria-hidden="true"
+      />
+      <div
+        className="absolute inset-0 -z-10 bg-[linear-gradient(180deg,rgba(248,250,252,0.88)_0%,rgba(237,243,248,0.9)_35%,rgba(248,250,252,0.92)_100%)] dark:bg-[linear-gradient(180deg,rgba(0,0,0,0.72)_0%,rgba(5,5,5,0.8)_52%,rgba(0,0,0,0.88)_100%)]"
+        aria-hidden="true"
+      />
       <PushNotificationButton />
 
-      <div className="mx-auto flex w-full max-w-7xl flex-col gap-3 sm:gap-4">
+      <div className="relative z-10 mx-auto flex w-full max-w-7xl flex-col gap-3 sm:gap-4">
         <section className="overflow-hidden rounded-[1.25rem] border border-white/70 bg-white/85 px-4 py-4 shadow-[0_24px_70px_-42px_rgba(15,23,42,0.24)] backdrop-blur-sm dark:border-zinc-900 dark:bg-black dark:shadow-[0_24px_70px_-42px_rgba(0,0,0,0.95)] sm:rounded-[1.5rem] sm:px-5 sm:py-4 lg:px-6 lg:py-5">
           <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-sky-300/60 to-transparent dark:via-sky-300/35" />
           <div className="relative">
