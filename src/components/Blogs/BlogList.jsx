@@ -478,6 +478,18 @@ const BlogList = () => {
     return () => observer.disconnect();
   }, []);
 
+  const pageOverlayClass = isDark
+    ? "bg-[radial-gradient(circle_at_15%_20%,rgba(56,189,248,0.2)_0%,rgba(56,189,248,0)_36%),radial-gradient(circle_at_83%_18%,rgba(59,130,246,0.18)_0%,rgba(59,130,246,0)_44%),radial-gradient(circle_at_58%_84%,rgba(20,184,166,0.16)_0%,rgba(20,184,166,0)_44%),linear-gradient(160deg,rgba(2,6,23,0.88)_0%,rgba(3,7,18,0.92)_45%,rgba(2,6,23,0.96)_100%)]"
+    : "bg-[radial-gradient(circle_at_8%_12%,rgba(59,130,246,0.2)_0%,rgba(59,130,246,0)_38%),radial-gradient(circle_at_88%_14%,rgba(14,165,233,0.2)_0%,rgba(14,165,233,0)_42%),radial-gradient(circle_at_52%_88%,rgba(45,212,191,0.2)_0%,rgba(45,212,191,0)_46%),linear-gradient(150deg,rgba(255,255,255,0.84)_0%,rgba(238,246,255,0.92)_43%,rgba(236,253,250,0.9)_100%)] sm:bg-[radial-gradient(circle_at_10%_12%,rgba(37,99,235,0.2)_0%,rgba(37,99,235,0)_40%),radial-gradient(circle_at_86%_16%,rgba(2,132,199,0.2)_0%,rgba(2,132,199,0)_42%),radial-gradient(circle_at_56%_86%,rgba(20,184,166,0.22)_0%,rgba(20,184,166,0)_46%),linear-gradient(145deg,rgba(255,255,255,0.86)_0%,rgba(236,246,255,0.93)_46%,rgba(236,253,245,0.9)_100%)]";
+
+  const surfaceClass = isDark
+    ? "border-zinc-900 bg-black"
+    : "border-sky-100/85 bg-[linear-gradient(160deg,rgba(255,255,255,0.9)_0%,rgba(244,250,255,0.93)_55%,rgba(236,253,247,0.9)_100%)]";
+
+  const cardClass = isDark
+    ? "border-zinc-800 bg-[linear-gradient(180deg,rgba(0,0,0,1)_0%,rgba(10,10,10,1)_100%)] hover:border-zinc-700 dark:shadow-[0_20px_46px_-34px_rgba(0,0,0,0.95)] dark:hover:shadow-[0_30px_68px_-36px_rgba(0,0,0,0.98)]"
+    : "border-sky-100/80 bg-[linear-gradient(168deg,rgba(255,255,255,0.95)_0%,rgba(244,249,255,0.95)_48%,rgba(239,253,247,0.92)_100%)] hover:border-sky-200 hover:shadow-[0_30px_64px_-36px_rgba(14,116,144,0.24)]";
+
   return (
     <div className="relative min-h-screen overflow-hidden px-3 py-3 sm:px-5 sm:py-4 lg:px-8 lg:py-6">
       <div
@@ -486,13 +498,13 @@ const BlogList = () => {
         aria-hidden="true"
       />
       <div
-        className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_12%_18%,rgba(14,165,233,0.2)_0%,rgba(14,165,233,0)_36%),radial-gradient(circle_at_85%_12%,rgba(99,102,241,0.16)_0%,rgba(99,102,241,0)_42%),radial-gradient(circle_at_56%_82%,rgba(45,212,191,0.14)_0%,rgba(45,212,191,0)_45%),linear-gradient(155deg,rgba(248,250,252,0.92)_0%,rgba(238,244,252,0.9)_42%,rgba(250,252,255,0.95)_100%)] dark:bg-[radial-gradient(circle_at_15%_20%,rgba(56,189,248,0.2)_0%,rgba(56,189,248,0)_36%),radial-gradient(circle_at_83%_18%,rgba(59,130,246,0.18)_0%,rgba(59,130,246,0)_44%),radial-gradient(circle_at_58%_84%,rgba(20,184,166,0.16)_0%,rgba(20,184,166,0)_44%),linear-gradient(160deg,rgba(2,6,23,0.88)_0%,rgba(3,7,18,0.92)_45%,rgba(2,6,23,0.96)_100%)]"
+        className={`absolute inset-0 -z-10 ${pageOverlayClass}`}
         aria-hidden="true"
       />
       <PushNotificationButton />
 
       <div className="relative z-10 mx-auto flex w-full max-w-7xl flex-col gap-3 sm:gap-4">
-        <section className="overflow-hidden rounded-[1.25rem] border border-white/70 bg-white/85 px-4 py-4 shadow-[0_24px_70px_-42px_rgba(15,23,42,0.24)] backdrop-blur-sm dark:border-zinc-900 dark:bg-black dark:shadow-[0_24px_70px_-42px_rgba(0,0,0,0.95)] sm:rounded-[1.5rem] sm:px-5 sm:py-4 lg:px-6 lg:py-5">
+        <section className={`overflow-hidden rounded-[1.25rem] border px-4 py-4 shadow-[0_24px_70px_-42px_rgba(15,23,42,0.24)] backdrop-blur-sm dark:shadow-[0_24px_70px_-42px_rgba(0,0,0,0.95)] sm:rounded-[1.5rem] sm:px-5 sm:py-4 lg:px-6 lg:py-5 ${surfaceClass}`}>
           <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-sky-300/60 to-transparent dark:via-sky-300/35" />
           <div className="relative">
             <div className="max-w-3xl">
@@ -521,7 +533,7 @@ const BlogList = () => {
           )}
         </div>
 
-        <section className="rounded-[1.2rem] border border-white/70 bg-white/85 p-3 shadow-[0_16px_40px_-32px_rgba(15,23,42,0.2)] backdrop-blur-sm dark:border-zinc-900 dark:bg-black dark:shadow-[0_16px_40px_-32px_rgba(0,0,0,0.9)] sm:rounded-[1.35rem] sm:p-3.5">
+        <section className={`rounded-[1.2rem] border p-3 shadow-[0_16px_40px_-32px_rgba(15,23,42,0.2)] backdrop-blur-sm dark:shadow-[0_16px_40px_-32px_rgba(0,0,0,0.9)] sm:rounded-[1.35rem] sm:p-3.5 ${surfaceClass}`}>
           <div className="flex flex-col gap-2.5 lg:flex-row lg:items-end lg:justify-between">
             <div className="w-full lg:max-w-xl">
               <input
@@ -562,7 +574,7 @@ const BlogList = () => {
         </section>
 
         {filteredBlogs.length === 0 && !loading ? (
-          <div className="rounded-[1.75rem] border border-dashed border-zinc-300 bg-white/85 px-6 py-16 text-center shadow-sm backdrop-blur-sm dark:border-zinc-800 dark:bg-black">
+          <div className={`rounded-[1.75rem] border border-dashed px-6 py-16 text-center shadow-sm backdrop-blur-sm ${isDark ? "border-zinc-800 bg-black" : "border-sky-200/80 bg-[linear-gradient(165deg,rgba(255,255,255,0.9)_0%,rgba(241,248,255,0.9)_100%)]"}`}>
             <p className="text-lg font-semibold text-zinc-700 dark:text-zinc-100">
               No blogs available.
             </p>
@@ -587,7 +599,7 @@ const BlogList = () => {
               return (
                 <article
                   key={blog._id}
-                  className="group flex min-h-[244px] w-full cursor-pointer flex-col rounded-[1.35rem] border border-white/80 bg-white/90 p-4 shadow-[0_18px_40px_-34px_rgba(15,23,42,0.18)] backdrop-blur-sm transform-gpu transition-[transform,box-shadow,border-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1.5 hover:scale-[1.01] hover:border-sky-100 hover:shadow-[0_28px_60px_-36px_rgba(15,23,42,0.26)] focus-visible:-translate-y-1 focus-visible:scale-[1.005] dark:border-zinc-800 dark:bg-[linear-gradient(180deg,rgba(0,0,0,1)_0%,rgba(10,10,10,1)_100%)] dark:hover:border-zinc-700 dark:shadow-[0_20px_46px_-34px_rgba(0,0,0,0.95)] dark:hover:shadow-[0_30px_68px_-36px_rgba(0,0,0,0.98)] sm:min-h-[270px] sm:rounded-[1.5rem] sm:p-5 motion-reduce:transform-none motion-reduce:transition-none"
+                  className={`group flex min-h-[244px] w-full cursor-pointer flex-col rounded-[1.35rem] border p-4 shadow-[0_18px_40px_-34px_rgba(15,23,42,0.18)] backdrop-blur-sm transform-gpu transition-[transform,box-shadow,border-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1.5 hover:scale-[1.01] focus-visible:-translate-y-1 focus-visible:scale-[1.005] sm:min-h-[270px] sm:rounded-[1.5rem] sm:p-5 motion-reduce:transform-none motion-reduce:transition-none ${cardClass}`}
                   onClick={() => {
                     trackClick(blog._id);
                     handleBlogClick(blog._id);
