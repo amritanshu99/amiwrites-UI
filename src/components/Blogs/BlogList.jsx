@@ -460,7 +460,6 @@ const BlogList = () => {
   const handleAddBlog = () => navigate("/add-blog");
 
   const filteredBlogs = blogs;
-  const blogBackgroundImage = `${process.env.PUBLIC_URL}/ny-dark.jpg`;
 
   useEffect(() => {
     if (typeof document === "undefined") return undefined;
@@ -494,16 +493,10 @@ const BlogList = () => {
   return (
     <div className="relative min-h-screen overflow-hidden px-3 py-3 sm:px-5 sm:py-4 lg:px-8 lg:py-6">
       <div
-        className="absolute inset-0 -z-20 bg-cover bg-center bg-no-repeat"
-        style={isDark ? { backgroundImage: `url(${blogBackgroundImage})` } : undefined}
+        className="absolute inset-0 -z-20 bg-[radial-gradient(circle_at_14%_10%,rgba(191,219,254,0.8)_0%,rgba(191,219,254,0)_34%),radial-gradient(circle_at_85%_14%,rgba(186,230,253,0.75)_0%,rgba(186,230,253,0)_36%),radial-gradient(circle_at_52%_88%,rgba(204,251,241,0.7)_0%,rgba(204,251,241,0)_40%),linear-gradient(160deg,#f8fbff_0%,#eef6ff_50%,#ecfdf5_100%)] dark:bg-[linear-gradient(160deg,rgba(2,6,23,0.98)_0%,rgba(3,7,18,0.99)_52%,rgba(2,6,23,1)_100%)]"
         aria-hidden="true"
       />
-      {!isDark && (
-        <div
-          className={`absolute inset-0 -z-[15] ${lightBackdropClass}`}
-          aria-hidden="true"
-        />
-      )}
+      {!isDark && <div className={`absolute inset-0 -z-[15] ${lightBackdropClass}`} aria-hidden="true" />}
       <div
         className={`absolute inset-0 -z-10 ${pageOverlayClass}`}
         aria-hidden="true"
