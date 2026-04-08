@@ -247,9 +247,8 @@ export default function PortfolioDetails() {
   const hasScrolledRef = useRef(false);
 
   const heroRef = useRef(null);
-  const portfolioBackgroundImage = `${process.env.PUBLIC_URL}${
-    isDark ? "/ny-dark.jpg" : "/ny-bg.png"
-  }`;
+  const portfolioBackgroundLightImage = `${process.env.PUBLIC_URL}/ny-bg.png`;
+  const portfolioBackgroundDarkImage = `${process.env.PUBLIC_URL}/ny-dark.jpg`;
   const activeSectionMeta = useMemo(
     () => sectionMeta.find((section) => section.id === activeSection) || sectionMeta[0],
     [activeSection],
@@ -624,25 +623,38 @@ const textY = useTransform(
   }, [isBottomCtaExpanded, isTouchDevice]);
 
   useEffect(() => {
+    let cancelled = false;
+
+    const preloadBackground = (src) =>
+      new Promise((resolve) => {
+        const image = new Image();
+        image.decoding = "async";
+        image.src = src;
+
+        if (image.complete) {
+          resolve();
+          return;
+        }
+
+        image.addEventListener("load", resolve, { once: true });
+        image.addEventListener("error", resolve, { once: true });
+      });
+
     setBackgroundImageLoaded(false);
 
-    const backgroundImage = new Image();
-    backgroundImage.decoding = "async";
-    backgroundImage.src = portfolioBackgroundImage;
-
-    const markLoaded = () => setBackgroundImageLoaded(true);
-
-    if (backgroundImage.complete) {
-      markLoaded();
-      return;
-    }
-
-    backgroundImage.addEventListener("load", markLoaded);
+    Promise.all([
+      preloadBackground(portfolioBackgroundLightImage),
+      preloadBackground(portfolioBackgroundDarkImage),
+    ]).finally(() => {
+      if (!cancelled) {
+        setBackgroundImageLoaded(true);
+      }
+    });
 
     return () => {
-      backgroundImage.removeEventListener("load", markLoaded);
+      cancelled = true;
     };
-  }, [portfolioBackgroundImage]);
+  }, [portfolioBackgroundDarkImage, portfolioBackgroundLightImage]);
 
   if (loading || !data) return <InitialLoader />;
 
@@ -654,16 +666,24 @@ const textY = useTransform(
       className="relative isolate w-full overflow-hidden text-zinc-900 dark:text-zinc-100"
     >
       {/* ===== PREMIUM NY BACKGROUND ===== */}
-      <div
-        className="pointer-events-none fixed inset-0 z-0 bg-cover bg-center will-change-transform transition-opacity duration-500"
+      <div className="pointer-events-none fixed inset-0 z-0">
+        <div
+          className="absolute inset-0 bg-cover bg-center will-change-transform transition-opacity duration-500"
+          style={{
+            backgroundImage: `url(${portfolioBackgroundLightImage})`,
+            opacity: backgroundImageLoaded && !isDark ? 1 : 0,
+            transform: "translateZ(0)",
+          }}
+        />
+        <div
+          className="absolute inset-0 bg-cover bg-center will-change-transform transition-opacity duration-500"
+          style={{
+            backgroundImage: `url(${portfolioBackgroundDarkImage})`,
+            opacity: backgroundImageLoaded && isDark ? 1 : 0,
+            transform: "translateZ(0)",
+          }}
+        />
 
-        style={{
-          backgroundImage: `url(${portfolioBackgroundImage})`,
-          opacity: backgroundImageLoaded ? 1 : 0,
-          transform: "translateZ(0)",
-        }}
-
-      >
         {/* corporate neutral tint (not too white, not too dark) */}
         <div className="absolute inset-0 bg-white/25 dark:bg-black/35" />
 
