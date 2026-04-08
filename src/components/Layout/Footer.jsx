@@ -41,7 +41,7 @@ const Footer = () => {
   }, [scrollToTop]);
 
   return (
-    <footer className="relative mt-3 w-full overflow-hidden bg-[radial-gradient(circle_at_12%_-10%,rgba(96,165,250,0.30),transparent_46%),radial-gradient(circle_at_88%_4%,rgba(56,189,248,0.28),transparent_44%),linear-gradient(135deg,rgba(248,252,255,0.99),rgba(236,246,255,0.98),rgba(224,242,254,0.96))] text-slate-700 backdrop-blur-xl dark:bg-[radial-gradient(circle_at_14%_-10%,rgba(24,24,27,0.45),transparent_45%),radial-gradient(circle_at_90%_8%,rgba(10,10,10,0.45),transparent_44%),linear-gradient(145deg,rgba(0,0,0,1),rgba(3,3,3,0.99),rgba(8,8,8,0.99))] dark:text-zinc-300">
+    <footer className="relative w-full overflow-hidden bg-[radial-gradient(circle_at_12%_-10%,rgba(96,165,250,0.30),transparent_46%),radial-gradient(circle_at_88%_4%,rgba(56,189,248,0.28),transparent_44%),linear-gradient(135deg,rgba(248,252,255,0.99),rgba(236,246,255,0.98),rgba(224,242,254,0.96))] text-slate-700 backdrop-blur-xl dark:bg-[radial-gradient(circle_at_14%_-10%,rgba(24,24,27,0.45),transparent_45%),radial-gradient(circle_at_90%_8%,rgba(10,10,10,0.45),transparent_44%),linear-gradient(145deg,rgba(0,0,0,1),rgba(3,3,3,0.99),rgba(8,8,8,0.99))] dark:text-zinc-300">
       <div className="pointer-events-none absolute inset-0 opacity-75 dark:opacity-95">
         <div className="absolute -left-24 top-6 h-56 w-56 rounded-full bg-sky-300/30 blur-3xl dark:bg-zinc-900/55" />
         <div className="absolute right-[-4.5rem] top-20 h-48 w-48 rounded-full bg-cyan-300/25 blur-3xl dark:bg-zinc-950/50" />
