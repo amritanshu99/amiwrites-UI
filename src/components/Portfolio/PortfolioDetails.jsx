@@ -618,6 +618,9 @@ const textY = useTransform(
   if (loading || !data) return <InitialLoader />;
 
   const [firstName, lastName] = data.name.split(" ");
+  const portfolioBackgroundImage = `${process.env.PUBLIC_URL}${
+    isDark ? "/ny-dark.jpg" : "/ny-bg.png"
+  }`;
 
   return (
     <main
@@ -629,9 +632,9 @@ const textY = useTransform(
         className="fixed inset-0 -z-10 bg-cover bg-center will-change-transform"
 
         style={{
-  backgroundImage: `url(${isDark ? "/ny-dark.jpg" : "/ny-bg.png"})`,
-    transform: "translateZ(0)",
-}}
+          backgroundImage: `url(${portfolioBackgroundImage})`,
+          transform: "translateZ(0)",
+        }}
 
       >
         {/* corporate neutral tint (not too white, not too dark) */}
