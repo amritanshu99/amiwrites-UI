@@ -41,8 +41,8 @@ const Footer = () => {
   }, [scrollToTop]);
 
   return (
-    <footer className="relative w-full overflow-hidden bg-[radial-gradient(circle_at_12%_-10%,rgba(96,165,250,0.30),transparent_46%),radial-gradient(circle_at_88%_4%,rgba(56,189,248,0.28),transparent_44%),linear-gradient(135deg,rgba(248,252,255,0.99),rgba(236,246,255,0.98),rgba(224,242,254,0.96))] text-slate-700 backdrop-blur-xl dark:bg-[radial-gradient(circle_at_14%_-10%,rgba(24,24,27,0.45),transparent_45%),radial-gradient(circle_at_90%_8%,rgba(10,10,10,0.45),transparent_44%),linear-gradient(145deg,rgba(0,0,0,1),rgba(3,3,3,0.99),rgba(8,8,8,0.99))] dark:text-zinc-300">
-      <div className="pointer-events-none absolute inset-0 opacity-75 dark:opacity-95">
+    <footer className="relative w-full overflow-hidden bg-[radial-gradient(circle_at_12%_-10%,rgba(96,165,250,0.30),transparent_46%),radial-gradient(circle_at_88%_4%,rgba(56,189,248,0.28),transparent_44%),linear-gradient(135deg,rgba(248,252,255,0.99),rgba(236,246,255,0.98),rgba(224,242,254,0.96))] text-slate-700 dark:bg-zinc-950 dark:text-zinc-300">
+      <div className="pointer-events-none absolute inset-0 opacity-75 dark:hidden">
         <div className="absolute -left-24 top-6 h-56 w-56 rounded-full bg-sky-300/30 blur-3xl dark:bg-zinc-900/55" />
         <div className="absolute right-[-4.5rem] top-20 h-48 w-48 rounded-full bg-cyan-300/25 blur-3xl dark:bg-zinc-950/50" />
         <div className="absolute -bottom-24 left-1/3 h-56 w-56 rounded-full bg-blue-300/20 blur-3xl dark:bg-black/70" />
@@ -133,7 +133,7 @@ const Footer = () => {
               {legalLinks.map((link) => (
                 <li key={link.label}>
                   <Link
-                    className="inline-flex w-full items-center rounded-lg border border-slate-200/90 bg-white/88 px-2 py-0.5 text-slate-700 shadow-sm shadow-slate-300/40 backdrop-blur-md transition-all hover:border-cyan-500/70 hover:bg-cyan-50/90 hover:text-cyan-800 hover:shadow-cyan-200/40 dark:border-zinc-800 dark:bg-zinc-950/90 dark:text-zinc-100 dark:shadow-none dark:hover:border-zinc-700 dark:hover:bg-black dark:hover:text-white sm:px-2.5 sm:py-1"
+                    className="inline-flex w-full items-center rounded-lg border border-slate-200/90 bg-white/88 px-2 py-0.5 text-slate-700 shadow-sm shadow-slate-300/40 backdrop-blur-md transition-colors hover:border-cyan-500/70 hover:bg-cyan-50/90 hover:text-cyan-800 hover:shadow-cyan-200/40 dark:border-zinc-800 dark:bg-zinc-950/90 dark:text-zinc-100 dark:shadow-none dark:hover:border-zinc-700 dark:hover:bg-black dark:hover:text-white sm:px-2.5 sm:py-1"
                     to={link.href}
                     onClick={scrollToTop}
                   >
