@@ -486,7 +486,7 @@ const BlogList = () => {
         aria-hidden="true"
       />
       <div
-        className="absolute inset-0 -z-10 bg-[linear-gradient(180deg,rgba(248,250,252,0.88)_0%,rgba(237,243,248,0.9)_35%,rgba(248,250,252,0.92)_100%)] dark:bg-[linear-gradient(180deg,rgba(0,0,0,0.72)_0%,rgba(5,5,5,0.8)_52%,rgba(0,0,0,0.88)_100%)]"
+        className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_12%_18%,rgba(14,165,233,0.2)_0%,rgba(14,165,233,0)_36%),radial-gradient(circle_at_85%_12%,rgba(99,102,241,0.16)_0%,rgba(99,102,241,0)_42%),radial-gradient(circle_at_56%_82%,rgba(45,212,191,0.14)_0%,rgba(45,212,191,0)_45%),linear-gradient(155deg,rgba(248,250,252,0.92)_0%,rgba(238,244,252,0.9)_42%,rgba(250,252,255,0.95)_100%)] dark:bg-[radial-gradient(circle_at_15%_20%,rgba(56,189,248,0.2)_0%,rgba(56,189,248,0)_36%),radial-gradient(circle_at_83%_18%,rgba(59,130,246,0.18)_0%,rgba(59,130,246,0)_44%),radial-gradient(circle_at_58%_84%,rgba(20,184,166,0.16)_0%,rgba(20,184,166,0)_44%),linear-gradient(160deg,rgba(2,6,23,0.88)_0%,rgba(3,7,18,0.92)_45%,rgba(2,6,23,0.96)_100%)]"
         aria-hidden="true"
       />
       <PushNotificationButton />
