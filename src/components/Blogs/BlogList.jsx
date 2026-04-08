@@ -491,7 +491,7 @@ const BlogList = () => {
     : "border-sky-100/80 bg-[linear-gradient(168deg,rgba(255,255,255,0.95)_0%,rgba(244,249,255,0.95)_48%,rgba(239,253,247,0.92)_100%)] hover:border-sky-200 hover:shadow-[0_30px_64px_-36px_rgba(14,116,144,0.24)]";
 
   return (
-    <div className="relative min-h-screen overflow-hidden px-3 py-3 sm:px-5 sm:py-4 lg:px-8 lg:py-6">
+    <div className={`relative min-h-screen overflow-hidden px-3 py-3 sm:px-5 sm:py-4 lg:px-8 lg:py-6 ${!isDark ? lightBackdropClass : ""}`}>
       <div
         className="absolute inset-0 -z-20 bg-[radial-gradient(circle_at_14%_10%,rgba(191,219,254,0.8)_0%,rgba(191,219,254,0)_34%),radial-gradient(circle_at_85%_14%,rgba(186,230,253,0.75)_0%,rgba(186,230,253,0)_36%),radial-gradient(circle_at_52%_88%,rgba(204,251,241,0.7)_0%,rgba(204,251,241,0)_40%),linear-gradient(160deg,#f8fbff_0%,#eef6ff_50%,#ecfdf5_100%)] dark:bg-[linear-gradient(160deg,rgba(2,6,23,0.98)_0%,rgba(3,7,18,0.99)_52%,rgba(2,6,23,1)_100%)]"
         aria-hidden="true"
