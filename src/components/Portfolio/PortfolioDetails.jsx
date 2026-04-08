@@ -1019,36 +1019,38 @@ dark:[text-shadow:0_0_25px_rgba(255,255,255,0.35)]
                 ))}
               </div>
 
-              <button
-                type="button"
-                onClick={() => scrollToSection("experience")}
-                className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-full border border-zinc-300/70 bg-white/80 px-5 py-2 text-sm font-semibold tracking-wide transition-all hover:bg-white dark:border-zinc-700 dark:bg-zinc-900/70 dark:hover:bg-zinc-800 sm:w-auto"
-              >
-                Explore my experience
-                <span>→</span>
-              </button>
+              <div className="mt-2 flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
+                <button
+                  type="button"
+                  onClick={() => scrollToSection("experience")}
+                  className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-full border border-zinc-300/70 bg-white/80 px-5 text-sm font-semibold tracking-wide transition-all hover:bg-white dark:border-zinc-700 dark:bg-zinc-900/70 dark:hover:bg-zinc-800 sm:w-auto"
+                >
+                  Explore my experience
+                  <span>→</span>
+                </button>
 
-              <a
-                href={RESUME_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group relative mt-2 inline-flex w-full items-center justify-center gap-2 overflow-hidden rounded-full border border-zinc-300/70 bg-white/90 px-5 py-2 text-sm font-semibold tracking-wide text-zinc-900 shadow-[0_10px_28px_rgba(24,24,27,0.12)] transition-all duration-300 hover:-translate-y-0.5 hover:border-zinc-400 hover:bg-white hover:shadow-[0_16px_34px_rgba(24,24,27,0.18)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500 focus-visible:ring-offset-2 dark:border-zinc-700 dark:bg-zinc-900/80 dark:text-zinc-100 dark:shadow-[0_10px_26px_rgba(0,0,0,0.45)] dark:hover:border-zinc-500 dark:hover:bg-zinc-900 dark:hover:shadow-[0_16px_34px_rgba(0,0,0,0.6)] dark:focus-visible:ring-zinc-300 dark:focus-visible:ring-offset-zinc-900 sm:w-auto sm:px-6 sm:py-2.5"
-                aria-label="Open resume in a new tab"
-              >
-                <span
-                  aria-hidden="true"
-                  className="absolute inset-0 bg-gradient-to-r from-zinc-100 via-white to-zinc-100 opacity-0 transition-opacity duration-300 group-hover:opacity-100 dark:from-zinc-800 dark:via-zinc-900 dark:to-zinc-800"
-                />
-                <span className="relative inline-flex h-7 w-7 items-center justify-center rounded-full bg-zinc-900 text-zinc-50 shadow-sm transition-all duration-300 group-hover:scale-105 dark:bg-zinc-100 dark:text-zinc-900">
-                  <FaFileAlt className="text-[0.7rem]" />
-                </span>
-                <span className="relative">
-                  View my resume
-                </span>
-                <span className="relative text-xs opacity-70 transition-transform duration-300 group-hover:translate-x-0.5">
-                  ↗
-                </span>
-              </a>
+                <a
+                  href={RESUME_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group relative inline-flex h-11 w-full items-center justify-center gap-2 overflow-hidden rounded-full border border-zinc-300/70 bg-white/90 px-5 text-sm font-semibold tracking-wide text-zinc-900 shadow-[0_10px_28px_rgba(24,24,27,0.12)] transition-all duration-300 hover:-translate-y-0.5 hover:border-zinc-400 hover:bg-white hover:shadow-[0_16px_34px_rgba(24,24,27,0.18)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500 focus-visible:ring-offset-2 dark:border-zinc-700 dark:bg-zinc-900/80 dark:text-zinc-100 dark:shadow-[0_10px_26px_rgba(0,0,0,0.45)] dark:hover:border-zinc-500 dark:hover:bg-zinc-900 dark:hover:shadow-[0_16px_34px_rgba(0,0,0,0.6)] dark:focus-visible:ring-zinc-300 dark:focus-visible:ring-offset-zinc-900 sm:w-auto sm:px-6"
+                  aria-label="Open resume in a new tab"
+                >
+                  <span
+                    aria-hidden="true"
+                    className="absolute inset-0 bg-gradient-to-r from-zinc-100 via-white to-zinc-100 opacity-0 transition-opacity duration-300 group-hover:opacity-100 dark:from-zinc-800 dark:via-zinc-900 dark:to-zinc-800"
+                  />
+                  <span className="relative inline-flex h-7 w-7 items-center justify-center rounded-full bg-zinc-900 text-zinc-50 shadow-sm transition-all duration-300 group-hover:scale-105 dark:bg-zinc-100 dark:text-zinc-900">
+                    <FaFileAlt className="text-[0.7rem]" />
+                  </span>
+                  <span className="relative">
+                    View my resume
+                  </span>
+                  <span className="relative text-xs opacity-70 transition-transform duration-300 group-hover:translate-x-0.5">
+                    ↗
+                  </span>
+                </a>
+              </div>
             </div>
           </FadeRow>
         </section>
