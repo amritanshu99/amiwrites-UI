@@ -1032,12 +1032,22 @@ dark:[text-shadow:0_0_25px_rgba(255,255,255,0.35)]
                 href={RESUME_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group mt-2 inline-flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-zinc-900 via-zinc-800 to-zinc-700 px-5 py-3 text-sm font-semibold tracking-wide text-white shadow-[0_10px_30px_rgba(24,24,27,0.25)] transition-all duration-300 hover:-translate-y-0.5 hover:from-black hover:via-zinc-900 hover:to-zinc-800 hover:shadow-[0_14px_36px_rgba(24,24,27,0.35)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500 focus-visible:ring-offset-2 dark:from-white dark:via-zinc-200 dark:to-zinc-300 dark:text-zinc-900 dark:shadow-[0_10px_30px_rgba(255,255,255,0.12)] dark:hover:from-zinc-100 dark:hover:via-white dark:hover:to-zinc-100 dark:focus-visible:ring-zinc-300 dark:focus-visible:ring-offset-zinc-900 sm:w-auto"
+                className="group relative mt-2 inline-flex w-full items-center justify-center gap-3 overflow-hidden rounded-full border border-zinc-300/70 bg-white px-5 py-3 text-sm font-semibold tracking-wide text-zinc-900 shadow-[0_12px_36px_rgba(24,24,27,0.14)] transition-all duration-300 hover:-translate-y-0.5 hover:border-zinc-400 hover:shadow-[0_18px_42px_rgba(24,24,27,0.2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500 focus-visible:ring-offset-2 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:shadow-[0_12px_36px_rgba(0,0,0,0.45)] dark:hover:border-zinc-500 dark:hover:shadow-[0_18px_42px_rgba(0,0,0,0.6)] dark:focus-visible:ring-zinc-300 dark:focus-visible:ring-offset-zinc-900 sm:w-auto sm:px-6 sm:py-3.5"
                 aria-label="Open resume in a new tab"
               >
-                <FaFileAlt className="text-base transition-transform duration-300 group-hover:scale-110" />
-                View Resume
-                <span className="text-xs opacity-80">↗</span>
+                <span
+                  aria-hidden="true"
+                  className="absolute inset-0 bg-gradient-to-r from-zinc-100 via-white to-zinc-100 opacity-0 transition-opacity duration-300 group-hover:opacity-100 dark:from-zinc-800 dark:via-zinc-900 dark:to-zinc-800"
+                />
+                <span className="relative inline-flex h-8 w-8 items-center justify-center rounded-full bg-zinc-900 text-zinc-50 shadow-sm transition-all duration-300 group-hover:scale-105 dark:bg-zinc-100 dark:text-zinc-900">
+                  <FaFileAlt className="text-sm" />
+                </span>
+                <span className="relative text-[0.85rem] sm:text-sm md:text-[0.95rem]">
+                  View Resume
+                </span>
+                <span className="relative text-xs opacity-70 transition-transform duration-300 group-hover:translate-x-0.5">
+                  ↗
+                </span>
               </a>
             </div>
           </FadeRow>
