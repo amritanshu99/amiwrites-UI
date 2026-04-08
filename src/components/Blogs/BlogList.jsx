@@ -460,9 +460,7 @@ const BlogList = () => {
   const handleAddBlog = () => navigate("/add-blog");
 
   const filteredBlogs = blogs;
-  const blogBackgroundImage = `${process.env.PUBLIC_URL}${
-    isDark ? "/ny-dark.jpg" : "/ny-bg.png"
-  }`;
+  const blogBackgroundImage = `${process.env.PUBLIC_URL}/ny-dark.jpg`;
 
   useEffect(() => {
     if (typeof document === "undefined") return undefined;
@@ -482,6 +480,9 @@ const BlogList = () => {
     ? "bg-[radial-gradient(circle_at_15%_20%,rgba(56,189,248,0.2)_0%,rgba(56,189,248,0)_36%),radial-gradient(circle_at_83%_18%,rgba(59,130,246,0.18)_0%,rgba(59,130,246,0)_44%),radial-gradient(circle_at_58%_84%,rgba(20,184,166,0.16)_0%,rgba(20,184,166,0)_44%),linear-gradient(160deg,rgba(2,6,23,0.88)_0%,rgba(3,7,18,0.92)_45%,rgba(2,6,23,0.96)_100%)]"
     : "bg-[radial-gradient(circle_at_8%_12%,rgba(59,130,246,0.2)_0%,rgba(59,130,246,0)_38%),radial-gradient(circle_at_88%_14%,rgba(14,165,233,0.2)_0%,rgba(14,165,233,0)_42%),radial-gradient(circle_at_52%_88%,rgba(45,212,191,0.2)_0%,rgba(45,212,191,0)_46%),linear-gradient(150deg,rgba(255,255,255,0.84)_0%,rgba(238,246,255,0.92)_43%,rgba(236,253,250,0.9)_100%)] sm:bg-[radial-gradient(circle_at_10%_12%,rgba(37,99,235,0.2)_0%,rgba(37,99,235,0)_40%),radial-gradient(circle_at_86%_16%,rgba(2,132,199,0.2)_0%,rgba(2,132,199,0)_42%),radial-gradient(circle_at_56%_86%,rgba(20,184,166,0.22)_0%,rgba(20,184,166,0)_46%),linear-gradient(145deg,rgba(255,255,255,0.86)_0%,rgba(236,246,255,0.93)_46%,rgba(236,253,245,0.9)_100%)]";
 
+  const lightBackdropClass =
+    "bg-[radial-gradient(circle_at_14%_10%,rgba(191,219,254,0.8)_0%,rgba(191,219,254,0)_34%),radial-gradient(circle_at_85%_14%,rgba(186,230,253,0.75)_0%,rgba(186,230,253,0)_36%),radial-gradient(circle_at_52%_88%,rgba(204,251,241,0.7)_0%,rgba(204,251,241,0)_40%),linear-gradient(160deg,#f8fbff_0%,#eef6ff_50%,#ecfdf5_100%)]";
+
   const surfaceClass = isDark
     ? "border-zinc-900 bg-black"
     : "border-sky-100/85 bg-[linear-gradient(160deg,rgba(255,255,255,0.9)_0%,rgba(244,250,255,0.93)_55%,rgba(236,253,247,0.9)_100%)]";
@@ -494,9 +495,15 @@ const BlogList = () => {
     <div className="relative min-h-screen overflow-hidden px-3 py-3 sm:px-5 sm:py-4 lg:px-8 lg:py-6">
       <div
         className="absolute inset-0 -z-20 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: `url(${blogBackgroundImage})` }}
+        style={isDark ? { backgroundImage: `url(${blogBackgroundImage})` } : undefined}
         aria-hidden="true"
       />
+      {!isDark && (
+        <div
+          className={`absolute inset-0 -z-[15] ${lightBackdropClass}`}
+          aria-hidden="true"
+        />
+      )}
       <div
         className={`absolute inset-0 -z-10 ${pageOverlayClass}`}
         aria-hidden="true"
