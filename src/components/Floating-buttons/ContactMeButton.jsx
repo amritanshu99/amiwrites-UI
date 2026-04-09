@@ -128,9 +128,32 @@ export default function ContactMeButton() {
             <h2 className="text-2xl font-semibold text-gray-800 dark:text-white mb-1">
               Let’s Connect
             </h2>
-            <p className="text-sm text-gray-600 dark:text-gray-300 mb-6">
+            <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
               I'd love to hear from you. Please fill in your details below.
             </p>
+
+            <div className="mb-6 rounded-xl border border-indigo-200/70 dark:border-indigo-500/30 bg-gradient-to-r from-indigo-50 via-violet-50 to-fuchsia-50 dark:from-indigo-950/40 dark:via-violet-950/30 dark:to-fuchsia-950/30 p-3 sm:p-4 shadow-sm">
+              <button
+                type="button"
+                disabled={loading}
+                onClick={() => {
+                  navigate("/amibot");
+                  setOpen(false);
+                }}
+                className="w-full group relative overflow-hidden rounded-lg bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 text-white px-4 py-3 text-left transition-all duration-300 hover:shadow-lg hover:shadow-indigo-500/30 hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-violet-500 disabled:opacity-60 disabled:cursor-not-allowed"
+                aria-label="Open AmiBot"
+              >
+                <span className="relative z-10 flex items-center justify-between gap-3">
+                  <span className="text-sm sm:text-base font-semibold tracking-wide">
+                    Feeling shy? Chat with AmiBot instead.
+                  </span>
+                  <span className="text-lg sm:text-xl transition-transform duration-300 group-hover:translate-x-0.5">
+                    🤖
+                  </span>
+                </span>
+                <span className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/15" />
+              </button>
+            </div>
 
             <form onSubmit={handleSubmit} className="space-y-5 text-sm">
               <div>
