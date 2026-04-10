@@ -866,7 +866,7 @@ const textY = useTransform(
         {/* ================= HERO ================= */}
 <section
   ref={heroRef}
-className="relative w-screen left-1/2 -translate-x-1/2
+className="relative w-full
 min-h-[90vh] 
 md:min-h-[110vh] 
 lg:min-h-[108vh] 
