@@ -866,7 +866,7 @@ const textY = useTransform(
         {/* ================= HERO ================= */}
 <section
   ref={heroRef}
-className="relative 
+className="relative w-screen left-1/2 -translate-x-1/2
 min-h-[90vh] 
 md:min-h-[110vh] 
 lg:min-h-[108vh] 
@@ -879,7 +879,7 @@ xl:min-h-[114vh]"
 
           <motion.div
            style={{ scale: imageScale }}
-className="sticky top-0 
+className="sticky top-0 w-full
 h-[55vh] 
 md:h-[80vh] 
 lg:h-[74vh] 
