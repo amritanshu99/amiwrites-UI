@@ -149,9 +149,13 @@ const Tooltip = React.memo(({ children, content }) => {
 });
 
 /* ================= ANIMATED BANNER ================= */
-const AnimatedBanner = React.memo(() => {
+const AnimatedBanner = React.memo(({ scrollRoot }) => {
   const ref = useRef(null);
-  const inView = useInView(ref, { once: true, margin: "-120px" });
+  const inView = useInView(ref, {
+    once: true,
+    margin: "-120px",
+    root: scrollRoot ?? undefined,
+  });
 
   return (
     <motion.div
@@ -180,9 +184,13 @@ const AnimatedBanner = React.memo(() => {
 });
 
 /* ================= FADE ROW ================= */
-const FadeRow = React.memo(({ children }) => {
+const FadeRow = React.memo(({ children, scrollRoot }) => {
   const ref = useRef(null);
-  const inView = useInView(ref, { once: true, margin: "-160px" });
+  const inView = useInView(ref, {
+    once: true,
+    margin: "-160px",
+    root: scrollRoot ?? undefined,
+  });
   return (
     <motion.div
       ref={ref}
@@ -256,6 +264,7 @@ export default function PortfolioDetails() {
   const [activeSection, setActiveSection] = useState("intro");
   const [isBottomCtaExpanded, setIsBottomCtaExpanded] = useState(true);
   const [isTouchDevice, setIsTouchDevice] = useState(false);
+  const [scrollRoot, setScrollRoot] = useState(null);
   const prefersReducedMotion = useReducedMotion();
   const pageRef = useRef(null);
   const bottomCtaRef = useRef(null);
@@ -342,6 +351,11 @@ const textY = useTransform(
     const obs = new MutationObserver(sync);
     obs.observe(document.documentElement, { attributes: true });
     return () => obs.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const scrollParent = getPortfolioScrollParent(pageRef.current);
+    setScrollRoot(scrollParent === window ? null : scrollParent);
   }, []);
   useEffect(() => {
     const scrollParent = getPortfolioScrollParent(pageRef.current);
@@ -1017,7 +1031,7 @@ dark:[text-shadow:0_0_25px_rgba(255,255,255,0.35)]
         </section>
         {/* ================= BRAND BANNER ================= */}
         <section className="w-full overflow-hidden bg-white dark:bg-black py-12 md:py-16">
-          <AnimatedBanner />
+          <AnimatedBanner scrollRoot={scrollRoot} />
         </section>
 
         {/* ================= INTRO ================= */}
@@ -1028,7 +1042,7 @@ dark:[text-shadow:0_0_25px_rgba(255,255,255,0.35)]
           }}
           className="px-6 md:px-20 py-14 md:py-16 border-b border-zinc-200 dark:border-zinc-800"
         >
-          <FadeRow>
+          <FadeRow scrollRoot={scrollRoot}>
             <div className="max-w-4xl space-y-4">
               <p className="text-lg md:text-xl font-medium leading-relaxed">
                 {data.description}
@@ -1090,7 +1104,7 @@ dark:[text-shadow:0_0_25px_rgba(255,255,255,0.35)]
           }}
           className="px-6 md:px-20 py-14 md:py-16 border-b border-zinc-200 dark:border-zinc-800"
         >
-          <FadeRow>
+          <FadeRow scrollRoot={scrollRoot}>
             <h2 className="text-xl md:text-2xl font-semibold mb-8">
               01 — Skills
             </h2>
@@ -1138,7 +1152,7 @@ dark:[text-shadow:0_0_25px_rgba(255,255,255,0.35)]
           }}
           className="px-6 md:px-20 py-14 md:py-16 border-b border-zinc-200 dark:border-zinc-800"
         >
-          <FadeRow>
+          <FadeRow scrollRoot={scrollRoot}>
             <h2 className="text-xl md:text-2xl font-semibold mb-8 flex items-center gap-2">
               <FaBriefcase /> 02 — Experience
             </h2>
@@ -1245,7 +1259,7 @@ dark:[text-shadow:0_0_25px_rgba(255,255,255,0.35)]
           }}
           className="px-6 md:px-20 py-14 md:py-16 pb-32 sm:pb-28"
         >
-          <FadeRow>
+          <FadeRow scrollRoot={scrollRoot}>
             <h2 className="text-xl md:text-2xl font-semibold mb-8 flex items-center gap-2">
               <FaGraduationCap /> 03 — Education
             </h2>
