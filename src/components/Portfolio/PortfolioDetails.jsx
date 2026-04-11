@@ -99,6 +99,22 @@ const getSectionTop = (element, scrollParent) => {
   return rect.top - parentRect.top + scrollParent.scrollTop;
 };
 
+const getPortfolioScrollParent = (pageElement) => {
+  const selectorCandidates = [
+    ".h-screen.overflow-y-scroll.relative",
+    ".h-screen.overflow-y-scroll",
+    "[data-scroll-container]",
+    ".app-scroll-container",
+  ];
+
+  for (const selector of selectorCandidates) {
+    const candidate = document.querySelector(selector);
+    if (candidate) return candidate;
+  }
+
+  return getScrollParent(pageElement);
+};
+
 /* ================= TOOLTIP ================= */
 const Tooltip = React.memo(({ children, content }) => {
   const [show, setShow] = useState(false);
@@ -259,10 +275,7 @@ export default function PortfolioDetails() {
 
     if (!targetSection) return;
 
-    const explicitScrollParent = document.querySelector(
-      ".h-screen.overflow-y-scroll",
-    );
-    const scrollParent = explicitScrollParent || getScrollParent(pageRef.current);
+    const scrollParent = getPortfolioScrollParent(pageRef.current);
     const targetTop = getSectionTop(targetSection, scrollParent);
     const sectionOffset = 96;
     const scrollTarget = Math.max(targetTop - sectionOffset, 0);
@@ -331,10 +344,7 @@ const textY = useTransform(
     return () => obs.disconnect();
   }, []);
   useEffect(() => {
-    const explicitScrollParent = document.querySelector(
-      ".h-screen.overflow-y-scroll",
-    );
-    const scrollParent = explicitScrollParent || getScrollParent(pageRef.current);
+    const scrollParent = getPortfolioScrollParent(pageRef.current);
     const target = scrollParent === window ? window : scrollParent;
     let rafId = null;
 
@@ -425,10 +435,7 @@ const textY = useTransform(
 
     if (!sections.length) return;
 
-    const explicitScrollParent = document.querySelector(
-      ".h-screen.overflow-y-scroll",
-    );
-    const scrollParent = explicitScrollParent || getScrollParent(pageRef.current);
+    const scrollParent = getPortfolioScrollParent(pageRef.current);
 
     const updateActiveSection = () => {
       const currentScroll =
