@@ -133,7 +133,33 @@ export default function Header({ setLoading }) {
     } else {
       document.body.classList.remove("overflow-hidden");
     }
+
+    return () => {
+      document.body.classList.remove("overflow-hidden");
+    };
   }, [menuOpen]);
+
+  // Ensure mobile menu state does not trap scrolling after viewport changes.
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(min-width: 640px)");
+    const handleBreakpointChange = (event) => {
+      if (event.matches) {
+        setMenuOpen(false);
+      }
+    };
+
+    if (mediaQuery.matches) {
+      setMenuOpen(false);
+    }
+
+    if (typeof mediaQuery.addEventListener === "function") {
+      mediaQuery.addEventListener("change", handleBreakpointChange);
+      return () => mediaQuery.removeEventListener("change", handleBreakpointChange);
+    }
+
+    mediaQuery.addListener(handleBreakpointChange);
+    return () => mediaQuery.removeListener(handleBreakpointChange);
+  }, []);
 
   // Track scrollability of the sm+/md+ tab bar
   const updateScrollButtons = () => {
