@@ -12,14 +12,14 @@
 /* Keep the viewport background consistent so reserved scrollbar space never flashes white. */
 html,
 body {
-  height: 100%;
-  overflow-y: hidden;
+  min-height: 100%;
   overflow-x: hidden;
+  overflow-y: auto;
   background-color: #020202;
 }
 
 #root {
-  height: 100%;
+  min-height: 100%;
 }
 
 /* Professional, consistent global scrollbar (Chrome, Edge, Safari). */
