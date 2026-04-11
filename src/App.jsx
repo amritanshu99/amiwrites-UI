@@ -155,7 +155,11 @@ const App = () => {
   }
 
   return (
-    <div ref={appShellRef} className="h-screen overflow-y-scroll relative">
+    <div
+      ref={appShellRef}
+      data-scroll-container
+      className="app-scroll-container h-screen overflow-y-scroll relative"
+    >
       <Header setLoading={setIsLoading} />
       <ToastContainer
         position="top-right"
