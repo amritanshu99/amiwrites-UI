@@ -13,9 +13,13 @@
 html,
 body {
   height: 100%;
-  overflow-y: scroll;
+  overflow-y: hidden;
   overflow-x: hidden;
   background-color: #020202;
+}
+
+#root {
+  height: 100%;
 }
 
 /* Professional, consistent global scrollbar (Chrome, Edge, Safari). */
