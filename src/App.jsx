@@ -129,11 +129,6 @@ const App = () => {
   }, [location.pathname]);
 
   useEffect(() => {
-    if (appShellRef.current) {
-      appShellRef.current.scrollTo({ top: 0, behavior: "smooth" });
-      return;
-    }
-
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [location.pathname]);
 
@@ -158,7 +153,7 @@ const App = () => {
     <div
       ref={appShellRef}
       data-scroll-container
-      className="app-scroll-container h-screen overflow-y-scroll relative"
+      className="app-scroll-container relative min-h-screen"
     >
       <Header setLoading={setIsLoading} />
       <ToastContainer

@@ -26,7 +26,7 @@ const companyLinks = [
 
 const Footer = () => {
   const scrollToTop = useCallback(() => {
-    const appShell = document.querySelector(".h-screen.overflow-y-scroll");
+    const appShell = document.querySelector(".app-scroll-container");
     if (appShell) {
       appShell.scrollTo({ top: 0, behavior: "smooth" });
       return;
