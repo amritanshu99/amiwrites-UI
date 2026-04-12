@@ -50,6 +50,11 @@ export default function ContactMeButton() {
     setOpen(true);
   };
 
+  const handleChatWithAmiBot = () => {
+    setOpen(false);
+    navigate("/amibot");
+  };
+
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
@@ -192,6 +197,15 @@ export default function ContactMeButton() {
                   placeholder="Your message here..."
                 />
               </div>
+
+              <button
+                type="button"
+                disabled={loading}
+                onClick={handleChatWithAmiBot}
+                className="flex w-full items-center justify-center rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm font-medium text-sky-700 transition-colors hover:bg-sky-100 focus:outline-none focus:ring-2 focus:ring-sky-400 disabled:cursor-not-allowed disabled:opacity-60 dark:border-sky-900/60 dark:bg-sky-950/60 dark:text-sky-100 dark:hover:bg-sky-900/70"
+              >
+                Feeling shy? Chat with AmiBot instead
+              </button>
 
               <div className="flex flex-wrap justify-end gap-3 items-center pt-4">
                 {loading && <Loader />}
