@@ -53,9 +53,9 @@ const Footer = () => {
   }, [scrollToTop]);
 
   return (
-    <footer className="relative w-full overflow-hidden border-t border-transparent bg-[radial-gradient(circle_at_12%_-10%,rgba(96,165,250,0.30),transparent_46%),radial-gradient(circle_at_88%_4%,rgba(56,189,248,0.28),transparent_44%),linear-gradient(135deg,rgba(248,252,255,0.99),rgba(236,246,255,0.98),rgba(224,242,254,0.96))] text-slate-700 shadow-[0_-10px_30px_-28px_rgba(15,23,42,0.14)] backdrop-blur-xl dark:bg-[radial-gradient(circle_at_50%_-30%,rgba(255,255,255,0.08),transparent_34%),radial-gradient(circle_at_12%_12%,rgba(39,39,42,0.32),transparent_30%),radial-gradient(circle_at_88%_0%,rgba(24,24,27,0.26),transparent_28%),linear-gradient(180deg,rgba(18,18,18,0.98)_0%,rgba(5,5,5,0.99)_42%,rgba(0,0,0,1)_100%)] dark:text-zinc-300 dark:shadow-[0_-22px_64px_-38px_rgba(0,0,0,0.98)]">
-      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-sky-300/45 to-transparent dark:via-white/12" />
-      <div className="absolute inset-x-0 top-0 h-8 bg-gradient-to-b from-white/70 to-transparent dark:from-white/[0.06]" />
+    <footer className="relative isolate w-full overflow-hidden border-t border-sky-100/80 bg-[radial-gradient(circle_at_12%_-10%,rgba(96,165,250,0.30),transparent_46%),radial-gradient(circle_at_88%_4%,rgba(56,189,248,0.28),transparent_44%),linear-gradient(135deg,rgba(248,252,255,0.99),rgba(236,246,255,0.98),rgba(224,242,254,0.96))] text-slate-700 ring-1 ring-inset ring-white/35 [background-clip:padding-box] dark:border-white/[0.06] dark:bg-[radial-gradient(circle_at_50%_-30%,rgba(255,255,255,0.08),transparent_34%),radial-gradient(circle_at_12%_12%,rgba(39,39,42,0.32),transparent_30%),radial-gradient(circle_at_88%_0%,rgba(24,24,27,0.26),transparent_28%),linear-gradient(180deg,rgba(18,18,18,0.98)_0%,rgba(5,5,5,0.99)_42%,rgba(0,0,0,1)_100%)] dark:text-zinc-300 dark:ring-white/[0.05]">
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-sky-300/50 to-transparent dark:via-white/[0.14]" />
+      <div className="absolute inset-x-0 top-0 h-6 bg-gradient-to-b from-white/55 to-transparent dark:from-white/[0.05]" />
       <div className="pointer-events-none absolute inset-0 opacity-75 dark:opacity-100">
         <div className="absolute -left-24 top-6 h-56 w-56 rounded-full bg-sky-300/30 blur-3xl dark:bg-transparent" />
         <div className="absolute right-[-4.5rem] top-20 h-48 w-48 rounded-full bg-cyan-300/25 blur-3xl dark:bg-zinc-900/40" />
