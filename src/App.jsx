@@ -1,38 +1,39 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
-  Routes,
+  Navigate,
   Route,
+  Routes,
   useLocation,
-  useParams,
   useNavigate,
+  useParams,
 } from "react-router-dom";
 import axios from "axios";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import Header from "./components/Layout/Header";
+import Footer from "./components/Layout/Footer";
+import ContactMeButton from "./components/Floating-buttons/ContactMeButton";
+import Loader from "./components/Loader/Loader";
+import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
+import InitialLoader from "./components/Portfolio/InitialLoader";
 import Portfolio from "./pages/Portfolio";
 import BlogPage from "./pages/BlogPage";
 import AIChatPage from "./pages/AIChat";
 import AddBlogDetails from "./pages/AddBlogDetails";
 import BlogsDetails from "./pages/BlogsDetails";
-import Footer from "./components/Layout/Footer";
 import TechByte from "./pages/TechByte";
-import ContactMeButton from "./components/Floating-buttons/ContactMeButton";
-import Loader from "./components/Loader/Loader";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
-import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import { initGA, logPageView } from "./analytics";
-import { Navigate } from "react-router-dom";
 import TaskManagerDetails from "./pages/TaskManagerDetails";
 import AIToolsDetails from "./pages/AIToolsDetails";
-import { isTokenExpired } from "./utils/auth";
-import { verifyToken } from "./utils/authApi";
 import SpamDetectorDetails from "./pages/SpamDetectorDetails";
 import MoviePredictDetails from "./pages/MoviePredictDetails";
 import EmotionAnalyzerDetails from "./pages/EmotionAnalyzerDetails";
 import AmiBotDetails from "./pages/AmiBotDetails";
 import ReinforcementLearningDetails from "./pages/ReinforcementLearning";
 import LegalPage from "./pages/LegalPage";
+import { initGA, logPageView } from "./analytics";
+import { isTokenExpired } from "./utils/auth";
+import { verifyToken } from "./utils/authApi";
 import { applySEO, seoByRoute } from "./utils/seo";
 
 const resolveRouteSeo = (pathname) => {
@@ -42,15 +43,17 @@ const resolveRouteSeo = (pathname) => {
   if (pathname.startsWith("/legal/")) return seoByRoute["/legal"];
   return seoByRoute["/"];
 };
+
 const ValidateResetToken = () => {
   const { id: token } = useParams();
   const navigate = useNavigate();
   const [isValidating, setIsValidating] = useState(true);
+
   useEffect(() => {
     const validateToken = async () => {
       try {
         const res = await axios.get(
-          `https://amiwrites-backend-app-2lp5.onrender.com/api/auth/validate-reset-token/${token}`
+          `https://amiwrites-backend-app-2lp5.onrender.com/api/auth/validate-reset-token/${token}`,
         );
 
         if (res.data.valid) {
@@ -81,8 +84,8 @@ const ValidateResetToken = () => {
 
 const App = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const location = useLocation();
   const [shouldRender, setShouldRender] = useState(false);
+  const location = useLocation();
   const navigate = useNavigate();
   const appShellRef = useRef(null);
 
@@ -90,6 +93,7 @@ const App = () => {
     localStorage.removeItem("token");
     setShouldRender(true);
   };
+
   useEffect(() => {
     const checkAuth = async () => {
       const token = localStorage.getItem("token");
@@ -105,7 +109,6 @@ const App = () => {
         return;
       }
 
-      // ✅ Token is valid → allow rendering
       setShouldRender(true);
     };
 
@@ -137,21 +140,8 @@ const App = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [location.pathname]);
 
-
   if (!shouldRender) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-black text-center px-4">
-        <div className="flex flex-col items-center space-y-6 p-8 bg-zinc-900 bg-opacity-90 backdrop-blur-lg border border-zinc-800 shadow-2xl rounded-3xl">
-          <div className="w-16 h-16 border-4 border-cyan-400 border-dashed rounded-full animate-spin" />
-          <p className="text-lg sm:text-xl font-semibold text-cyan-300 tracking-wide">
-            🔐 Verifying your session
-          </p>
-          <p className="text-sm text-zinc-400 max-w-xs">
-            We're syncing your access securely. Please hold on...
-          </p>
-        </div>
-      </div>
-    );
+    return <InitialLoader mode="session" />;
   }
 
   return (
@@ -197,11 +187,8 @@ const App = () => {
             path="/emotion-analyzer"
             element={<EmotionAnalyzerDetails />}
           />
-            <Route
-            path="/amibot"
-            element={<AmiBotDetails />}
-          />
-             <Route
+          <Route path="/amibot" element={<AmiBotDetails />} />
+          <Route
             path="/Reinforcement-Learning"
             element={<ReinforcementLearningDetails />}
           />

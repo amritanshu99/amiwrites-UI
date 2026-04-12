@@ -10,6 +10,7 @@ import {
   FaReact,
   FaNodeJs,
   FaJs,
+  FaRegFilePdf,
   FaChevronUp,
   FaChevronDown,
 } from "react-icons/fa";
@@ -223,6 +224,8 @@ const sectionMeta = [
   { id: "education", label: "Education" },
 ];
 const MIN_LOADER_DURATION_MS = 2500;
+const resumeUrl =
+  "https://amiwrites-backend-app-2lp5.onrender.com/images/resume.pdf";
 
 /* ================= MAIN ================= */
 export default function PortfolioDetails() {
@@ -648,13 +651,14 @@ const textY = useTransform(
   return (
     <main
       ref={pageRef}
-      className="relative isolate w-full overflow-hidden text-zinc-900 dark:text-zinc-100"
+      className="relative isolate w-full overflow-hidden bg-white text-zinc-900 dark:bg-black dark:text-zinc-100"
     >
       {/* ===== PREMIUM NY BACKGROUND ===== */}
       <div
-        className="pointer-events-none fixed inset-0 z-0 bg-cover bg-center will-change-transform transition-opacity duration-500"
+        className="pointer-events-none fixed inset-y-0 left-0 z-0 bg-cover bg-center will-change-transform transition-opacity duration-500"
 
         style={{
+          right: "var(--scrollbar-size)",
           backgroundImage: `url(${portfolioBackgroundImage})`,
           opacity: backgroundImageLoaded ? 1 : 0,
           transform: "translateZ(0)",
@@ -684,7 +688,10 @@ const textY = useTransform(
       {/* PAGE HEIGHT WRAPPER (controls sticky duration) */}
      <div className="relative z-10">
 
-        <div className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] left-1/2 -translate-x-1/2 z-30 w-full px-3 sm:px-6">
+        <div
+          className="pointer-events-none fixed bottom-[max(1rem,env(safe-area-inset-bottom))] left-0 z-30 px-3 sm:px-6"
+          style={{ right: "var(--scrollbar-size)" }}
+        >
           <motion.div
             ref={bottomCtaRef}
             layout
@@ -709,7 +716,7 @@ const textY = useTransform(
                     }
                   }
             }
-            className="mx-auto flex w-fit max-w-full items-center gap-1.5 rounded-full border border-sky-200/70 bg-sky-50/90 p-1.5 shadow-[0_12px_30px_rgba(14,116,144,0.2)] ring-1 ring-white/55 backdrop-blur-2xl dark:border-sky-400/35 dark:bg-slate-900/85 dark:ring-sky-200/15"
+            className="pointer-events-auto mx-auto flex w-fit max-w-full items-center gap-1.5 rounded-full border border-sky-200/70 bg-sky-50/90 p-1.5 shadow-[0_12px_30px_rgba(14,116,144,0.2)] ring-1 ring-white/55 backdrop-blur-2xl dark:border-sky-400/35 dark:bg-slate-900/85 dark:ring-sky-200/15"
             initial={
               prefersReducedMotion
                 ? { opacity: 1, y: 0, scale: 1 }
@@ -1016,10 +1023,31 @@ dark:[text-shadow:0_0_25px_rgba(255,255,255,0.35)]
                 ))}
               </div>
 
+              <a
+                href={resumeUrl}
+                target="_blank"
+                rel="noreferrer"
+                aria-label="View my resume in a new tab"
+                className="group mt-2 inline-flex w-full items-center justify-center gap-3 rounded-full border border-sky-300/70 bg-white/85 px-5 py-3 text-sm font-semibold tracking-[0.02em] text-slate-900 shadow-[0_16px_36px_rgba(15,23,42,0.12)] ring-1 ring-white/70 backdrop-blur-xl transition-all duration-300 hover:-translate-y-0.5 hover:border-sky-400 hover:bg-white hover:shadow-[0_18px_42px_rgba(14,165,233,0.18)] dark:border-sky-400/30 dark:bg-slate-950/70 dark:text-sky-50 dark:ring-sky-200/10 dark:hover:border-sky-300 dark:hover:bg-slate-900 sm:w-auto"
+              >
+                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-sky-500 to-cyan-500 text-white shadow-[0_10px_24px_rgba(14,165,233,0.32)] transition-transform duration-300 group-hover:scale-105">
+                  <FaRegFilePdf className="text-base" />
+                </span>
+                <span className="flex flex-col items-start leading-tight">
+                  <span>View my resume</span>
+                  <span className="text-[11px] font-medium text-slate-500 dark:text-sky-100/60">
+                    Opens PDF in a new tab
+                  </span>
+                </span>
+                <span className="text-base text-slate-400 transition-transform duration-300 group-hover:translate-x-0.5 dark:text-sky-100/65">
+                  →
+                </span>
+              </a>
+
               <button
                 type="button"
                 onClick={() => scrollToSection("experience")}
-                className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-full border border-zinc-300/70 bg-white/80 px-5 py-2 text-sm font-semibold tracking-wide transition-all hover:bg-white dark:border-zinc-700 dark:bg-zinc-900/70 dark:hover:bg-zinc-800 sm:w-auto"
+                className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-full border border-zinc-300/70 bg-white/80 px-5 py-3 text-sm font-semibold tracking-wide transition-all hover:bg-white dark:border-zinc-700 dark:bg-zinc-900/70 dark:hover:bg-zinc-800 sm:w-auto"
               >
                 Explore my experience
                 <span>→</span>

@@ -56,12 +56,12 @@ const useAuth = () => {
 };
 
 const BlogSkeleton = () => (
-  <div className="flex h-[250px] w-full animate-pulse flex-col rounded-[1.35rem] border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-900 dark:bg-black sm:h-[270px] sm:p-5">
+  <div className="flex h-[250px] w-full animate-pulse flex-col rounded-[1.35rem] border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-900 dark:bg-black dark:shadow-[0_24px_60px_-40px_rgba(0,0,0,0.92)] sm:h-[270px] sm:p-5">
     <div className="mb-3 flex items-center justify-between gap-3 sm:mb-4">
       <div className="h-4 w-28 rounded-full bg-zinc-200 dark:bg-zinc-800" />
       <div className="h-7 w-7 rounded-full bg-zinc-200 dark:bg-zinc-800" />
     </div>
-    <div className="mb-2 h-5 w-4/5 rounded bg-zinc-300 dark:bg-zinc-900 sm:mb-3 sm:h-6" />
+    <div className="mb-2 h-5 w-4/5 rounded bg-zinc-300 dark:bg-zinc-800 sm:mb-3 sm:h-6" />
     <div className="mb-2 h-5 w-2/3 rounded bg-zinc-200 dark:bg-zinc-900 sm:h-6" />
     <div className="space-y-2.5 pt-2 sm:space-y-3">
       <div className="h-3 rounded bg-zinc-200 dark:bg-zinc-900" />
@@ -69,7 +69,7 @@ const BlogSkeleton = () => (
       <div className="h-3 w-5/6 rounded bg-zinc-200 dark:bg-zinc-900" />
       <div className="h-3 w-3/5 rounded bg-zinc-200 dark:bg-zinc-900" />
     </div>
-    <div className="mt-auto h-4 w-24 rounded bg-zinc-300 dark:bg-zinc-900" />
+    <div className="mt-auto h-4 w-24 rounded bg-zinc-300 dark:bg-zinc-800" />
   </div>
 );
 
@@ -479,30 +479,46 @@ const BlogList = () => {
   }, []);
 
   return (
-    <div className="relative min-h-screen overflow-hidden px-3 py-3 sm:px-5 sm:py-4 lg:px-8 lg:py-6">
+    <div className="relative min-h-screen overflow-hidden bg-[linear-gradient(180deg,rgba(252,253,255,0.98)_0%,rgba(243,248,255,0.98)_46%,rgba(248,251,255,0.99)_100%)] px-3 py-3 dark:bg-none dark:bg-black sm:px-5 sm:py-4 lg:px-8 lg:py-6">
       <div
-        className="absolute inset-0 -z-20 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: `url(${blogBackgroundImage})` }}
+        className="absolute inset-0 -z-30 bg-[radial-gradient(circle_at_top_left,rgba(186,230,253,0.82),transparent_34%),radial-gradient(circle_at_top_right,rgba(125,211,252,0.5),transparent_28%),radial-gradient(circle_at_50%_100%,rgba(224,242,254,0.85),transparent_40%),linear-gradient(180deg,rgba(255,255,255,0.98)_0%,rgba(239,246,255,0.97)_50%,rgba(248,250,252,0.99)_100%)] dark:bg-[linear-gradient(180deg,rgba(0,0,0,1)_0%,rgba(0,0,0,1)_100%)]"
         aria-hidden="true"
       />
       <div
-        className="absolute inset-0 -z-10 bg-[linear-gradient(180deg,rgba(248,250,252,0.88)_0%,rgba(237,243,248,0.9)_35%,rgba(248,250,252,0.92)_100%)] dark:bg-[linear-gradient(180deg,rgba(0,0,0,0.72)_0%,rgba(5,5,5,0.8)_52%,rgba(0,0,0,0.88)_100%)]"
+        className="absolute inset-0 -z-20 bg-cover bg-center bg-no-repeat transition-opacity duration-700"
+        style={{
+          backgroundImage: `url(${blogBackgroundImage})`,
+          opacity: isDark ? 0 : 0.08,
+          filter: isDark
+            ? "saturate(0.45) brightness(0.28)"
+            : "saturate(0.72) brightness(1.28)",
+        }}
         aria-hidden="true"
       />
+      <div
+        className="absolute inset-0 -z-10 bg-[linear-gradient(180deg,rgba(255,255,255,0.82)_0%,rgba(246,250,255,0.72)_36%,rgba(255,255,255,0.86)_100%)] dark:bg-[linear-gradient(180deg,rgba(0,0,0,1)_0%,rgba(0,0,0,1)_100%)]"
+        aria-hidden="true"
+      />
+      <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden" aria-hidden="true">
+        <div className="absolute -left-20 top-24 h-64 w-64 rounded-full bg-sky-200/70 blur-3xl dark:bg-transparent" />
+        <div className="absolute right-[-4rem] top-20 h-72 w-72 rounded-full bg-cyan-100/80 blur-3xl dark:bg-transparent" />
+        <div className="absolute bottom-0 left-1/3 h-64 w-64 rounded-full bg-blue-100/70 blur-3xl dark:bg-transparent" />
+      </div>
       <PushNotificationButton />
 
       <div className="relative z-10 mx-auto flex w-full max-w-7xl flex-col gap-3 sm:gap-4">
-        <section className="overflow-hidden rounded-[1.25rem] border border-white/70 bg-white/85 px-4 py-4 shadow-[0_24px_70px_-42px_rgba(15,23,42,0.24)] backdrop-blur-sm dark:border-zinc-900 dark:bg-black dark:shadow-[0_24px_70px_-42px_rgba(0,0,0,0.95)] sm:rounded-[1.5rem] sm:px-5 sm:py-4 lg:px-6 lg:py-5">
-          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-sky-300/60 to-transparent dark:via-sky-300/35" />
+        <section className="relative overflow-hidden rounded-[1.25rem] border border-white/85 bg-[linear-gradient(135deg,rgba(255,255,255,0.95),rgba(247,251,255,0.94),rgba(235,246,255,0.94))] px-4 py-4 shadow-[0_32px_80px_-46px_rgba(15,23,42,0.22)] ring-1 ring-sky-100/70 backdrop-blur-md dark:border-zinc-900 dark:bg-[linear-gradient(145deg,rgba(0,0,0,0.98),rgba(0,0,0,1),rgba(0,0,0,1))] dark:ring-white/5 dark:shadow-[0_32px_80px_-44px_rgba(0,0,0,0.92)] sm:rounded-[1.5rem] sm:px-5 sm:py-4 lg:px-6 lg:py-5">
+          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-sky-300/60 to-transparent dark:via-white/12" />
+          <div className="absolute inset-y-0 right-0 w-1/3 bg-[radial-gradient(circle_at_top_right,rgba(125,211,252,0.18),transparent_55%)] opacity-0 dark:opacity-0" />
           <div className="relative">
             <div className="max-w-3xl">
-              <span className="inline-flex items-center rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-700 dark:border-sky-400/40 dark:bg-sky-400/15 dark:text-sky-100">
+              <span className="inline-flex items-center rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100">
                 Editorial Notes
               </span>
               <h1 className="mt-2 max-w-2xl text-base font-semibold tracking-tight text-zinc-950 dark:text-zinc-50 sm:text-[1.35rem] lg:text-[1.65rem]">
                 Reinforcement Learning Blogs, optimized for what is trending now.
               </h1>
-              <p className="mt-1.5 max-w-2xl text-sm leading-5 text-zinc-600 dark:text-zinc-200">
+              <p className="mt-1.5 max-w-2xl text-sm leading-5 text-zinc-600 dark:text-zinc-300">
                 Trending recommendations are powered by Thompson Sampling, a reinforcement learning strategy that continuously learns from blog engagement.
               </p>
             </div>
@@ -521,7 +537,7 @@ const BlogList = () => {
           )}
         </div>
 
-        <section className="rounded-[1.2rem] border border-white/70 bg-white/85 p-3 shadow-[0_16px_40px_-32px_rgba(15,23,42,0.2)] backdrop-blur-sm dark:border-zinc-900 dark:bg-black dark:shadow-[0_16px_40px_-32px_rgba(0,0,0,0.9)] sm:rounded-[1.35rem] sm:p-3.5">
+        <section className="rounded-[1.2rem] border border-white/85 bg-[linear-gradient(135deg,rgba(255,255,255,0.93),rgba(246,250,255,0.92),rgba(239,247,255,0.94))] p-3 shadow-[0_22px_55px_-38px_rgba(15,23,42,0.18)] ring-1 ring-sky-100/70 backdrop-blur-md dark:border-zinc-900 dark:bg-[linear-gradient(145deg,rgba(0,0,0,0.98),rgba(0,0,0,1),rgba(0,0,0,1))] dark:ring-white/5 dark:shadow-[0_28px_70px_-44px_rgba(0,0,0,0.88)] sm:rounded-[1.35rem] sm:p-3.5">
           <div className="flex flex-col gap-2.5 lg:flex-row lg:items-end lg:justify-between">
             <div className="w-full lg:max-w-xl">
               <input
@@ -530,7 +546,7 @@ const BlogList = () => {
                 placeholder="Search by title..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full rounded-xl border border-zinc-300/90 bg-white/95 px-4 py-2.5 text-sm text-zinc-900 outline-none transition focus:border-sky-600 focus:ring-4 focus:ring-sky-100 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:focus:border-sky-400 dark:focus:ring-sky-500/20"
+                className="w-full rounded-xl border border-zinc-300/90 bg-white/95 px-4 py-2.5 text-sm text-zinc-900 outline-none transition focus:border-sky-600 focus:ring-4 focus:ring-sky-100 dark:border-zinc-800 dark:bg-black dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:focus:border-zinc-700 dark:focus:ring-white/10"
               />
             </div>
 
@@ -541,7 +557,7 @@ const BlogList = () => {
                     id="blog-sort"
                     value={filter}
                     onChange={(e) => setFilter(e.target.value)}
-                    className="min-h-[42px] w-full appearance-none rounded-xl border border-zinc-300/90 bg-white/95 px-4 py-2.5 pr-11 text-sm font-medium text-zinc-800 outline-none transition focus:border-sky-600 focus:ring-4 focus:ring-sky-100 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:focus:border-sky-400 dark:focus:ring-sky-500/20"
+                    className="min-h-[42px] w-full appearance-none rounded-xl border border-zinc-300/90 bg-white/95 px-4 py-2.5 pr-11 text-sm font-medium text-zinc-800 outline-none transition focus:border-sky-600 focus:ring-4 focus:ring-sky-100 dark:border-zinc-800 dark:bg-black dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:focus:border-zinc-700 dark:focus:ring-white/10"
                   >
                     <option value="latest">Latest</option>
                     <option value="oldest">Oldest</option>
@@ -553,7 +569,7 @@ const BlogList = () => {
               </div>
 
               <div className="flex items-end">
-                <div className="w-full rounded-xl border border-zinc-200/80 bg-zinc-50/90 px-3 py-2.5 text-xs leading-5 text-zinc-600 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-200 sm:px-3.5 sm:text-sm">
+                <div className="w-full rounded-xl border border-zinc-200/80 bg-zinc-50/90 px-3 py-2.5 text-xs leading-5 text-zinc-600 dark:border-zinc-800 dark:bg-black dark:text-zinc-300 sm:px-3.5 sm:text-sm">
                   Infinite scroll enabled.
                 </div>
               </div>
@@ -562,7 +578,7 @@ const BlogList = () => {
         </section>
 
         {filteredBlogs.length === 0 && !loading ? (
-          <div className="rounded-[1.75rem] border border-dashed border-zinc-300 bg-white/85 px-6 py-16 text-center shadow-sm backdrop-blur-sm dark:border-zinc-800 dark:bg-black">
+          <div className="rounded-[1.75rem] border border-dashed border-sky-200/80 bg-[linear-gradient(135deg,rgba(255,255,255,0.9),rgba(245,250,255,0.92))] px-6 py-16 text-center shadow-[0_20px_50px_-40px_rgba(15,23,42,0.2)] ring-1 ring-sky-100/70 backdrop-blur-sm dark:border-zinc-800 dark:bg-black dark:ring-white/5">
             <p className="text-lg font-semibold text-zinc-700 dark:text-zinc-100">
               No blogs available.
             </p>
@@ -587,7 +603,7 @@ const BlogList = () => {
               return (
                 <article
                   key={blog._id}
-                  className="group flex min-h-[244px] w-full cursor-pointer flex-col rounded-[1.35rem] border border-white/80 bg-white/90 p-4 shadow-[0_18px_40px_-34px_rgba(15,23,42,0.18)] backdrop-blur-sm transform-gpu transition-[transform,box-shadow,border-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1.5 hover:scale-[1.01] hover:border-sky-100 hover:shadow-[0_28px_60px_-36px_rgba(15,23,42,0.26)] focus-visible:-translate-y-1 focus-visible:scale-[1.005] dark:border-zinc-800 dark:bg-[linear-gradient(180deg,rgba(0,0,0,1)_0%,rgba(10,10,10,1)_100%)] dark:hover:border-zinc-700 dark:shadow-[0_20px_46px_-34px_rgba(0,0,0,0.95)] dark:hover:shadow-[0_30px_68px_-36px_rgba(0,0,0,0.98)] sm:min-h-[270px] sm:rounded-[1.5rem] sm:p-5 motion-reduce:transform-none motion-reduce:transition-none"
+                  className="group relative isolate flex min-h-[244px] w-full cursor-pointer flex-col overflow-hidden rounded-[1.35rem] border border-white/90 bg-[linear-gradient(180deg,rgba(255,255,255,0.97),rgba(248,252,255,0.95),rgba(240,248,255,0.94))] p-4 shadow-[0_24px_60px_-40px_rgba(15,23,42,0.18)] ring-1 ring-sky-100/65 backdrop-blur-sm transform-gpu transition-[transform,box-shadow,border-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1.5 hover:scale-[1.01] hover:border-sky-200/90 hover:shadow-[0_30px_72px_-38px_rgba(56,189,248,0.2)] focus-visible:-translate-y-1 focus-visible:scale-[1.005] dark:border-zinc-800 dark:bg-[linear-gradient(180deg,rgba(0,0,0,1)_0%,rgba(0,0,0,1)_100%)] dark:ring-white/5 dark:hover:border-zinc-700 dark:shadow-[0_24px_64px_-40px_rgba(0,0,0,0.92)] dark:hover:shadow-[0_30px_72px_-40px_rgba(0,0,0,0.98)] sm:min-h-[270px] sm:rounded-[1.5rem] sm:p-5 motion-reduce:transform-none motion-reduce:transition-none"
                   onClick={() => {
                     trackClick(blog._id);
                     handleBlogClick(blog._id);
@@ -602,14 +618,19 @@ const BlogList = () => {
                     }
                   }}
                 >
+                  <div className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100 dark:opacity-100">
+                    <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
+                    <div className="absolute right-[-2.5rem] top-[-3rem] h-24 w-24 rounded-full bg-transparent blur-3xl" />
+                    <div className="absolute left-[-2rem] bottom-[-3rem] h-24 w-24 rounded-full bg-transparent blur-3xl" />
+                  </div>
                   <div className="mb-3 flex items-start justify-between gap-3 sm:mb-4">
                     <div className="flex flex-wrap items-center gap-2">
-                      <p className="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-600 dark:bg-zinc-900 dark:text-zinc-100">
+                      <p className="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-600 dark:border dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100">
                         Blog
                       </p>
                       {isTrending && (
                         <span
-                          className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-3 py-1 text-[11px] font-semibold text-amber-800 dark:bg-amber-400/15 dark:text-amber-200"
+                          className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-3 py-1 text-[11px] font-semibold text-amber-800 dark:border dark:border-amber-900/60 dark:bg-amber-950 dark:text-amber-200"
                           title="This post is currently trending"
                           aria-label="Trending"
                         >
@@ -624,7 +645,7 @@ const BlogList = () => {
                     {isAuthenticated && username === "amritanshu99" && (
                       <button
                         aria-label={`Delete blog titled ${blog.title}`}
-                        className="rounded-full border border-zinc-200 bg-white/90 p-1.5 text-red-500 transition hover:border-red-200 hover:bg-red-50 hover:text-red-700 dark:border-zinc-800 dark:bg-black dark:text-red-300 dark:hover:border-red-400/40 dark:hover:bg-red-500/15 dark:hover:text-red-200"
+                        className="rounded-full border border-zinc-200 bg-white/90 p-1.5 text-red-500 transition hover:border-red-200 hover:bg-red-50 hover:text-red-700 dark:border-zinc-800 dark:bg-black dark:text-red-300 dark:hover:border-zinc-700 dark:hover:bg-zinc-950 dark:hover:text-red-200"
                         onClick={(e) => {
                           e.stopPropagation();
                           handleDelete(blog._id);
@@ -654,7 +675,7 @@ const BlogList = () => {
                       {previewText}
                     </p>
 
-                    <span className="mt-auto inline-flex items-center pt-4 text-sm font-semibold text-sky-700 transition group-hover:translate-x-1 dark:text-sky-300 sm:pt-5">
+                    <span className="mt-auto inline-flex items-center pt-4 text-sm font-semibold text-sky-700 transition group-hover:translate-x-1 dark:text-zinc-100 sm:pt-5">
                       Read article
                     </span>
                   </div>

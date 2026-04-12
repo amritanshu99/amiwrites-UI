@@ -24,6 +24,18 @@ const companyLinks = [
   { label: "Portfolio", href: "/" },
 ];
 
+const panelSurfaceClass =
+  "rounded-2xl border border-white/70 bg-white/70 p-2 shadow-lg shadow-slate-300/20 backdrop-blur-md dark:border-zinc-800/80 dark:bg-[linear-gradient(155deg,rgba(20,20,20,0.98),rgba(6,6,6,0.98),rgba(0,0,0,1))] dark:shadow-[0_28px_70px_-42px_rgba(0,0,0,0.96)] sm:p-2.5";
+
+const navSurfaceClass =
+  "rounded-2xl border border-white/75 bg-white/65 p-2 shadow-md shadow-slate-300/20 backdrop-blur-md dark:border-zinc-800/75 dark:bg-[linear-gradient(160deg,rgba(18,18,18,0.98),rgba(5,5,5,0.98),rgba(0,0,0,1))] dark:shadow-[0_24px_62px_-42px_rgba(0,0,0,0.94)] sm:p-2.5";
+
+const textLinkClass =
+  "inline-flex rounded-md px-2 py-0.5 text-slate-700 transition-colors hover:bg-cyan-50/80 hover:text-cyan-700 dark:text-zinc-200 dark:hover:bg-white/5 dark:hover:text-white";
+
+const legalLinkClass =
+  "inline-flex w-full items-center rounded-lg border border-slate-200/90 bg-white/88 px-2 py-0.5 text-slate-700 shadow-sm shadow-slate-300/40 backdrop-blur-md transition-all hover:border-cyan-500/70 hover:bg-cyan-50/90 hover:text-cyan-800 hover:shadow-cyan-200/40 dark:border-zinc-800/80 dark:bg-[linear-gradient(145deg,rgba(15,15,15,0.98),rgba(2,2,2,1))] dark:text-zinc-100 dark:shadow-none dark:hover:border-zinc-700 dark:hover:bg-[linear-gradient(145deg,rgba(28,28,28,0.98),rgba(6,6,6,1))] dark:hover:text-white sm:px-2.5 sm:py-1";
+
 const Footer = () => {
   const scrollToTop = useCallback(() => {
     const appShell = document.querySelector(".h-screen.overflow-y-scroll");
@@ -41,15 +53,17 @@ const Footer = () => {
   }, [scrollToTop]);
 
   return (
-    <footer className="relative mt-3 w-full overflow-hidden border-t border-sky-200/80 bg-[radial-gradient(circle_at_12%_-10%,rgba(96,165,250,0.30),transparent_46%),radial-gradient(circle_at_88%_4%,rgba(56,189,248,0.28),transparent_44%),linear-gradient(135deg,rgba(248,252,255,0.99),rgba(236,246,255,0.98),rgba(224,242,254,0.96))] text-slate-700 shadow-[0_-12px_40px_-30px_rgba(15,23,42,0.28)] backdrop-blur-xl dark:border-zinc-800/90 dark:bg-[radial-gradient(circle_at_14%_-10%,rgba(15,23,42,0.35),transparent_45%),radial-gradient(circle_at_90%_8%,rgba(8,47,73,0.32),transparent_44%),linear-gradient(145deg,rgba(0,0,0,0.99),rgba(2,2,2,0.98),rgba(8,8,8,0.98))] dark:text-slate-300 dark:shadow-[0_-16px_48px_-30px_rgba(2,132,199,0.22)]">
-      <div className="pointer-events-none absolute inset-0 opacity-75 dark:opacity-95">
-        <div className="absolute -left-24 top-6 h-56 w-56 rounded-full bg-sky-300/30 blur-3xl dark:bg-slate-900/45" />
-        <div className="absolute right-[-4.5rem] top-20 h-48 w-48 rounded-full bg-cyan-300/25 blur-3xl dark:bg-sky-950/40" />
-        <div className="absolute -bottom-24 left-1/3 h-56 w-56 rounded-full bg-blue-300/20 blur-3xl dark:bg-black/55" />
+    <footer className="relative w-full overflow-hidden border-t border-transparent bg-[radial-gradient(circle_at_12%_-10%,rgba(96,165,250,0.30),transparent_46%),radial-gradient(circle_at_88%_4%,rgba(56,189,248,0.28),transparent_44%),linear-gradient(135deg,rgba(248,252,255,0.99),rgba(236,246,255,0.98),rgba(224,242,254,0.96))] text-slate-700 shadow-[0_-10px_30px_-28px_rgba(15,23,42,0.14)] backdrop-blur-xl dark:bg-[radial-gradient(circle_at_50%_-30%,rgba(255,255,255,0.08),transparent_34%),radial-gradient(circle_at_12%_12%,rgba(39,39,42,0.32),transparent_30%),radial-gradient(circle_at_88%_0%,rgba(24,24,27,0.26),transparent_28%),linear-gradient(180deg,rgba(18,18,18,0.98)_0%,rgba(5,5,5,0.99)_42%,rgba(0,0,0,1)_100%)] dark:text-zinc-300 dark:shadow-[0_-22px_64px_-38px_rgba(0,0,0,0.98)]">
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-sky-300/45 to-transparent dark:via-white/12" />
+      <div className="absolute inset-x-0 top-0 h-8 bg-gradient-to-b from-white/70 to-transparent dark:from-white/[0.06]" />
+      <div className="pointer-events-none absolute inset-0 opacity-75 dark:opacity-100">
+        <div className="absolute -left-24 top-6 h-56 w-56 rounded-full bg-sky-300/30 blur-3xl dark:bg-transparent" />
+        <div className="absolute right-[-4.5rem] top-20 h-48 w-48 rounded-full bg-cyan-300/25 blur-3xl dark:bg-zinc-900/40" />
+        <div className="absolute -bottom-24 left-1/3 h-56 w-56 rounded-full bg-blue-300/20 blur-3xl dark:bg-zinc-950/60" />
       </div>
       <div className="relative w-full px-3 py-1.5 sm:px-4 sm:py-2 lg:px-5">
         <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2 sm:gap-2 lg:grid-cols-12 lg:gap-2.5">
-          <section className="rounded-2xl border border-white/70 bg-white/70 p-2 shadow-lg shadow-slate-300/20 backdrop-blur-md dark:border-slate-700/60 dark:bg-slate-900/55 dark:shadow-cyan-950/10 sm:p-2.5 lg:col-span-5">
+          <section className={`${panelSurfaceClass} lg:col-span-5`}>
             <div className="flex items-center gap-2">
               <img
                 src="/favicon.ico"
@@ -62,28 +76,21 @@ const Footer = () => {
               </h2>
             </div>
             <p className="mt-1 text-[11px] leading-4 text-slate-600 dark:text-slate-400 sm:text-xs sm:leading-[1.05rem]">
-              Amiverse is the digital space of Amritanshu Mishra—a place where technology,
+              Amiverse is the digital space of Amritanshu Mishra - a place where technology,
               innovation, and continuous growth come together. It features his projects, ideas, and
               practical solutions, reflecting his journey as a builder, learner, and creator, with a
               vision to create meaningful impact through thoughtful and forward-looking work.
             </p>
           </section>
 
-          <nav
-            aria-label="Company links"
-            className="rounded-2xl border border-white/75 bg-white/65 p-2 shadow-md shadow-slate-300/20 backdrop-blur-md dark:border-slate-700/60 dark:bg-slate-900/50 sm:p-2.5 lg:col-span-2"
-          >
+          <nav aria-label="Company links" className={`${navSurfaceClass} lg:col-span-2`}>
             <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-900 dark:text-white">
               Company
             </h3>
             <ul className="mt-1 grid grid-cols-2 gap-1 text-[11px] sm:grid-cols-1 sm:text-xs">
               {companyLinks.map((link) => (
                 <li key={link.label}>
-                  <Link
-                    className="inline-flex rounded-md px-2 py-0.5 text-slate-700 transition-colors hover:bg-cyan-50/80 hover:text-cyan-700 dark:text-slate-200 dark:hover:bg-cyan-950/40 dark:hover:text-cyan-200"
-                    to={link.href}
-                    onClick={scrollToTop}
-                  >
+                  <Link className={textLinkClass} to={link.href} onClick={scrollToTop}>
                     {link.label}
                   </Link>
                 </li>
@@ -91,7 +98,7 @@ const Footer = () => {
               <li>
                 <button
                   type="button"
-                  className="inline-flex rounded-md px-2 py-0.5 text-slate-700 transition-colors hover:bg-cyan-50/80 hover:text-cyan-700 dark:text-slate-200 dark:hover:bg-cyan-950/40 dark:hover:text-cyan-200"
+                  className={textLinkClass}
                   onClick={handleContactClick}
                 >
                   Contact
@@ -100,21 +107,14 @@ const Footer = () => {
             </ul>
           </nav>
 
-          <nav
-            aria-label="Product links"
-            className="rounded-2xl border border-white/75 bg-white/65 p-2 shadow-md shadow-slate-300/20 backdrop-blur-md dark:border-slate-700/60 dark:bg-slate-900/50 sm:p-2.5 lg:col-span-2"
-          >
+          <nav aria-label="Product links" className={`${navSurfaceClass} lg:col-span-2`}>
             <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-900 dark:text-white">
               Product
             </h3>
             <ul className="mt-1 grid grid-cols-2 gap-1 text-[11px] sm:grid-cols-1 sm:text-xs">
               {productLinks.map((link) => (
                 <li key={link.label}>
-                  <Link
-                    className="inline-flex rounded-md px-2 py-0.5 text-slate-700 transition-colors hover:bg-cyan-50/80 hover:text-cyan-700 dark:text-slate-200 dark:hover:bg-cyan-950/40 dark:hover:text-cyan-200"
-                    to={link.href}
-                    onClick={scrollToTop}
-                  >
+                  <Link className={textLinkClass} to={link.href} onClick={scrollToTop}>
                     {link.label}
                   </Link>
                 </li>
@@ -122,21 +122,14 @@ const Footer = () => {
             </ul>
           </nav>
 
-          <nav
-            aria-label="Legal links"
-            className="rounded-2xl border border-white/75 bg-white/65 p-2 shadow-md shadow-slate-300/20 backdrop-blur-md dark:border-slate-700/60 dark:bg-slate-900/50 sm:p-2.5 lg:col-span-3"
-          >
+          <nav aria-label="Legal links" className={`${navSurfaceClass} lg:col-span-3`}>
             <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-900 dark:text-white">
               Legal
             </h3>
             <ul className="mt-1 grid grid-cols-1 gap-1 text-[11px] sm:grid-cols-2 sm:text-xs lg:grid-cols-1">
               {legalLinks.map((link) => (
                 <li key={link.label}>
-                  <Link
-                    className="inline-flex w-full items-center rounded-lg border border-slate-200/90 bg-white/88 px-2 py-0.5 text-slate-700 shadow-sm shadow-slate-300/40 backdrop-blur-md transition-all hover:border-cyan-500/70 hover:bg-cyan-50/90 hover:text-cyan-800 hover:shadow-cyan-200/40 dark:border-slate-700/90 dark:bg-slate-900/85 dark:text-slate-100 dark:shadow-none dark:hover:border-cyan-400/80 dark:hover:bg-black dark:hover:text-cyan-200 sm:px-2.5 sm:py-1"
-                    to={link.href}
-                    onClick={scrollToTop}
-                  >
+                  <Link className={legalLinkClass} to={link.href} onClick={scrollToTop}>
                     {link.label}
                   </Link>
                 </li>
@@ -145,8 +138,8 @@ const Footer = () => {
           </nav>
         </div>
 
-        <div className="mt-1.5 flex flex-col gap-0.5 border-t border-slate-300/70 pt-1 text-[10px] text-slate-500 dark:border-slate-700/70 dark:text-slate-400 sm:mt-2 sm:flex-row sm:items-center sm:justify-between sm:gap-2 sm:pt-1.5 sm:text-[11px]">
-          <p>© {new Date().getFullYear()} Amiverse. All rights reserved.</p>
+        <div className="mt-1.5 flex flex-col gap-0.5 border-t border-slate-300/70 pt-1 text-[10px] text-slate-500 dark:border-slate-800/80 dark:text-slate-400 sm:mt-2 sm:flex-row sm:items-center sm:justify-between sm:gap-2 sm:pt-1.5 sm:text-[11px]">
+          <p>Copyright {new Date().getFullYear()} Amiverse. All rights reserved.</p>
           <p className="text-slate-500 dark:text-slate-400">Made with love by Amritanshu Mishra.</p>
         </div>
       </div>
