@@ -48,6 +48,7 @@ const sideMarkerOffsets = ["16%", "28%", "40%", "52%", "64%", "76%"];
 const getPerformanceProfile = () => {
   if (typeof window === "undefined") {
     return {
+      isTouchViewport: false,
       prefersReducedMotion: false,
       shouldOptimize: false,
     };
@@ -61,6 +62,7 @@ const getPerformanceProfile = () => {
   ).matches;
   const isCoarsePointer = window.matchMedia("(hover: none), (pointer: coarse)")
     .matches;
+  const isTouchViewport = isCompactViewport && isCoarsePointer;
   const connection =
     navigator.connection || navigator.mozConnection || navigator.webkitConnection;
   const saveData = Boolean(connection?.saveData);
@@ -70,11 +72,12 @@ const getPerformanceProfile = () => {
 
   return {
     prefersReducedMotion,
+    isTouchViewport,
     shouldOptimize:
       prefersReducedMotion ||
       saveData ||
       isLowPowerDevice ||
-      (isCompactViewport && isCoarsePointer),
+      isTouchViewport,
   };
 };
 
@@ -104,22 +107,29 @@ const InitialLoader = ({ mode = "showcase" }) => {
     getPerformanceProfile,
   );
 
-  const { prefersReducedMotion, shouldOptimize } = performanceProfile;
-  const animatedDust = useMemo(
-    () => (shouldOptimize ? floatingDust.filter((_, index) => index % 3 === 0) : floatingDust),
-    [shouldOptimize],
-  );
+  const { prefersReducedMotion, shouldOptimize, isTouchViewport } = performanceProfile;
+  const animatedDust = useMemo(() => (shouldOptimize ? [] : floatingDust), [shouldOptimize]);
   const visiblePills = shouldOptimize ? accentPills.slice(0, 2) : accentPills;
   const shouldCycleStatus = !shouldOptimize && !prefersReducedMotion;
   const currentStatus = shouldCycleStatus
     ? statusLines[activeStatusIndex]
     : statusLines[0];
+  const showAnimatedStatusDots = !shouldOptimize;
   const badgeClass = shouldOptimize
     ? "rounded-full border border-white/[0.08] bg-black/82 px-4 py-2 text-[0.48rem] uppercase tracking-[0.36em] text-white/40 shadow-[0_8px_24px_rgba(0,0,0,0.5)] sm:text-[0.52rem]"
     : "rounded-full border border-white/[0.08] bg-black/70 px-4 py-2 text-[0.48rem] uppercase tracking-[0.42em] text-white/38 shadow-[0_10px_30px_rgba(0,0,0,0.55)] backdrop-blur-md sm:text-[0.52rem]";
   const shellClass = shouldOptimize
     ? "relative mx-auto w-full max-w-5xl overflow-hidden rounded-[2rem] border border-white/[0.06] bg-[linear-gradient(180deg,rgba(10,10,10,0.9),rgba(0,0,0,0.86)_45%,rgba(4,4,4,0.94)_100%)] px-5 py-9 text-center shadow-[0_24px_90px_rgba(0,0,0,0.82)] animate-[openingReveal_700ms_cubic-bezier(.22,1,.36,1)_forwards] sm:px-9 sm:py-11 md:px-12 md:py-14"
     : "relative mx-auto w-full max-w-5xl overflow-hidden rounded-[2.2rem] border border-white/[0.06] bg-[linear-gradient(180deg,rgba(10,10,10,0.86),rgba(0,0,0,0.8)_42%,rgba(4,4,4,0.92)_100%)] px-6 py-10 text-center shadow-[0_42px_180px_rgba(0,0,0,0.92)] backdrop-blur-[10px] animate-[openingReveal_1000ms_cubic-bezier(.22,1,.36,1)_forwards] sm:px-10 sm:py-12 md:px-14 md:py-14";
+  const haloClass = shouldOptimize
+    ? "absolute left-1/2 top-1/2 h-[84vw] w-[84vw] max-h-[420px] max-w-[420px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/[0.04] bg-[radial-gradient(circle,rgba(255,255,255,0.06)_0%,rgba(255,255,255,0.02)_30%,rgba(0,0,0,0)_74%)] opacity-60"
+    : "absolute left-1/2 top-[49%] h-[68vh] w-[68vh] max-w-[88vw] -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/[0.05] bg-[radial-gradient(circle,rgba(255,255,255,0.08)_0%,rgba(255,255,255,0.03)_24%,rgba(0,0,0,0)_68%)] blur-3xl animate-[haloPulse_7.5s_ease-in-out_infinite]";
+  const centerGlowClass = shouldOptimize
+    ? "absolute inset-0 bg-[radial-gradient(circle_at_50%_54%,rgba(255,255,255,0.04),rgba(0,0,0,0)_24%)] opacity-28"
+    : "absolute inset-0 bg-[radial-gradient(circle_at_50%_54%,rgba(255,255,255,0.08),rgba(0,0,0,0)_26%)] animate-[centerGlow_5.8s_ease-in-out_infinite]";
+  const frameClass = isTouchViewport
+    ? "relative z-10 flex h-full min-h-full items-center justify-center px-4 py-6 sm:px-8 sm:py-8"
+    : "relative z-10 flex h-full min-h-full items-center justify-center px-4 py-8 sm:px-8";
 
   useEffect(() => {
     if (typeof window === "undefined") return undefined;
@@ -208,18 +218,12 @@ const InitialLoader = ({ mode = "showcase" }) => {
 
       <div
         {...(!shouldOptimize ? { "data-loader-animate": true } : {})}
-        className={`absolute left-1/2 top-[49%] h-[68vh] w-[68vh] max-w-[88vw] -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/[0.05] bg-[radial-gradient(circle,rgba(255,255,255,0.08)_0%,rgba(255,255,255,0.03)_24%,rgba(0,0,0,0)_68%)] ${
-          shouldOptimize
-            ? "opacity-75 blur-2xl"
-            : "blur-3xl animate-[haloPulse_7.5s_ease-in-out_infinite]"
-        }`}
+        className={haloClass}
       />
 
       <div
         {...(!shouldOptimize ? { "data-loader-animate": true } : {})}
-        className={`absolute inset-0 bg-[radial-gradient(circle_at_50%_54%,rgba(255,255,255,0.08),rgba(0,0,0,0)_26%)] ${
-          shouldOptimize ? "opacity-40" : "animate-[centerGlow_5.8s_ease-in-out_infinite]"
-        }`}
+        className={centerGlowClass}
       />
 
       {!shouldOptimize && (
@@ -286,7 +290,7 @@ const InitialLoader = ({ mode = "showcase" }) => {
         {topRightLabel}
       </div>
 
-      <div className="relative z-10 flex min-h-screen items-center justify-center px-4 py-8 sm:px-8">
+      <div className={frameClass}>
         <div
           data-loader-animate
           className={shellClass}
@@ -419,16 +423,28 @@ const InitialLoader = ({ mode = "showcase" }) => {
 
               <div className="flex items-center justify-center gap-2.5 sm:justify-end">
                 <span
-                  data-loader-animate
-                  className="h-1.5 w-1.5 rounded-full bg-white/75 animate-[dotPulse_1.15s_ease-in-out_infinite]"
+                  {...(showAnimatedStatusDots ? { "data-loader-animate": true } : {})}
+                  className={`h-1.5 w-1.5 rounded-full ${
+                    showAnimatedStatusDots
+                      ? "bg-white/75 animate-[dotPulse_1.15s_ease-in-out_infinite]"
+                      : "bg-white/40"
+                  }`}
                 />
                 <span
-                  data-loader-animate
-                  className="h-1.5 w-1.5 rounded-full bg-white/52 animate-[dotPulse_1.15s_ease-in-out_180ms_infinite]"
+                  {...(showAnimatedStatusDots ? { "data-loader-animate": true } : {})}
+                  className={`h-1.5 w-1.5 rounded-full ${
+                    showAnimatedStatusDots
+                      ? "bg-white/52 animate-[dotPulse_1.15s_ease-in-out_180ms_infinite]"
+                      : "bg-white/28"
+                  }`}
                 />
                 <span
-                  data-loader-animate
-                  className="h-1.5 w-1.5 rounded-full bg-white/34 animate-[dotPulse_1.15s_ease-in-out_360ms_infinite]"
+                  {...(showAnimatedStatusDots ? { "data-loader-animate": true } : {})}
+                  className={`h-1.5 w-1.5 rounded-full ${
+                    showAnimatedStatusDots
+                      ? "bg-white/34 animate-[dotPulse_1.15s_ease-in-out_360ms_infinite]"
+                      : "bg-white/18"
+                  }`}
                 />
               </div>
             </div>
