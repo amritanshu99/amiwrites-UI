@@ -223,7 +223,7 @@ const sectionMeta = [
   { id: "experience", label: "Experience" },
   { id: "education", label: "Education" },
 ];
-const MIN_LOADER_DURATION_MS = 2500;
+const MIN_LOADER_DURATION_MS = 2000;
 const resumeUrl =
   "https://amiwrites-backend-app-2lp5.onrender.com/images/Resume.pdf";
 
