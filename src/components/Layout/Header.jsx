@@ -42,14 +42,11 @@ export default function Header({ setLoading }) {
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
 
-  // Theme: localStorage + system preference
+  // Theme: localStorage with light mode as the default
   const [darkMode, setDarkMode] = useState(() => {
     const saved = localStorage.getItem("theme");
     if (saved) return saved === "dark";
-    return (
-      window.matchMedia &&
-      window.matchMedia("(prefers-color-scheme: dark)").matches
-    );
+    return false;
   });
 
   const location = useLocation();
