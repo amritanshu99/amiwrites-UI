@@ -99,6 +99,30 @@ const getSectionTop = (element, scrollParent) => {
   return rect.top - parentRect.top + scrollParent.scrollTop;
 };
 
+const getPortfolioScrollParent = (element) => {
+  const explicitScrollParent = document.querySelector(
+    ".h-screen.overflow-y-scroll",
+  );
+
+  return explicitScrollParent || getScrollParent(element);
+};
+
+const getScrollMetrics = (scrollParent) => {
+  if (scrollParent === window) {
+    return {
+      scrollTop: window.scrollY,
+      clientHeight: window.innerHeight,
+      scrollHeight: document.documentElement.scrollHeight,
+    };
+  }
+
+  return {
+    scrollTop: scrollParent.scrollTop,
+    clientHeight: scrollParent.clientHeight,
+    scrollHeight: scrollParent.scrollHeight,
+  };
+};
+
 /* ================= TOOLTIP ================= */
 const Tooltip = React.memo(({ children, content }) => {
   const [show, setShow] = useState(false);
@@ -148,13 +172,15 @@ const AnimatedBanner = React.memo(() => {
       <img
         src="/banner.png"
         alt="Amritanshu Mishra Banner"
-        width="1920"
-        height="640"
+        width="1584"
+        height="396"
         className="
             w-full
-            h-auto
+            h-[clamp(140px,18vw,260px)]
             object-cover
-            shadow-xl
+            object-[center_58%]
+            shadow-[0_18px_46px_rgba(15,23,42,0.16)]
+            sm:h-[clamp(160px,19vw,280px)]
           "
         loading="lazy"
         decoding="async"
@@ -245,6 +271,9 @@ export default function PortfolioDetails() {
   const bottomCtaRef = useRef(null);
   const sectionRefs = useRef({});
   const hasScrolledRef = useRef(false);
+  const pendingScrollSectionRef = useRef(null);
+  const pendingScrollTargetRef = useRef(null);
+  const pendingScrollTimerRef = useRef(null);
 
   const heroRef = useRef(null);
   const portfolioBackgroundImage = `${process.env.PUBLIC_URL}${
@@ -260,22 +289,32 @@ export default function PortfolioDetails() {
 
     if (!targetSection) return;
 
-    const explicitScrollParent = document.querySelector(
-      ".h-screen.overflow-y-scroll",
-    );
-    const scrollParent = explicitScrollParent || getScrollParent(pageRef.current);
+    const scrollParent = getPortfolioScrollParent(pageRef.current);
+    const { clientHeight, scrollHeight } = getScrollMetrics(scrollParent);
     const targetTop = getSectionTop(targetSection, scrollParent);
-    const sectionOffset = 96;
-    const scrollTarget = Math.max(targetTop - sectionOffset, 0);
+    const sectionOffset = Math.min(112, Math.max(72, clientHeight * 0.1));
+    const maxScrollTop = Math.max(scrollHeight - clientHeight, 0);
+    const scrollTarget = Math.min(
+      Math.max(targetTop - sectionOffset, 0),
+      maxScrollTop,
+    );
 
+    pendingScrollSectionRef.current = sectionId;
+    pendingScrollTargetRef.current = scrollTarget;
+    window.clearTimeout(pendingScrollTimerRef.current);
     setActiveSection(sectionId);
+    setIsBottomCtaExpanded(false);
 
     if (scrollParent === window) {
       window.scrollTo({ top: scrollTarget, behavior: "smooth" });
-      return;
+    } else {
+      scrollParent.scrollTo({ top: scrollTarget, behavior: "smooth" });
     }
 
-    scrollParent.scrollTo({ top: scrollTarget, behavior: "smooth" });
+    pendingScrollTimerRef.current = window.setTimeout(() => {
+      pendingScrollSectionRef.current = null;
+      pendingScrollTargetRef.current = null;
+    }, 900);
   }, []);
 
   const heroScroll = useScroll({
@@ -315,22 +354,21 @@ const textY = useTransform(
     obs.observe(document.documentElement, { attributes: true });
     return () => obs.disconnect();
   }, []);
+
   useEffect(() => {
-    const explicitScrollParent = document.querySelector(
-      ".h-screen.overflow-y-scroll",
-    );
-    const scrollParent = explicitScrollParent || getScrollParent(pageRef.current);
+    return () => {
+      window.clearTimeout(pendingScrollTimerRef.current);
+    };
+  }, []);
+
+  useEffect(() => {
+    const scrollParent = getPortfolioScrollParent(pageRef.current);
     const target = scrollParent === window ? window : scrollParent;
     let rafId = null;
 
     const updateArrowVisibility = () => {
-      const scrollTop = scrollParent === window ? window.scrollY : scrollParent.scrollTop;
-      const clientHeight =
-        scrollParent === window ? window.innerHeight : scrollParent.clientHeight;
-      const scrollHeight =
-        scrollParent === window
-          ? document.documentElement.scrollHeight
-          : scrollParent.scrollHeight;
+      const { scrollTop, clientHeight, scrollHeight } =
+        getScrollMetrics(scrollParent);
 
       if (scrollTop > 10 && !hasScrolledRef.current) {
         hasScrolledRef.current = true;
@@ -410,27 +448,24 @@ const textY = useTransform(
 
     if (!sections.length) return;
 
-    const explicitScrollParent = document.querySelector(
-      ".h-screen.overflow-y-scroll",
-    );
-    const scrollParent = explicitScrollParent || getScrollParent(pageRef.current);
+    const scrollParent = getPortfolioScrollParent(pageRef.current);
+    const target = scrollParent === window ? window : scrollParent;
+    let rafId = null;
 
     const updateActiveSection = () => {
-      const currentScroll =
-        scrollParent === window ? window.scrollY : scrollParent.scrollTop;
-      const viewportHeight =
-        scrollParent === window ? window.innerHeight : scrollParent.clientHeight;
-      const scrollHeight =
-        scrollParent === window
-          ? document.documentElement.scrollHeight
-          : scrollParent.scrollHeight;
-      const marker = currentScroll + Math.min(viewportHeight * 0.25, 160);
-      const isNearBottom = currentScroll + viewportHeight >= scrollHeight - 8;
+      const { scrollTop, clientHeight } = getScrollMetrics(scrollParent);
+      const marker = scrollTop + Math.min(clientHeight * 0.32, 220);
+      const lastSection = sections[sections.length - 1];
+      const lastSectionTop = getSectionTop(lastSection.element, scrollParent);
+      const lastSectionBottom =
+        lastSectionTop + lastSection.element.offsetHeight;
+      const isNearLastSectionEnd =
+        scrollTop + clientHeight >= lastSectionBottom - 96;
 
       let nextActiveSection = sections[0].id;
 
-      if (isNearBottom) {
-        nextActiveSection = sections[sections.length - 1].id;
+      if (isNearLastSectionEnd) {
+        nextActiveSection = lastSection.id;
       } else {
         for (const section of sections) {
           const sectionTop = getSectionTop(section.element, scrollParent);
@@ -443,28 +478,46 @@ const textY = useTransform(
         }
       }
 
+      const pendingSection = pendingScrollSectionRef.current;
+      const pendingTarget = pendingScrollTargetRef.current;
+
+      if (
+        pendingSection &&
+        Number.isFinite(pendingTarget) &&
+        Math.abs(scrollTop - pendingTarget) > 32
+      ) {
+        nextActiveSection = pendingSection;
+      } else if (pendingSection) {
+        pendingScrollSectionRef.current = null;
+        pendingScrollTargetRef.current = null;
+        window.clearTimeout(pendingScrollTimerRef.current);
+      }
+
       setActiveSection((prev) =>
         prev === nextActiveSection ? prev : nextActiveSection,
       );
     };
 
+    const onScroll = () => {
+      setIsBottomCtaExpanded((prev) => (prev ? false : prev));
+
+      if (rafId !== null) return;
+      rafId = window.requestAnimationFrame(() => {
+        rafId = null;
+        updateActiveSection();
+      });
+    };
+
     updateActiveSection();
 
-    if (scrollParent === window) {
-      window.addEventListener("scroll", updateActiveSection, { passive: true });
-    } else {
-      scrollParent.addEventListener("scroll", updateActiveSection, {
-        passive: true,
-      });
-    }
+    target.addEventListener("scroll", onScroll, { passive: true });
 
     window.addEventListener("resize", updateActiveSection);
 
     return () => {
-      if (scrollParent === window) {
-        window.removeEventListener("scroll", updateActiveSection);
-      } else {
-        scrollParent.removeEventListener("scroll", updateActiveSection);
+      target.removeEventListener("scroll", onScroll);
+      if (rafId !== null) {
+        window.cancelAnimationFrame(rafId);
       }
 
       window.removeEventListener("resize", updateActiveSection);
@@ -633,10 +686,11 @@ const textY = useTransform(
   const [firstName, lastName] = data.name.split(" ");
 
   return (
-    <main
-      ref={pageRef}
-      className="relative isolate w-full overflow-hidden bg-white text-zinc-900 dark:bg-black dark:text-zinc-100"
-    >
+    <>
+      <main
+        ref={pageRef}
+        className="relative isolate w-full overflow-hidden bg-white text-zinc-900 dark:bg-black dark:text-zinc-100"
+      >
       {/* ===== PREMIUM NY BACKGROUND ===== */}
       <div
         className="pointer-events-none fixed inset-y-0 left-0 z-0 bg-cover bg-center will-change-transform transition-opacity duration-500"
@@ -672,130 +726,6 @@ const textY = useTransform(
       {/* PAGE HEIGHT WRAPPER (controls sticky duration) */}
      <div className="relative z-10">
 
-        <div
-          className="pointer-events-none fixed bottom-[max(1rem,env(safe-area-inset-bottom))] left-0 z-30 px-3 sm:px-6"
-          style={{ right: "var(--scrollbar-size)" }}
-        >
-          <motion.div
-            ref={bottomCtaRef}
-            layout
-            transition={{
-              layout: { type: "spring", stiffness: 220, damping: 28, mass: 0.95 },
-            }}
-            onMouseEnter={
-              isTouchDevice ? undefined : () => setIsBottomCtaExpanded(true)
-            }
-            onMouseLeave={
-              isTouchDevice ? undefined : () => setIsBottomCtaExpanded(false)
-            }
-            onFocusCapture={
-              isTouchDevice ? undefined : () => setIsBottomCtaExpanded(true)
-            }
-            onBlurCapture={
-              isTouchDevice
-                ? undefined
-                : (event) => {
-                    if (!event.currentTarget.contains(event.relatedTarget)) {
-                      setIsBottomCtaExpanded(false);
-                    }
-                  }
-            }
-            className="pointer-events-auto mx-auto flex w-fit max-w-full items-center gap-1.5 rounded-full border border-sky-200/70 bg-sky-50/90 p-1.5 shadow-[0_12px_30px_rgba(14,116,144,0.2)] ring-1 ring-white/55 backdrop-blur-2xl dark:border-sky-400/35 dark:bg-slate-900/85 dark:ring-sky-200/15"
-            initial={
-              prefersReducedMotion
-                ? { opacity: 1, y: 0, scale: 1 }
-                : { opacity: 0.96, y: 6, scale: 0.985 }
-            }
-            animate={{ y: 0, opacity: 1, scale: 1 }}
-            transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
-          >
-            <AnimatePresence initial={false} mode="popLayout">
-              {!isBottomCtaExpanded ? (
-                <motion.button
-                  key="collapsed-cta"
-                  layout="position"
-                  type="button"
-                  initial={{ opacity: 0, y: 6, scale: 0.98 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -6, scale: 0.99 }}
-                  transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-                  onClick={() => setIsBottomCtaExpanded(true)}
-                  onPointerDown={(event) => {
-                    if (event.pointerType === "touch") {
-                      setIsBottomCtaExpanded(true);
-                    }
-                  }}
-                  whileHover={isTouchDevice ? undefined : { scale: 1.01, y: -1 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="group flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold text-slate-700 transition-all duration-200 hover:bg-sky-100/85 dark:text-sky-100 dark:hover:bg-sky-500/20 sm:text-sm"
-                  aria-label={`Expand section switcher. Current section is ${activeSectionMeta.label}`}
-                >
-                  <span className="text-slate-500 dark:text-sky-200/70">Jump to</span>
-                  <span className="rounded-full bg-sky-700 px-2.5 py-1 text-white shadow-sm transition-colors duration-200 dark:bg-sky-300 dark:text-slate-900">
-                    {activeSectionMeta.label}
-                  </span>
-                  <FaChevronUp className="text-[10px] text-slate-500 transition-transform duration-200 group-hover:-translate-y-0.5 dark:text-sky-200/80" />
-                </motion.button>
-              ) : (
-                <motion.div
-                  key="expanded-cta"
-                  layout="position"
-                  initial={{ opacity: 0, y: 6, scale: 0.985 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -6, scale: 0.99 }}
-                  transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-                  className="flex items-center gap-1.5"
-                >
-                  {sectionMeta.map((section, index) => {
-                    const isActive = activeSection === section.id;
-
-                    return (
-                      <motion.button
-                        key={section.id}
-                        type="button"
-                        aria-current={isActive ? "page" : undefined}
-                        initial={{ opacity: 0, y: 10, scale: 0.98 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        transition={{
-                          duration: 0.32,
-                          delay: 0.04 * index,
-                          ease: [0.22, 1, 0.36, 1],
-                        }}
-                        whileHover={isTouchDevice ? undefined : { y: -1, scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        onClick={() => {
-                          scrollToSection(section.id);
-                          setIsBottomCtaExpanded(false);
-                        }}
-                        className={`whitespace-nowrap rounded-full px-2.5 py-1.5 text-[11px] font-medium transition-all duration-200 sm:px-3 sm:text-sm ${
-                          isActive
-                            ? "bg-sky-700 text-white shadow-[0_6px_18px_rgba(3,105,161,0.32)] dark:bg-sky-300 dark:text-slate-900 dark:shadow-[0_6px_18px_rgba(56,189,248,0.2)]"
-                            : "text-slate-600 hover:bg-sky-100/85 dark:text-sky-100/90 dark:hover:bg-sky-500/20"
-                        }`}
-                      >
-                        {section.label}
-                      </motion.button>
-                    );
-                  })}
-                  <motion.button
-                    type="button"
-                    initial={{ opacity: 0, y: 10, scale: 0.96 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    transition={{ duration: 0.3, delay: 0.18, ease: [0.22, 1, 0.36, 1] }}
-                    whileHover={isTouchDevice ? undefined : { y: -1, scale: 1.03 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => setIsBottomCtaExpanded(false)}
-                    aria-label="Collapse section switcher"
-                    className="rounded-full p-2 text-slate-500 transition-all duration-200 hover:bg-sky-100/85 hover:text-slate-700 dark:text-sky-100/80 dark:hover:bg-sky-500/20 dark:hover:text-sky-100"
-                  >
-                    <FaChevronDown className="text-[10px]" />
-                  </motion.button>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </motion.div>
-        </div>
-
         {/* ================= STICKY SCROLL INDICATOR ================= */}
         <motion.div
           className="
@@ -816,7 +746,7 @@ const textY = useTransform(
             {[0, 1].map((i) => (
               <motion.div
                 key={i}
-                className="text-lg"
+                className="text-sm"
                 animate={{ y: [0, 10, 0], opacity: [0, 1, 0] }}
                 transition={{
                   duration: 1.4,
@@ -825,39 +755,20 @@ const textY = useTransform(
                   ease: "easeInOut",
                 }}
               >
-                ↓
+                <FaChevronDown />
               </motion.div>
             ))}
           </div>
         </motion.div>
 
         {/* ================= HERO ================= */}
-<section
-  ref={heroRef}
-className="relative 
-min-h-[90vh] 
-md:min-h-[110vh] 
-lg:min-h-[108vh] 
-xl:min-h-[114vh]"
-
->
-
-
-
-
+        <section
+          ref={heroRef}
+          className="relative min-h-[104svh] md:min-h-[112svh] lg:min-h-[116svh]"
+        >
           <motion.div
-           style={{ scale: imageScale }}
-className="sticky top-0 
-h-[55vh] 
-md:h-[80vh] 
-lg:h-[74vh] 
-xl:h-[78vh] 
-overflow-hidden z-10"
-
-
-
-
-
+            style={{ scale: imageScale }}
+            className="sticky top-0 z-10 h-[78svh] min-h-[480px] overflow-hidden bg-white dark:bg-black sm:min-h-[520px] md:h-[86svh] md:min-h-[560px] lg:h-[88svh]"
           >
             <motion.img
               src={heroImageUrl}
@@ -872,70 +783,59 @@ overflow-hidden z-10"
               }}
               transition={{ duration: 0.28, ease: "easeOut" }}
               className="
-    w-full
-    h-full
-    object-cover
-    object-[center_16%] md:object-[center_17%] lg:object-[center_24%]
-    block
-   transform-gpu 
-   will-change-transform
-
-  "
+                h-full w-full
+                object-cover
+                object-[center_14%]
+                sm:object-[center_15%]
+                md:object-[center_17%]
+                lg:object-[center_22%]
+                block transform-gpu will-change-transform
+              "
               loading="eager"
               fetchPriority="high"
               decoding="async"
             />
 
-            <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/40 to-black/95" />
-          </motion.div>
+            <div className="absolute inset-0 bg-gradient-to-b from-white/12 via-white/10 to-white/88 dark:from-black/34 dark:via-black/20 dark:to-black/90" />
+            <div className="absolute inset-0 bg-gradient-to-r from-white/42 via-white/8 to-white/12 dark:from-black/54 dark:via-transparent dark:to-black/18" />
+            <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-white dark:from-black to-transparent" />
 
-          <motion.div
-            style={{ y: textY, opacity: textOpacity }}
-           className="pointer-events-none sticky top-0 
-h-[22vh] 
-md:h-[32vh] 
-lg:h-[42vh] 
-xl:h-[52vh] 
-flex items-center px-6 md:px-20 z-10"
-
-
-          >
- <h1
-  style={{ transformOrigin: "left center" }}
-  className="
-leading-[0.85]
-font-extrabold
-tracking-[-0.045em]
-
-text-zinc-900 dark:text-white
-
-text-[15vw]
-sm:text-[12vw]
-md:text-[10vw]
-lg:text-[8.5vw]
-xl:text-[7vw]
-
-[font-variation-settings:'wght'_840]
-antialiased
-
-drop-shadow-[0_30px_80px_rgba(0,0,0,0.55)]
-dark:drop-shadow-[0_30px_80px_rgba(0,0,0,0.8)]
-dark:[text-shadow:0_0_25px_rgba(255,255,255,0.35)]
-"
->
-  <span className="block">
-    {firstName}
-  </span>
-  <span className="block">
-    {lastName}
-  </span>
-</h1>
-
-
+            <motion.div
+              style={{ y: textY, opacity: textOpacity }}
+              className="pointer-events-none absolute inset-0 z-10 flex items-end px-6 pb-[12vh] sm:px-10 sm:pb-[10vh] md:px-20 md:pb-[11vh]"
+            >
+              <h1
+                style={{ transformOrigin: "left center" }}
+                className="
+                  max-w-[11ch]
+                  text-[2.4rem]
+                  font-extrabold
+                  leading-[0.9]
+                  tracking-normal
+                  text-slate-950
+                  drop-shadow-[0_12px_34px_rgba(15,23,42,0.24)]
+                  [text-shadow:0_2px_20px_rgba(255,255,255,0.9)]
+                  [font-variation-settings:'wght'_840]
+                  antialiased
+                  dark:text-white
+                  dark:drop-shadow-[0_18px_48px_rgba(0,0,0,0.78)]
+                  dark:[text-shadow:0_2px_18px_rgba(0,0,0,0.86)]
+                  min-[380px]:text-[2.85rem]
+                  sm:text-[3.7rem]
+                  md:max-w-[9.5ch]
+                  md:text-[4.6rem]
+                  lg:text-[5.45rem]
+                  xl:text-[6.15rem]
+                "
+              >
+                <span className="block">{firstName}</span>
+                <span className="block">{lastName}</span>
+              </h1>
+            </motion.div>
           </motion.div>
         </section>
         {/* ================= BRAND BANNER ================= */}
-        <section className="w-full overflow-hidden bg-white dark:bg-black py-12 md:py-16">
+        <section className="w-full overflow-hidden border-y border-zinc-200/70 bg-white/92 py-5 backdrop-blur dark:border-zinc-800 dark:bg-black/92 md:py-7">
           <AnimatedBanner />
         </section>
 
@@ -945,55 +845,59 @@ dark:[text-shadow:0_0_25px_rgba(255,255,255,0.35)]
           ref={(el) => {
             sectionRefs.current.intro = el;
           }}
-          className="px-6 md:px-20 py-14 md:py-16 border-b border-zinc-200 dark:border-zinc-800"
+          className="border-b border-zinc-200 px-6 py-14 dark:border-zinc-800 md:px-20 md:py-16"
         >
           <FadeRow>
-            <div className="max-w-4xl space-y-4">
-              <p className="text-lg md:text-xl font-medium leading-relaxed">
+            <div className="w-full max-w-none space-y-6">
+              <p className="w-full max-w-none text-lg font-medium leading-relaxed tracking-[0.005em] text-zinc-800 [text-wrap:pretty] dark:text-zinc-100 md:text-xl">
                 {data.description}
               </p>
-              <div className="flex gap-4 text-zinc-500">
+              <div className="flex flex-wrap gap-3 text-zinc-500">
                 {socialProfiles.map((s) => (
                   <button
                     key={s.name}
                     onClick={() => setSocialModal(s)}
                     aria-label={`Open ${s.name}`}
-                    className={`${socialColors[s.name]} hover:scale-110 transition-transform`}
+                    className={`${socialColors[s.name]} rounded-full bg-white/70 p-2 shadow-sm ring-1 ring-zinc-200/70 backdrop-blur transition-all duration-300 hover:-translate-y-0.5 hover:scale-105 hover:bg-white hover:shadow-[0_10px_24px_rgba(15,23,42,0.1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/70 dark:bg-zinc-900/60 dark:ring-zinc-800 dark:hover:bg-zinc-900 dark:hover:shadow-[0_10px_24px_rgba(0,0,0,0.28)] dark:focus-visible:ring-cyan-300/45`}
                   >
                     {s.icon}
                   </button>
                 ))}
               </div>
 
-              <a
-                href={resumeUrl}
-                target="_blank"
-                rel="noreferrer"
-                aria-label="View my resume in a new tab"
-                className="group mt-2 inline-flex w-full items-center justify-center gap-3 rounded-full border border-sky-300/70 bg-white/85 px-5 py-3 text-sm font-semibold tracking-[0.02em] text-slate-900 shadow-[0_16px_36px_rgba(15,23,42,0.12)] ring-1 ring-white/70 backdrop-blur-xl transition-all duration-300 hover:-translate-y-0.5 hover:border-sky-400 hover:bg-white hover:shadow-[0_18px_42px_rgba(14,165,233,0.18)] dark:border-sky-400/30 dark:bg-slate-950/70 dark:text-sky-50 dark:ring-sky-200/10 dark:hover:border-sky-300 dark:hover:bg-slate-900 sm:w-auto"
-              >
-                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-sky-500 to-cyan-500 text-white shadow-[0_10px_24px_rgba(14,165,233,0.32)] transition-transform duration-300 group-hover:scale-105">
-                  <FaRegFilePdf className="text-base" />
-                </span>
-                <span className="flex flex-col items-start leading-tight">
-                  <span>View my resume</span>
-                  <span className="text-[11px] font-medium text-slate-500 dark:text-sky-100/60">
-                    Opens PDF in a new tab
+              <div className="flex w-full flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+                <a
+                  href={resumeUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label="View my resume in a new tab"
+                  className="group inline-flex w-full items-center justify-center gap-3 rounded-full border border-sky-300/70 bg-white/86 px-5 py-3 text-sm font-semibold tracking-[0.02em] text-slate-900 shadow-[0_16px_36px_rgba(15,23,42,0.12)] ring-1 ring-white/70 backdrop-blur-xl transition-all duration-300 hover:-translate-y-0.5 hover:border-sky-400 hover:bg-white hover:shadow-[0_18px_42px_rgba(14,165,233,0.18)] dark:border-cyan-300/35 dark:bg-cyan-300/10 dark:text-cyan-50 dark:shadow-[0_18px_42px_rgba(8,145,178,0.14)] dark:ring-cyan-100/15 dark:hover:border-cyan-200/70 dark:hover:bg-cyan-300/16 sm:w-auto"
+                >
+                  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-sky-500 to-cyan-500 text-white shadow-[0_10px_24px_rgba(14,165,233,0.32)] transition-transform duration-300 group-hover:scale-105 dark:from-cyan-300 dark:to-sky-400 dark:text-slate-950 dark:shadow-[0_10px_24px_rgba(34,211,238,0.22)]">
+                    <FaRegFilePdf className="text-base" />
                   </span>
-                </span>
-                <span className="text-base text-slate-400 transition-transform duration-300 group-hover:translate-x-0.5 dark:text-sky-100/65">
-                  →
-                </span>
-              </a>
+                  <span className="flex flex-col items-start leading-tight">
+                    <span>View my resume</span>
+                    <span className="text-[11px] font-medium text-slate-500 dark:text-cyan-100/75">
+                      Opens PDF in a new tab
+                    </span>
+                  </span>
+                  <span className="text-base text-slate-400 transition-transform duration-300 group-hover:translate-x-0.5 dark:text-cyan-100/75">
+                    &rarr;
+                  </span>
+                </a>
 
-              <button
-                type="button"
-                onClick={() => scrollToSection("experience")}
-                className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-full border border-zinc-300/70 bg-white/80 px-5 py-3 text-sm font-semibold tracking-wide transition-all hover:bg-white dark:border-zinc-700 dark:bg-zinc-900/70 dark:hover:bg-zinc-800 sm:w-auto"
-              >
-                Explore my experience
-                <span>→</span>
-              </button>
+                <button
+                  type="button"
+                  onClick={() => scrollToSection("experience")}
+                  className="group inline-flex w-full items-center justify-center gap-2 rounded-full border border-zinc-300/70 bg-white/78 px-5 py-3 text-sm font-semibold tracking-wide text-slate-900 shadow-[0_12px_28px_rgba(15,23,42,0.08)] ring-1 ring-white/65 backdrop-blur-xl transition-all duration-300 hover:-translate-y-0.5 hover:border-sky-300 hover:bg-white dark:border-white/15 dark:bg-white/[0.06] dark:text-zinc-100 dark:shadow-[0_16px_36px_rgba(0,0,0,0.26)] dark:ring-white/10 dark:hover:border-cyan-300/40 dark:hover:bg-cyan-300/10 sm:w-auto"
+                >
+                  Explore my experience
+                  <span className="text-slate-400 transition-transform duration-300 group-hover:translate-x-0.5 dark:text-cyan-100/70">
+                    &rarr;
+                  </span>
+                </button>
+              </div>
             </div>
           </FadeRow>
         </section>
@@ -1004,36 +908,30 @@ dark:[text-shadow:0_0_25px_rgba(255,255,255,0.35)]
           ref={(el) => {
             sectionRefs.current.skills = el;
           }}
-          className="px-6 md:px-20 py-14 md:py-16 border-b border-zinc-200 dark:border-zinc-800"
+          className="border-b border-zinc-200 px-6 py-14 dark:border-zinc-800 md:px-20 md:py-16"
         >
           <FadeRow>
-            <h2 className="text-xl md:text-2xl font-semibold mb-8">
-              01 — Skills
+            <h2 className="mb-8 flex items-center gap-3 text-xl font-semibold tracking-tight after:h-px after:flex-1 after:bg-gradient-to-r after:from-sky-300/50 after:to-transparent dark:after:from-cyan-300/20 md:text-2xl">
+              01 - Skills
             </h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-8 gap-6">
+            <div className="grid w-full grid-cols-[repeat(auto-fit,120px)] justify-center gap-4 sm:gap-5">
               {data.skills.map(({ skill, expertise }) => (
                 <Tooltip key={skill} content={expertise}>
                   <motion.div
-                    whileHover={{ scale: 1.06, y: -6 }}
+                    whileHover={{ scale: 1.04, y: -5 }}
                     whileTap={{ scale: 0.95 }}
                     transition={{ type: "spring", stiffness: 260, damping: 18 }}
                     className="
-    group relative
-    flex flex-col items-center justify-center
-    w-[115px] h-[115px]
-    gap-2 p-4
-    rounded-3xl cursor-pointer
-    border border-zinc-200/70 dark:border-zinc-800
-    bg-white/70 dark:bg-zinc-900/50
-    backdrop-blur-xl
-    transition-all duration-300
-
-    hover:shadow-[0_15px_40px_rgba(0,0,0,0.08)]
-    dark:hover:shadow-[0_15px_40px_rgba(0,0,0,0.5)]
-    hover:border-zinc-300 dark:hover:border-zinc-600
-  "
+                      group relative flex h-[120px] w-[120px] shrink-0
+                      cursor-pointer flex-col items-center justify-center gap-2
+                      rounded-2xl border border-zinc-200/70 bg-white/75 p-4
+                      shadow-sm ring-1 ring-white/60 backdrop-blur-xl transition-all duration-300
+                      hover:border-sky-200 hover:bg-white hover:shadow-[0_16px_38px_rgba(14,165,233,0.14)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/70
+                      dark:border-zinc-800 dark:bg-zinc-900/55 dark:hover:border-sky-400/35
+                      dark:ring-white/5 dark:hover:bg-zinc-900 dark:hover:shadow-[0_16px_38px_rgba(0,0,0,0.45)] dark:focus-visible:ring-cyan-300/45
+                    "
                   >
-                    <div className={`text-3xl ${skillColors[skill]}`}>
+                    <div className={`text-3xl transition-transform duration-300 group-hover:scale-110 ${skillColors[skill]}`}>
                       {skillIconMap[skill]}
                     </div>
                     <span className="text-sm font-semibold text-center leading-tight">
@@ -1052,21 +950,20 @@ dark:[text-shadow:0_0_25px_rgba(255,255,255,0.35)]
           ref={(el) => {
             sectionRefs.current.experience = el;
           }}
-          className="px-6 md:px-20 py-14 md:py-16 border-b border-zinc-200 dark:border-zinc-800"
+          className="border-b border-zinc-200 px-6 py-14 dark:border-zinc-800 md:px-20 md:py-16"
         >
           <FadeRow>
-            <h2 className="text-xl md:text-2xl font-semibold mb-8 flex items-center gap-2">
-              <FaBriefcase /> 02 — Experience
+            <h2 className="mb-8 flex items-center gap-3 text-xl font-semibold tracking-tight after:h-px after:flex-1 after:bg-gradient-to-r after:from-sky-300/50 after:to-transparent dark:after:from-cyan-300/20 md:text-2xl">
+              <FaBriefcase /> 02 - Experience
             </h2>
 
             {data.experience.map((exp, i) => (
               <div
                 key={i}
-                className="grid sm:grid-cols-[160px_1fr] sm:grid-cols-[160px_1fr] md:grid-cols-[220px_1fr] gap-8 pb-10
-                            border-b border-zinc-200 dark:border-zinc-800 last:border-none"
+                className="group mb-4 grid gap-5 rounded-2xl border border-white/20 bg-transparent p-5 shadow-none ring-0 backdrop-blur-0 transition-all duration-300 last:mb-0 hover:-translate-y-0.5 hover:border-white/45 hover:bg-transparent dark:border-white/10 dark:bg-transparent dark:hover:border-sky-300/24 dark:hover:bg-transparent sm:grid-cols-[160px_1fr] md:grid-cols-[220px_1fr]"
               >
-                <div className="flex items-center gap-2 text-sm text-zinc-500">
-  <FaCalendarAlt className="text-zinc-400 dark:text-zinc-500 text-xs" />
+                <div className="flex items-center gap-2 text-sm font-medium text-zinc-500 dark:text-zinc-400 sm:items-start sm:pt-1">
+  <FaCalendarAlt className="text-xs text-sky-500/80 dark:text-sky-300/80" />
   <span>{exp.duration}</span>
 </div>
                 <div>
@@ -1078,30 +975,28 @@ dark:[text-shadow:0_0_25px_rgba(255,255,255,0.35)]
   decoding="async"
   loading="lazy"
   className="
-    w-10 h-10 rounded-2xl object-contain
-    bg-white/70 dark:bg-zinc-900/60
+    w-11 h-11 rounded-2xl object-contain
+    bg-white/80 dark:bg-zinc-950/70
     backdrop-blur-xl
     p-2
     border border-zinc-200/70 dark:border-zinc-700/60
 
-    shadow-[0_4px_15px_rgba(0,0,0,0.08)]
-    dark:shadow-[0_6px_20px_rgba(0,0,0,0.5)]
+    shadow-sm
 
     transition-all duration-300
-    group-hover:scale-110
-    group-hover:shadow-[0_10px_30px_rgba(0,0,0,0.15)]
+    group-hover:scale-105
   "
 />
 
                     )}
 
                     <div>
-                      <h3 className="text-lg font-semibold">{exp.role}</h3>
-                      <p className="text-sm text-zinc-500">{exp.company}</p>
+                      <h3 className="text-lg font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">{exp.role}</h3>
+                      <p className="text-sm text-zinc-500 dark:text-zinc-400">{exp.company}</p>
                     </div>
                   </div>
 
-                  <p className="mt-2 text-base">{exp.description}</p>
+                  <p className="mt-2 text-base leading-relaxed text-zinc-800 dark:text-zinc-200">{exp.description}</p>
 
                   {exp.achievements?.length > 0 && (
                   <motion.button
@@ -1115,13 +1010,13 @@ dark:[text-shadow:0_0_25px_rgba(255,255,255,0.35)]
     rounded-full
     border border-zinc-200 dark:border-zinc-700
 
-    bg-white/60 dark:bg-zinc-900/50
+    bg-transparent dark:bg-transparent
     backdrop-blur-xl
 
     text-zinc-700 dark:text-zinc-300
     transition-all duration-300
 
-    hover:bg-white dark:hover:bg-zinc-800
+    hover:bg-white/20 dark:hover:bg-white/10
     hover:border-zinc-300 dark:hover:border-zinc-600
 
     shadow-sm hover:shadow-md
@@ -1142,7 +1037,7 @@ dark:[text-shadow:0_0_25px_rgba(255,255,255,0.35)]
       group-hover:translate-x-1
     "
   >
-    →
+    &rarr;
   </span>
 </motion.button>
 
@@ -1159,26 +1054,25 @@ dark:[text-shadow:0_0_25px_rgba(255,255,255,0.35)]
           ref={(el) => {
             sectionRefs.current.education = el;
           }}
-          className="px-6 md:px-20 py-14 md:py-16 pb-32 sm:pb-28"
+          className="px-6 py-14 pb-44 sm:pb-40 md:px-20 md:py-16 md:pb-48"
         >
           <FadeRow>
-            <h2 className="text-xl md:text-2xl font-semibold mb-8 flex items-center gap-2">
-              <FaGraduationCap /> 03 — Education
+            <h2 className="mb-8 flex items-center gap-3 text-xl font-semibold tracking-tight after:h-px after:flex-1 after:bg-gradient-to-r after:from-sky-300/50 after:to-transparent dark:after:from-cyan-300/20 md:text-2xl">
+              <FaGraduationCap /> 03 - Education
             </h2>
 
             {data.education.map((edu, i) => (
               <div
                 key={i}
-                className="grid sm:grid-cols-[160px_1fr] sm:grid-cols-[160px_1fr] md:grid-cols-[220px_1fr] gap-8 pb-10
-                          border-b border-zinc-200 dark:border-zinc-800 last:border-none"
+                className="mb-4 grid gap-5 rounded-2xl border border-white/20 bg-transparent p-5 shadow-none ring-0 backdrop-blur-0 transition-all duration-300 last:mb-0 hover:-translate-y-0.5 hover:border-white/45 hover:bg-transparent dark:border-white/10 dark:bg-transparent dark:hover:border-sky-300/24 dark:hover:bg-transparent sm:grid-cols-[160px_1fr] md:grid-cols-[220px_1fr]"
               >
-                <div className="flex items-center gap-2 text-sm text-zinc-500">
-  <FaCalendarAlt className="text-zinc-400 dark:text-zinc-500 text-xs" />
+                <div className="flex items-center gap-2 text-sm font-medium text-zinc-500 dark:text-zinc-400 sm:items-start sm:pt-1">
+  <FaCalendarAlt className="text-xs text-sky-500/80 dark:text-sky-300/80" />
   <span>{edu.duration}</span>
 </div>
                 <div>
-                  <h3 className="text-lg font-semibold">{edu.degree}</h3>
-                  <p className="text-sm text-zinc-500">{edu.institution}</p>
+                  <h3 className="text-lg font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">{edu.degree}</h3>
+                  <p className="text-sm text-zinc-500 dark:text-zinc-400">{edu.institution}</p>
 
                   {edu.achievements?.length > 0 && (
                 <motion.button
@@ -1192,13 +1086,13 @@ dark:[text-shadow:0_0_25px_rgba(255,255,255,0.35)]
     rounded-full
     border border-zinc-200 dark:border-zinc-700
 
-    bg-white/60 dark:bg-zinc-900/50
+    bg-transparent dark:bg-transparent
     backdrop-blur-xl
 
     text-zinc-700 dark:text-zinc-300
     transition-all duration-300
 
-    hover:bg-white dark:hover:bg-zinc-800
+    hover:bg-white/20 dark:hover:bg-white/10
     hover:border-zinc-300 dark:hover:border-zinc-600
 
     shadow-sm hover:shadow-md
@@ -1219,7 +1113,7 @@ dark:[text-shadow:0_0_25px_rgba(255,255,255,0.35)]
       group-hover:translate-x-1
     "
   >
-    →
+    &rarr;
   </span>
 </motion.button>
 
@@ -1229,6 +1123,132 @@ dark:[text-shadow:0_0_25px_rgba(255,255,255,0.35)]
             ))}
           </FadeRow>
         </section>
+      </div>
+
+      </main>
+
+      <div
+        className="pointer-events-none fixed bottom-[max(1.25rem,env(safe-area-inset-bottom))] left-0 z-[80] px-3 sm:px-6"
+        style={{ right: "var(--scrollbar-size)" }}
+      >
+        <motion.div
+          ref={bottomCtaRef}
+          layout
+          transition={{
+            layout: { type: "spring", stiffness: 220, damping: 28, mass: 0.95 },
+          }}
+          onMouseEnter={
+            isTouchDevice ? undefined : () => setIsBottomCtaExpanded(true)
+          }
+          onMouseLeave={
+            isTouchDevice ? undefined : () => setIsBottomCtaExpanded(false)
+          }
+          onFocusCapture={
+            isTouchDevice ? undefined : () => setIsBottomCtaExpanded(true)
+          }
+          onBlurCapture={
+            isTouchDevice
+              ? undefined
+              : (event) => {
+                  if (!event.currentTarget.contains(event.relatedTarget)) {
+                    setIsBottomCtaExpanded(false);
+                  }
+                }
+          }
+          className="pointer-events-auto mx-auto flex min-w-0 w-fit max-w-[calc(100vw_-_var(--scrollbar-size)_-_1.5rem)] items-center gap-1.5 rounded-full border border-sky-200/70 bg-sky-50/90 p-1.5 shadow-[0_14px_36px_rgba(14,116,144,0.24)] ring-1 ring-white/55 backdrop-blur-2xl dark:border-cyan-300/20 dark:bg-black/80 dark:shadow-[0_16px_42px_rgba(0,0,0,0.62)] dark:ring-cyan-100/10"
+          initial={
+            prefersReducedMotion
+              ? { opacity: 1, y: 0, scale: 1 }
+              : { opacity: 0.96, y: 6, scale: 0.985 }
+          }
+          animate={{ y: 0, opacity: 1, scale: 1 }}
+          transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <AnimatePresence initial={false} mode="popLayout">
+            {!isBottomCtaExpanded ? (
+              <motion.button
+                key="collapsed-cta"
+                layout="position"
+                type="button"
+                initial={{ opacity: 0, y: 6, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -6, scale: 0.99 }}
+                transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                onClick={() => setIsBottomCtaExpanded(true)}
+                onPointerDown={(event) => {
+                  if (event.pointerType === "touch") {
+                    setIsBottomCtaExpanded(true);
+                  }
+                }}
+                whileHover={isTouchDevice ? undefined : { scale: 1.01, y: -1 }}
+                whileTap={{ scale: 0.98 }}
+                className="group flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold text-slate-700 transition-all duration-200 hover:bg-sky-100/85 dark:text-zinc-100 dark:hover:bg-white/10 sm:text-sm"
+                aria-label={`Expand section switcher. Current section is ${activeSectionMeta.label}`}
+              >
+                <span className="text-slate-500 dark:text-zinc-400">Jump to</span>
+                <span className="rounded-full bg-sky-700 px-2.5 py-1 text-white shadow-sm transition-colors duration-200 dark:bg-cyan-300/15 dark:text-cyan-100 dark:ring-1 dark:ring-cyan-200/25">
+                  {activeSectionMeta.label}
+                </span>
+                <FaChevronUp className="text-[10px] text-slate-500 transition-transform duration-200 group-hover:-translate-y-0.5 dark:text-cyan-200/55" />
+              </motion.button>
+            ) : (
+              <motion.div
+                key="expanded-cta"
+                layout="position"
+                initial={{ opacity: 0, y: 6, scale: 0.985 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -6, scale: 0.99 }}
+                transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                className="flex min-w-0 max-w-full flex-wrap items-center justify-center gap-1.5"
+              >
+                {sectionMeta.map((section, index) => {
+                  const isActive = activeSection === section.id;
+
+                  return (
+                    <motion.button
+                      key={section.id}
+                      type="button"
+                      aria-current={isActive ? "page" : undefined}
+                      initial={{ opacity: 0, y: 10, scale: 0.98 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      transition={{
+                        duration: 0.32,
+                        delay: 0.04 * index,
+                        ease: [0.22, 1, 0.36, 1],
+                      }}
+                      whileHover={isTouchDevice ? undefined : { y: -1, scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => {
+                        scrollToSection(section.id);
+                        setIsBottomCtaExpanded(false);
+                      }}
+                      className={`shrink-0 whitespace-nowrap rounded-full px-2.5 py-1.5 text-[11px] font-medium transition-all duration-200 sm:px-3 sm:text-sm ${
+                        isActive
+                        ? "bg-sky-700 text-white shadow-[0_6px_18px_rgba(3,105,161,0.32)] dark:bg-cyan-300/15 dark:text-cyan-100 dark:ring-1 dark:ring-cyan-200/25 dark:shadow-[0_6px_18px_rgba(34,211,238,0.08)]"
+                          : "text-slate-600 hover:bg-sky-100/85 dark:text-zinc-300 dark:hover:bg-white/10 dark:hover:text-cyan-100"
+                      }`}
+                    >
+                      {section.label}
+                    </motion.button>
+                  );
+                })}
+                <motion.button
+                  type="button"
+                  initial={{ opacity: 0, y: 10, scale: 0.96 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{ duration: 0.3, delay: 0.18, ease: [0.22, 1, 0.36, 1] }}
+                  whileHover={isTouchDevice ? undefined : { y: -1, scale: 1.03 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setIsBottomCtaExpanded(false)}
+                  aria-label="Collapse section switcher"
+                  className="shrink-0 rounded-full p-2 text-slate-500 transition-all duration-200 hover:bg-sky-100/85 hover:text-slate-700 dark:text-zinc-400 dark:hover:bg-white/10 dark:hover:text-cyan-100"
+                >
+                  <FaChevronDown className="text-[10px]" />
+                </motion.button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
       </div>
 
       <AchievementsModal
@@ -1245,6 +1265,6 @@ dark:[text-shadow:0_0_25px_rgba(255,255,255,0.35)]
         icon={socialModal?.icon}
         onClose={() => setSocialModal(null)}
       />
-    </main>
+    </>
   );
 }
