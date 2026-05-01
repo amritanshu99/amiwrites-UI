@@ -31,7 +31,10 @@ import {
 } from "framer-motion";
 import InitialLoader from "./InitialLoader";
 import AchievementsModal from "./AchievementsModal";
+import MemoryLaneCta from "./MemoryLaneCta";
 import { FaCalendarAlt } from "react-icons/fa";
+
+const MemoryLaneGallery = React.lazy(() => import("./MemoryLaneGallery"));
 
 /* ================= ICON MAP ================= */
 const skillIconMap = {
@@ -258,6 +261,8 @@ export default function PortfolioDetails() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState({ isOpen: false });
+  const [isGalleryOpen, setIsGalleryOpen] = useState(false);
+  const [hasOpenedGallery, setHasOpenedGallery] = useState(false);
   const [isDark, setIsDark] = useState(false);
   const [socialModal, setSocialModal] = useState(null);
   const [imageLoaded, setImageLoaded] = useState(false);
@@ -283,6 +288,10 @@ export default function PortfolioDetails() {
     () => sectionMeta.find((section) => section.id === activeSection) || sectionMeta[0],
     [activeSection],
   );
+  const openMemoryLane = useCallback(() => {
+    setHasOpenedGallery(true);
+    setIsGalleryOpen(true);
+  }, []);
 
   const scrollToSection = useCallback((sectionId) => {
     const targetSection = sectionRefs.current[sectionId];
@@ -897,6 +906,8 @@ const textY = useTransform(
                     &rarr;
                   </span>
                 </button>
+
+                <MemoryLaneCta onClick={openMemoryLane} />
               </div>
             </div>
           </FadeRow>
@@ -1257,6 +1268,15 @@ const textY = useTransform(
         achievements={modal.achievements}
         onClose={() => setModal({ isOpen: false })}
       />
+
+      {hasOpenedGallery && (
+        <React.Suspense fallback={null}>
+          <MemoryLaneGallery
+            isOpen={isGalleryOpen}
+            onClose={() => setIsGalleryOpen(false)}
+          />
+        </React.Suspense>
+      )}
 
       <SocialModal
         isOpen={!!socialModal}
