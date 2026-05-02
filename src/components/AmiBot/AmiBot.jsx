@@ -99,14 +99,11 @@ const Amibot = () => {
   const canSend = input.trim().length > 0 && !loading;
 
   return (
-    <section className="relative isolate min-h-[calc(100dvh-4rem)] overflow-hidden bg-[linear-gradient(180deg,rgba(252,254,255,1)_0%,rgba(241,248,255,0.98)_42%,rgba(235,245,255,0.96)_100%)] px-2 pb-[max(0.65rem,env(safe-area-inset-bottom))] pt-2 text-slate-900 transition-colors duration-300 dark:bg-none dark:bg-black dark:text-zinc-100 sm:px-5 sm:pb-5 sm:pt-4 lg:px-8">
+    <section className="relative isolate min-h-[calc(100dvh-4rem)] overflow-hidden bg-[linear-gradient(180deg,#f8fbff_0%,#eef6ff_46%,#fbfdff_100%)] px-2 pb-[max(5.75rem,env(safe-area-inset-bottom))] pt-2 text-slate-900 transition-colors duration-300 dark:bg-none dark:bg-black dark:text-zinc-100 sm:px-5 sm:pb-5 sm:pt-4 lg:px-8">
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(186,230,253,0.85),transparent_28%),radial-gradient(circle_at_top_right,rgba(125,211,252,0.45),transparent_24%),radial-gradient(circle_at_bottom,rgba(224,242,254,0.72),transparent_38%)] dark:bg-[linear-gradient(180deg,rgba(0,0,0,1)_0%,rgba(0,0,0,1)_100%)]" />
-        <div className="absolute inset-0 hidden dark:block dark:bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.05),transparent_28%)]" />
-        <div className="absolute -left-20 top-0 h-72 w-72 rounded-full bg-sky-200/70 blur-[120px] dark:bg-transparent" />
-        <div className="absolute -right-10 top-16 h-80 w-80 rounded-full bg-cyan-100/80 blur-[140px] dark:bg-transparent" />
-        <div className="absolute bottom-[-9rem] left-1/2 h-[26rem] w-[26rem] -translate-x-1/2 rounded-full bg-blue-100/70 blur-[170px] dark:bg-transparent" />
-        <div className="absolute inset-0 opacity-[0.28] [background-image:linear-gradient(rgba(148,163,184,0.12)_1px,transparent_1px),linear-gradient(90deg,rgba(148,163,184,0.12)_1px,transparent_1px)] [background-size:72px_72px] dark:opacity-[0.08] dark:[background-image:linear-gradient(rgba(255,255,255,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.025)_1px,transparent_1px)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.82)_0%,rgba(235,246,255,0.72)_48%,rgba(255,255,255,0.68)_100%)] dark:bg-[linear-gradient(180deg,rgba(0,0,0,1)_0%,rgba(0,0,0,1)_100%)]" />
+        <div className="absolute inset-x-0 top-0 h-28 bg-[linear-gradient(180deg,rgba(255,255,255,0.7),rgba(255,255,255,0))] dark:bg-transparent" />
+        <div className="absolute inset-0 opacity-[0.24] [background-image:linear-gradient(rgba(148,163,184,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(148,163,184,0.1)_1px,transparent_1px)] [background-size:72px_72px] dark:opacity-[0.08] dark:[background-image:linear-gradient(rgba(255,255,255,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.025)_1px,transparent_1px)]" />
       </div>
 
       <div className="relative mx-auto flex min-h-[calc(100dvh-5.5rem)] max-w-7xl flex-col gap-2 lg:h-[calc(100dvh-5.5rem)] lg:min-h-0 lg:flex-row lg:gap-4">
@@ -125,7 +122,7 @@ const Amibot = () => {
               </div>
             </div>
 
-            <h1 className="mt-4 text-2xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-[2rem]">
+            <h1 className="mt-4 text-2xl font-semibold text-slate-950 dark:text-white sm:text-[2rem]">
               Meet AmiBot
             </h1>
             <p className="mt-3 text-sm leading-7 text-slate-600 dark:text-zinc-300 sm:text-[15px]">
@@ -149,7 +146,7 @@ const Amibot = () => {
                   key={prompt}
                   type="button"
                   onClick={() => handleSuggestionClick(prompt)}
-                  className="rounded-2xl border border-white/85 bg-white/80 px-3.5 py-3 text-left text-sm font-medium text-slate-700 shadow-sm shadow-slate-200/60 transition duration-200 hover:-translate-y-0.5 hover:border-sky-300/80 hover:bg-sky-50/95 hover:text-sky-800 dark:border-zinc-800 dark:bg-black dark:text-zinc-200 dark:shadow-none dark:hover:border-zinc-700 dark:hover:bg-zinc-950 dark:hover:text-white"
+                  className="min-h-[46px] rounded-2xl border border-white/85 bg-white/80 px-3.5 py-3 text-left text-sm font-medium text-slate-700 shadow-sm shadow-slate-200/60 transition duration-200 hover:-translate-y-0.5 hover:border-sky-300/80 hover:bg-sky-50/95 hover:text-sky-800 focus:outline-none focus-visible:ring-4 focus-visible:ring-sky-100 dark:border-zinc-800 dark:bg-black dark:text-zinc-200 dark:shadow-none dark:hover:border-zinc-700 dark:hover:bg-zinc-950 dark:hover:text-white dark:focus-visible:ring-white/10 motion-reduce:transform-none"
                 >
                   {prompt}
                 </button>
@@ -188,7 +185,7 @@ const Amibot = () => {
           </div>
 
           <div className="relative flex-1 overflow-hidden">
-            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(125,211,252,0.2),transparent_32%)] dark:bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.03),transparent_28%)]" />
+            <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(224,242,254,0.26),rgba(255,255,255,0)_34%)] dark:bg-[linear-gradient(180deg,rgba(255,255,255,0.035),rgba(0,0,0,0)_34%)]" />
 
             <div
               aria-live="polite"
@@ -217,7 +214,7 @@ const Amibot = () => {
                       </div>
 
                       <div
-                        className={`rounded-[22px] border px-3.5 py-2.5 text-sm leading-6 sm:rounded-[24px] sm:px-5 sm:py-3 sm:text-[15px] sm:leading-7 ${
+                        className={`whitespace-pre-wrap break-words rounded-[22px] border px-3.5 py-2.5 text-sm leading-6 [overflow-wrap:anywhere] sm:rounded-[24px] sm:px-5 sm:py-3 sm:text-[15px] sm:leading-7 ${
                           isUser
                             ? "border-sky-300/30 bg-gradient-to-br from-sky-400 via-cyan-400 to-cyan-500 text-slate-950 shadow-[0_22px_50px_rgba(56,189,248,0.24)]"
                             : "border-white/85 bg-white/88 text-slate-700 shadow-[0_18px_45px_rgba(148,163,184,0.18)] backdrop-blur-xl dark:border-zinc-800 dark:bg-black dark:text-zinc-100 dark:shadow-[0_18px_45px_rgba(0,0,0,0.34)]"
@@ -280,7 +277,7 @@ const Amibot = () => {
                 />
 
                 <button
-                  className="inline-flex h-11 items-center justify-center gap-1.5 rounded-[16px] bg-gradient-to-r from-sky-500 via-cyan-500 to-cyan-600 px-3 text-sm font-semibold text-white shadow-[0_18px_40px_rgba(14,165,233,0.28)] transition duration-200 hover:from-sky-600 hover:via-cyan-600 hover:to-cyan-700 disabled:cursor-not-allowed disabled:opacity-55 dark:text-white sm:h-12 sm:gap-2 sm:rounded-[18px] sm:px-5 sm:text-base"
+                  className="inline-flex h-11 items-center justify-center gap-1.5 rounded-[16px] bg-gradient-to-r from-sky-500 via-cyan-500 to-cyan-600 px-3 text-sm font-semibold text-white shadow-[0_18px_40px_rgba(14,165,233,0.28)] transition duration-200 hover:-translate-y-0.5 hover:from-sky-600 hover:via-cyan-600 hover:to-cyan-700 focus:outline-none focus-visible:ring-4 focus-visible:ring-sky-100 disabled:cursor-not-allowed disabled:opacity-55 dark:text-white dark:focus-visible:ring-cyan-300/20 motion-reduce:transform-none sm:h-12 sm:gap-2 sm:rounded-[18px] sm:px-5 sm:text-base"
                   disabled={!canSend}
                   type="submit"
                 >

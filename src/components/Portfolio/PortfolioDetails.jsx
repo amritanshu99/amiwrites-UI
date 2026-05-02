@@ -267,15 +267,19 @@ export default function PortfolioDetails() {
   const [socialModal, setSocialModal] = useState(null);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [backgroundImageLoaded, setBackgroundImageLoaded] = useState(false);
-  const [hideArrow, setHideArrow] = useState(true);
   const [activeSection, setActiveSection] = useState("intro");
   const [isBottomCtaExpanded, setIsBottomCtaExpanded] = useState(true);
   const [isTouchDevice, setIsTouchDevice] = useState(false);
+  const [isCompactViewport, setIsCompactViewport] = useState(() =>
+    typeof window !== "undefined"
+      ? window.matchMedia("(max-width: 1023px)").matches
+      : false,
+  );
   const prefersReducedMotion = useReducedMotion();
   const pageRef = useRef(null);
   const bottomCtaRef = useRef(null);
   const sectionRefs = useRef({});
-  const hasScrolledRef = useRef(false);
+  const bottomCtaExpandedRef = useRef(isBottomCtaExpanded);
   const pendingScrollSectionRef = useRef(null);
   const pendingScrollTargetRef = useRef(null);
   const pendingScrollTimerRef = useRef(null);
@@ -291,6 +295,15 @@ export default function PortfolioDetails() {
   const openMemoryLane = useCallback(() => {
     setHasOpenedGallery(true);
     setIsGalleryOpen(true);
+  }, []);
+  const markHeroImageLoaded = useCallback(() => {
+    setImageLoaded((prev) => (prev ? prev : true));
+  }, []);
+  const updateBottomCtaExpanded = useCallback((nextExpanded) => {
+    bottomCtaExpandedRef.current = nextExpanded;
+    setIsBottomCtaExpanded((prev) =>
+      prev === nextExpanded ? prev : nextExpanded,
+    );
   }, []);
 
   const scrollToSection = useCallback((sectionId) => {
@@ -312,7 +325,7 @@ export default function PortfolioDetails() {
     pendingScrollTargetRef.current = scrollTarget;
     window.clearTimeout(pendingScrollTimerRef.current);
     setActiveSection(sectionId);
-    setIsBottomCtaExpanded(false);
+    updateBottomCtaExpanded(false);
 
     if (scrollParent === window) {
       window.scrollTo({ top: scrollTarget, behavior: "smooth" });
@@ -324,40 +337,45 @@ export default function PortfolioDetails() {
       pendingScrollSectionRef.current = null;
       pendingScrollTargetRef.current = null;
     }, 900);
-  }, []);
+  }, [updateBottomCtaExpanded]);
 
   const heroScroll = useScroll({
     target: heroRef,
-offset: ["start start", "0.4 end"],
-
-
-
-
+    offset: ["start start", "0.4 end"],
   });
 
-
-
-const imageScale = useTransform(
-  heroScroll.scrollYProgress,
-  [0, 0.2],
-  [1.05, 1]
-);
-const textY = useTransform(
-  heroScroll.scrollYProgress,
-  [0, 0.2],
-  [0, -30]
-);
-
-
- const textOpacity = useTransform(
-  heroScroll.scrollYProgress,
-  [0, 0.4],
-  [1, 0.65],
-);
+  const imageScale = useTransform(
+    heroScroll.scrollYProgress,
+    [0, 0.2],
+    [1.05, 1],
+  );
+  const textY = useTransform(
+    heroScroll.scrollYProgress,
+    [0, 0.2],
+    [0, -30],
+  );
+  const textOpacity = useTransform(
+    heroScroll.scrollYProgress,
+    [0, 0.4],
+    [1, 0.65],
+  );
+  const shouldReduceHeroMotion =
+    prefersReducedMotion || isTouchDevice || isCompactViewport;
+  const heroImageStyle = useMemo(
+    () => (shouldReduceHeroMotion ? undefined : { scale: imageScale }),
+    [imageScale, shouldReduceHeroMotion],
+  );
+  const heroTextStyle = useMemo(
+    () =>
+      shouldReduceHeroMotion ? undefined : { y: textY, opacity: textOpacity },
+    [shouldReduceHeroMotion, textOpacity, textY],
+  );
 
   useEffect(() => {
-    const sync = () =>
-      setIsDark(document.documentElement.classList.contains("dark"));
+    const sync = () => {
+      const nextIsDark = document.documentElement.classList.contains("dark");
+      setIsDark((prev) => (prev === nextIsDark ? prev : nextIsDark));
+    };
     sync();
     const obs = new MutationObserver(sync);
     obs.observe(document.documentElement, { attributes: true });
@@ -367,42 +385,6 @@ const textY = useTransform(
   useEffect(() => {
     return () => {
       window.clearTimeout(pendingScrollTimerRef.current);
-    };
-  }, []);
-
-  useEffect(() => {
-    const scrollParent = getPortfolioScrollParent(pageRef.current);
-    const target = scrollParent === window ? window : scrollParent;
-    let rafId = null;
-
-    const updateArrowVisibility = () => {
-      const { scrollTop, clientHeight, scrollHeight } =
-        getScrollMetrics(scrollParent);
-
-      if (scrollTop > 10 && !hasScrolledRef.current) {
-        hasScrolledRef.current = true;
-      }
-
-      const atBottom = Math.ceil(scrollTop + clientHeight) >= scrollHeight;
-      setHideArrow(!(hasScrolledRef.current && !atBottom));
-    };
-
-    const onScroll = () => {
-      if (rafId !== null) return;
-      rafId = window.requestAnimationFrame(() => {
-        rafId = null;
-        updateArrowVisibility();
-      });
-    };
-
-    updateArrowVisibility();
-    target.addEventListener("scroll", onScroll, { passive: true });
-
-    return () => {
-      target.removeEventListener("scroll", onScroll);
-      if (rafId !== null) {
-        window.cancelAnimationFrame(rafId);
-      }
     };
   }, []);
 
@@ -508,7 +490,7 @@ const textY = useTransform(
     };
 
     const onScroll = () => {
-      setIsBottomCtaExpanded((prev) => (prev ? false : prev));
+      updateBottomCtaExpanded(false);
 
       if (rafId !== null) return;
       rafId = window.requestAnimationFrame(() => {
@@ -531,7 +513,7 @@ const textY = useTransform(
 
       window.removeEventListener("resize", updateActiveSection);
     };
-  }, [data, loading]);
+  }, [data, loading, updateBottomCtaExpanded]);
 
   const socialProfiles = useMemo(
     () =>
@@ -587,19 +569,17 @@ const textY = useTransform(
     heroImage.fetchPriority = "high";
     heroImage.src = heroImageUrl;
 
-    const markLoaded = () => setImageLoaded(true);
-
     if (heroImage.complete) {
-      markLoaded();
+      markHeroImageLoaded();
       return;
     }
 
-    heroImage.addEventListener("load", markLoaded);
+    heroImage.addEventListener("load", markHeroImageLoaded);
 
     return () => {
-      heroImage.removeEventListener("load", markLoaded);
+      heroImage.removeEventListener("load", markHeroImageLoaded);
     };
-  }, [heroImageUrl]);
+  }, [heroImageUrl, markHeroImageLoaded]);
 
   useEffect(() => {
     const preconnect = document.createElement("link");
@@ -630,13 +610,13 @@ const textY = useTransform(
 
   useEffect(() => {
     const collapseTimer = window.setTimeout(() => {
-      setIsBottomCtaExpanded(false);
+      updateBottomCtaExpanded(false);
     }, 2000);
 
     return () => {
       window.clearTimeout(collapseTimer);
     };
-  }, []);
+  }, [updateBottomCtaExpanded]);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(hover: none), (pointer: coarse)");
@@ -656,18 +636,36 @@ const textY = useTransform(
   }, []);
 
   useEffect(() => {
+    const mediaQuery = window.matchMedia("(max-width: 1023px)");
+    const updateCompactViewport = () => {
+      setIsCompactViewport(mediaQuery.matches);
+    };
+
+    updateCompactViewport();
+
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener("change", updateCompactViewport);
+      return () =>
+        mediaQuery.removeEventListener("change", updateCompactViewport);
+    }
+
+    mediaQuery.addListener(updateCompactViewport);
+    return () => mediaQuery.removeListener(updateCompactViewport);
+  }, []);
+
+  useEffect(() => {
     if (!isTouchDevice || !isBottomCtaExpanded) return;
 
     const handlePointerDownOutside = (event) => {
       if (!bottomCtaRef.current) return;
       if (bottomCtaRef.current.contains(event.target)) return;
-      setIsBottomCtaExpanded(false);
+      updateBottomCtaExpanded(false);
     };
 
     document.addEventListener("pointerdown", handlePointerDownOutside);
     return () =>
       document.removeEventListener("pointerdown", handlePointerDownOutside);
-  }, [isBottomCtaExpanded, isTouchDevice]);
+  }, [isBottomCtaExpanded, isTouchDevice, updateBottomCtaExpanded]);
 
   useEffect(() => {
     setBackgroundImageLoaded(false);
@@ -698,19 +696,16 @@ const textY = useTransform(
     <>
       <main
         ref={pageRef}
-        className="relative isolate w-full overflow-hidden bg-white text-zinc-900 dark:bg-black dark:text-zinc-100"
+        className="relative isolate w-full max-w-full overflow-hidden bg-white text-zinc-900 dark:bg-black dark:text-zinc-100"
       >
       {/* ===== PREMIUM NY BACKGROUND ===== */}
       <div
-        className="pointer-events-none fixed inset-y-0 left-0 z-0 bg-cover bg-center will-change-transform transition-opacity duration-500"
-
+        aria-hidden="true"
+        className="pointer-events-none fixed inset-y-0 left-0 right-0 z-0 bg-cover bg-center transition-opacity duration-500 lg:right-[var(--scrollbar-size)]"
         style={{
-          right: "var(--scrollbar-size)",
           backgroundImage: `url(${portfolioBackgroundImage})`,
           opacity: backgroundImageLoaded ? 1 : 0,
-          transform: "translateZ(0)",
         }}
-
       >
         {/* corporate neutral tint (not too white, not too dark) */}
         <div className="absolute inset-0 bg-white/25 dark:bg-black/35" />
@@ -735,48 +730,13 @@ const textY = useTransform(
       {/* PAGE HEIGHT WRAPPER (controls sticky duration) */}
      <div className="relative z-10">
 
-        {/* ================= STICKY SCROLL INDICATOR ================= */}
-        <motion.div
-          className="
-      fixed top-24 left-1/2 -translate-x-1/2
-      z-20 text-zinc-700 dark:text-white/70
-      text-center pointer-events-none
-    "
-          animate={{
-            opacity: hideArrow ? 0 : 1,
-          }}
-          transition={{ duration: 0.3 }}
-        >
-          <div className="text-[10px] tracking-widest uppercase mb-2">
-            Scroll
-          </div>
-
-          <div className="flex flex-col items-center leading-none">
-            {[0, 1].map((i) => (
-              <motion.div
-                key={i}
-                className="text-sm"
-                animate={{ y: [0, 10, 0], opacity: [0, 1, 0] }}
-                transition={{
-                  duration: 1.4,
-                  delay: i * 0.2,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                }}
-              >
-                <FaChevronDown />
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
-
         {/* ================= HERO ================= */}
         <section
           ref={heroRef}
           className="relative min-h-[104svh] md:min-h-[112svh] lg:min-h-[116svh]"
         >
           <motion.div
-            style={{ scale: imageScale }}
+            style={heroImageStyle}
             className="sticky top-0 z-10 h-[78svh] min-h-[480px] overflow-hidden bg-white dark:bg-black sm:min-h-[520px] md:h-[86svh] md:min-h-[560px] lg:h-[88svh]"
           >
             <motion.img
@@ -784,7 +744,7 @@ const textY = useTransform(
               alt={data.name}
               width="1920"
               height="1080"
-              onLoad={() => setImageLoaded(true)}
+              onLoad={markHeroImageLoaded}
               initial={false}
               animate={{
                 opacity: imageLoaded ? 1 : 0,
@@ -810,7 +770,7 @@ const textY = useTransform(
             <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-white dark:from-black to-transparent" />
 
             <motion.div
-              style={{ y: textY, opacity: textOpacity }}
+              style={heroTextStyle}
               className="pointer-events-none absolute inset-0 z-10 flex items-end px-6 pb-[12vh] sm:px-10 sm:pb-[10vh] md:px-20 md:pb-[11vh]"
             >
               <h1
@@ -854,11 +814,11 @@ const textY = useTransform(
           ref={(el) => {
             sectionRefs.current.intro = el;
           }}
-          className="border-b border-zinc-200 px-6 py-14 dark:border-zinc-800 md:px-20 md:py-16"
+          className="border-b border-zinc-200 px-5 py-12 dark:border-zinc-800 sm:px-6 sm:py-14 md:px-20 md:py-16"
         >
           <FadeRow>
             <div className="w-full max-w-none space-y-6">
-              <p className="w-full max-w-none text-lg font-medium leading-relaxed tracking-[0.005em] text-zinc-800 [text-wrap:pretty] dark:text-zinc-100 md:text-xl">
+              <p className="w-full max-w-5xl text-base font-medium leading-relaxed tracking-normal text-zinc-800 [text-wrap:pretty] dark:text-zinc-100 sm:text-lg md:text-xl">
                 {data.description}
               </p>
               <div className="flex flex-wrap gap-3 text-zinc-500">
@@ -874,24 +834,24 @@ const textY = useTransform(
                 ))}
               </div>
 
-              <div className="flex w-full flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+              <div className="flex w-full max-w-full flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
                 <a
                   href={resumeUrl}
                   target="_blank"
                   rel="noreferrer"
                   aria-label="View my resume in a new tab"
-                  className="group inline-flex w-full items-center justify-center gap-3 rounded-full border border-sky-300/70 bg-white/86 px-5 py-3 text-sm font-semibold tracking-[0.02em] text-slate-900 shadow-[0_16px_36px_rgba(15,23,42,0.12)] ring-1 ring-white/70 backdrop-blur-xl transition-all duration-300 hover:-translate-y-0.5 hover:border-sky-400 hover:bg-white hover:shadow-[0_18px_42px_rgba(14,165,233,0.18)] dark:border-cyan-300/35 dark:bg-cyan-300/10 dark:text-cyan-50 dark:shadow-[0_18px_42px_rgba(8,145,178,0.14)] dark:ring-cyan-100/15 dark:hover:border-cyan-200/70 dark:hover:bg-cyan-300/16 sm:w-auto"
+                  className="group inline-flex min-w-0 w-full items-center justify-center gap-3 rounded-full border border-sky-300/70 bg-white/86 px-5 py-3 text-sm font-semibold tracking-[0.02em] text-slate-900 shadow-[0_16px_36px_rgba(15,23,42,0.12)] ring-1 ring-white/70 backdrop-blur-xl transition-all duration-300 hover:-translate-y-0.5 hover:border-sky-400 hover:bg-white hover:shadow-[0_18px_42px_rgba(14,165,233,0.18)] dark:border-cyan-300/35 dark:bg-cyan-300/10 dark:text-cyan-50 dark:shadow-[0_18px_42px_rgba(8,145,178,0.14)] dark:ring-cyan-100/15 dark:hover:border-cyan-200/70 dark:hover:bg-cyan-300/16 sm:w-auto"
                 >
-                  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-sky-500 to-cyan-500 text-white shadow-[0_10px_24px_rgba(14,165,233,0.32)] transition-transform duration-300 group-hover:scale-105 dark:from-cyan-300 dark:to-sky-400 dark:text-slate-950 dark:shadow-[0_10px_24px_rgba(34,211,238,0.22)]">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-sky-500 to-cyan-500 text-white shadow-[0_10px_24px_rgba(14,165,233,0.32)] transition-transform duration-300 group-hover:scale-105 dark:from-cyan-300 dark:to-sky-400 dark:text-slate-950 dark:shadow-[0_10px_24px_rgba(34,211,238,0.22)]">
                     <FaRegFilePdf className="text-base" />
                   </span>
-                  <span className="flex flex-col items-start leading-tight">
+                  <span className="flex min-w-0 flex-col items-start leading-tight">
                     <span>View my resume</span>
                     <span className="text-[11px] font-medium text-slate-500 dark:text-cyan-100/75">
                       Opens PDF in a new tab
                     </span>
                   </span>
-                  <span className="text-base text-slate-400 transition-transform duration-300 group-hover:translate-x-0.5 dark:text-cyan-100/75">
+                  <span className="shrink-0 text-base text-slate-400 transition-transform duration-300 group-hover:translate-x-0.5 dark:text-cyan-100/75">
                     &rarr;
                   </span>
                 </a>
@@ -899,7 +859,7 @@ const textY = useTransform(
                 <button
                   type="button"
                   onClick={() => scrollToSection("experience")}
-                  className="group inline-flex w-full items-center justify-center gap-2 rounded-full border border-zinc-300/70 bg-white/78 px-5 py-3 text-sm font-semibold tracking-wide text-slate-900 shadow-[0_12px_28px_rgba(15,23,42,0.08)] ring-1 ring-white/65 backdrop-blur-xl transition-all duration-300 hover:-translate-y-0.5 hover:border-sky-300 hover:bg-white dark:border-white/15 dark:bg-white/[0.06] dark:text-zinc-100 dark:shadow-[0_16px_36px_rgba(0,0,0,0.26)] dark:ring-white/10 dark:hover:border-cyan-300/40 dark:hover:bg-cyan-300/10 sm:w-auto"
+                  className="group inline-flex min-w-0 w-full items-center justify-center gap-2 rounded-full border border-zinc-300/70 bg-white/78 px-5 py-3 text-sm font-semibold tracking-wide text-slate-900 shadow-[0_12px_28px_rgba(15,23,42,0.08)] ring-1 ring-white/65 backdrop-blur-xl transition-all duration-300 hover:-translate-y-0.5 hover:border-sky-300 hover:bg-white dark:border-white/15 dark:bg-white/[0.06] dark:text-zinc-100 dark:shadow-[0_16px_36px_rgba(0,0,0,0.26)] dark:ring-white/10 dark:hover:border-cyan-300/40 dark:hover:bg-cyan-300/10 sm:w-auto"
                 >
                   Explore my experience
                   <span className="text-slate-400 transition-transform duration-300 group-hover:translate-x-0.5 dark:text-cyan-100/70">
@@ -919,7 +879,7 @@ const textY = useTransform(
           ref={(el) => {
             sectionRefs.current.skills = el;
           }}
-          className="border-b border-zinc-200 px-6 py-14 dark:border-zinc-800 md:px-20 md:py-16"
+          className="border-b border-zinc-200 px-5 py-12 dark:border-zinc-800 sm:px-6 sm:py-14 md:px-20 md:py-16"
         >
           <FadeRow>
             <h2 className="mb-8 flex items-center gap-3 text-xl font-semibold tracking-tight after:h-px after:flex-1 after:bg-gradient-to-r after:from-sky-300/50 after:to-transparent dark:after:from-cyan-300/20 md:text-2xl">
@@ -961,7 +921,7 @@ const textY = useTransform(
           ref={(el) => {
             sectionRefs.current.experience = el;
           }}
-          className="border-b border-zinc-200 px-6 py-14 dark:border-zinc-800 md:px-20 md:py-16"
+          className="border-b border-zinc-200 px-5 py-12 dark:border-zinc-800 sm:px-6 sm:py-14 md:px-20 md:py-16"
         >
           <FadeRow>
             <h2 className="mb-8 flex items-center gap-3 text-xl font-semibold tracking-tight after:h-px after:flex-1 after:bg-gradient-to-r after:from-sky-300/50 after:to-transparent dark:after:from-cyan-300/20 md:text-2xl">
@@ -971,13 +931,13 @@ const textY = useTransform(
             {data.experience.map((exp, i) => (
               <div
                 key={i}
-                className="group mb-4 grid gap-5 rounded-2xl border border-white/20 bg-transparent p-5 shadow-none ring-0 backdrop-blur-0 transition-all duration-300 last:mb-0 hover:-translate-y-0.5 hover:border-white/45 hover:bg-transparent dark:border-white/10 dark:bg-transparent dark:hover:border-sky-300/24 dark:hover:bg-transparent sm:grid-cols-[160px_1fr] md:grid-cols-[220px_1fr]"
+                className="group mb-4 grid min-w-0 gap-4 rounded-2xl border border-zinc-200/55 bg-white/10 p-4 shadow-none ring-0 backdrop-blur-0 transition-all duration-300 last:mb-0 hover:-translate-y-0.5 hover:border-sky-200/80 hover:bg-white/24 dark:border-white/10 dark:bg-transparent dark:hover:border-sky-300/24 dark:hover:bg-white/[0.03] sm:grid-cols-[160px_1fr] sm:gap-5 sm:p-5 md:grid-cols-[220px_1fr]"
               >
                 <div className="flex items-center gap-2 text-sm font-medium text-zinc-500 dark:text-zinc-400 sm:items-start sm:pt-1">
   <FaCalendarAlt className="text-xs text-sky-500/80 dark:text-sky-300/80" />
   <span>{exp.duration}</span>
 </div>
-                <div>
+                <div className="min-w-0">
                   <div className="flex items-center gap-3">
                     {companyLogoMap[exp.company] && (
                 <img
@@ -1001,13 +961,13 @@ const textY = useTransform(
 
                     )}
 
-                    <div>
-                      <h3 className="text-lg font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">{exp.role}</h3>
-                      <p className="text-sm text-zinc-500 dark:text-zinc-400">{exp.company}</p>
+                    <div className="min-w-0">
+                      <h3 className="break-words text-lg font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">{exp.role}</h3>
+                      <p className="break-words text-sm text-zinc-500 dark:text-zinc-400">{exp.company}</p>
                     </div>
                   </div>
 
-                  <p className="mt-2 text-base leading-relaxed text-zinc-800 dark:text-zinc-200">{exp.description}</p>
+                  <p className="mt-2 break-words text-base leading-relaxed text-zinc-800 dark:text-zinc-200">{exp.description}</p>
 
                   {exp.achievements?.length > 0 && (
                   <motion.button
@@ -1065,7 +1025,7 @@ const textY = useTransform(
           ref={(el) => {
             sectionRefs.current.education = el;
           }}
-          className="px-6 py-14 pb-44 sm:pb-40 md:px-20 md:py-16 md:pb-48"
+          className="px-5 py-12 pb-44 sm:px-6 sm:py-14 sm:pb-40 md:px-20 md:py-16 md:pb-48"
         >
           <FadeRow>
             <h2 className="mb-8 flex items-center gap-3 text-xl font-semibold tracking-tight after:h-px after:flex-1 after:bg-gradient-to-r after:from-sky-300/50 after:to-transparent dark:after:from-cyan-300/20 md:text-2xl">
@@ -1075,15 +1035,15 @@ const textY = useTransform(
             {data.education.map((edu, i) => (
               <div
                 key={i}
-                className="mb-4 grid gap-5 rounded-2xl border border-white/20 bg-transparent p-5 shadow-none ring-0 backdrop-blur-0 transition-all duration-300 last:mb-0 hover:-translate-y-0.5 hover:border-white/45 hover:bg-transparent dark:border-white/10 dark:bg-transparent dark:hover:border-sky-300/24 dark:hover:bg-transparent sm:grid-cols-[160px_1fr] md:grid-cols-[220px_1fr]"
+                className="mb-4 grid min-w-0 gap-4 rounded-2xl border border-zinc-200/55 bg-white/10 p-4 shadow-none ring-0 backdrop-blur-0 transition-all duration-300 last:mb-0 hover:-translate-y-0.5 hover:border-sky-200/80 hover:bg-white/24 dark:border-white/10 dark:bg-transparent dark:hover:border-sky-300/24 dark:hover:bg-white/[0.03] sm:grid-cols-[160px_1fr] sm:gap-5 sm:p-5 md:grid-cols-[220px_1fr]"
               >
                 <div className="flex items-center gap-2 text-sm font-medium text-zinc-500 dark:text-zinc-400 sm:items-start sm:pt-1">
   <FaCalendarAlt className="text-xs text-sky-500/80 dark:text-sky-300/80" />
   <span>{edu.duration}</span>
 </div>
-                <div>
-                  <h3 className="text-lg font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">{edu.degree}</h3>
-                  <p className="text-sm text-zinc-500 dark:text-zinc-400">{edu.institution}</p>
+                <div className="min-w-0">
+                  <h3 className="break-words text-lg font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">{edu.degree}</h3>
+                  <p className="break-words text-sm text-zinc-500 dark:text-zinc-400">{edu.institution}</p>
 
                   {edu.achievements?.length > 0 && (
                 <motion.button
@@ -1139,41 +1099,41 @@ const textY = useTransform(
       </main>
 
       <div
-        className="pointer-events-none fixed bottom-[max(1.25rem,env(safe-area-inset-bottom))] left-0 z-[80] px-3 sm:px-6"
-        style={{ right: "var(--scrollbar-size)" }}
+        className="pointer-events-none fixed bottom-[max(1.25rem,env(safe-area-inset-bottom))] left-0 right-0 z-[80] px-3 sm:px-6 lg:right-[var(--scrollbar-size)]"
       >
         <motion.div
           ref={bottomCtaRef}
           layout
           transition={{
             layout: { type: "spring", stiffness: 220, damping: 28, mass: 0.95 },
+            duration: 0.38,
+            ease: [0.22, 1, 0.36, 1],
           }}
           onMouseEnter={
-            isTouchDevice ? undefined : () => setIsBottomCtaExpanded(true)
+            isTouchDevice ? undefined : () => updateBottomCtaExpanded(true)
           }
           onMouseLeave={
-            isTouchDevice ? undefined : () => setIsBottomCtaExpanded(false)
+            isTouchDevice ? undefined : () => updateBottomCtaExpanded(false)
           }
           onFocusCapture={
-            isTouchDevice ? undefined : () => setIsBottomCtaExpanded(true)
+            isTouchDevice ? undefined : () => updateBottomCtaExpanded(true)
           }
           onBlurCapture={
             isTouchDevice
               ? undefined
               : (event) => {
                   if (!event.currentTarget.contains(event.relatedTarget)) {
-                    setIsBottomCtaExpanded(false);
+                    updateBottomCtaExpanded(false);
                   }
                 }
           }
-          className="pointer-events-auto mx-auto flex min-w-0 w-fit max-w-[calc(100vw_-_var(--scrollbar-size)_-_1.5rem)] items-center gap-1.5 rounded-full border border-sky-200/70 bg-sky-50/90 p-1.5 shadow-[0_14px_36px_rgba(14,116,144,0.24)] ring-1 ring-white/55 backdrop-blur-2xl dark:border-cyan-300/20 dark:bg-black/80 dark:shadow-[0_16px_42px_rgba(0,0,0,0.62)] dark:ring-cyan-100/10"
+          className="pointer-events-auto mx-auto flex min-w-0 w-fit max-w-[calc(100vw_-_1.5rem)] items-center gap-1.5 rounded-full border border-sky-200/70 bg-sky-50/90 p-1.5 shadow-[0_14px_36px_rgba(14,116,144,0.24)] ring-1 ring-white/55 backdrop-blur-2xl dark:border-cyan-300/20 dark:bg-black/80 dark:shadow-[0_16px_42px_rgba(0,0,0,0.62)] dark:ring-cyan-100/10 sm:max-w-[calc(100vw_-_3rem)] lg:max-w-[calc(100vw_-_var(--scrollbar-size)_-_3rem)]"
           initial={
             prefersReducedMotion
               ? { opacity: 1, y: 0, scale: 1 }
               : { opacity: 0.96, y: 6, scale: 0.985 }
           }
           animate={{ y: 0, opacity: 1, scale: 1 }}
-          transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
         >
           <AnimatePresence initial={false} mode="popLayout">
             {!isBottomCtaExpanded ? (
@@ -1185,10 +1145,10 @@ const textY = useTransform(
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: -6, scale: 0.99 }}
                 transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-                onClick={() => setIsBottomCtaExpanded(true)}
+                onClick={() => updateBottomCtaExpanded(true)}
                 onPointerDown={(event) => {
                   if (event.pointerType === "touch") {
-                    setIsBottomCtaExpanded(true);
+                    updateBottomCtaExpanded(true);
                   }
                 }}
                 whileHover={isTouchDevice ? undefined : { scale: 1.01, y: -1 }}
@@ -1231,7 +1191,7 @@ const textY = useTransform(
                       whileTap={{ scale: 0.98 }}
                       onClick={() => {
                         scrollToSection(section.id);
-                        setIsBottomCtaExpanded(false);
+                        updateBottomCtaExpanded(false);
                       }}
                       className={`shrink-0 whitespace-nowrap rounded-full px-2.5 py-1.5 text-[11px] font-medium transition-all duration-200 sm:px-3 sm:text-sm ${
                         isActive
@@ -1250,7 +1210,7 @@ const textY = useTransform(
                   transition={{ duration: 0.3, delay: 0.18, ease: [0.22, 1, 0.36, 1] }}
                   whileHover={isTouchDevice ? undefined : { y: -1, scale: 1.03 }}
                   whileTap={{ scale: 0.95 }}
-                  onClick={() => setIsBottomCtaExpanded(false)}
+                  onClick={() => updateBottomCtaExpanded(false)}
                   aria-label="Collapse section switcher"
                   className="shrink-0 rounded-full p-2 text-slate-500 transition-all duration-200 hover:bg-sky-100/85 hover:text-slate-700 dark:text-zinc-400 dark:hover:bg-white/10 dark:hover:text-cyan-100"
                 >

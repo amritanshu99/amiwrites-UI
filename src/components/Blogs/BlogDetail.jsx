@@ -6,6 +6,15 @@ import Loader from "../Loader/Loader";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { applySEO, SITE_URL } from "../../utils/seo";
+import {
+  CalendarDays,
+  CheckCircle2,
+  Clipboard,
+  Clock,
+  Share2,
+  Sparkles,
+  UserRound,
+} from "lucide-react";
 
 const BlogDetails = () => {
   const { id } = useParams();
@@ -60,6 +69,26 @@ const BlogDetails = () => {
     temp.innerHTML = blog.content;
     return (temp.textContent || temp.innerText || "").trim();
   }, [blog]);
+
+  const readingMinutes = useMemo(() => {
+    if (!plainTextContent) return 1;
+    const words = plainTextContent.split(/\s+/).filter(Boolean).length;
+    return Math.max(1, Math.ceil(words / 220));
+  }, [plainTextContent]);
+
+  const publishedLabel = useMemo(() => {
+    const rawDate = blog?.date || blog?.createdAt;
+    if (!rawDate) return "Date unavailable";
+
+    const date = new Date(rawDate);
+    if (Number.isNaN(date.getTime())) return "Date unavailable";
+
+    return date.toLocaleDateString(undefined, {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  }, [blog?.createdAt, blog?.date]);
 
   useEffect(() => {
     const fallbackDescription =
@@ -514,34 +543,33 @@ const BlogDetails = () => {
 
   if (loading)
     return (
-      <div className="min-h-screen flex items-center justify-center p-6 bg-slate-50 dark:bg-black">
+      <div className="flex min-h-screen items-center justify-center bg-[linear-gradient(180deg,#f8fafc_0%,#eef6ff_100%)] p-6 dark:bg-none dark:bg-black">
         <Loader />
       </div>
     );
 
   if (!blog)
     return (
-      <div className="min-h-screen flex items-center justify-center p-6 bg-slate-50 dark:bg-black">
-        <p className="text-red-500 dark:text-red-400 text-xl font-medium">
+      <div className="flex min-h-screen items-center justify-center bg-[linear-gradient(180deg,#f8fafc_0%,#eef6ff_100%)] p-6 dark:bg-none dark:bg-black">
+        <p className="rounded-2xl border border-red-200 bg-white/90 px-5 py-4 text-xl font-semibold text-red-600 shadow-sm dark:border-red-900/60 dark:bg-black dark:text-red-300">
           Blog not found.
         </p>
       </div>
     );
 
   return (
-    <main className="min-h-screen bg-slate-50 dark:bg-black py-16 px-4 sm:px-6 lg:px-8 flex justify-center">
+    <main className="flex min-h-screen justify-center bg-[linear-gradient(180deg,#f8fbff_0%,#eef6ff_46%,#fbfdff_100%)] px-3 pb-28 pt-8 dark:bg-none dark:bg-black sm:px-6 sm:pb-16 sm:pt-12 lg:px-8 lg:pb-20 lg:pt-16">
       <article
         ref={articleRef}
-        className="bg-white dark:bg-black text-black dark:text-zinc-50 max-w-4xl w-full rounded-2xl shadow-xl p-6 sm:p-10 md:p-14 animate-fadeIn border border-slate-200 dark:border-zinc-900"
+        className="animate-fadeIn w-full max-w-4xl overflow-hidden rounded-[1.35rem] border border-white/90 bg-white/95 p-5 text-black shadow-[0_34px_90px_-54px_rgba(15,23,42,0.38)] ring-1 ring-sky-100/80 backdrop-blur dark:border-zinc-900 dark:bg-black dark:text-zinc-50 dark:ring-white/5 dark:shadow-[0_34px_90px_-54px_rgba(0,0,0,0.98)] sm:rounded-[1.7rem] sm:p-8 md:p-12"
       >
-        {/* Title */}
-        <h1 className="text-3xl sm:text-4xl font-bold leading-snug text-slate-800 dark:text-cyan-300 mb-6 font-sans">
-          {blog.title}
+        <div className="mb-5 flex flex-wrap items-center gap-2">
+          <span className="inline-flex items-center rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-700 dark:border-cyan-300/20 dark:bg-cyan-300/10 dark:text-cyan-100">
+            AmiVerse Blog
+          </span>
           {isTrending && (
             <span
-              className="ml-3 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold
-                         bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300 border
-                         border-amber-200/60 dark:border-amber-800 align-middle"
+              className="inline-flex items-center gap-1.5 rounded-full border border-amber-200/70 bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800 dark:border-amber-800/80 dark:bg-amber-900/35 dark:text-amber-200"
               title="This post is currently in the trending rail"
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -550,33 +578,41 @@ const BlogDetails = () => {
               Trending
             </span>
           )}
+        </div>
+
+        {/* Title */}
+        <h1 className="mb-6 break-words font-sans text-3xl font-bold leading-tight text-slate-900 dark:text-cyan-200 sm:text-4xl sm:leading-tight">
+          {blog.title}
         </h1>
 
         {/* Meta + Actions */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between text-slate-500 dark:text-zinc-200 text-sm mb-10 gap-4">
-          <div>
-            <time dateTime={blog.date} className="italic">
-              Published on{" "}
-              {new Date(blog.date).toLocaleDateString(undefined, {
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-              })}
+        <div className="mb-10 flex flex-col gap-4 rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 text-sm text-slate-600 shadow-sm dark:border-zinc-900 dark:bg-zinc-950/45 dark:text-zinc-200 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+            <time dateTime={blog.date || blog.createdAt} className="inline-flex items-center gap-2">
+              <CalendarDays className="h-4 w-4 text-sky-600 dark:text-cyan-300" />
+              {publishedLabel}
             </time>
-            <p className="mt-2">
-              By{" "}
-              <span className="text-blue-600 dark:text-cyan-400 font-semibold">
-                Amritanshu
+            <span className="inline-flex items-center gap-2">
+              <UserRound className="h-4 w-4 text-sky-600 dark:text-cyan-300" />
+              <span>
+                By{" "}
+                <span className="font-semibold text-sky-700 dark:text-cyan-200">
+                  Amritanshu
+                </span>
               </span>
-            </p>
+            </span>
+            <span className="inline-flex items-center gap-2">
+              <Clock className="h-4 w-4 text-sky-600 dark:text-cyan-300" />
+              {readingMinutes} min read
+            </span>
           </div>
 
           {/* Summary Button Group */}
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2 sm:justify-end">
             <button
               onClick={handleSummarize}
               disabled={summarizing || !plainTextContent}
-              className="inline-flex items-center justify-center px-4 py-2 rounded-xl bg-gradient-to-r from-slate-900 to-slate-700 text-white dark:from-cyan-500 dark:to-cyan-600 dark:text-zinc-900 hover:opacity-95 disabled:opacity-50 disabled:cursor-not-allowed transition shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-slate-400 dark:focus-visible:ring-cyan-300"
+              className="inline-flex min-h-[44px] items-center justify-center rounded-full bg-slate-950 px-4 py-2 text-sm font-semibold text-white shadow-[0_16px_34px_-24px_rgba(15,23,42,0.8)] transition duration-200 hover:-translate-y-0.5 hover:bg-slate-800 hover:shadow-[0_22px_44px_-26px_rgba(15,23,42,0.9)] disabled:cursor-not-allowed disabled:opacity-50 dark:bg-cyan-300 dark:text-zinc-950 dark:hover:bg-cyan-200 focus:outline-none focus-visible:ring-4 focus-visible:ring-sky-100 dark:focus-visible:ring-cyan-300/20 motion-reduce:transform-none"
               aria-label="Generate AI summary"
               type="button"
             >
@@ -599,13 +635,11 @@ const BlogDetails = () => {
                       fill="none"
                     />
                   </svg>
-                  Summarizing…
+                  Summarizing...
                 </>
               ) : (
                 <>
-                  <svg className="mr-2 h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M5 3h14a2 2 0 012 2v10l-4-3-4 3-4-3-4 3V5a2 2 0 012-2z" />
-                  </svg>
+                  <Sparkles className="mr-2 h-4 w-4" />
                   AI Summary
                 </>
               )}
@@ -614,14 +648,12 @@ const BlogDetails = () => {
             <button
               onClick={handleCopySummary}
               disabled={!summary}
-              className="inline-flex items-center justify-center px-4 py-2 rounded-xl bg-white dark:bg-zinc-900 text-slate-700 dark:text-zinc-50 hover:bg-slate-100 dark:hover:bg-zinc-800 border border-slate-200 dark:border-zinc-600 disabled:opacity-50 disabled:cursor-not-allowed transition focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-slate-300 dark:focus-visible:ring-zinc-700"
+              className="inline-flex min-h-[44px] items-center justify-center rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition duration-200 hover:-translate-y-0.5 hover:border-sky-200 hover:bg-sky-50 hover:text-sky-800 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-800 dark:bg-black dark:text-zinc-50 dark:hover:border-zinc-700 dark:hover:bg-zinc-950 focus:outline-none focus-visible:ring-4 focus-visible:ring-sky-100 dark:focus-visible:ring-white/10 motion-reduce:transform-none"
               aria-label="Copy AI summary"
               title={summary ? "Copy summary" : "No summary to copy yet"}
               type="button"
             >
-              <svg className="mr-2 h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M16 1H4a2 2 0 00-2 2v12h2V3h12V1zm3 4H8a2 2 0 00-2 2v14a2 2 0 002 2h11a2 2 0 002-2V7a2 2 0 00-2-2zm0 16H8V7h11v14z" />
-              </svg>
+              <Clipboard className="mr-2 h-4 w-4" />
               Copy
             </button>
           </div>
@@ -629,8 +661,8 @@ const BlogDetails = () => {
 
         {/* Blog Content (HTML from CMS) */}
         <div
-          className="prose prose-lg max-w-none dark:prose-invert prose-headings:text-slate-800 dark:prose-headings:text-cyan-300 prose-a:text-blue-600 dark:prose-a:text-cyan-400 prose-a:hover:text-blue-700 dark:prose-a:hover:text-cyan-200 prose-img:rounded-xl prose-img:shadow-md"
-          style={{ fontFamily: "'Georgia', serif" }}
+          className="blog-content max-w-none overflow-hidden text-slate-800 dark:text-zinc-100"
+          style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}
           dangerouslySetInnerHTML={{ __html: blog.content }}
         />
 
@@ -638,38 +670,39 @@ const BlogDetails = () => {
         {(summary || summarizing || summaryError) && (
           <section
             ref={summaryRef}
-            className="mt-12 rounded-2xl border border-slate-200 dark:border-zinc-900 bg-gradient-to-b from-slate-50/90 to-white dark:from-black dark:to-black p-6 sm:p-8 shadow-sm"
+            className="mt-12 rounded-[1.25rem] border border-slate-200/80 bg-[linear-gradient(180deg,rgba(248,250,252,0.96),rgba(255,255,255,0.98))] p-5 shadow-[0_22px_58px_-44px_rgba(15,23,42,0.36)] dark:border-zinc-900 dark:bg-none dark:bg-black sm:p-7"
             aria-live="polite"
           >
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+            <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <h2 className="text-xl sm:text-2xl font-semibold text-slate-800 dark:text-cyan-300">
+                <h2 className="text-xl font-semibold text-slate-900 dark:text-cyan-200 sm:text-2xl">
                   AI Summary
                 </h2>
-                <p className="text-xs text-slate-500 dark:text-zinc-200 mt-1">
+                <p className="mt-1 text-xs text-slate-500 dark:text-zinc-300">
                   Quick, helpful overview generated from this article.
                 </p>
               </div>
 
               <div className="flex items-center gap-2">
                 {summary && (
-                  <span className="text-xs px-2 py-1 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800">
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200/70 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 dark:border-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-200">
+                    <CheckCircle2 className="h-3.5 w-3.5" />
                     Ready
                   </span>
                 )}
                 {summarizing && (
-                  <span className="text-xs px-2 py-1 rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-800">
-                    Generating…
+                  <span className="rounded-full border border-indigo-200/70 bg-indigo-50 px-2.5 py-1 text-xs font-semibold text-indigo-700 dark:border-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-200">
+                    Generating...
                   </span>
                 )}
               </div>
             </div>
 
             {summaryError && (
-              <p className="text-red-600 dark:text-red-400 mb-4">{summaryError}</p>
+              <p className="mb-4 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-700 dark:border-red-900/70 dark:bg-red-950/20 dark:text-red-300">{summaryError}</p>
             )}
 
-            <div className="rounded-xl bg-white dark:bg-black border border-slate-200 dark:border-zinc-900 p-4 sm:p-6">
+            <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm dark:border-zinc-900 dark:bg-black sm:p-6">
               {summarizing && (
                 // Lightweight skeleton loading
                 <div className="space-y-3 animate-pulse">
@@ -689,11 +722,11 @@ const BlogDetails = () => {
               {summary && (
                 // NOTE: No className on ReactMarkdown in v9+.
                 // Style via a wrapper and the `components` map.
-                <div className="prose max-w-none dark:prose-invert leading-relaxed text-slate-800 dark:text-zinc-50">
+                <div className="summary-content max-w-none leading-relaxed text-slate-800 dark:text-zinc-50">
                   <ReactMarkdown
                     remarkPlugins={[remarkGfm]}
                     components={{
-                      a: ({ node, children, ...props }) => (
+                      a: ({ children, ...props }) => (
                         <a
                           className="text-blue-600 dark:text-cyan-400 hover:underline"
                           {...props}
@@ -714,7 +747,7 @@ const BlogDetails = () => {
                             <code {...props}>{children}</code>
                           </pre>
                         ),
-                      h1: ({ node, children, ...props }) => (
+                      h1: ({ children, ...props }) => (
                         <h1 className="mt-0" {...props}>
                           {children}
                         </h1>
@@ -730,7 +763,11 @@ const BlogDetails = () => {
         )}
 
         {/* Social Share Buttons */}
-        <div className="mt-12 flex flex-wrap gap-4 items-center">
+        <div className="mt-12 flex flex-wrap items-center gap-3 border-t border-slate-200/80 pt-6 dark:border-zinc-900">
+          <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-zinc-400">
+            <Share2 className="h-4 w-4" />
+            Share
+          </span>
           {/* Twitter / X */}
           <a
             href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(
@@ -738,7 +775,7 @@ const BlogDetails = () => {
             )}&text=${encodeURIComponent(blog.title)}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center space-x-2 text-blue-500 dark:text-cyan-400 hover:text-blue-600 dark:hover:text-cyan-200 transition"
+            className="inline-flex min-h-[42px] items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-blue-600 transition duration-200 hover:-translate-y-0.5 hover:border-blue-200 hover:bg-blue-50 dark:border-zinc-800 dark:bg-black dark:text-cyan-200 dark:hover:border-zinc-700 dark:hover:bg-zinc-950 motion-reduce:transform-none"
             aria-label="Share on Twitter"
           >
             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -754,7 +791,7 @@ const BlogDetails = () => {
             )}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center space-x-2 text-blue-600 dark:text-cyan-400 hover:text-blue-700 dark:hover:text-cyan-200 transition"
+            className="inline-flex min-h-[42px] items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-blue-700 transition duration-200 hover:-translate-y-0.5 hover:border-blue-200 hover:bg-blue-50 dark:border-zinc-800 dark:bg-black dark:text-cyan-200 dark:hover:border-zinc-700 dark:hover:bg-zinc-950 motion-reduce:transform-none"
             aria-label="Share on Facebook"
           >
             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -772,6 +809,121 @@ const BlogDetails = () => {
         }
         .animate-fadeIn {
           animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        .blog-content {
+          font-size: 1.04rem;
+          line-height: 1.85;
+        }
+        .blog-content > * + * {
+          margin-top: 1.15rem;
+        }
+        .blog-content h1,
+        .blog-content h2,
+        .blog-content h3,
+        .blog-content h4 {
+          color: #0f172a;
+          font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+          font-weight: 750;
+          line-height: 1.2;
+          margin-top: 2rem;
+          overflow-wrap: anywhere;
+        }
+        .blog-content h1 { font-size: 2.35rem; }
+        .blog-content h2 { font-size: 1.85rem; }
+        .blog-content h3 { font-size: 1.45rem; }
+        .blog-content p,
+        .blog-content li {
+          overflow-wrap: anywhere;
+        }
+        .blog-content a,
+        .summary-content a {
+          color: #0369a1;
+          font-weight: 650;
+          text-decoration: underline;
+          text-decoration-thickness: 1px;
+          text-underline-offset: 4px;
+        }
+        .blog-content ul,
+        .blog-content ol,
+        .summary-content ul,
+        .summary-content ol {
+          padding-left: 1.35rem;
+        }
+        .blog-content li + li,
+        .summary-content li + li {
+          margin-top: 0.45rem;
+        }
+        .blog-content img {
+          border-radius: 1rem;
+          box-shadow: 0 24px 64px -42px rgba(15, 23, 42, 0.42);
+          height: auto;
+          max-width: 100%;
+        }
+        .blog-content blockquote {
+          border-left: 4px solid #38bdf8;
+          background: rgba(240, 249, 255, 0.74);
+          border-radius: 0 1rem 1rem 0;
+          color: #334155;
+          font-style: italic;
+          padding: 1rem 1.15rem;
+        }
+        .blog-content pre,
+        .summary-content pre {
+          background: #0f172a;
+          border-radius: 1rem;
+          color: #e2e8f0;
+          overflow-x: auto;
+          padding: 1rem;
+        }
+        .blog-content code,
+        .summary-content code {
+          overflow-wrap: anywhere;
+        }
+        .blog-content table {
+          display: block;
+          max-width: 100%;
+          overflow-x: auto;
+          white-space: nowrap;
+        }
+        .summary-content > * + * {
+          margin-top: 0.9rem;
+        }
+        .summary-content h1,
+        .summary-content h2,
+        .summary-content h3 {
+          color: #0f172a;
+          font-weight: 750;
+          line-height: 1.25;
+        }
+        .dark .blog-content h1,
+        .dark .blog-content h2,
+        .dark .blog-content h3,
+        .dark .blog-content h4,
+        .dark .summary-content h1,
+        .dark .summary-content h2,
+        .dark .summary-content h3 {
+          color: #a5f3fc;
+        }
+        .dark .blog-content a,
+        .dark .summary-content a {
+          color: #67e8f9;
+        }
+        .dark .blog-content blockquote {
+          background: rgba(24, 24, 27, 0.8);
+          border-left-color: #67e8f9;
+          color: #d4d4d8;
+        }
+        @media (max-width: 640px) {
+          .blog-content {
+            font-size: 1rem;
+            line-height: 1.78;
+          }
+          .blog-content h1 { font-size: 1.85rem; }
+          .blog-content h2 { font-size: 1.5rem; }
+          .blog-content h3 { font-size: 1.25rem; }
+          .blog-content > * + * {
+            margin-top: 1rem;
+          }
         }
       `}</style>
     </main>

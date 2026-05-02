@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import { useLocation } from "react-router-dom";
+import { ArrowUpRight, Newspaper } from "lucide-react";
 
 const formatPublishedAt = (publishedAt) => {
   if (!publishedAt) return "Date unavailable";
@@ -79,10 +80,23 @@ function TechNewsCards() {
     }
   }, [pathname]);
 
-  const handleReadMoreClick = useCallback((e, url) => {
-    e.preventDefault();
+  const openArticle = useCallback((url) => {
+    if (!url) return;
     window.open(url, "_blank", "noopener,noreferrer");
   }, []);
+
+  const handleReadMoreClick = useCallback((e, url) => {
+    e.preventDefault();
+    e.stopPropagation();
+    openArticle(url);
+  }, [openArticle]);
+
+  const handleCardKeyDown = useCallback((e, url) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      openArticle(url);
+    }
+  }, [openArticle]);
 
   const featuredArticle = !loading && articles.length > 0 ? articles[0] : null;
   const secondaryArticles =
@@ -97,17 +111,18 @@ function TechNewsCards() {
   }
 
   return (
-    <div className="min-h-screen w-full bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.96),_rgba(232,240,249,0.95)_22%,_rgba(241,245,249,1)_52%,_rgba(248,250,252,1)_100%)] px-3 py-3 dark:bg-[linear-gradient(180deg,_#000000_0%,_#070707_52%,_#000000_100%)] sm:px-5 sm:py-4 lg:px-8 lg:py-6">
+    <div className="min-h-screen w-full bg-[linear-gradient(180deg,#f8fbff_0%,#eef6ff_46%,#fbfdff_100%)] px-3 pb-24 pt-3 dark:bg-[linear-gradient(180deg,_#000000_0%,_#070707_52%,_#000000_100%)] sm:px-5 sm:pb-6 sm:pt-4 lg:px-8 lg:pb-8 lg:pt-6">
       <section className="mx-auto max-w-7xl">
-        <div className="overflow-hidden rounded-[1.3rem] border border-white/80 bg-white/84 px-4 py-4 shadow-[0_30px_90px_-50px_rgba(15,23,42,0.25)] backdrop-blur-xl dark:border-zinc-900 dark:bg-black dark:shadow-[0_30px_90px_-50px_rgba(0,0,0,0.95)] sm:rounded-[1.6rem] sm:px-5 sm:py-4 lg:px-6 lg:py-5">
+        <div className="relative overflow-hidden rounded-[1.3rem] border border-white/85 bg-white/88 px-4 py-4 shadow-[0_30px_90px_-50px_rgba(15,23,42,0.28)] backdrop-blur-xl dark:border-zinc-900 dark:bg-black dark:shadow-[0_30px_90px_-50px_rgba(0,0,0,0.95)] sm:rounded-[1.6rem] sm:px-5 sm:py-4 lg:px-6 lg:py-5">
           <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-sky-300/60 to-transparent dark:via-sky-400/30" />
 
           <div className="relative border-b border-zinc-200/80 pb-4 dark:border-zinc-900 sm:pb-5">
             <div className="max-w-3xl">
-              <span className="inline-flex items-center rounded-full border border-sky-200 bg-sky-50/90 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-700 dark:border-sky-500/25 dark:bg-sky-500/10 dark:text-sky-200">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-sky-200 bg-sky-50/90 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-700 dark:border-sky-500/25 dark:bg-sky-500/10 dark:text-sky-200">
+                <Newspaper className="h-3.5 w-3.5" />
                 Tech Byte
               </span>
-              <h1 className="mt-2 max-w-2xl text-base font-semibold tracking-tight text-zinc-950 dark:text-white sm:text-[1.4rem] lg:text-[1.65rem]">
+              <h1 className="mt-2 max-w-2xl text-base font-semibold text-zinc-950 dark:text-white sm:text-[1.4rem] lg:text-[1.65rem]">
                 Tech news that gets to the point faster.
               </h1>
               <p className="mt-1.5 max-w-2xl text-sm leading-5 text-zinc-600 dark:text-zinc-300">
@@ -127,13 +142,14 @@ function TechNewsCards() {
             ) : (
               <>
                 {featuredArticle && (
-                  <a
+                  <article
                     key={featuredArticle.url}
-                    href={featuredArticle.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    role="link"
+                    tabIndex={0}
+                    onClick={() => openArticle(featuredArticle.url)}
+                    onKeyDown={(e) => handleCardKeyDown(e, featuredArticle.url)}
                     aria-label={`Read full article: ${featuredArticle.title}`}
-                    className="group overflow-hidden rounded-[1.45rem] border border-white/80 bg-white/92 shadow-[0_24px_60px_-38px_rgba(15,23,42,0.22)] backdrop-blur-sm transform-gpu transition-[transform,box-shadow,border-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1.5 hover:scale-[1.005] hover:border-sky-100 hover:shadow-[0_34px_84px_-42px_rgba(15,23,42,0.3)] focus:outline-none focus:ring-4 focus:ring-sky-100 focus-visible:-translate-y-1 dark:border-zinc-900 dark:bg-black dark:hover:border-zinc-700 dark:focus:ring-zinc-700/20 dark:shadow-[0_24px_60px_-38px_rgba(0,0,0,0.95)] dark:hover:shadow-[0_36px_88px_-44px_rgba(0,0,0,0.98)] sm:rounded-[1.8rem] lg:col-span-2 motion-reduce:transform-none motion-reduce:transition-none"
+                    className="group cursor-pointer overflow-hidden rounded-[1.45rem] border border-white/80 bg-white/92 shadow-[0_24px_60px_-38px_rgba(15,23,42,0.22)] backdrop-blur-sm transform-gpu transition-[transform,box-shadow,border-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1.5 hover:scale-[1.005] hover:border-sky-100 hover:shadow-[0_34px_84px_-42px_rgba(15,23,42,0.3)] focus:outline-none focus:ring-4 focus:ring-sky-100 focus-visible:-translate-y-1 dark:border-zinc-900 dark:bg-black dark:hover:border-zinc-700 dark:focus:ring-zinc-700/20 dark:shadow-[0_24px_60px_-38px_rgba(0,0,0,0.95)] dark:hover:shadow-[0_36px_88px_-44px_rgba(0,0,0,0.98)] sm:rounded-[1.8rem] lg:col-span-2 motion-reduce:transform-none motion-reduce:transition-none"
                   >
                     <div className="grid h-full grid-cols-1 lg:grid-cols-[1.25fr_1fr]">
                       <div className="relative min-h-[200px] overflow-hidden bg-zinc-100 dark:bg-zinc-950 sm:min-h-[280px] lg:min-h-full">
@@ -170,24 +186,26 @@ function TechNewsCards() {
                           <button
                             type="button"
                             onClick={(e) => handleReadMoreClick(e, featuredArticle.url)}
-                            className="inline-flex min-h-[42px] min-w-[148px] items-center justify-center rounded-full bg-zinc-950 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-zinc-800 dark:bg-zinc-100 dark:text-black dark:hover:bg-white sm:min-h-[44px] sm:min-w-[160px] sm:px-5"
+                            className="inline-flex min-h-[44px] min-w-[154px] items-center justify-center gap-2 rounded-full bg-zinc-950 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_16px_34px_-24px_rgba(15,23,42,0.9)] transition duration-200 hover:-translate-y-0.5 hover:bg-zinc-800 focus:outline-none focus-visible:ring-4 focus-visible:ring-sky-100 dark:bg-zinc-100 dark:text-black dark:hover:bg-white dark:focus-visible:ring-white/15 motion-reduce:transform-none sm:min-w-[166px] sm:px-5"
                           >
                             Read Full Story
+                            <ArrowUpRight className="h-4 w-4" />
                           </button>
                         </div>
                       </div>
                     </div>
-                  </a>
+                  </article>
                 )}
 
                 {secondaryArticles.map((article) => (
-                  <a
+                  <article
                     key={article.url}
-                    href={article.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    role="link"
+                    tabIndex={0}
+                    onClick={() => openArticle(article.url)}
+                    onKeyDown={(e) => handleCardKeyDown(e, article.url)}
                     aria-label={`Read full article: ${article.title}`}
-                    className="group flex min-h-[250px] w-full flex-col overflow-hidden rounded-[1.35rem] border border-white/80 bg-white/92 p-0 shadow-[0_18px_40px_-34px_rgba(15,23,42,0.18)] backdrop-blur-sm transform-gpu transition-[transform,box-shadow,border-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1.5 hover:scale-[1.01] hover:border-sky-100 hover:shadow-[0_28px_60px_-36px_rgba(15,23,42,0.26)] focus:outline-none focus:ring-4 focus:ring-sky-100 focus-visible:-translate-y-1 dark:border-zinc-900 dark:bg-black dark:hover:border-zinc-700 dark:focus:ring-zinc-700/20 dark:shadow-[0_18px_40px_-34px_rgba(0,0,0,0.95)] dark:hover:shadow-[0_30px_66px_-38px_rgba(0,0,0,0.98)] sm:min-h-[290px] sm:rounded-[1.55rem] motion-reduce:transform-none motion-reduce:transition-none"
+                    className="group flex min-h-[250px] w-full cursor-pointer flex-col overflow-hidden rounded-[1.35rem] border border-white/80 bg-white/92 p-0 shadow-[0_18px_40px_-34px_rgba(15,23,42,0.18)] backdrop-blur-sm transform-gpu transition-[transform,box-shadow,border-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1.5 hover:scale-[1.01] hover:border-sky-100 hover:shadow-[0_28px_60px_-36px_rgba(15,23,42,0.26)] focus:outline-none focus:ring-4 focus:ring-sky-100 focus-visible:-translate-y-1 dark:border-zinc-900 dark:bg-black dark:hover:border-zinc-700 dark:focus:ring-zinc-700/20 dark:shadow-[0_18px_40px_-34px_rgba(0,0,0,0.95)] dark:hover:shadow-[0_30px_66px_-38px_rgba(0,0,0,0.98)] sm:min-h-[290px] sm:rounded-[1.55rem] motion-reduce:transform-none motion-reduce:transition-none"
                   >
                     <div className="relative h-40 w-full overflow-hidden bg-zinc-100 dark:bg-zinc-950 sm:h-44 lg:h-48">
                       <img
@@ -233,12 +251,13 @@ function TechNewsCards() {
                       <button
                         type="button"
                         onClick={(e) => handleReadMoreClick(e, article.url)}
-                        className="mt-4 inline-flex min-h-[42px] w-full items-center justify-center rounded-full bg-zinc-950 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-zinc-800 dark:bg-zinc-100 dark:text-black dark:hover:bg-white sm:mt-5 sm:min-h-[44px]"
+                        className="mt-4 inline-flex min-h-[44px] w-full items-center justify-center gap-2 rounded-full bg-zinc-950 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_16px_34px_-26px_rgba(15,23,42,0.8)] transition duration-200 hover:-translate-y-0.5 hover:bg-zinc-800 focus:outline-none focus-visible:ring-4 focus-visible:ring-sky-100 dark:bg-zinc-100 dark:text-black dark:hover:bg-white dark:focus-visible:ring-white/15 motion-reduce:transform-none sm:mt-5"
                       >
                         Read More
+                        <ArrowUpRight className="h-4 w-4" />
                       </button>
                     </div>
-                  </a>
+                  </article>
                 ))}
               </>
             )}
