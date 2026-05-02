@@ -111,7 +111,7 @@ function TechNewsCards() {
   }
 
   return (
-    <div className="min-h-screen w-full bg-[linear-gradient(180deg,#f8fbff_0%,#eef6ff_46%,#fbfdff_100%)] px-3 pb-24 pt-3 dark:bg-[linear-gradient(180deg,_#000000_0%,_#070707_52%,_#000000_100%)] sm:px-5 sm:pb-6 sm:pt-4 lg:px-8 lg:pb-8 lg:pt-6">
+    <div className="amiverse-premium-light-page min-h-screen w-full px-3 pb-24 pt-3 dark:bg-[linear-gradient(180deg,_#000000_0%,_#070707_52%,_#000000_100%)] sm:px-5 sm:pb-6 sm:pt-4 lg:px-8 lg:pb-8 lg:pt-6">
       <section className="mx-auto max-w-7xl">
         <div className="relative overflow-hidden rounded-[1.3rem] border border-white/85 bg-white/88 px-4 py-4 shadow-[0_30px_90px_-50px_rgba(15,23,42,0.28)] backdrop-blur-xl dark:border-zinc-900 dark:bg-black dark:shadow-[0_30px_90px_-50px_rgba(0,0,0,0.95)] sm:rounded-[1.6rem] sm:px-5 sm:py-4 lg:px-6 lg:py-5">
           <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-sky-300/60 to-transparent dark:via-sky-400/30" />

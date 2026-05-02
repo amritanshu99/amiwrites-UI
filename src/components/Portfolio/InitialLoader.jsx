@@ -342,7 +342,7 @@ const InitialLoader = ({ mode = "showcase" }) => {
               <div className="absolute inset-[18px] rounded-full border border-white/[0.1] bg-black/90 shadow-[inset_0_0_30px_rgba(255,255,255,0.04)] sm:inset-[20px]" />
               <div className="absolute inset-[28px] flex items-center justify-center rounded-[1rem] border border-white/[0.1] bg-black/90 shadow-[0_16px_36px_rgba(0,0,0,0.62)] sm:inset-[32px] sm:rounded-[1.2rem]">
                 <img
-                  src="/favicon.ico"
+                  src="/icons/icon-96x96.png"
                   alt="AmiVerse Logo"
                   loading="eager"
                   className="h-9 w-9 rounded-[0.8rem] object-contain opacity-95 sm:h-12 sm:w-12"

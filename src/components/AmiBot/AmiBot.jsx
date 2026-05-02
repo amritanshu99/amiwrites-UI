@@ -99,9 +99,9 @@ const Amibot = () => {
   const canSend = input.trim().length > 0 && !loading;
 
   return (
-    <section className="relative isolate min-h-[calc(100dvh-4rem)] overflow-hidden bg-[linear-gradient(180deg,#f8fbff_0%,#eef6ff_46%,#fbfdff_100%)] px-2 pb-[max(5.75rem,env(safe-area-inset-bottom))] pt-2 text-slate-900 transition-colors duration-300 dark:bg-none dark:bg-black dark:text-zinc-100 sm:px-5 sm:pb-5 sm:pt-4 lg:px-8">
+    <section className="amiverse-premium-light-page relative isolate min-h-[calc(100dvh-4rem)] overflow-hidden px-2 pb-[max(5.75rem,env(safe-area-inset-bottom))] pt-2 text-slate-900 transition-colors duration-300 dark:bg-none dark:bg-black dark:text-zinc-100 sm:px-5 sm:pb-5 sm:pt-4 lg:px-8">
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.82)_0%,rgba(235,246,255,0.72)_48%,rgba(255,255,255,0.68)_100%)] dark:bg-[linear-gradient(180deg,rgba(0,0,0,1)_0%,rgba(0,0,0,1)_100%)]" />
+        <div className="amiverse-premium-light-overlay absolute inset-0 dark:bg-[linear-gradient(180deg,rgba(0,0,0,1)_0%,rgba(0,0,0,1)_100%)]" />
         <div className="absolute inset-x-0 top-0 h-28 bg-[linear-gradient(180deg,rgba(255,255,255,0.7),rgba(255,255,255,0))] dark:bg-transparent" />
         <div className="absolute inset-0 opacity-[0.24] [background-image:linear-gradient(rgba(148,163,184,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(148,163,184,0.1)_1px,transparent_1px)] [background-size:72px_72px] dark:opacity-[0.08] dark:[background-image:linear-gradient(rgba(255,255,255,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.025)_1px,transparent_1px)]" />
       </div>

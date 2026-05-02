@@ -173,17 +173,19 @@ const AnimatedBanner = React.memo(() => {
       className="w-full"
     >
       <img
-        src="/banner.png"
+        src={publicAsset("/banner-optimized.jpg")}
         alt="Amritanshu Mishra Banner"
         width="1584"
         height="396"
         className="
             w-full
-            h-[clamp(140px,18vw,260px)]
+            block
+            h-auto
             object-cover
-            object-[center_58%]
+            object-center
             shadow-[0_18px_46px_rgba(15,23,42,0.16)]
             sm:h-[clamp(160px,19vw,280px)]
+            sm:object-[center_58%]
           "
         loading="lazy"
         decoding="async"
@@ -252,9 +254,10 @@ const sectionMeta = [
   { id: "experience", label: "Experience" },
   { id: "education", label: "Education" },
 ];
-const MIN_LOADER_DURATION_MS = 2000;
+const MIN_LOADER_DURATION_MS = 900;
 const resumeUrl =
   "https://amiwrites-backend-app-2lp5.onrender.com/images/Resume.pdf";
+const publicAsset = (path) => `${process.env.PUBLIC_URL || ""}${path}`;
 
 /* ================= MAIN ================= */
 export default function PortfolioDetails() {
@@ -285,9 +288,9 @@ export default function PortfolioDetails() {
   const pendingScrollTimerRef = useRef(null);
 
   const heroRef = useRef(null);
-  const portfolioBackgroundImage = `${process.env.PUBLIC_URL}${
-    isDark ? "/ny-dark.jpg" : "/ny-bg.png"
-  }`;
+  const portfolioBackgroundImage = publicAsset(
+    isDark ? "/ny-dark-optimized.jpg" : "/ny-bg-optimized.jpg",
+  );
   const activeSectionMeta = useMemo(
     () => sectionMeta.find((section) => section.id === activeSection) || sectionMeta[0],
     [activeSection],
@@ -582,29 +585,17 @@ export default function PortfolioDetails() {
   }, [heroImageUrl, markHeroImageLoaded]);
 
   useEffect(() => {
-    const preconnect = document.createElement("link");
-    preconnect.rel = "preconnect";
-    preconnect.href = "https://amiwrites-backend-app-2lp5.onrender.com";
-    preconnect.crossOrigin = "anonymous";
+    if (!heroImageUrl) return undefined;
 
-    document.head.appendChild(preconnect);
-
-    if (heroImageUrl) {
-      const preloadImage = document.createElement("link");
-      preloadImage.rel = "preload";
-      preloadImage.as = "image";
-      preloadImage.href = heroImageUrl;
-      preloadImage.fetchPriority = "high";
-      document.head.appendChild(preloadImage);
-
-      return () => {
-        document.head.removeChild(preconnect);
-        document.head.removeChild(preloadImage);
-      };
-    }
+    const preloadImage = document.createElement("link");
+    preloadImage.rel = "preload";
+    preloadImage.as = "image";
+    preloadImage.href = heroImageUrl;
+    preloadImage.fetchPriority = "high";
+    document.head.appendChild(preloadImage);
 
     return () => {
-      document.head.removeChild(preconnect);
+      document.head.removeChild(preloadImage);
     };
   }, [heroImageUrl]);
 
@@ -672,6 +663,7 @@ export default function PortfolioDetails() {
 
     const backgroundImage = new Image();
     backgroundImage.decoding = "async";
+    backgroundImage.fetchPriority = "low";
     backgroundImage.src = portfolioBackgroundImage;
 
     const markLoaded = () => setBackgroundImageLoaded(true);

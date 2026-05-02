@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { Suspense, lazy, useEffect, useRef, useState } from "react";
 import {
   Navigate,
   Route,
@@ -17,24 +17,29 @@ import Loader from "./components/Loader/Loader";
 import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
 import InitialLoader from "./components/Portfolio/InitialLoader";
 import Portfolio from "./pages/Portfolio";
-import BlogPage from "./pages/BlogPage";
-import AIChatPage from "./pages/AIChat";
-import AddBlogDetails from "./pages/AddBlogDetails";
-import BlogsDetails from "./pages/BlogsDetails";
-import TechByte from "./pages/TechByte";
-import ResetPasswordPage from "./pages/ResetPasswordPage";
-import TaskManagerDetails from "./pages/TaskManagerDetails";
-import AIToolsDetails from "./pages/AIToolsDetails";
-import SpamDetectorDetails from "./pages/SpamDetectorDetails";
-import MoviePredictDetails from "./pages/MoviePredictDetails";
-import EmotionAnalyzerDetails from "./pages/EmotionAnalyzerDetails";
-import AmiBotDetails from "./pages/AmiBotDetails";
-import ReinforcementLearningDetails from "./pages/ReinforcementLearning";
-import LegalPage from "./pages/LegalPage";
 import { initGA, logPageView } from "./analytics";
 import { isTokenExpired } from "./utils/auth";
 import { verifyToken } from "./utils/authApi";
 import { applySEO, seoByRoute } from "./utils/seo";
+
+const BlogPage = lazy(() => import("./pages/BlogPage"));
+const AIChatPage = lazy(() => import("./pages/AIChat"));
+const AddBlogDetails = lazy(() => import("./pages/AddBlogDetails"));
+const BlogsDetails = lazy(() => import("./pages/BlogsDetails"));
+const TechByte = lazy(() => import("./pages/TechByte"));
+const ResetPasswordPage = lazy(() => import("./pages/ResetPasswordPage"));
+const TaskManagerDetails = lazy(() => import("./pages/TaskManagerDetails"));
+const AIToolsDetails = lazy(() => import("./pages/AIToolsDetails"));
+const SpamDetectorDetails = lazy(() => import("./pages/SpamDetectorDetails"));
+const MoviePredictDetails = lazy(() => import("./pages/MoviePredictDetails"));
+const EmotionAnalyzerDetails = lazy(() =>
+  import("./pages/EmotionAnalyzerDetails"),
+);
+const AmiBotDetails = lazy(() => import("./pages/AmiBotDetails"));
+const ReinforcementLearningDetails = lazy(() =>
+  import("./pages/ReinforcementLearning"),
+);
+const LegalPage = lazy(() => import("./pages/LegalPage"));
 
 const resolveRouteSeo = (pathname) => {
   if (seoByRoute[pathname]) return seoByRoute[pathname];
@@ -163,37 +168,39 @@ const App = () => {
       )}
 
       <main className="flex-1">
-        <Routes>
-          <Route path="/" element={<Portfolio />} />
-          <Route path="/blogs" element={<BlogPage />} />
-          <Route path="/ai-chat" element={<AIChatPage />} />
-          <Route
-            path="/add-blog"
-            element={
-              <ProtectedAdminRoute>
-                <AddBlogDetails />
-              </ProtectedAdminRoute>
-            }
-          />
-          <Route path="/blogs/:id" element={<BlogsDetails />} />
-          <Route path="/tech-byte" element={<TechByte />} />
-          <Route path="/reset-password/:id" element={<ValidateResetToken />} />
-          <Route path="/legal/:slug" element={<LegalPage />} />
-          <Route path="/ai-tools" element={<AIToolsDetails />} />
-          <Route path="/task-manager" element={<TaskManagerDetails />} />
-          <Route path="/spam-check" element={<SpamDetectorDetails />} />
-          <Route path="/movie-recommender" element={<MoviePredictDetails />} />
-          <Route
-            path="/emotion-analyzer"
-            element={<EmotionAnalyzerDetails />}
-          />
-          <Route path="/amibot" element={<AmiBotDetails />} />
-          <Route
-            path="/Reinforcement-Learning"
-            element={<ReinforcementLearningDetails />}
-          />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+        <Suspense fallback={<InitialLoader mode="session" />}>
+          <Routes>
+            <Route path="/" element={<Portfolio />} />
+            <Route path="/blogs" element={<BlogPage />} />
+            <Route path="/ai-chat" element={<AIChatPage />} />
+            <Route
+              path="/add-blog"
+              element={
+                <ProtectedAdminRoute>
+                  <AddBlogDetails />
+                </ProtectedAdminRoute>
+              }
+            />
+            <Route path="/blogs/:id" element={<BlogsDetails />} />
+            <Route path="/tech-byte" element={<TechByte />} />
+            <Route path="/reset-password/:id" element={<ValidateResetToken />} />
+            <Route path="/legal/:slug" element={<LegalPage />} />
+            <Route path="/ai-tools" element={<AIToolsDetails />} />
+            <Route path="/task-manager" element={<TaskManagerDetails />} />
+            <Route path="/spam-check" element={<SpamDetectorDetails />} />
+            <Route path="/movie-recommender" element={<MoviePredictDetails />} />
+            <Route
+              path="/emotion-analyzer"
+              element={<EmotionAnalyzerDetails />}
+            />
+            <Route path="/amibot" element={<AmiBotDetails />} />
+            <Route
+              path="/Reinforcement-Learning"
+              element={<ReinforcementLearningDetails />}
+            />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </Suspense>
       </main>
 
       <ContactMeButton />

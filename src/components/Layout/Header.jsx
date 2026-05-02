@@ -226,7 +226,7 @@ export default function Header({ setLoading }) {
               aria-label="AmiVerse Home"
             >
               <img
-                src="/favicon.ico"
+                src="/icons/icon-96x96.png"
                 alt="AmiVerse logo"
                 className="h-8 w-8 sm:h-9 sm:w-9 rounded-xl object-contain ring-1 ring-black/10 dark:ring-white/15 shadow-sm transition-transform duration-300 group-hover:rotate-3 group-hover:scale-[1.03]"
                 draggable="false"

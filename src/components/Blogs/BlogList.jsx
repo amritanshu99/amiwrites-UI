@@ -479,24 +479,24 @@ const BlogList = () => {
   }, []);
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[linear-gradient(180deg,#f8fbff_0%,#eef6ff_46%,#fbfdff_100%)] px-3 pb-24 pt-3 dark:bg-none dark:bg-black sm:px-5 sm:pb-6 sm:pt-4 lg:px-8 lg:pb-8 lg:pt-6">
+    <div className="amiverse-premium-light-page relative isolate min-h-screen overflow-hidden px-3 pb-24 pt-3 dark:bg-none dark:bg-black sm:px-5 sm:pb-6 sm:pt-4 lg:px-8 lg:pb-8 lg:pt-6">
       <div
-        className="absolute inset-0 -z-30 bg-[linear-gradient(135deg,rgba(255,255,255,0.98)_0%,rgba(235,246,255,0.94)_48%,rgba(248,250,252,0.98)_100%)] dark:bg-[linear-gradient(180deg,rgba(0,0,0,1)_0%,rgba(0,0,0,1)_100%)]"
+        className="amiverse-premium-light-page absolute inset-0 -z-30 dark:bg-[linear-gradient(180deg,rgba(0,0,0,1)_0%,rgba(0,0,0,1)_100%)]"
         aria-hidden="true"
       />
       <div
         className="absolute inset-0 -z-20 bg-cover bg-center bg-no-repeat transition-opacity duration-700"
         style={{
           backgroundImage: `url(${blogBackgroundImage})`,
-          opacity: isDark ? 0 : 0.08,
+          opacity: isDark ? 0 : 0.05,
           filter: isDark
             ? "saturate(0.45) brightness(0.28)"
-            : "saturate(0.72) brightness(1.28)",
+            : "saturate(0.5) brightness(1.32) contrast(0.96)",
         }}
         aria-hidden="true"
       />
       <div
-        className="absolute inset-0 -z-10 bg-[linear-gradient(180deg,rgba(255,255,255,0.82)_0%,rgba(246,250,255,0.72)_36%,rgba(255,255,255,0.86)_100%)] dark:bg-[linear-gradient(180deg,rgba(0,0,0,1)_0%,rgba(0,0,0,1)_100%)]"
+        className="amiverse-premium-light-overlay absolute inset-0 -z-10 dark:bg-[linear-gradient(180deg,rgba(0,0,0,1)_0%,rgba(0,0,0,1)_100%)]"
         aria-hidden="true"
       />
       <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden" aria-hidden="true">

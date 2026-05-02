@@ -66,7 +66,7 @@ const Footer = () => {
           <section className={`${panelSurfaceClass} lg:col-span-5`}>
             <div className="flex items-center gap-2">
               <img
-                src="/favicon.ico"
+                src="/icons/icon-96x96.png"
                 alt="Amiverse logo"
                 className="h-6 w-6 rounded-lg object-contain ring-1 ring-black/10 shadow-sm dark:ring-white/15"
                 draggable="false"
