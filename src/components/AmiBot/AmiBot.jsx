@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Bot, SendHorizontal, Sparkles } from "lucide-react";
 import { useLocation } from "react-router-dom";
 
@@ -28,6 +28,81 @@ const PROMPT_SUGGESTIONS = [
   "What goals is he focused on right now?",
 ];
 
+const PromptSuggestionButton = React.memo(function PromptSuggestionButton({
+  onSelect,
+  prompt,
+}) {
+  const handleClick = useCallback(() => {
+    onSelect(prompt);
+  }, [onSelect, prompt]);
+
+  return (
+    <button
+      type="button"
+      onClick={handleClick}
+      className="min-h-[46px] rounded-2xl border border-white/85 bg-white/80 px-3.5 py-3 text-left text-sm font-medium text-slate-700 shadow-sm shadow-slate-200/60 transition duration-200 hover:-translate-y-0.5 hover:border-sky-300/80 hover:bg-sky-50/95 hover:text-sky-800 focus:outline-none focus-visible:ring-4 focus-visible:ring-sky-100 dark:border-zinc-800 dark:bg-black dark:text-zinc-200 dark:shadow-none dark:hover:border-zinc-700 dark:hover:bg-zinc-950 dark:hover:text-white dark:focus-visible:ring-white/10 motion-reduce:transform-none"
+    >
+      {prompt}
+    </button>
+  );
+});
+
+const ChatMessage = React.memo(function ChatMessage({ message }) {
+  const isUser = message.sender === "user";
+
+  return (
+    <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
+      <div className="max-w-[94%] sm:max-w-[82%] md:max-w-[72%]">
+        <div
+          className={`mb-1.5 flex items-center gap-2 ${
+            isUser ? "justify-end" : "justify-start"
+          }`}
+        >
+          <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-zinc-500">
+            {isUser ? "You" : "AmiBot"}
+          </span>
+        </div>
+
+        <div
+          className={`whitespace-pre-wrap break-words rounded-[22px] border px-3.5 py-2.5 text-sm leading-6 [overflow-wrap:anywhere] sm:rounded-[24px] sm:px-5 sm:py-3 sm:text-[15px] sm:leading-7 ${
+            isUser
+              ? "border-sky-300/30 bg-gradient-to-br from-sky-400 via-cyan-400 to-cyan-500 text-slate-950 shadow-[0_22px_50px_rgba(56,189,248,0.24)]"
+              : "border-white/85 bg-white/88 text-slate-700 shadow-[0_18px_45px_rgba(148,163,184,0.18)] backdrop-blur-xl dark:border-zinc-800 dark:bg-black dark:text-zinc-100 dark:shadow-[0_18px_45px_rgba(0,0,0,0.34)]"
+          }`}
+        >
+          {message.text}
+        </div>
+      </div>
+    </div>
+  );
+});
+
+const TypingIndicator = React.memo(function TypingIndicator() {
+  return (
+    <div className="flex justify-start">
+      <div className="max-w-[94%] sm:max-w-[82%] md:max-w-[72%]">
+        <div className="mb-1.5 flex items-center gap-2">
+          <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-zinc-500">
+            AmiBot
+          </span>
+        </div>
+        <div className="rounded-[22px] border border-white/85 bg-white/88 px-3.5 py-2.5 text-slate-700 shadow-[0_18px_45px_rgba(148,163,184,0.18)] backdrop-blur-xl dark:border-zinc-800 dark:bg-black dark:text-zinc-200 dark:shadow-[0_18px_45px_rgba(0,0,0,0.34)] sm:rounded-[24px] sm:px-4 sm:py-3">
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
+              <span className="h-2 w-2 animate-bounce rounded-full bg-sky-300 [animation-delay:-0.3s] dark:bg-cyan-200" />
+              <span className="h-2 w-2 animate-bounce rounded-full bg-sky-400 [animation-delay:-0.15s] dark:bg-cyan-300" />
+              <span className="h-2 w-2 animate-bounce rounded-full bg-cyan-500 dark:bg-cyan-400" />
+            </div>
+            <span className="text-sm text-slate-500 dark:text-zinc-300">
+              Thinking...
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+});
+
 const Amibot = () => {
   const { pathname } = useLocation();
   const [messages, setMessages] = useState(() => [
@@ -48,12 +123,12 @@ const Amibot = () => {
     }
   }, [loading, messages]);
 
-  const handleSuggestionClick = (prompt) => {
+  const handleSuggestionClick = useCallback((prompt) => {
     setInput(prompt);
     inputRef.current?.focus();
-  };
+  }, []);
 
-  const handleSubmit = async (event) => {
+  const handleSubmit = useCallback(async (event) => {
     event.preventDefault();
 
     const query = input.trim();
@@ -94,15 +169,15 @@ const Amibot = () => {
       setLoading(false);
       inputRef.current?.focus();
     }
-  };
+  }, [input, loading]);
 
-  const canSend = input.trim().length > 0 && !loading;
+  const canSend = useMemo(() => input.trim().length > 0 && !loading, [input, loading]);
 
   return (
     <section className="amiverse-premium-light-page relative isolate min-h-[calc(100dvh-4rem)] overflow-hidden px-2 pb-[max(5.75rem,env(safe-area-inset-bottom))] pt-2 text-slate-900 transition-colors duration-300 dark:bg-none dark:bg-black dark:text-zinc-100 sm:px-5 sm:pb-5 sm:pt-4 lg:px-8">
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="amiverse-premium-light-overlay absolute inset-0 dark:bg-[linear-gradient(180deg,rgba(0,0,0,1)_0%,rgba(0,0,0,1)_100%)]" />
-        <div className="absolute inset-x-0 top-0 h-28 bg-[linear-gradient(180deg,rgba(255,255,255,0.7),rgba(255,255,255,0))] dark:bg-transparent" />
+        <div className="absolute inset-x-0 top-0 h-28 bg-[linear-gradient(180deg,rgba(245,248,250,0.44),rgba(245,248,250,0))] dark:bg-transparent" />
         <div className="absolute inset-0 opacity-[0.24] [background-image:linear-gradient(rgba(148,163,184,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(148,163,184,0.1)_1px,transparent_1px)] [background-size:72px_72px] dark:opacity-[0.08] dark:[background-image:linear-gradient(rgba(255,255,255,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.025)_1px,transparent_1px)]" />
       </div>
 
@@ -142,14 +217,11 @@ const Amibot = () => {
             </p>
             <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
               {PROMPT_SUGGESTIONS.map((prompt) => (
-                <button
+                <PromptSuggestionButton
                   key={prompt}
-                  type="button"
-                  onClick={() => handleSuggestionClick(prompt)}
-                  className="min-h-[46px] rounded-2xl border border-white/85 bg-white/80 px-3.5 py-3 text-left text-sm font-medium text-slate-700 shadow-sm shadow-slate-200/60 transition duration-200 hover:-translate-y-0.5 hover:border-sky-300/80 hover:bg-sky-50/95 hover:text-sky-800 focus:outline-none focus-visible:ring-4 focus-visible:ring-sky-100 dark:border-zinc-800 dark:bg-black dark:text-zinc-200 dark:shadow-none dark:hover:border-zinc-700 dark:hover:bg-zinc-950 dark:hover:text-white dark:focus-visible:ring-white/10 motion-reduce:transform-none"
-                >
-                  {prompt}
-                </button>
+                  onSelect={handleSuggestionClick}
+                  prompt={prompt}
+                />
               ))}
             </div>
           </div>
@@ -192,64 +264,11 @@ const Amibot = () => {
               className="relative flex h-full flex-col gap-3 overflow-y-auto px-2.5 py-3 sm:gap-4 sm:px-6 sm:py-6"
               role="log"
             >
-              {messages.map((message, index) => {
-                const isUser = message.sender === "user";
+              {messages.map((message, index) => (
+                <ChatMessage key={`${message.sender}-${index}`} message={message} />
+              ))}
 
-                return (
-                  <div
-                    key={`${message.sender}-${index}`}
-                    className={`flex ${
-                      isUser ? "justify-end" : "justify-start"
-                    }`}
-                  >
-                    <div className="max-w-[94%] sm:max-w-[82%] md:max-w-[72%]">
-                      <div
-                        className={`mb-1.5 flex items-center gap-2 ${
-                          isUser ? "justify-end" : "justify-start"
-                        }`}
-                      >
-                        <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-zinc-500">
-                          {isUser ? "You" : "AmiBot"}
-                        </span>
-                      </div>
-
-                      <div
-                        className={`whitespace-pre-wrap break-words rounded-[22px] border px-3.5 py-2.5 text-sm leading-6 [overflow-wrap:anywhere] sm:rounded-[24px] sm:px-5 sm:py-3 sm:text-[15px] sm:leading-7 ${
-                          isUser
-                            ? "border-sky-300/30 bg-gradient-to-br from-sky-400 via-cyan-400 to-cyan-500 text-slate-950 shadow-[0_22px_50px_rgba(56,189,248,0.24)]"
-                            : "border-white/85 bg-white/88 text-slate-700 shadow-[0_18px_45px_rgba(148,163,184,0.18)] backdrop-blur-xl dark:border-zinc-800 dark:bg-black dark:text-zinc-100 dark:shadow-[0_18px_45px_rgba(0,0,0,0.34)]"
-                        }`}
-                      >
-                        {message.text}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-
-              {loading && (
-                <div className="flex justify-start">
-                  <div className="max-w-[94%] sm:max-w-[82%] md:max-w-[72%]">
-                    <div className="mb-1.5 flex items-center gap-2">
-                      <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-zinc-500">
-                        AmiBot
-                      </span>
-                    </div>
-                    <div className="rounded-[22px] border border-white/85 bg-white/88 px-3.5 py-2.5 text-slate-700 shadow-[0_18px_45px_rgba(148,163,184,0.18)] backdrop-blur-xl dark:border-zinc-800 dark:bg-black dark:text-zinc-200 dark:shadow-[0_18px_45px_rgba(0,0,0,0.34)] sm:rounded-[24px] sm:px-4 sm:py-3">
-                      <div className="flex items-center gap-2">
-                        <div className="flex items-center gap-1.5">
-                          <span className="h-2 w-2 animate-bounce rounded-full bg-sky-300 [animation-delay:-0.3s] dark:bg-cyan-200" />
-                          <span className="h-2 w-2 animate-bounce rounded-full bg-sky-400 [animation-delay:-0.15s] dark:bg-cyan-300" />
-                          <span className="h-2 w-2 animate-bounce rounded-full bg-cyan-500 dark:bg-cyan-400" />
-                        </div>
-                        <span className="text-sm text-slate-500 dark:text-zinc-300">
-                          Thinking...
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
+              {loading && <TypingIndicator />}
 
               <div ref={bottomRef} />
             </div>

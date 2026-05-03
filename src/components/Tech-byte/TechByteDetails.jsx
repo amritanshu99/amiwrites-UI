@@ -1,7 +1,10 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
 import axios from "axios";
 import { useLocation } from "react-router-dom";
 import { ArrowUpRight, Newspaper } from "lucide-react";
+
+const TECH_NEWS_URL = "https://amiwrites-backend-app-2lp5.onrender.com/api/tech-news";
+const FALLBACK_NEWS_IMAGE = "/og-image.jpg";
 
 const formatPublishedAt = (publishedAt) => {
   if (!publishedAt) return "Date unavailable";
@@ -18,7 +21,8 @@ const formatPublishedAt = (publishedAt) => {
   });
 };
 
-const TechNewsSkeleton = ({ featured = false }) => (
+const TechNewsSkeleton = React.memo(function TechNewsSkeleton({ featured = false }) {
+  return (
   <div
     className={`animate-pulse overflow-hidden rounded-[1.5rem] border border-zinc-200/80 bg-white/95 shadow-[0_18px_40px_-32px_rgba(15,23,42,0.14)] dark:border-zinc-900 dark:bg-black dark:shadow-[0_18px_40px_-32px_rgba(0,0,0,0.9)] sm:rounded-[1.75rem] ${
       featured ? "lg:col-span-2" : ""
@@ -40,7 +44,8 @@ const TechNewsSkeleton = ({ featured = false }) => (
       <div className="mt-5 h-10 w-32 rounded-full bg-zinc-300 dark:bg-zinc-900 sm:mt-6" />
     </div>
   </div>
-);
+  );
+});
 
 function TechNewsCards() {
   const [articles, setArticles] = useState([]);
@@ -50,16 +55,19 @@ function TechNewsCards() {
 
   useEffect(() => {
     let isMounted = true;
+    const controller = new AbortController();
 
     axios
-      .get("https://amiwrites-backend-app-2lp5.onrender.com/api/tech-news")
+      .get(TECH_NEWS_URL, { signal: controller.signal })
       .then((res) => {
         if (isMounted) {
-          setArticles(res.data.articles);
+          setArticles(Array.isArray(res.data?.articles) ? res.data.articles : []);
           setLoading(false);
         }
       })
-      .catch(() => {
+      .catch((err) => {
+        if (err?.name === "CanceledError") return;
+
         if (isMounted) {
           setError("Failed to load news");
           setLoading(false);
@@ -68,6 +76,7 @@ function TechNewsCards() {
 
     return () => {
       isMounted = false;
+      controller.abort();
     };
   }, []);
 
@@ -98,9 +107,20 @@ function TechNewsCards() {
     }
   }, [openArticle]);
 
-  const featuredArticle = !loading && articles.length > 0 ? articles[0] : null;
-  const secondaryArticles =
-    !loading && articles.length > 0 ? articles.slice(1) : [];
+  const handleImageError = useCallback((event) => {
+    if (event.currentTarget.dataset.fallbackApplied) return;
+    event.currentTarget.dataset.fallbackApplied = "true";
+    event.currentTarget.src = FALLBACK_NEWS_IMAGE;
+  }, []);
+
+  const featuredArticle = useMemo(
+    () => (!loading && articles.length > 0 ? articles[0] : null),
+    [articles, loading]
+  );
+  const secondaryArticles = useMemo(
+    () => (!loading && articles.length > 0 ? articles.slice(1) : []),
+    [articles, loading]
+  );
 
   if (error) {
     return (
@@ -154,9 +174,12 @@ function TechNewsCards() {
                     <div className="grid h-full grid-cols-1 lg:grid-cols-[1.25fr_1fr]">
                       <div className="relative min-h-[200px] overflow-hidden bg-zinc-100 dark:bg-zinc-950 sm:min-h-[280px] lg:min-h-full">
                         <img
-                          src={featuredArticle.image || "/placeholder-image.png"}
+                          src={featuredArticle.image || FALLBACK_NEWS_IMAGE}
                           alt={featuredArticle.title}
-                          loading="lazy"
+                          loading="eager"
+                          decoding="async"
+                          fetchPriority="high"
+                          onError={handleImageError}
                           className="h-full w-full object-cover object-center transform-gpu transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-110 motion-reduce:transform-none motion-reduce:transition-none"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/20 to-transparent dark:from-black/85 dark:via-black/30" />
@@ -209,9 +232,12 @@ function TechNewsCards() {
                   >
                     <div className="relative h-40 w-full overflow-hidden bg-zinc-100 dark:bg-zinc-950 sm:h-44 lg:h-48">
                       <img
-                        src={article.image || "/placeholder-image.png"}
+                        src={article.image || FALLBACK_NEWS_IMAGE}
                         alt={article.title}
                         loading="lazy"
+                        decoding="async"
+                        fetchPriority="low"
+                        onError={handleImageError}
                         className="h-full w-full object-cover object-center transform-gpu transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-110 motion-reduce:transform-none motion-reduce:transition-none"
                       />
                     </div>

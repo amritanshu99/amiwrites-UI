@@ -1,10 +1,16 @@
 // src/components/BlogDetails/BlogDetails.jsx
-import { useEffect, useState, useMemo, useRef, useCallback } from "react";
+import {
+  Suspense,
+  lazy,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useParams, useLocation } from "react-router-dom";
 import axios from "../../utils/api";
 import Loader from "../Loader/Loader";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
 import { applySEO, SITE_URL } from "../../utils/seo";
 import {
   CalendarDays,
@@ -15,6 +21,16 @@ import {
   Sparkles,
   UserRound,
 } from "lucide-react";
+
+const SummaryMarkdown = lazy(() => import("./SummaryMarkdown"));
+
+const SummaryMarkdownFallback = () => (
+  <div className="space-y-3 animate-pulse">
+    <div className="h-4 w-1/3 bg-slate-200 dark:bg-zinc-900 rounded" />
+    <div className="h-3 w-full bg-slate-200 dark:bg-zinc-900 rounded" />
+    <div className="h-3 w-11/12 bg-slate-200 dark:bg-zinc-900 rounded" />
+  </div>
+);
 
 const BlogDetails = () => {
   const { id } = useParams();
@@ -68,7 +84,7 @@ const BlogDetails = () => {
     const temp = document.createElement("div");
     temp.innerHTML = blog.content;
     return (temp.textContent || temp.innerText || "").trim();
-  }, [blog]);
+  }, [blog?.content]);
 
   const readingMinutes = useMemo(() => {
     if (!plainTextContent) return 1;
@@ -147,10 +163,24 @@ const BlogDetails = () => {
     fetchBlog();
   }, [fetchBlog]);
 
-  const currentURL = typeof window !== "undefined" ? window.location.href : "";
+  useEffect(() => {
+    if (!blog?.content || !articleRef.current) return;
+
+    const images = articleRef.current.querySelectorAll(".blog-content img");
+    images.forEach((img, index) => {
+      if (!img.hasAttribute("loading")) img.setAttribute("loading", "lazy");
+      img.setAttribute("decoding", "async");
+      if (index > 0) img.setAttribute("fetchpriority", "low");
+    });
+  }, [blog?.content]);
+
+  const currentURL = useMemo(
+    () => (typeof window !== "undefined" ? window.location.href : ""),
+    [pathname]
+  );
 
   // Summarize handler
-  const handleSummarize = async () => {
+  const handleSummarize = useCallback(async () => {
     if (!plainTextContent) return;
 
     setSummarizing(true);
@@ -174,7 +204,7 @@ const BlogDetails = () => {
     } finally {
       setSummarizing(false);
     }
-  };
+  }, [blog?.title, plainTextContent]);
 
   // Scroll ONLY when summary is ready (no scroll on loading or error)
   useEffect(() => {
@@ -184,13 +214,13 @@ const BlogDetails = () => {
   }, [summary]);
 
   // Copy summary helper
-  const handleCopySummary = async () => {
+  const handleCopySummary = useCallback(async () => {
     try {
       await navigator.clipboard.writeText(summary);
     } catch {
       // noop
     }
-  };
+  }, [summary]);
 
   // --- RL: Impression on page view (DEDUPED & POST-CONTENT via double rAF) ---
   useEffect(() => {
@@ -543,14 +573,14 @@ const BlogDetails = () => {
 
   if (loading)
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[linear-gradient(180deg,#f8fafc_0%,#eef6ff_100%)] p-6 dark:bg-none dark:bg-black">
+      <div className="amiverse-premium-light-page flex min-h-screen items-center justify-center p-6 dark:bg-none dark:bg-black">
         <Loader />
       </div>
     );
 
   if (!blog)
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[linear-gradient(180deg,#f8fafc_0%,#eef6ff_100%)] p-6 dark:bg-none dark:bg-black">
+      <div className="amiverse-premium-light-page flex min-h-screen items-center justify-center p-6 dark:bg-none dark:bg-black">
         <p className="rounded-2xl border border-red-200 bg-white/90 px-5 py-4 text-xl font-semibold text-red-600 shadow-sm dark:border-red-900/60 dark:bg-black dark:text-red-300">
           Blog not found.
         </p>
@@ -558,7 +588,7 @@ const BlogDetails = () => {
     );
 
   return (
-    <main className="flex min-h-screen justify-center bg-[linear-gradient(180deg,#f8fbff_0%,#eef6ff_46%,#fbfdff_100%)] px-3 pb-28 pt-8 dark:bg-none dark:bg-black sm:px-6 sm:pb-16 sm:pt-12 lg:px-8 lg:pb-20 lg:pt-16">
+    <main className="amiverse-premium-light-page flex min-h-screen justify-center px-3 pb-28 pt-8 dark:bg-none dark:bg-black sm:px-6 sm:pb-16 sm:pt-12 lg:px-8 lg:pb-20 lg:pt-16">
       <article
         ref={articleRef}
         className="animate-fadeIn w-full max-w-4xl overflow-hidden rounded-[1.35rem] border border-white/90 bg-white/95 p-5 text-black shadow-[0_34px_90px_-54px_rgba(15,23,42,0.38)] ring-1 ring-sky-100/80 backdrop-blur dark:border-zinc-900 dark:bg-black dark:text-zinc-50 dark:ring-white/5 dark:shadow-[0_34px_90px_-54px_rgba(0,0,0,0.98)] sm:rounded-[1.7rem] sm:p-8 md:p-12"
@@ -720,42 +750,10 @@ const BlogDetails = () => {
               )}
 
               {summary && (
-                // NOTE: No className on ReactMarkdown in v9+.
-                // Style via a wrapper and the `components` map.
                 <div className="summary-content max-w-none leading-relaxed text-slate-800 dark:text-zinc-50">
-                  <ReactMarkdown
-                    remarkPlugins={[remarkGfm]}
-                    components={{
-                      a: ({ children, ...props }) => (
-                        <a
-                          className="text-blue-600 dark:text-cyan-400 hover:underline"
-                          {...props}
-                        >
-                          {children}
-                        </a>
-                      ),
-                      code: ({ inline, children, ...props }) =>
-                        inline ? (
-                          <code
-                            className="px-1 py-0.5 rounded bg-slate-100 dark:bg-zinc-900"
-                            {...props}
-                          >
-                            {children}
-                          </code>
-                        ) : (
-                          <pre className="p-3 rounded-xl bg-slate-100 dark:bg-black overflow-x-auto">
-                            <code {...props}>{children}</code>
-                          </pre>
-                        ),
-                      h1: ({ children, ...props }) => (
-                        <h1 className="mt-0" {...props}>
-                          {children}
-                        </h1>
-                      ),
-                    }}
-                  >
-                    {summary.replace(/\r\n/g, "\n")}
-                  </ReactMarkdown>
+                  <Suspense fallback={<SummaryMarkdownFallback />}>
+                    <SummaryMarkdown summary={summary} />
+                  </Suspense>
                 </div>
               )}
             </div>
