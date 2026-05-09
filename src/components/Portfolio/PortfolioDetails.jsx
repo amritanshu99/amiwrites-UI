@@ -1091,7 +1091,7 @@ export default function PortfolioDetails() {
       </main>
 
       <div
-        className="pointer-events-none fixed bottom-[max(1.25rem,env(safe-area-inset-bottom))] left-0 right-0 z-[80] px-3 sm:px-6 lg:right-[var(--scrollbar-size)]"
+        className="pointer-events-none fixed bottom-[max(1rem,env(safe-area-inset-bottom))] left-0 right-0 z-[80] px-3 sm:px-6 lg:right-[var(--scrollbar-size)]"
       >
         <motion.div
           ref={bottomCtaRef}
@@ -1119,7 +1119,7 @@ export default function PortfolioDetails() {
                   }
                 }
           }
-          className="pointer-events-auto mx-auto flex min-w-0 w-fit max-w-[calc(100vw_-_1.5rem)] items-center gap-1.5 rounded-full border border-sky-200/70 bg-sky-50/90 p-1.5 shadow-[0_14px_36px_rgba(14,116,144,0.24)] ring-1 ring-white/55 backdrop-blur-2xl dark:border-cyan-300/20 dark:bg-black/80 dark:shadow-[0_16px_42px_rgba(0,0,0,0.62)] dark:ring-cyan-100/10 sm:max-w-[calc(100vw_-_3rem)] lg:max-w-[calc(100vw_-_var(--scrollbar-size)_-_3rem)]"
+          className="pointer-events-auto relative isolate mx-auto flex min-w-0 w-fit max-w-[calc(100vw_-_1.5rem)] items-center gap-1.5 overflow-hidden rounded-[1.65rem] border border-white/[0.65] bg-white/[0.78] p-1.5 shadow-[0_18px_50px_rgba(15,23,42,0.18),0_4px_16px_rgba(14,165,233,0.12)] ring-1 ring-sky-100/70 backdrop-blur-2xl dark:border-cyan-100/15 dark:bg-zinc-950/[0.82] dark:shadow-[0_18px_54px_rgba(0,0,0,0.62),0_0_26px_rgba(34,211,238,0.08)] dark:ring-cyan-100/10 sm:max-w-[calc(100vw_-_3rem)] lg:max-w-[calc(100vw_-_var(--scrollbar-size)_-_3rem)]"
           initial={
             prefersReducedMotion
               ? { opacity: 1, y: 0, scale: 1 }
@@ -1127,6 +1127,8 @@ export default function PortfolioDetails() {
           }
           animate={{ y: 0, opacity: 1, scale: 1 }}
         >
+          <span className="pointer-events-none absolute inset-0 rounded-[1.65rem] bg-[linear-gradient(135deg,rgba(255,255,255,0.76),rgba(224,242,254,0.52)_42%,rgba(209,250,229,0.38))] dark:bg-[linear-gradient(135deg,rgba(15,23,42,0.9),rgba(8,47,73,0.52)_48%,rgba(6,78,59,0.36))]" />
+          <span className="pointer-events-none absolute inset-x-4 top-0 h-px bg-white/80 dark:bg-cyan-100/20" />
           <AnimatePresence initial={false} mode="popLayout">
             {!isBottomCtaExpanded ? (
               <motion.button
@@ -1145,11 +1147,11 @@ export default function PortfolioDetails() {
                 }}
                 whileHover={isTouchDevice ? undefined : { scale: 1.01, y: -1 }}
                 whileTap={{ scale: 0.98 }}
-                className="group flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold text-slate-700 transition-all duration-200 hover:bg-sky-100/85 dark:text-zinc-100 dark:hover:bg-white/10 sm:text-sm"
+                className="group relative z-10 flex items-center gap-2 rounded-full bg-white/[0.58] px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm ring-1 ring-slate-200/60 transition-all duration-200 hover:bg-white/[0.88] hover:shadow-md dark:bg-white/[0.06] dark:text-zinc-100 dark:ring-white/10 dark:hover:bg-white/10 sm:text-sm"
                 aria-label={`Expand section switcher. Current section is ${activeSectionMeta.label}`}
               >
                 <span className="text-slate-500 dark:text-zinc-400">Jump to</span>
-                <span className="rounded-full bg-sky-700 px-2.5 py-1 text-white shadow-sm transition-colors duration-200 dark:bg-cyan-300/15 dark:text-cyan-100 dark:ring-1 dark:ring-cyan-200/25">
+                <span className="rounded-full bg-gradient-to-r from-slate-950 via-sky-800 to-teal-700 px-2.5 py-1 text-white shadow-[0_7px_18px_rgba(14,116,144,0.22)] transition-colors duration-200 dark:from-cyan-300 dark:via-sky-300 dark:to-emerald-300 dark:text-slate-950">
                   {activeSectionMeta.label}
                 </span>
                 <FaChevronUp className="text-[10px] text-slate-500 transition-transform duration-200 group-hover:-translate-y-0.5 dark:text-cyan-200/55" />
@@ -1162,7 +1164,7 @@ export default function PortfolioDetails() {
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: -6, scale: 0.99 }}
                 transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-                className="flex min-w-0 max-w-full flex-wrap items-center justify-center gap-1.5"
+                className="relative z-10 flex min-w-0 max-w-full flex-wrap items-center justify-center gap-1.5"
               >
                 {sectionMeta.map((section, index) => {
                   const isActive = activeSection === section.id;
@@ -1185,13 +1187,20 @@ export default function PortfolioDetails() {
                         scrollToSection(section.id);
                         updateBottomCtaExpanded(false);
                       }}
-                      className={`shrink-0 whitespace-nowrap rounded-full px-2.5 py-1.5 text-[11px] font-medium transition-all duration-200 sm:px-3 sm:text-sm ${
+                      className={`inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1.5 text-[11px] font-medium transition-all duration-200 sm:px-3 sm:text-sm ${
                         isActive
-                        ? "bg-sky-700 text-white shadow-[0_6px_18px_rgba(3,105,161,0.32)] dark:bg-cyan-300/15 dark:text-cyan-100 dark:ring-1 dark:ring-cyan-200/25 dark:shadow-[0_6px_18px_rgba(34,211,238,0.08)]"
-                          : "text-slate-600 hover:bg-sky-100/85 dark:text-zinc-300 dark:hover:bg-white/10 dark:hover:text-cyan-100"
+                        ? "bg-gradient-to-r from-slate-950 via-sky-800 to-teal-700 text-white shadow-[0_8px_22px_rgba(14,116,144,0.3)] dark:from-cyan-300 dark:via-sky-300 dark:to-emerald-300 dark:text-slate-950 dark:shadow-[0_8px_22px_rgba(34,211,238,0.1)]"
+                          : "text-slate-600 hover:bg-white/[0.72] hover:text-slate-900 hover:shadow-sm dark:text-zinc-300 dark:hover:bg-white/10 dark:hover:text-cyan-100"
                       }`}
                     >
-                      {section.label}
+                      <span
+                        className={`h-1.5 w-1.5 rounded-full transition-colors duration-200 ${
+                          isActive
+                            ? "bg-white/90 dark:bg-slate-950/80"
+                            : "bg-sky-300/70 dark:bg-cyan-300/35"
+                        }`}
+                      />
+                      <span>{section.label}</span>
                     </motion.button>
                   );
                 })}
@@ -1204,7 +1213,7 @@ export default function PortfolioDetails() {
                   whileTap={{ scale: 0.95 }}
                   onClick={() => updateBottomCtaExpanded(false)}
                   aria-label="Collapse section switcher"
-                  className="shrink-0 rounded-full p-2 text-slate-500 transition-all duration-200 hover:bg-sky-100/85 hover:text-slate-700 dark:text-zinc-400 dark:hover:bg-white/10 dark:hover:text-cyan-100"
+                  className="shrink-0 rounded-full p-2 text-slate-500 transition-all duration-200 hover:bg-white/[0.72] hover:text-slate-700 hover:shadow-sm dark:text-zinc-400 dark:hover:bg-white/10 dark:hover:text-cyan-100"
                 >
                   <FaChevronDown className="text-[10px]" />
                 </motion.button>
