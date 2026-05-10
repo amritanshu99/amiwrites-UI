@@ -216,15 +216,15 @@ export default function Header({ setLoading }) {
         className="
           sticky left-0 right-0 top-0 z-50 w-full max-w-full overflow-x-clip isolate
           pt-[env(safe-area-inset-top)]
-          border-b border-sky-200/70 dark:border-white/[0.15]
-          bg-[linear-gradient(90deg,#BAE6FD_0%,#F0F9FF_100%)]
+          border-b border-[#475569]/20 dark:border-white/[0.15]
+          bg-[linear-gradient(135deg,#FFFFFF_0%,#F8FAFC_35%,#EEF2F7_70%,#E2E8F0_100%)]
           backdrop-blur-2xl
-          shadow-[0_14px_42px_rgba(14,116,144,0.18)]
+          shadow-[0_14px_42px_rgba(71,85,105,0.12)]
           dark:bg-[linear-gradient(90deg,#000000_0%,#111827_100%)] dark:shadow-[0_14px_42px_rgba(0,0,0,0.52)]
         "
       >
         <div
-          className="pointer-events-none absolute inset-0 -z-10 bg-[linear-gradient(110deg,rgba(255,255,255,0.3),transparent_42%,rgba(14,165,233,0.12))] dark:bg-[radial-gradient(circle_at_12%_0%,rgba(255,255,255,0.08),transparent_34%),linear-gradient(110deg,rgba(255,255,255,0.06),transparent_42%,rgba(255,255,255,0.04))]"
+          className="pointer-events-none absolute inset-0 -z-10 bg-[linear-gradient(110deg,rgba(255,255,255,0.72),transparent_42%,rgba(71,85,105,0.08))] dark:bg-[radial-gradient(circle_at_12%_0%,rgba(255,255,255,0.08),transparent_34%),linear-gradient(110deg,rgba(255,255,255,0.06),transparent_42%,rgba(255,255,255,0.04))]"
           aria-hidden="true"
         />
         <div className="mx-auto max-w-7xl px-3 sm:px-4 lg:px-6">
@@ -232,7 +232,7 @@ export default function Header({ setLoading }) {
             {/* Brand */}
             <Link
               to="/"
-              className="group flex min-w-0 max-w-[calc(100%-7rem)] shrink items-center gap-2 rounded-2xl px-1.5 py-1 transition-colors duration-200 hover:bg-white/55 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-700/40 dark:hover:bg-white/10 dark:focus-visible:ring-white/70 sm:max-w-none"
+              className="group flex min-w-0 max-w-[calc(100%-7rem)] shrink items-center gap-2 rounded-2xl px-1.5 py-1 transition-colors duration-200 hover:bg-white/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#475569]/45 dark:hover:bg-white/10 dark:focus-visible:ring-white/70 sm:max-w-none"
               aria-label="AmiVerse Home"
             >
               <img
@@ -245,7 +245,7 @@ export default function Header({ setLoading }) {
               <span
                 className="
                   hidden min-[390px]:inline-block text-[1rem] sm:text-[1.08rem] md:text-xl font-semibold tracking-tight
-                  text-slate-900 dark:text-slate-50 dark:drop-shadow-[0_1px_10px_rgba(0,0,0,0.35)]
+                  text-[#111827] dark:text-slate-50 dark:drop-shadow-[0_1px_10px_rgba(0,0,0,0.35)]
                   whitespace-nowrap truncate
                   max-w-[28vw] sm:max-w-[24vw] md:max-w-[12rem] lg:max-w-[16rem] xl:max-w-[22rem]
                 "
@@ -259,14 +259,14 @@ export default function Header({ setLoading }) {
             <div className="relative hidden sm:flex items-center flex-1 basis-0 min-w-0 justify-center">
               {/* Left gradient fade */}
               {canScrollLeft && (
-                <div className="pointer-events-none absolute left-0 top-0 h-full w-8 bg-gradient-to-r from-[#BAE6FD]/95 to-transparent dark:from-black z-10" />
+                <div className="pointer-events-none absolute left-0 top-0 h-full w-8 bg-gradient-to-r from-white/95 to-transparent dark:from-black z-10" />
               )}
 
               {/* Left nudge */}
               {canScrollLeft && (
                 <button
                   onClick={() => scrollTabs("left")}
-                  className="absolute left-1 top-1/2 -translate-y-1/2 z-20 hidden h-9 w-9 items-center justify-center rounded-full bg-white/70 text-slate-900 shadow-sm ring-1 ring-sky-900/10 backdrop-blur-sm transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-700/40 dark:bg-white/[0.16] dark:text-white dark:ring-white/20 dark:hover:bg-white/[0.24] dark:focus-visible:ring-white/70 md:flex"
+                  className="absolute left-1 top-1/2 -translate-y-1/2 z-20 hidden h-9 w-9 items-center justify-center rounded-full bg-white/72 text-[#111827] shadow-sm ring-1 ring-[#475569]/12 backdrop-blur-sm transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#475569]/45 dark:bg-white/[0.16] dark:text-white dark:ring-white/20 dark:hover:bg-white/[0.24] dark:focus-visible:ring-white/70 md:flex"
                   aria-label="Scroll tabs left"
                   type="button"
                 >
@@ -278,10 +278,10 @@ export default function Header({ setLoading }) {
                 ref={navScrollRef}
                 className="
                   flex min-w-0 max-w-full items-center gap-1 rounded-2xl
-                  bg-white/55 dark:bg-white/[0.075]
+                  bg-white/58 dark:bg-white/[0.075]
                   p-1
-                  ring-1 ring-sky-900/10 dark:ring-white/20
-                  shadow-[inset_0_1px_0_rgba(255,255,255,0.72),0_12px_28px_rgba(14,116,144,0.12)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.1),0_12px_28px_rgba(0,0,0,0.32)]
+                  ring-1 ring-[#475569]/12 dark:ring-white/20
+                  shadow-[inset_0_1px_0_rgba(255,255,255,0.72),0_12px_28px_rgba(71,85,105,0.10)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.1),0_12px_28px_rgba(0,0,0,0.32)]
                   backdrop-blur-xl
                   overflow-x-auto whitespace-nowrap scroll-px-2
                   snap-x snap-mandatory
@@ -296,12 +296,12 @@ export default function Header({ setLoading }) {
                     key={link.name}
                     to={link.to}
                     className={({ isActive }) =>
-                       `relative inline-flex h-10 items-center rounded-xl outline-none transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-white/70
+                       `relative inline-flex h-10 items-center rounded-xl outline-none transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-[#475569]/45 dark:focus-visible:ring-white/70
                        text-[12.5px] sm:text-[13px] md:text-sm px-3 md:px-3.5 snap-center
                        ${
                          isActive
-                           ? "text-slate-950 dark:text-white"
-                           : "text-slate-700 hover:bg-white/65 hover:text-slate-950 dark:text-zinc-200/[0.85] dark:hover:bg-white/[0.09] dark:hover:text-white"
+                           ? "text-[#111827] dark:text-white"
+                           : "text-[#475569] hover:bg-white/70 hover:text-[#111827] dark:text-zinc-200/[0.85] dark:hover:bg-white/[0.09] dark:hover:text-white"
                        }`
                     }
                     role="tab"
@@ -312,7 +312,7 @@ export default function Header({ setLoading }) {
                         {isActive && (
                           <ActivePill
                             layoutId="active-pill"
-                            className="absolute inset-0 rounded-xl bg-white/80 ring-1 ring-sky-900/10 shadow-[0_8px_20px_rgba(14,116,144,0.14)] dark:bg-white/[0.12] dark:ring-white/[0.18] dark:shadow-[0_8px_20px_rgba(15,23,42,0.14)]"
+                            className="absolute inset-0 rounded-xl bg-white/85 ring-1 ring-[#475569]/12 shadow-[0_8px_20px_rgba(71,85,105,0.12)] dark:bg-white/[0.12] dark:ring-white/[0.18] dark:shadow-[0_8px_20px_rgba(15,23,42,0.14)]"
                             transition={{
                               type: "spring",
                               stiffness: 500,
@@ -330,14 +330,14 @@ export default function Header({ setLoading }) {
 
               {/* Right gradient fade */}
               {canScrollRight && (
-                <div className="pointer-events-none absolute right-0 top-0 h-full w-8 bg-gradient-to-l from-[#F0F9FF]/95 to-transparent dark:from-[#111827] z-10" />
+                <div className="pointer-events-none absolute right-0 top-0 h-full w-8 bg-gradient-to-l from-[#E2E8F0]/95 to-transparent dark:from-[#111827] z-10" />
               )}
 
               {/* Right nudge */}
               {canScrollRight && (
                 <button
                   onClick={() => scrollTabs("right")}
-                  className="absolute right-1 top-1/2 -translate-y-1/2 z-20 hidden h-9 w-9 items-center justify-center rounded-full bg-white/70 text-slate-900 shadow-sm ring-1 ring-sky-900/10 backdrop-blur-sm transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-700/40 dark:bg-white/[0.16] dark:text-white dark:ring-white/20 dark:hover:bg-white/[0.24] dark:focus-visible:ring-white/70 md:flex"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 z-20 hidden h-9 w-9 items-center justify-center rounded-full bg-white/72 text-[#111827] shadow-sm ring-1 ring-[#475569]/12 backdrop-blur-sm transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#475569]/45 dark:bg-white/[0.16] dark:text-white dark:ring-white/20 dark:hover:bg-white/[0.24] dark:focus-visible:ring-white/70 md:flex"
                   aria-label="Scroll tabs right"
                   type="button"
                 >
@@ -351,7 +351,7 @@ export default function Header({ setLoading }) {
               {/* Theme toggle */}
               <button
                 onClick={() => setDarkMode((prev) => !prev)}
-                className="group relative inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/65 text-slate-900 shadow-[0_8px_22px_rgba(14,116,144,0.14)] ring-1 ring-sky-900/10 transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-700/40 dark:bg-white/[0.08] dark:text-white dark:ring-white/20 dark:hover:bg-white/[0.14] dark:focus-visible:ring-white/70"
+                className="group relative inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/70 text-[#111827] shadow-[0_8px_22px_rgba(71,85,105,0.12)] ring-1 ring-[#475569]/12 transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#475569]/45 dark:bg-white/[0.08] dark:text-white dark:ring-white/20 dark:hover:bg-white/[0.14] dark:focus-visible:ring-white/70"
                 aria-label="Toggle Dark Mode"
                 type="button"
               >
@@ -359,7 +359,7 @@ export default function Header({ setLoading }) {
                   (darkMode ? (
                     <Sun className="h-5 w-5 text-amber-500 drop-shadow-[0_0_8px_rgba(245,158,11,0.65)] transition-transform duration-300 group-hover:scale-110" />
                   ) : (
-                    <MoonStar className="h-5 w-5 text-slate-900 transition-all duration-300 group-hover:drop-shadow-[0_0_10px_rgba(14,116,144,0.35)] group-hover:scale-110" />
+                    <MoonStar className="h-5 w-5 text-[#111827] transition-all duration-300 group-hover:drop-shadow-[0_0_10px_rgba(71,85,105,0.35)] group-hover:scale-110" />
                   ))}
               </button>
 
@@ -370,7 +370,7 @@ export default function Header({ setLoading }) {
                     id="user-menu-button"
                     ref={userButtonRef}
                     onClick={() => setUserMenuOpen((p) => !p)}
-                    className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/65 text-slate-900 shadow-[0_8px_22px_rgba(14,116,144,0.14)] ring-1 ring-sky-900/10 transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-700/40 dark:bg-white/[0.08] dark:text-white dark:ring-white/20 dark:hover:bg-white/[0.14] dark:focus-visible:ring-white/70"
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/70 text-[#111827] shadow-[0_8px_22px_rgba(71,85,105,0.12)] ring-1 ring-[#475569]/12 transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#475569]/45 dark:bg-white/[0.08] dark:text-white dark:ring-white/20 dark:hover:bg-white/[0.14] dark:focus-visible:ring-white/70"
                     aria-label="User menu"
                     aria-haspopup="menu"
                     aria-expanded={userMenuOpen}
@@ -391,15 +391,15 @@ export default function Header({ setLoading }) {
                         id="user-menu"
                         role="menu"
                         aria-labelledby="user-menu-button"
-                        className="absolute right-0 mt-3 w-56 max-w-[88vw] overflow-hidden rounded-2xl bg-white/95 shadow-[0_18px_42px_rgba(15,23,42,0.18)] ring-1 ring-slate-900/10 backdrop-blur-xl dark:bg-zinc-950/95 dark:shadow-[0_18px_42px_rgba(0,0,0,0.48)] dark:ring-white/10"
+                        className="absolute right-0 mt-3 w-56 max-w-[88vw] overflow-hidden rounded-2xl bg-white/95 shadow-[0_18px_42px_rgba(71,85,105,0.18)] ring-1 ring-[#475569]/12 backdrop-blur-xl dark:bg-zinc-950/95 dark:shadow-[0_18px_42px_rgba(0,0,0,0.48)] dark:ring-white/10"
                       >
-                        <div className="px-4 py-3 text-sm text-gray-800 dark:text-gray-200 border-b border-slate-900/5 dark:border-white/10">
+                        <div className="px-4 py-3 text-sm text-[#111827] dark:text-gray-200 border-b border-[#475569]/10 dark:border-white/10">
                           Hi, <span className="font-medium">{username}</span>!
                         </div>
                         <button
                           onClick={handleLogout}
                           role="menuitem"
-                          className="w-full text-left px-4 py-3 text-sm text-gray-800 dark:text-gray-200 hover:bg-slate-50 dark:hover:bg-white/[0.06] flex items-center gap-2 transition-colors focus-visible:outline-none focus-visible:bg-slate-50 dark:focus-visible:bg-white/[0.06]"
+                          className="w-full text-left px-4 py-3 text-sm text-[#111827] dark:text-gray-200 hover:bg-[#475569]/8 dark:hover:bg-white/[0.06] flex items-center gap-2 transition-colors focus-visible:outline-none focus-visible:bg-[#475569]/8 dark:focus-visible:bg-white/[0.06]"
                           type="button"
                         >
                           <LogOut className="h-4 w-4" />
@@ -413,14 +413,14 @@ export default function Header({ setLoading }) {
                 <div className="hidden md:flex gap-1.5 lg:gap-2">
                   <button
                     onClick={() => setLoginOpen(true)}
-                    className="min-h-10 px-3.5 py-2 rounded-2xl bg-slate-950 text-sm font-semibold text-white transition hover:bg-slate-800 shadow-[0_10px_24px_rgba(14,116,144,0.16)] ring-1 ring-slate-950/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-sky-700/50 focus-visible:ring-offset-sky-100 dark:bg-white/[0.92] dark:text-slate-950 dark:hover:bg-white dark:focus-visible:ring-white/80 dark:focus-visible:ring-offset-slate-950"
+                    className="min-h-10 px-3.5 py-2 rounded-2xl bg-[#111827] text-sm font-semibold text-white transition hover:bg-[#475569] shadow-[0_10px_24px_rgba(71,85,105,0.16)] ring-1 ring-[#111827]/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#475569]/50 focus-visible:ring-offset-slate-100 dark:bg-white/[0.92] dark:text-slate-950 dark:hover:bg-white dark:focus-visible:ring-white/80 dark:focus-visible:ring-offset-slate-950"
                     type="button"
                   >
                     Login
                   </button>
                   <button
                     onClick={() => setSignupOpen(true)}
-                    className="min-h-10 px-3.5 py-2 rounded-2xl bg-white/65 text-sm font-semibold text-slate-900 transition hover:bg-white shadow-[0_10px_24px_rgba(14,116,144,0.12)] ring-1 ring-sky-900/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-sky-700/50 focus-visible:ring-offset-sky-100 dark:bg-white/[0.08] dark:text-white dark:ring-white/[0.24] dark:hover:bg-white/[0.14] dark:focus-visible:ring-white/80 dark:focus-visible:ring-offset-slate-950"
+                    className="min-h-10 px-3.5 py-2 rounded-2xl bg-white/70 text-sm font-semibold text-[#111827] transition hover:bg-white shadow-[0_10px_24px_rgba(71,85,105,0.12)] ring-1 ring-[#475569]/12 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#475569]/50 focus-visible:ring-offset-slate-100 dark:bg-white/[0.08] dark:text-white dark:ring-white/[0.24] dark:hover:bg-white/[0.14] dark:focus-visible:ring-white/80 dark:focus-visible:ring-offset-slate-950"
                     type="button"
                   >
                     Sign Up
@@ -432,7 +432,7 @@ export default function Header({ setLoading }) {
               <button
                 ref={mobileMenuButtonRef}
                 onClick={() => setMenuOpen((p) => !p)}
-                className="sm:hidden inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/65 text-slate-900 shadow-[0_8px_22px_rgba(14,116,144,0.14)] ring-1 ring-sky-900/10 transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-700/40 dark:bg-white/[0.08] dark:text-white dark:ring-white/20 dark:hover:bg-white/[0.14] dark:focus-visible:ring-white/70"
+                className="sm:hidden inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/70 text-[#111827] shadow-[0_8px_22px_rgba(71,85,105,0.12)] ring-1 ring-[#475569]/12 transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#475569]/45 dark:bg-white/[0.08] dark:text-white dark:ring-white/20 dark:hover:bg-white/[0.14] dark:focus-visible:ring-white/70"
                 aria-label="Toggle menu"
                 aria-expanded={menuOpen}
                 aria-controls="mobile-menu"
@@ -459,21 +459,21 @@ export default function Header({ setLoading }) {
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.18 }}
               id="mobile-menu"
-              className="sm:hidden border-t border-sky-200/70 bg-[linear-gradient(90deg,#BAE6FD_0%,#F0F9FF_100%)] shadow-[0_18px_46px_rgba(14,116,144,0.16)] supports-[backdrop-filter]:backdrop-blur-2xl dark:border-white/[0.15] dark:bg-[linear-gradient(90deg,#000000_0%,#111827_100%)] dark:shadow-[0_18px_46px_rgba(0,0,0,0.52)]"
+              className="sm:hidden border-t border-[#475569]/20 bg-[linear-gradient(135deg,#FFFFFF_0%,#F8FAFC_35%,#EEF2F7_70%,#E2E8F0_100%)] shadow-[0_18px_46px_rgba(71,85,105,0.12)] supports-[backdrop-filter]:backdrop-blur-2xl dark:border-white/[0.15] dark:bg-[linear-gradient(90deg,#000000_0%,#111827_100%)] dark:shadow-[0_18px_46px_rgba(0,0,0,0.52)]"
               role="menu"
             >
               <div className="mx-auto max-w-7xl px-3.5 sm:px-5 py-3 pb-[calc(0.875rem+env(safe-area-inset-bottom))] max-h-[calc(100svh-4rem)] overflow-y-auto">
-                <div className="grid grid-cols-1 gap-1.5 rounded-2xl bg-white/55 p-1.5 ring-1 ring-sky-900/10 backdrop-blur-xl dark:bg-white/[0.07] dark:ring-white/[0.18]">
+                <div className="grid grid-cols-1 gap-1.5 rounded-2xl bg-white/58 p-1.5 ring-1 ring-[#475569]/12 backdrop-blur-xl dark:bg-white/[0.07] dark:ring-white/[0.18]">
                   {navLinks.map((link) => (
                     <NavLink
                       key={link.name}
                       to={link.to}
                       onClick={() => setMenuOpen(false)}
                       className={({ isActive }) =>
-                        `block min-h-11 w-full rounded-xl px-3.5 py-2.5 text-base font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 ${
+                        `block min-h-11 w-full rounded-xl px-3.5 py-2.5 text-base font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#475569]/45 dark:focus-visible:ring-white/70 ${
                           isActive
-                            ? "bg-white text-slate-950 shadow-sm ring-1 ring-sky-900/10 dark:bg-white/[0.14] dark:text-white dark:ring-white/[0.16]"
-                            : "text-slate-700 hover:bg-white/70 hover:text-slate-950 dark:text-zinc-200 dark:hover:bg-white/[0.09] dark:hover:text-white"
+                            ? "bg-white text-[#111827] shadow-sm ring-1 ring-[#475569]/12 dark:bg-white/[0.14] dark:text-white dark:ring-white/[0.16]"
+                            : "text-[#475569] hover:bg-white/70 hover:text-[#111827] dark:text-zinc-200 dark:hover:bg-white/[0.09] dark:hover:text-white"
                         }`
                       }
                       role="menuitem"
@@ -489,7 +489,7 @@ export default function Header({ setLoading }) {
                           setLoginOpen(true);
                           setMenuOpen(false);
                         }}
-                        className="min-h-11 px-3.5 py-2.5 rounded-xl bg-slate-950 font-semibold text-white transition hover:bg-slate-800 shadow-sm ring-1 ring-slate-950/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-sky-700/50 focus-visible:ring-offset-sky-100 dark:bg-white/[0.92] dark:text-slate-950 dark:hover:bg-white dark:focus-visible:ring-white/80 dark:focus-visible:ring-offset-slate-950"
+                        className="min-h-11 px-3.5 py-2.5 rounded-xl bg-[#111827] font-semibold text-white transition hover:bg-[#475569] shadow-sm ring-1 ring-[#111827]/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#475569]/50 focus-visible:ring-offset-slate-100 dark:bg-white/[0.92] dark:text-slate-950 dark:hover:bg-white dark:focus-visible:ring-white/80 dark:focus-visible:ring-offset-slate-950"
                         type="button"
                       >
                         Login
@@ -499,7 +499,7 @@ export default function Header({ setLoading }) {
                           setSignupOpen(true);
                           setMenuOpen(false);
                         }}
-                        className="min-h-11 px-3.5 py-2.5 rounded-xl bg-white/65 font-semibold text-slate-900 transition hover:bg-white shadow-sm ring-1 ring-sky-900/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-sky-700/50 focus-visible:ring-offset-sky-100 dark:bg-white/[0.08] dark:text-white dark:ring-white/[0.24] dark:hover:bg-white/[0.14] dark:focus-visible:ring-white/80 dark:focus-visible:ring-offset-slate-950"
+                        className="min-h-11 px-3.5 py-2.5 rounded-xl bg-white/70 font-semibold text-[#111827] transition hover:bg-white shadow-sm ring-1 ring-[#475569]/12 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#475569]/50 focus-visible:ring-offset-slate-100 dark:bg-white/[0.08] dark:text-white dark:ring-white/[0.24] dark:hover:bg-white/[0.14] dark:focus-visible:ring-white/80 dark:focus-visible:ring-offset-slate-950"
                         type="button"
                       >
                         Sign Up
