@@ -167,10 +167,10 @@ const AnimatedBanner = React.memo(() => {
   return (
     <motion.div
       ref={ref}
-      initial={{ opacity: 0, scale: 0.92, y: 40 }}
+      initial={{ opacity: 0, scale: 0.96, y: 24 }}
       animate={inView ? { opacity: 1, scale: 1, y: 0 } : {}}
-      transition={{ duration: 0.6, ease: "easeOut" }}
-      className="w-full"
+      transition={{ duration: 0.52, ease: [0.22, 1, 0.36, 1] }}
+      className="w-full will-change-transform"
     >
       <img
         src={publicAsset("/banner-optimized.jpg")}
@@ -725,11 +725,11 @@ export default function PortfolioDetails() {
         {/* ================= HERO ================= */}
         <section
           ref={heroRef}
-          className="relative min-h-[104svh] md:min-h-[112svh] lg:min-h-[116svh]"
+          className="relative min-h-[88svh] sm:min-h-[98svh] md:min-h-[108svh] lg:min-h-[112svh] xl:min-h-[114svh]"
         >
           <motion.div
             style={heroImageStyle}
-            className="sticky top-0 z-10 h-[78svh] min-h-[480px] overflow-hidden bg-white dark:bg-black sm:min-h-[520px] md:h-[86svh] md:min-h-[560px] lg:h-[88svh]"
+            className="sticky top-0 z-10 h-[72svh] min-h-[420px] overflow-hidden bg-white dark:bg-black sm:h-[78svh] sm:min-h-[500px] md:h-[84svh] md:min-h-[560px] lg:h-[86svh] xl:h-[88svh]"
           >
             <motion.img
               src={heroImageUrl}
@@ -763,7 +763,7 @@ export default function PortfolioDetails() {
 
             <motion.div
               style={heroTextStyle}
-              className="pointer-events-none absolute inset-0 z-10 flex items-end px-6 pb-[12vh] sm:px-10 sm:pb-[10vh] md:px-20 md:pb-[11vh]"
+              className="pointer-events-none absolute inset-0 z-10 flex items-end px-6 pb-[10vh] sm:px-10 sm:pb-[9vh] md:px-20 md:pb-[10vh] lg:pb-[11vh]"
             >
               <h1
                 style={{ transformOrigin: "left center" }}
@@ -796,7 +796,7 @@ export default function PortfolioDetails() {
           </motion.div>
         </section>
         {/* ================= BRAND BANNER ================= */}
-        <section className="w-full overflow-hidden border-y border-zinc-200/70 bg-white/92 py-5 backdrop-blur dark:border-zinc-800 dark:bg-black/92 md:py-7">
+        <section className="w-full overflow-hidden border-y border-zinc-200/70 bg-white/92 py-4 backdrop-blur dark:border-zinc-800 dark:bg-black/92 sm:py-5 md:py-6 lg:py-7">
           <AnimatedBanner />
         </section>
 

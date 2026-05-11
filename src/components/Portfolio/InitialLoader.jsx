@@ -169,7 +169,7 @@ const InitialLoader = ({ mode = "showcase" }) => {
 
     const statusInterval = window.setInterval(() => {
       setActiveStatusIndex((currentIndex) => (currentIndex + 1) % statusLines.length);
-    }, 1800);
+    }, 2100);
 
     return () => window.clearInterval(statusInterval);
   }, [shouldCycleStatus, statusLines.length]);
@@ -178,10 +178,10 @@ const InitialLoader = ({ mode = "showcase" }) => {
     <div
       data-loader-root
       data-loader-mode={shouldOptimize ? "optimized" : "cinematic"}
-      className="fixed inset-0 z-[9999] overflow-hidden bg-[#010101] text-white"
+      className="fixed inset-0 z-[9999] overflow-hidden bg-[#010101] text-white antialiased"
     >
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_46%,rgba(255,255,255,0.12),rgba(12,12,12,0.92)_30%,rgba(0,0,0,1)_70%)]" />
-      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,1)_0%,rgba(4,4,4,0.94)_22%,rgba(0,0,0,0.78)_46%,rgba(0,0,0,0.96)_76%,rgba(0,0,0,1)_100%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_44%,rgba(255,255,255,0.13),rgba(12,12,12,0.91)_31%,rgba(0,0,0,1)_72%)]" />
+      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,1)_0%,rgba(4,4,4,0.94)_22%,rgba(0,0,0,0.8)_47%,rgba(0,0,0,0.96)_77%,rgba(0,0,0,1)_100%)]" />
 
       {!shouldOptimize && (
         <>
@@ -230,15 +230,15 @@ const InitialLoader = ({ mode = "showcase" }) => {
         <>
           <div
             data-loader-animate
-            className="absolute inset-0 opacity-20 [background-image:radial-gradient(rgba(255,255,255,0.28)_0.8px,transparent_0.9px)] [background-size:4px_4px] animate-[grainDrift_7s_steps(18)_infinite]"
+            className="absolute inset-0 opacity-[0.16] [background-image:radial-gradient(rgba(255,255,255,0.24)_0.8px,transparent_0.9px)] [background-size:4px_4px] animate-[grainDrift_10s_linear_infinite]"
           />
           <div
             data-loader-animate
-            className="absolute inset-0 opacity-40 [background:repeating-linear-gradient(0deg,transparent_0px,transparent_2px,rgba(255,255,255,0.03)_3px,transparent_4px)] animate-[scanlines_8s_linear_infinite]"
+            className="absolute inset-0 opacity-[0.34] [background:repeating-linear-gradient(0deg,transparent_0px,transparent_2px,rgba(255,255,255,0.03)_3px,transparent_4px)] animate-[scanlines_9.5s_linear_infinite]"
           />
           <div
             data-loader-animate
-            className="absolute inset-0 bg-[linear-gradient(110deg,transparent_0%,rgba(255,255,255,0.04)_44%,transparent_56%,rgba(255,255,255,0.02)_70%,transparent_100%)] opacity-55 animate-[screenFlicker_4.4s_steps(10)_infinite]"
+            className="absolute inset-0 bg-[linear-gradient(110deg,transparent_0%,rgba(255,255,255,0.04)_44%,transparent_56%,rgba(255,255,255,0.02)_70%,transparent_100%)] opacity-[0.46] animate-[screenFlicker_6.8s_ease-in-out_infinite]"
           />
         </>
       )}
@@ -368,7 +368,7 @@ const InitialLoader = ({ mode = "showcase" }) => {
 
             <h1
               {...(!shouldOptimize ? { "data-loader-animate": true } : {})}
-              className={`mt-4 font-cinzel text-[2.4rem] uppercase tracking-[0.14em] text-white drop-shadow-[0_18px_40px_rgba(0,0,0,0.9)] sm:text-5xl sm:tracking-[0.2em] md:text-6xl md:tracking-[0.24em] lg:text-7xl ${
+              className={`mt-4 font-cinzel text-[2.25rem] uppercase leading-none tracking-[0.12em] text-white drop-shadow-[0_18px_40px_rgba(0,0,0,0.9)] min-[390px]:text-[2.55rem] sm:text-5xl sm:tracking-[0.2em] md:text-6xl md:tracking-[0.24em] lg:text-7xl ${
                 shouldOptimize ? "" : "animate-[titleGlow_5s_ease-in-out_infinite]"
               }`}
             >
@@ -397,8 +397,8 @@ const InitialLoader = ({ mode = "showcase" }) => {
                   data-loader-animate
                   className={`absolute inset-y-0 left-[-42%] w-[42%] rounded-full bg-gradient-to-r from-transparent via-white to-transparent opacity-95 ${
                     shouldOptimize
-                      ? "animate-[progressTravel_2.35s_linear_infinite]"
-                      : "animate-[progressTravel_1.9s_ease-in-out_infinite]"
+                      ? "animate-[progressTravel_2.45s_linear_infinite]"
+                      : "animate-[progressTravel_2.15s_cubic-bezier(.22,1,.36,1)_infinite]"
                   }`}
                 />
               </div>
@@ -479,7 +479,7 @@ const InitialLoader = ({ mode = "showcase" }) => {
           @keyframes openingReveal {
             0% {
               opacity: 0;
-              transform: translate3d(0, 22px, 0) scale(0.99);
+              transform: translate3d(0, 14px, 0) scale(0.985);
             }
             100% {
               opacity: 1;
@@ -580,22 +580,22 @@ const InitialLoader = ({ mode = "showcase" }) => {
           @keyframes screenFlicker {
             0%,
             100% {
-              opacity: 0.44;
+              opacity: 0.38;
             }
             18% {
-              opacity: 0.36;
+              opacity: 0.34;
             }
             32% {
-              opacity: 0.52;
+              opacity: 0.47;
             }
             48% {
-              opacity: 0.41;
+              opacity: 0.37;
             }
             68% {
-              opacity: 0.56;
+              opacity: 0.5;
             }
             82% {
-              opacity: 0.38;
+              opacity: 0.35;
             }
           }
 
@@ -685,11 +685,14 @@ const InitialLoader = ({ mode = "showcase" }) => {
               transform: translate3d(0, 0, 0);
               opacity: 0;
             }
-            16% {
+            14% {
               opacity: 1;
             }
+            78% {
+              opacity: 0.9;
+            }
             100% {
-              transform: translate3d(340%, 0, 0);
+              transform: translate3d(338%, 0, 0);
               opacity: 0;
             }
           }
@@ -697,7 +700,7 @@ const InitialLoader = ({ mode = "showcase" }) => {
           @keyframes statusSwap {
             0% {
               opacity: 0;
-              transform: translate3d(0, 10px, 0);
+              transform: translate3d(0, 6px, 0);
             }
             100% {
               opacity: 1;

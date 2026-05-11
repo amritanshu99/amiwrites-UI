@@ -216,15 +216,19 @@ export default function Header({ setLoading }) {
         className="
           sticky left-0 right-0 top-0 z-50 w-full max-w-full overflow-x-clip isolate
           pt-[env(safe-area-inset-top)]
-          border-b border-[#475569]/20 dark:border-white/[0.15]
-          bg-[linear-gradient(135deg,#FFFFFF_0%,#F8FAFC_35%,#EEF2F7_70%,#E2E8F0_100%)]
+          border-b border-[#475569]/[0.18] dark:border-white/[0.13]
+          bg-[linear-gradient(135deg,#FFFFFF_0%,#F8FAFC_38%,#EEF2F7_72%,#E2E8F0_100%)]
           backdrop-blur-2xl
-          shadow-[0_14px_42px_rgba(71,85,105,0.12)]
-          dark:bg-[linear-gradient(90deg,#000000_0%,#111827_100%)] dark:shadow-[0_14px_42px_rgba(0,0,0,0.52)]
+          shadow-[0_10px_34px_rgba(71,85,105,0.11)]
+          dark:bg-[linear-gradient(90deg,#000000_0%,#111827_100%)] dark:shadow-[0_10px_34px_rgba(0,0,0,0.5)]
         "
       >
         <div
           className="pointer-events-none absolute inset-0 -z-10 bg-[linear-gradient(110deg,rgba(255,255,255,0.72),transparent_42%,rgba(71,85,105,0.08))] dark:bg-[radial-gradient(circle_at_12%_0%,rgba(255,255,255,0.08),transparent_34%),linear-gradient(110deg,rgba(255,255,255,0.06),transparent_42%,rgba(255,255,255,0.04))]"
+          aria-hidden="true"
+        />
+        <div
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-[#475569]/[0.24] to-transparent dark:via-white/[0.18]"
           aria-hidden="true"
         />
         <div className="mx-auto max-w-7xl px-3 sm:px-4 lg:px-6">
@@ -232,13 +236,13 @@ export default function Header({ setLoading }) {
             {/* Brand */}
             <Link
               to="/"
-              className="group flex min-w-0 max-w-[calc(100%-7rem)] shrink items-center gap-2 rounded-2xl px-1.5 py-1 transition-colors duration-200 hover:bg-white/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#475569]/45 dark:hover:bg-white/10 dark:focus-visible:ring-white/70 sm:max-w-none"
+              className="group flex min-w-0 max-w-[calc(100%-7rem)] shrink items-center gap-2 rounded-[1.15rem] px-2 py-1.5 transition-colors duration-200 hover:bg-white/64 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#475569]/[0.45] dark:hover:bg-white/10 dark:focus-visible:ring-white/70 sm:max-w-none"
               aria-label="AmiVerse Home"
             >
               <img
                 src="/icons/icon-96x96.png"
                 alt="AmiVerse logo"
-                className="h-9 w-9 sm:h-10 sm:w-10 shrink-0 rounded-2xl object-contain bg-white/90 ring-1 ring-white/[0.35] shadow-[0_10px_26px_rgba(15,23,42,0.24)] transition-transform duration-300 group-hover:rotate-3 group-hover:scale-[1.04] dark:bg-white/[0.08]"
+                className="h-9 w-9 sm:h-10 sm:w-10 shrink-0 rounded-[1.05rem] object-contain bg-white/90 ring-1 ring-[#475569]/[0.10] shadow-[0_8px_22px_rgba(15,23,42,0.2)] transition-transform duration-300 group-hover:rotate-3 group-hover:scale-[1.04] dark:bg-white/[0.08] dark:ring-white/[0.12]"
                 draggable="false"
               />
               {/* Always show name; truncate if tight */}
@@ -266,7 +270,7 @@ export default function Header({ setLoading }) {
               {canScrollLeft && (
                 <button
                   onClick={() => scrollTabs("left")}
-                  className="absolute left-1 top-1/2 -translate-y-1/2 z-20 hidden h-9 w-9 items-center justify-center rounded-full bg-white/72 text-[#111827] shadow-sm ring-1 ring-[#475569]/12 backdrop-blur-sm transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#475569]/45 dark:bg-white/[0.16] dark:text-white dark:ring-white/20 dark:hover:bg-white/[0.24] dark:focus-visible:ring-white/70 md:flex"
+                  className="absolute left-1 top-1/2 -translate-y-1/2 z-20 hidden h-9 w-9 items-center justify-center rounded-full bg-white/72 text-[#111827] shadow-sm ring-1 ring-[#475569]/[0.12] backdrop-blur-sm transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#475569]/[0.45] dark:bg-white/[0.16] dark:text-white dark:ring-white/20 dark:hover:bg-white/[0.24] dark:focus-visible:ring-white/70 md:flex"
                   aria-label="Scroll tabs left"
                   type="button"
                 >
@@ -277,11 +281,11 @@ export default function Header({ setLoading }) {
               <nav
                 ref={navScrollRef}
                 className="
-                  flex min-w-0 max-w-full items-center gap-1 rounded-2xl
-                  bg-white/58 dark:bg-white/[0.075]
-                  p-1
-                  ring-1 ring-[#475569]/12 dark:ring-white/20
-                  shadow-[inset_0_1px_0_rgba(255,255,255,0.72),0_12px_28px_rgba(71,85,105,0.10)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.1),0_12px_28px_rgba(0,0,0,0.32)]
+                  flex min-w-0 max-w-full items-center gap-1 rounded-[1.35rem]
+                  bg-white/62 dark:bg-white/[0.07]
+                  p-1.5
+                  ring-1 ring-[#475569]/[0.12] dark:ring-white/[0.18]
+                  shadow-[inset_0_1px_0_rgba(255,255,255,0.76),0_10px_24px_rgba(71,85,105,0.09)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.1),0_10px_24px_rgba(0,0,0,0.3)]
                   backdrop-blur-xl
                   overflow-x-auto whitespace-nowrap scroll-px-2
                   snap-x snap-mandatory
@@ -296,7 +300,7 @@ export default function Header({ setLoading }) {
                     key={link.name}
                     to={link.to}
                     className={({ isActive }) =>
-                       `relative inline-flex h-10 items-center rounded-xl outline-none transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-[#475569]/45 dark:focus-visible:ring-white/70
+                       `relative inline-flex h-10 items-center rounded-[1rem] outline-none transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-[#475569]/[0.45] dark:focus-visible:ring-white/70
                        text-[12.5px] sm:text-[13px] md:text-sm px-3 md:px-3.5 snap-center
                        ${
                          isActive
@@ -312,7 +316,7 @@ export default function Header({ setLoading }) {
                         {isActive && (
                           <ActivePill
                             layoutId="active-pill"
-                            className="absolute inset-0 rounded-xl bg-white/85 ring-1 ring-[#475569]/12 shadow-[0_8px_20px_rgba(71,85,105,0.12)] dark:bg-white/[0.12] dark:ring-white/[0.18] dark:shadow-[0_8px_20px_rgba(15,23,42,0.14)]"
+                            className="absolute inset-0 rounded-[1rem] bg-white/88 ring-1 ring-[#475569]/[0.12] shadow-[0_7px_18px_rgba(71,85,105,0.11)] dark:bg-white/[0.12] dark:ring-white/[0.18] dark:shadow-[0_7px_18px_rgba(15,23,42,0.14)]"
                             transition={{
                               type: "spring",
                               stiffness: 500,
@@ -337,7 +341,7 @@ export default function Header({ setLoading }) {
               {canScrollRight && (
                 <button
                   onClick={() => scrollTabs("right")}
-                  className="absolute right-1 top-1/2 -translate-y-1/2 z-20 hidden h-9 w-9 items-center justify-center rounded-full bg-white/72 text-[#111827] shadow-sm ring-1 ring-[#475569]/12 backdrop-blur-sm transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#475569]/45 dark:bg-white/[0.16] dark:text-white dark:ring-white/20 dark:hover:bg-white/[0.24] dark:focus-visible:ring-white/70 md:flex"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 z-20 hidden h-9 w-9 items-center justify-center rounded-full bg-white/72 text-[#111827] shadow-sm ring-1 ring-[#475569]/[0.12] backdrop-blur-sm transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#475569]/[0.45] dark:bg-white/[0.16] dark:text-white dark:ring-white/20 dark:hover:bg-white/[0.24] dark:focus-visible:ring-white/70 md:flex"
                   aria-label="Scroll tabs right"
                   type="button"
                 >
@@ -351,7 +355,7 @@ export default function Header({ setLoading }) {
               {/* Theme toggle */}
               <button
                 onClick={() => setDarkMode((prev) => !prev)}
-                className="group relative inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/70 text-[#111827] shadow-[0_8px_22px_rgba(71,85,105,0.12)] ring-1 ring-[#475569]/12 transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#475569]/45 dark:bg-white/[0.08] dark:text-white dark:ring-white/20 dark:hover:bg-white/[0.14] dark:focus-visible:ring-white/70"
+                className="group relative inline-flex h-10 w-10 items-center justify-center rounded-[1.05rem] bg-white/72 text-[#111827] shadow-[0_8px_20px_rgba(71,85,105,0.11)] ring-1 ring-[#475569]/[0.12] transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#475569]/[0.45] dark:bg-white/[0.08] dark:text-white dark:ring-white/20 dark:hover:bg-white/[0.14] dark:focus-visible:ring-white/70"
                 aria-label="Toggle Dark Mode"
                 type="button"
               >
@@ -370,7 +374,7 @@ export default function Header({ setLoading }) {
                     id="user-menu-button"
                     ref={userButtonRef}
                     onClick={() => setUserMenuOpen((p) => !p)}
-                    className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/70 text-[#111827] shadow-[0_8px_22px_rgba(71,85,105,0.12)] ring-1 ring-[#475569]/12 transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#475569]/45 dark:bg-white/[0.08] dark:text-white dark:ring-white/20 dark:hover:bg-white/[0.14] dark:focus-visible:ring-white/70"
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-[1.05rem] bg-white/72 text-[#111827] shadow-[0_8px_20px_rgba(71,85,105,0.11)] ring-1 ring-[#475569]/[0.12] transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#475569]/[0.45] dark:bg-white/[0.08] dark:text-white dark:ring-white/20 dark:hover:bg-white/[0.14] dark:focus-visible:ring-white/70"
                     aria-label="User menu"
                     aria-haspopup="menu"
                     aria-expanded={userMenuOpen}
@@ -391,15 +395,15 @@ export default function Header({ setLoading }) {
                         id="user-menu"
                         role="menu"
                         aria-labelledby="user-menu-button"
-                        className="absolute right-0 mt-3 w-56 max-w-[88vw] overflow-hidden rounded-2xl bg-white/95 shadow-[0_18px_42px_rgba(71,85,105,0.18)] ring-1 ring-[#475569]/12 backdrop-blur-xl dark:bg-zinc-950/95 dark:shadow-[0_18px_42px_rgba(0,0,0,0.48)] dark:ring-white/10"
+                        className="absolute right-0 mt-3 w-56 max-w-[88vw] overflow-hidden rounded-2xl bg-white/95 shadow-[0_18px_42px_rgba(71,85,105,0.18)] ring-1 ring-[#475569]/[0.12] backdrop-blur-xl dark:bg-zinc-950/95 dark:shadow-[0_18px_42px_rgba(0,0,0,0.48)] dark:ring-white/10"
                       >
-                        <div className="px-4 py-3 text-sm text-[#111827] dark:text-gray-200 border-b border-[#475569]/10 dark:border-white/10">
+                        <div className="px-4 py-3 text-sm text-[#111827] dark:text-gray-200 border-b border-[#475569]/[0.10] dark:border-white/10">
                           Hi, <span className="font-medium">{username}</span>!
                         </div>
                         <button
                           onClick={handleLogout}
                           role="menuitem"
-                          className="w-full text-left px-4 py-3 text-sm text-[#111827] dark:text-gray-200 hover:bg-[#475569]/8 dark:hover:bg-white/[0.06] flex items-center gap-2 transition-colors focus-visible:outline-none focus-visible:bg-[#475569]/8 dark:focus-visible:bg-white/[0.06]"
+                          className="w-full text-left px-4 py-3 text-sm text-[#111827] dark:text-gray-200 hover:bg-[#475569]/[0.08] dark:hover:bg-white/[0.06] flex items-center gap-2 transition-colors focus-visible:outline-none focus-visible:bg-[#475569]/[0.08] dark:focus-visible:bg-white/[0.06]"
                           type="button"
                         >
                           <LogOut className="h-4 w-4" />
@@ -413,14 +417,14 @@ export default function Header({ setLoading }) {
                 <div className="hidden md:flex gap-1.5 lg:gap-2">
                   <button
                     onClick={() => setLoginOpen(true)}
-                    className="min-h-10 px-3.5 py-2 rounded-2xl bg-[#111827] text-sm font-semibold text-white transition hover:bg-[#475569] shadow-[0_10px_24px_rgba(71,85,105,0.16)] ring-1 ring-[#111827]/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#475569]/50 focus-visible:ring-offset-slate-100 dark:bg-white/[0.92] dark:text-slate-950 dark:hover:bg-white dark:focus-visible:ring-white/80 dark:focus-visible:ring-offset-slate-950"
+                    className="min-h-10 rounded-[1.05rem] bg-[#111827] px-3.5 py-2 text-sm font-semibold text-white shadow-[0_9px_22px_rgba(71,85,105,0.15)] ring-1 ring-[#111827]/[0.10] transition hover:bg-[#475569] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#475569]/[0.50] focus-visible:ring-offset-slate-100 dark:bg-white/[0.92] dark:text-slate-950 dark:hover:bg-white dark:focus-visible:ring-white/80 dark:focus-visible:ring-offset-slate-950"
                     type="button"
                   >
                     Login
                   </button>
                   <button
                     onClick={() => setSignupOpen(true)}
-                    className="min-h-10 px-3.5 py-2 rounded-2xl bg-white/70 text-sm font-semibold text-[#111827] transition hover:bg-white shadow-[0_10px_24px_rgba(71,85,105,0.12)] ring-1 ring-[#475569]/12 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#475569]/50 focus-visible:ring-offset-slate-100 dark:bg-white/[0.08] dark:text-white dark:ring-white/[0.24] dark:hover:bg-white/[0.14] dark:focus-visible:ring-white/80 dark:focus-visible:ring-offset-slate-950"
+                    className="min-h-10 rounded-[1.05rem] bg-white/72 px-3.5 py-2 text-sm font-semibold text-[#111827] shadow-[0_9px_22px_rgba(71,85,105,0.11)] ring-1 ring-[#475569]/[0.12] transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#475569]/[0.50] focus-visible:ring-offset-slate-100 dark:bg-white/[0.08] dark:text-white dark:ring-white/[0.24] dark:hover:bg-white/[0.14] dark:focus-visible:ring-white/80 dark:focus-visible:ring-offset-slate-950"
                     type="button"
                   >
                     Sign Up
@@ -432,7 +436,7 @@ export default function Header({ setLoading }) {
               <button
                 ref={mobileMenuButtonRef}
                 onClick={() => setMenuOpen((p) => !p)}
-                className="sm:hidden inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/70 text-[#111827] shadow-[0_8px_22px_rgba(71,85,105,0.12)] ring-1 ring-[#475569]/12 transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#475569]/45 dark:bg-white/[0.08] dark:text-white dark:ring-white/20 dark:hover:bg-white/[0.14] dark:focus-visible:ring-white/70"
+                className="sm:hidden inline-flex h-10 w-10 items-center justify-center rounded-[1.05rem] bg-white/72 text-[#111827] shadow-[0_8px_20px_rgba(71,85,105,0.11)] ring-1 ring-[#475569]/[0.12] transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#475569]/[0.45] dark:bg-white/[0.08] dark:text-white dark:ring-white/20 dark:hover:bg-white/[0.14] dark:focus-visible:ring-white/70"
                 aria-label="Toggle menu"
                 aria-expanded={menuOpen}
                 aria-controls="mobile-menu"
@@ -459,20 +463,20 @@ export default function Header({ setLoading }) {
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.18 }}
               id="mobile-menu"
-              className="sm:hidden border-t border-[#475569]/20 bg-[linear-gradient(135deg,#FFFFFF_0%,#F8FAFC_35%,#EEF2F7_70%,#E2E8F0_100%)] shadow-[0_18px_46px_rgba(71,85,105,0.12)] supports-[backdrop-filter]:backdrop-blur-2xl dark:border-white/[0.15] dark:bg-[linear-gradient(90deg,#000000_0%,#111827_100%)] dark:shadow-[0_18px_46px_rgba(0,0,0,0.52)]"
+              className="sm:hidden border-t border-[#475569]/[0.18] bg-[linear-gradient(135deg,#FFFFFF_0%,#F8FAFC_38%,#EEF2F7_72%,#E2E8F0_100%)] shadow-[0_16px_42px_rgba(71,85,105,0.11)] supports-[backdrop-filter]:backdrop-blur-2xl dark:border-white/[0.13] dark:bg-[linear-gradient(90deg,#000000_0%,#111827_100%)] dark:shadow-[0_16px_42px_rgba(0,0,0,0.5)]"
               role="menu"
             >
               <div className="mx-auto max-w-7xl px-3.5 sm:px-5 py-3 pb-[calc(0.875rem+env(safe-area-inset-bottom))] max-h-[calc(100svh-4rem)] overflow-y-auto">
-                <div className="grid grid-cols-1 gap-1.5 rounded-2xl bg-white/58 p-1.5 ring-1 ring-[#475569]/12 backdrop-blur-xl dark:bg-white/[0.07] dark:ring-white/[0.18]">
+                <div className="grid grid-cols-1 gap-1.5 rounded-[1.25rem] bg-white/62 p-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.72)] ring-1 ring-[#475569]/[0.12] backdrop-blur-xl dark:bg-white/[0.07] dark:ring-white/[0.18]">
                   {navLinks.map((link) => (
                     <NavLink
                       key={link.name}
                       to={link.to}
                       onClick={() => setMenuOpen(false)}
                       className={({ isActive }) =>
-                        `block min-h-11 w-full rounded-xl px-3.5 py-2.5 text-base font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#475569]/45 dark:focus-visible:ring-white/70 ${
+                        `block min-h-11 w-full rounded-[0.95rem] px-3.5 py-2.5 text-base font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#475569]/[0.45] dark:focus-visible:ring-white/70 ${
                           isActive
-                            ? "bg-white text-[#111827] shadow-sm ring-1 ring-[#475569]/12 dark:bg-white/[0.14] dark:text-white dark:ring-white/[0.16]"
+                            ? "bg-white text-[#111827] shadow-sm ring-1 ring-[#475569]/[0.12] dark:bg-white/[0.14] dark:text-white dark:ring-white/[0.16]"
                             : "text-[#475569] hover:bg-white/70 hover:text-[#111827] dark:text-zinc-200 dark:hover:bg-white/[0.09] dark:hover:text-white"
                         }`
                       }
@@ -489,7 +493,7 @@ export default function Header({ setLoading }) {
                           setLoginOpen(true);
                           setMenuOpen(false);
                         }}
-                        className="min-h-11 px-3.5 py-2.5 rounded-xl bg-[#111827] font-semibold text-white transition hover:bg-[#475569] shadow-sm ring-1 ring-[#111827]/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#475569]/50 focus-visible:ring-offset-slate-100 dark:bg-white/[0.92] dark:text-slate-950 dark:hover:bg-white dark:focus-visible:ring-white/80 dark:focus-visible:ring-offset-slate-950"
+                        className="min-h-11 rounded-[0.95rem] bg-[#111827] px-3.5 py-2.5 font-semibold text-white shadow-sm ring-1 ring-[#111827]/[0.10] transition hover:bg-[#475569] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#475569]/[0.50] focus-visible:ring-offset-slate-100 dark:bg-white/[0.92] dark:text-slate-950 dark:hover:bg-white dark:focus-visible:ring-white/80 dark:focus-visible:ring-offset-slate-950"
                         type="button"
                       >
                         Login
@@ -499,7 +503,7 @@ export default function Header({ setLoading }) {
                           setSignupOpen(true);
                           setMenuOpen(false);
                         }}
-                        className="min-h-11 px-3.5 py-2.5 rounded-xl bg-white/70 font-semibold text-[#111827] transition hover:bg-white shadow-sm ring-1 ring-[#475569]/12 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#475569]/50 focus-visible:ring-offset-slate-100 dark:bg-white/[0.08] dark:text-white dark:ring-white/[0.24] dark:hover:bg-white/[0.14] dark:focus-visible:ring-white/80 dark:focus-visible:ring-offset-slate-950"
+                        className="min-h-11 rounded-[0.95rem] bg-white/72 px-3.5 py-2.5 font-semibold text-[#111827] shadow-sm ring-1 ring-[#475569]/[0.12] transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#475569]/[0.50] focus-visible:ring-offset-slate-100 dark:bg-white/[0.08] dark:text-white dark:ring-white/[0.24] dark:hover:bg-white/[0.14] dark:focus-visible:ring-white/80 dark:focus-visible:ring-offset-slate-950"
                         type="button"
                       >
                         Sign Up
