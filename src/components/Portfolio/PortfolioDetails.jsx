@@ -13,6 +13,8 @@ import {
   FaRegFilePdf,
   FaChevronUp,
   FaChevronDown,
+  FaPhoneAlt,
+  FaEnvelope,
 } from "react-icons/fa";
 import {
   SiMongodb,
@@ -58,6 +60,13 @@ const socialColors = {
   GitHub: "text-[#181717] dark:text-white",
   Instagram: "text-[#E4405F]",
   Facebook: "text-[#1877F2]",
+};
+
+const contactActions = {
+  phoneDisplay: "+91 91491 94704",
+  phoneHref: "tel:+919149194704",
+  emailDisplay: "amritanshu99@gmail.com",
+  emailHref: "mailto:amritanshu99@gmail.com",
 };
 
 const skillColors = {
@@ -258,6 +267,7 @@ const MIN_LOADER_DURATION_MS = 900;
 const resumeUrl =
   "https://amiwrites-backend-app-2lp5.onrender.com/images/Resume.pdf";
 const publicAsset = (path) => `${process.env.PUBLIC_URL || ""}${path}`;
+const cx = (...classes) => classes.filter(Boolean).join(" ");
 
 /* ================= MAIN ================= */
 export default function PortfolioDetails() {
@@ -683,6 +693,56 @@ export default function PortfolioDetails() {
   if (loading || !data) return <InitialLoader />;
 
   const [firstName, lastName] = data.name.split(" ");
+  const useTouchBottomCta = isTouchDevice;
+  const bottomCtaWrapperClassName = cx(
+    "pointer-events-none fixed left-0 right-0 z-[80] lg:right-[var(--scrollbar-size)]",
+    useTouchBottomCta
+      ? "bottom-0 px-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]"
+      : "bottom-[max(1rem,env(safe-area-inset-bottom))] px-3 sm:px-6",
+  );
+  const bottomCtaContainerClassName = cx(
+    "pointer-events-auto relative isolate mx-auto flex min-w-0 items-center overflow-hidden border border-white/[0.65] bg-white/[0.78] shadow-[0_18px_50px_rgba(15,23,42,0.18),0_4px_16px_rgba(14,165,233,0.12)] ring-1 ring-sky-100/70 backdrop-blur-2xl dark:border-cyan-100/15 dark:bg-zinc-950/[0.82] dark:shadow-[0_18px_54px_rgba(0,0,0,0.62),0_0_26px_rgba(34,211,238,0.08)] dark:ring-cyan-100/10",
+    useTouchBottomCta
+      ? "w-full max-w-md justify-center gap-2 rounded-[1.4rem] p-2"
+      : "w-fit max-w-[calc(100vw_-_1.5rem)] gap-1.5 rounded-[1.65rem] p-1.5 sm:max-w-[calc(100vw_-_3rem)] lg:max-w-[calc(100vw_-_var(--scrollbar-size)_-_3rem)]",
+  );
+  const collapsedCtaClassName = cx(
+    "group relative z-10 flex items-center font-semibold text-slate-700 shadow-sm ring-1 ring-slate-200/60 transition-all duration-200 dark:text-zinc-100 dark:ring-white/10",
+    useTouchBottomCta
+      ? "min-h-12 w-full justify-between gap-3 rounded-[1.2rem] bg-white/[0.68] px-4 py-2.5 text-sm touch-manipulation active:bg-white/[0.9] dark:bg-white/[0.07] dark:active:bg-white/10"
+      : "gap-2 rounded-full bg-white/[0.58] px-3 py-1.5 text-xs hover:bg-white/[0.88] hover:shadow-md dark:bg-white/[0.06] dark:hover:bg-white/10 sm:text-sm",
+  );
+  const activeCtaLabelClassName = cx(
+    "rounded-full bg-gradient-to-r from-slate-950 via-sky-800 to-teal-700 text-white shadow-[0_7px_18px_rgba(14,116,144,0.22)] transition-colors duration-200 dark:from-cyan-300 dark:via-sky-300 dark:to-emerald-300 dark:text-slate-950",
+    useTouchBottomCta ? "px-3 py-1.5" : "px-2.5 py-1",
+  );
+  const expandedCtaClassName = cx(
+    "relative z-10 min-w-0",
+    useTouchBottomCta
+      ? "grid w-full grid-cols-2 gap-2"
+      : "flex max-w-full flex-wrap items-center justify-center gap-1.5",
+  );
+  const sectionCtaButtonBaseClassName = cx(
+    "inline-flex min-w-0 shrink-0 items-center whitespace-nowrap transition-all duration-200",
+    useTouchBottomCta
+      ? "min-h-11 w-full justify-center gap-2 rounded-[1rem] px-3 py-2 text-sm font-semibold touch-manipulation"
+      : "gap-1.5 rounded-full px-2.5 py-1.5 text-[11px] font-medium sm:px-3 sm:text-sm",
+  );
+  const getSectionCtaButtonClassName = (isActive) =>
+    cx(
+      sectionCtaButtonBaseClassName,
+      isActive
+        ? "bg-gradient-to-r from-slate-950 via-sky-800 to-teal-700 text-white shadow-[0_8px_22px_rgba(14,116,144,0.3)] dark:from-cyan-300 dark:via-sky-300 dark:to-emerald-300 dark:text-slate-950 dark:shadow-[0_8px_22px_rgba(34,211,238,0.1)]"
+        : useTouchBottomCta
+          ? "bg-white/[0.48] text-slate-700 ring-1 ring-slate-200/70 active:bg-white/[0.82] active:text-slate-950 dark:bg-white/[0.055] dark:text-zinc-200 dark:ring-white/10 dark:active:bg-white/10 dark:active:text-cyan-100"
+          : "text-slate-600 hover:bg-white/[0.72] hover:text-slate-900 hover:shadow-sm dark:text-zinc-300 dark:hover:bg-white/10 dark:hover:text-cyan-100",
+    );
+  const closeCtaClassName = cx(
+    "shrink-0 text-slate-500 transition-all duration-200 dark:text-zinc-400",
+    useTouchBottomCta
+      ? "col-span-2 flex min-h-10 w-full items-center justify-center rounded-[1rem] bg-white/[0.42] ring-1 ring-slate-200/60 touch-manipulation active:bg-white/[0.78] active:text-slate-700 dark:bg-white/[0.045] dark:ring-white/10 dark:active:bg-white/10 dark:active:text-cyan-100"
+      : "rounded-full p-2 hover:bg-white/[0.72] hover:text-slate-700 hover:shadow-sm dark:hover:bg-white/10 dark:hover:text-cyan-100",
+  );
 
   return (
     <>
@@ -825,6 +885,43 @@ export default function PortfolioDetails() {
                   </button>
                 ))}
               </div>
+
+              <nav
+                className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center"
+                aria-label="Direct contact actions"
+              >
+                <a
+                  href={contactActions.phoneHref}
+                  aria-label={`Call Amritanshu Mishra at ${contactActions.phoneDisplay}`}
+                  className="group inline-flex min-h-12 w-full min-w-0 items-center justify-center gap-3 rounded-full border border-emerald-300/60 bg-white/82 px-4 py-2.5 text-sm font-semibold text-slate-900 shadow-[0_14px_32px_rgba(15,23,42,0.1)] ring-1 ring-white/70 backdrop-blur-xl transition-all duration-300 hover:-translate-y-0.5 hover:border-emerald-400 hover:bg-white hover:shadow-[0_18px_40px_rgba(16,185,129,0.16)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300/70 dark:border-emerald-300/25 dark:bg-emerald-300/10 dark:text-emerald-50 dark:shadow-[0_16px_36px_rgba(0,0,0,0.26)] dark:ring-emerald-100/10 dark:hover:border-emerald-200/55 dark:hover:bg-emerald-300/15 dark:focus-visible:ring-emerald-200/45 sm:w-auto sm:justify-start"
+                >
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 text-white shadow-[0_10px_22px_rgba(16,185,129,0.26)] transition-transform duration-300 group-hover:scale-105 dark:from-emerald-300 dark:to-teal-300 dark:text-slate-950 dark:shadow-[0_10px_22px_rgba(45,212,191,0.18)]">
+                    <FaPhoneAlt className="text-sm" aria-hidden="true" />
+                  </span>
+                  <span className="flex min-w-0 flex-col items-start leading-tight">
+                    <span>Call</span>
+                    <span className="hidden whitespace-nowrap text-[12px] font-medium text-slate-500 dark:text-emerald-100/75 sm:block">
+                      {contactActions.phoneDisplay}
+                    </span>
+                  </span>
+                </a>
+
+                <a
+                  href={contactActions.emailHref}
+                  aria-label={`Email Amritanshu Mishra at ${contactActions.emailDisplay}`}
+                  className="group inline-flex min-h-12 w-full min-w-0 items-center justify-center gap-3 rounded-full border border-sky-300/60 bg-white/82 px-4 py-2.5 text-sm font-semibold text-slate-900 shadow-[0_14px_32px_rgba(15,23,42,0.1)] ring-1 ring-white/70 backdrop-blur-xl transition-all duration-300 hover:-translate-y-0.5 hover:border-sky-400 hover:bg-white hover:shadow-[0_18px_40px_rgba(14,165,233,0.16)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/70 dark:border-cyan-300/25 dark:bg-cyan-300/10 dark:text-cyan-50 dark:shadow-[0_16px_36px_rgba(0,0,0,0.26)] dark:ring-cyan-100/10 dark:hover:border-cyan-200/55 dark:hover:bg-cyan-300/15 dark:focus-visible:ring-cyan-200/45 sm:w-auto sm:justify-start"
+                >
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-sky-500 to-cyan-500 text-white shadow-[0_10px_22px_rgba(14,165,233,0.26)] transition-transform duration-300 group-hover:scale-105 dark:from-cyan-300 dark:to-sky-300 dark:text-slate-950 dark:shadow-[0_10px_22px_rgba(34,211,238,0.18)]">
+                    <FaEnvelope className="text-sm" aria-hidden="true" />
+                  </span>
+                  <span className="flex min-w-0 flex-col items-start leading-tight">
+                    <span>Email</span>
+                    <span className="hidden max-w-[16rem] truncate text-[12px] font-medium text-slate-500 dark:text-cyan-100/75 sm:block">
+                      {contactActions.emailDisplay}
+                    </span>
+                  </span>
+                </a>
+              </nav>
 
               <div className="flex w-full max-w-full flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
                 <a
@@ -1090,9 +1187,7 @@ export default function PortfolioDetails() {
 
       </main>
 
-      <div
-        className="pointer-events-none fixed bottom-[max(1rem,env(safe-area-inset-bottom))] left-0 right-0 z-[80] px-3 sm:px-6 lg:right-[var(--scrollbar-size)]"
-      >
+      <div className={bottomCtaWrapperClassName}>
         <motion.div
           ref={bottomCtaRef}
           layout
@@ -1119,7 +1214,7 @@ export default function PortfolioDetails() {
                   }
                 }
           }
-          className="pointer-events-auto relative isolate mx-auto flex min-w-0 w-fit max-w-[calc(100vw_-_1.5rem)] items-center gap-1.5 overflow-hidden rounded-[1.65rem] border border-white/[0.65] bg-white/[0.78] p-1.5 shadow-[0_18px_50px_rgba(15,23,42,0.18),0_4px_16px_rgba(14,165,233,0.12)] ring-1 ring-sky-100/70 backdrop-blur-2xl dark:border-cyan-100/15 dark:bg-zinc-950/[0.82] dark:shadow-[0_18px_54px_rgba(0,0,0,0.62),0_0_26px_rgba(34,211,238,0.08)] dark:ring-cyan-100/10 sm:max-w-[calc(100vw_-_3rem)] lg:max-w-[calc(100vw_-_var(--scrollbar-size)_-_3rem)]"
+          className={bottomCtaContainerClassName}
           initial={
             prefersReducedMotion
               ? { opacity: 1, y: 0, scale: 1 }
@@ -1140,21 +1235,24 @@ export default function PortfolioDetails() {
                 exit={{ opacity: 0, y: -6, scale: 0.99 }}
                 transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
                 onClick={() => updateBottomCtaExpanded(true)}
-                onPointerDown={(event) => {
-                  if (event.pointerType === "touch") {
-                    updateBottomCtaExpanded(true);
-                  }
-                }}
                 whileHover={isTouchDevice ? undefined : { scale: 1.01, y: -1 }}
                 whileTap={{ scale: 0.98 }}
-                className="group relative z-10 flex items-center gap-2 rounded-full bg-white/[0.58] px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm ring-1 ring-slate-200/60 transition-all duration-200 hover:bg-white/[0.88] hover:shadow-md dark:bg-white/[0.06] dark:text-zinc-100 dark:ring-white/10 dark:hover:bg-white/10 sm:text-sm"
+                className={collapsedCtaClassName}
                 aria-label={`Expand section switcher. Current section is ${activeSectionMeta.label}`}
+                aria-expanded={false}
               >
                 <span className="text-slate-500 dark:text-zinc-400">Jump to</span>
-                <span className="rounded-full bg-gradient-to-r from-slate-950 via-sky-800 to-teal-700 px-2.5 py-1 text-white shadow-[0_7px_18px_rgba(14,116,144,0.22)] transition-colors duration-200 dark:from-cyan-300 dark:via-sky-300 dark:to-emerald-300 dark:text-slate-950">
+                <span className={activeCtaLabelClassName}>
                   {activeSectionMeta.label}
                 </span>
-                <FaChevronUp className="text-[10px] text-slate-500 transition-transform duration-200 group-hover:-translate-y-0.5 dark:text-cyan-200/55" />
+                <FaChevronUp
+                  className={cx(
+                    "text-slate-500 transition-transform duration-200 dark:text-cyan-200/55",
+                    useTouchBottomCta
+                      ? "text-xs"
+                      : "text-[10px] group-hover:-translate-y-0.5",
+                  )}
+                />
               </motion.button>
             ) : (
               <motion.div
@@ -1164,7 +1262,8 @@ export default function PortfolioDetails() {
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: -6, scale: 0.99 }}
                 transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-                className="relative z-10 flex min-w-0 max-w-full flex-wrap items-center justify-center gap-1.5"
+                className={expandedCtaClassName}
+                aria-label="Portfolio section shortcuts"
               >
                 {sectionMeta.map((section, index) => {
                   const isActive = activeSection === section.id;
@@ -1187,11 +1286,7 @@ export default function PortfolioDetails() {
                         scrollToSection(section.id);
                         updateBottomCtaExpanded(false);
                       }}
-                      className={`inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1.5 text-[11px] font-medium transition-all duration-200 sm:px-3 sm:text-sm ${
-                        isActive
-                        ? "bg-gradient-to-r from-slate-950 via-sky-800 to-teal-700 text-white shadow-[0_8px_22px_rgba(14,116,144,0.3)] dark:from-cyan-300 dark:via-sky-300 dark:to-emerald-300 dark:text-slate-950 dark:shadow-[0_8px_22px_rgba(34,211,238,0.1)]"
-                          : "text-slate-600 hover:bg-white/[0.72] hover:text-slate-900 hover:shadow-sm dark:text-zinc-300 dark:hover:bg-white/10 dark:hover:text-cyan-100"
-                      }`}
+                      className={getSectionCtaButtonClassName(isActive)}
                     >
                       <span
                         className={`h-1.5 w-1.5 rounded-full transition-colors duration-200 ${
@@ -1213,9 +1308,9 @@ export default function PortfolioDetails() {
                   whileTap={{ scale: 0.95 }}
                   onClick={() => updateBottomCtaExpanded(false)}
                   aria-label="Collapse section switcher"
-                  className="shrink-0 rounded-full p-2 text-slate-500 transition-all duration-200 hover:bg-white/[0.72] hover:text-slate-700 hover:shadow-sm dark:text-zinc-400 dark:hover:bg-white/10 dark:hover:text-cyan-100"
+                  className={closeCtaClassName}
                 >
-                  <FaChevronDown className="text-[10px]" />
+                  <FaChevronDown className={useTouchBottomCta ? "text-xs" : "text-[10px]"} />
                 </motion.button>
               </motion.div>
             )}
