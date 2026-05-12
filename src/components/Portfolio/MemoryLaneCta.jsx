@@ -11,7 +11,7 @@ export default function MemoryLaneCta({ onClick }) {
       type="button"
       onClick={onClick}
       aria-label="Open Memory Lane photo gallery"
-      className="group relative isolate inline-flex min-h-[78px] w-full overflow-hidden rounded-[1.05rem] border border-white/30 bg-zinc-950 px-4 py-3 text-left text-white shadow-[0_16px_42px_rgba(15,23,42,0.2)] ring-1 ring-white/55 transition-all duration-500 hover:-translate-y-0.5 hover:scale-[1.01] hover:border-cyan-200/80 hover:shadow-[0_22px_58px_rgba(8,145,178,0.24)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200/85 dark:border-white/10 dark:bg-black dark:shadow-[0_18px_42px_rgba(0,0,0,0.52)] dark:ring-white/5 dark:hover:border-cyan-200/30 dark:hover:shadow-[0_18px_46px_rgba(8,145,178,0.12)] sm:min-h-[82px] sm:w-[19.5rem]"
+      className="group relative isolate mx-auto inline-flex min-h-[60px] w-full max-w-[18rem] overflow-hidden rounded-[1.05rem] border border-white/30 bg-zinc-950 px-3 py-2 text-left text-white shadow-[0_16px_42px_rgba(15,23,42,0.2)] ring-1 ring-white/55 transition-all duration-500 hover:-translate-y-0.5 hover:scale-[1.01] hover:border-cyan-200/80 hover:shadow-[0_22px_58px_rgba(8,145,178,0.24)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200/85 dark:border-white/10 dark:bg-black dark:shadow-[0_18px_42px_rgba(0,0,0,0.52)] dark:ring-white/5 dark:hover:border-cyan-200/30 dark:hover:shadow-[0_18px_46px_rgba(8,145,178,0.12)] sm:mx-0 sm:min-h-[82px] sm:w-[19.5rem] sm:max-w-none sm:px-4 sm:py-3"
     >
       <span className="absolute inset-0 z-0 bg-zinc-950" />
 
@@ -33,20 +33,20 @@ export default function MemoryLaneCta({ onClick }) {
       <span className="absolute inset-0 z-0 opacity-0 shadow-[inset_0_0_0_1px_rgba(103,232,249,0.42),inset_0_0_42px_rgba(34,211,238,0.26)] transition-opacity duration-500 group-hover:opacity-100 dark:shadow-[inset_0_0_0_1px_rgba(103,232,249,0.2),inset_0_0_34px_rgba(34,211,238,0.12)]" />
 
       <span className="relative z-10 flex min-w-0 flex-1 items-center gap-2.5">
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/16 text-cyan-100 shadow-[0_8px_22px_rgba(0,0,0,0.24)] ring-1 ring-white/24 backdrop-blur-md transition-all duration-500 group-hover:scale-105 group-hover:bg-cyan-200/18 dark:bg-white/10 dark:text-cyan-100/80 dark:ring-white/15 dark:group-hover:bg-cyan-200/10">
-          <FaImages className="text-sm" />
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/16 text-cyan-100 shadow-[0_8px_22px_rgba(0,0,0,0.24)] ring-1 ring-white/24 backdrop-blur-md transition-all duration-500 group-hover:scale-105 group-hover:bg-cyan-200/18 dark:bg-white/10 dark:text-cyan-100/80 dark:ring-white/15 dark:group-hover:bg-cyan-200/10 sm:h-9 sm:w-9">
+          <FaImages className="text-sm" aria-hidden="true" />
         </span>
         <span className="min-w-0">
-          <span className="block text-base font-bold leading-tight tracking-normal text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.6)]">
+          <span className="block text-sm font-bold leading-tight tracking-normal text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.6)] sm:text-base">
             Memory Lane
           </span>
-          <span className="mt-0.5 block text-[10px] font-semibold uppercase tracking-[0.18em] text-cyan-100/82 dark:text-cyan-100/60">
+          <span className="mt-0.5 block text-[9px] font-semibold uppercase tracking-[0.18em] text-cyan-100/82 dark:text-cyan-100/60 sm:text-[10px]">
             Photo gallery
           </span>
         </span>
       </span>
 
-      <span className="relative z-10 ml-2 self-end rounded-full bg-white/14 px-2 py-0.5 text-[11px] font-semibold text-white/86 ring-1 ring-white/18 backdrop-blur-md transition-all duration-500 group-hover:bg-cyan-200/16 group-hover:text-cyan-50 dark:bg-white/10 dark:text-white/70 dark:ring-white/10 dark:group-hover:bg-cyan-200/10 dark:group-hover:text-cyan-100/90">
+      <span className="relative z-10 ml-1.5 self-center rounded-full bg-white/14 px-1.5 py-0.5 text-[10px] font-semibold text-white/86 ring-1 ring-white/18 backdrop-blur-md transition-all duration-500 group-hover:bg-cyan-200/16 group-hover:text-cyan-50 dark:bg-white/10 dark:text-white/70 dark:ring-white/10 dark:group-hover:bg-cyan-200/10 dark:group-hover:text-cyan-100/90 sm:ml-2 sm:self-end sm:px-2 sm:text-[11px]">
         {memoryLanePhotos.length}
       </span>
     </button>

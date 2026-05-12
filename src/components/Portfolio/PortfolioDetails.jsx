@@ -281,7 +281,11 @@ export default function PortfolioDetails() {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [backgroundImageLoaded, setBackgroundImageLoaded] = useState(false);
   const [activeSection, setActiveSection] = useState("intro");
-  const [isBottomCtaExpanded, setIsBottomCtaExpanded] = useState(true);
+  const [isBottomCtaExpanded, setIsBottomCtaExpanded] = useState(() =>
+    typeof window !== "undefined"
+      ? !window.matchMedia("(max-width: 767px)").matches
+      : true,
+  );
   const [isTouchDevice, setIsTouchDevice] = useState(false);
   const [isCompactViewport, setIsCompactViewport] = useState(() =>
     typeof window !== "undefined"
@@ -620,6 +624,12 @@ export default function PortfolioDetails() {
   }, [updateBottomCtaExpanded]);
 
   useEffect(() => {
+    if (isCompactViewport) {
+      updateBottomCtaExpanded(false);
+    }
+  }, [isCompactViewport, updateBottomCtaExpanded]);
+
+  useEffect(() => {
     const mediaQuery = window.matchMedia("(hover: none), (pointer: coarse)");
     const updateTouchMode = () => {
       setIsTouchDevice(mediaQuery.matches);
@@ -693,39 +703,39 @@ export default function PortfolioDetails() {
   if (loading || !data) return <InitialLoader />;
 
   const [firstName, lastName] = data.name.split(" ");
-  const useTouchBottomCta = isTouchDevice;
+  const useMobileBottomCta = isCompactViewport;
   const bottomCtaWrapperClassName = cx(
     "pointer-events-none fixed left-0 right-0 z-[80] lg:right-[var(--scrollbar-size)]",
-    useTouchBottomCta
-      ? "bottom-0 px-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]"
+    useMobileBottomCta
+      ? "bottom-0 px-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))]"
       : "bottom-[max(1rem,env(safe-area-inset-bottom))] px-3 sm:px-6",
   );
   const bottomCtaContainerClassName = cx(
     "pointer-events-auto relative isolate mx-auto flex min-w-0 items-center overflow-hidden border border-white/[0.65] bg-white/[0.78] shadow-[0_18px_50px_rgba(15,23,42,0.18),0_4px_16px_rgba(14,165,233,0.12)] ring-1 ring-sky-100/70 backdrop-blur-2xl dark:border-cyan-100/15 dark:bg-zinc-950/[0.82] dark:shadow-[0_18px_54px_rgba(0,0,0,0.62),0_0_26px_rgba(34,211,238,0.08)] dark:ring-cyan-100/10",
-    useTouchBottomCta
-      ? "w-full max-w-md justify-center gap-2 rounded-[1.4rem] p-2"
+    useMobileBottomCta
+      ? "w-fit max-w-[calc(100vw_-_1rem)] justify-center gap-1 rounded-full p-1"
       : "w-fit max-w-[calc(100vw_-_1.5rem)] gap-1.5 rounded-[1.65rem] p-1.5 sm:max-w-[calc(100vw_-_3rem)] lg:max-w-[calc(100vw_-_var(--scrollbar-size)_-_3rem)]",
   );
   const collapsedCtaClassName = cx(
     "group relative z-10 flex items-center font-semibold text-slate-700 shadow-sm ring-1 ring-slate-200/60 transition-all duration-200 dark:text-zinc-100 dark:ring-white/10",
-    useTouchBottomCta
-      ? "min-h-12 w-full justify-between gap-3 rounded-[1.2rem] bg-white/[0.68] px-4 py-2.5 text-sm touch-manipulation active:bg-white/[0.9] dark:bg-white/[0.07] dark:active:bg-white/10"
+    useMobileBottomCta
+      ? "min-h-11 max-w-full justify-center gap-2 rounded-full bg-white/[0.68] px-3 py-2 text-xs touch-manipulation active:bg-white/[0.9] dark:bg-white/[0.07] dark:active:bg-white/10"
       : "gap-2 rounded-full bg-white/[0.58] px-3 py-1.5 text-xs hover:bg-white/[0.88] hover:shadow-md dark:bg-white/[0.06] dark:hover:bg-white/10 sm:text-sm",
   );
   const activeCtaLabelClassName = cx(
     "rounded-full bg-gradient-to-r from-slate-950 via-sky-800 to-teal-700 text-white shadow-[0_7px_18px_rgba(14,116,144,0.22)] transition-colors duration-200 dark:from-cyan-300 dark:via-sky-300 dark:to-emerald-300 dark:text-slate-950",
-    useTouchBottomCta ? "px-3 py-1.5" : "px-2.5 py-1",
+    useMobileBottomCta ? "px-2.5 py-1 text-xs" : "px-2.5 py-1",
   );
   const expandedCtaClassName = cx(
     "relative z-10 min-w-0",
-    useTouchBottomCta
-      ? "grid w-full grid-cols-2 gap-2"
+    useMobileBottomCta
+      ? "flex max-w-[calc(100vw_-_2rem)] items-center gap-1 overflow-x-auto whitespace-nowrap px-0.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       : "flex max-w-full flex-wrap items-center justify-center gap-1.5",
   );
   const sectionCtaButtonBaseClassName = cx(
     "inline-flex min-w-0 shrink-0 items-center whitespace-nowrap transition-all duration-200",
-    useTouchBottomCta
-      ? "min-h-11 w-full justify-center gap-2 rounded-[1rem] px-3 py-2 text-sm font-semibold touch-manipulation"
+    useMobileBottomCta
+      ? "min-h-10 justify-center gap-1.5 rounded-full px-2.5 py-1.5 text-xs font-semibold touch-manipulation"
       : "gap-1.5 rounded-full px-2.5 py-1.5 text-[11px] font-medium sm:px-3 sm:text-sm",
   );
   const getSectionCtaButtonClassName = (isActive) =>
@@ -733,21 +743,22 @@ export default function PortfolioDetails() {
       sectionCtaButtonBaseClassName,
       isActive
         ? "bg-gradient-to-r from-slate-950 via-sky-800 to-teal-700 text-white shadow-[0_8px_22px_rgba(14,116,144,0.3)] dark:from-cyan-300 dark:via-sky-300 dark:to-emerald-300 dark:text-slate-950 dark:shadow-[0_8px_22px_rgba(34,211,238,0.1)]"
-        : useTouchBottomCta
+        : useMobileBottomCta
           ? "bg-white/[0.48] text-slate-700 ring-1 ring-slate-200/70 active:bg-white/[0.82] active:text-slate-950 dark:bg-white/[0.055] dark:text-zinc-200 dark:ring-white/10 dark:active:bg-white/10 dark:active:text-cyan-100"
           : "text-slate-600 hover:bg-white/[0.72] hover:text-slate-900 hover:shadow-sm dark:text-zinc-300 dark:hover:bg-white/10 dark:hover:text-cyan-100",
     );
   const closeCtaClassName = cx(
     "shrink-0 text-slate-500 transition-all duration-200 dark:text-zinc-400",
-    useTouchBottomCta
-      ? "col-span-2 flex min-h-10 w-full items-center justify-center rounded-[1rem] bg-white/[0.42] ring-1 ring-slate-200/60 touch-manipulation active:bg-white/[0.78] active:text-slate-700 dark:bg-white/[0.045] dark:ring-white/10 dark:active:bg-white/10 dark:active:text-cyan-100"
+    useMobileBottomCta
+      ? "flex h-10 w-10 items-center justify-center rounded-full bg-white/[0.42] ring-1 ring-slate-200/60 touch-manipulation active:bg-white/[0.78] active:text-slate-700 dark:bg-white/[0.045] dark:ring-white/10 dark:active:bg-white/10 dark:active:text-cyan-100"
       : "rounded-full p-2 hover:bg-white/[0.72] hover:text-slate-700 hover:shadow-sm dark:hover:bg-white/10 dark:hover:text-cyan-100",
   );
 
   return (
     <>
-      <main
+      <article
         ref={pageRef}
+        aria-labelledby="portfolio-title"
         className="relative isolate w-full max-w-full overflow-hidden bg-white text-zinc-900 dark:bg-black dark:text-zinc-100"
       >
       {/* ===== PREMIUM NY BACKGROUND ===== */}
@@ -793,7 +804,7 @@ export default function PortfolioDetails() {
           >
             <motion.img
               src={heroImageUrl}
-              alt={data.name}
+              alt={`${data.name} portfolio portrait`}
               width="1920"
               height="1080"
               onLoad={markHeroImageLoaded}
@@ -826,6 +837,7 @@ export default function PortfolioDetails() {
               className="pointer-events-none absolute inset-0 z-10 flex items-end px-6 pb-[10vh] sm:px-10 sm:pb-[9vh] md:px-20 md:pb-[10vh] lg:pb-[11vh]"
             >
               <h1
+                id="portfolio-title"
                 style={{ transformOrigin: "left center" }}
                 className="
                   max-w-[11ch]
@@ -856,7 +868,10 @@ export default function PortfolioDetails() {
           </motion.div>
         </section>
         {/* ================= BRAND BANNER ================= */}
-        <section className="w-full overflow-hidden border-y border-zinc-200/70 bg-white/92 py-4 backdrop-blur dark:border-zinc-800 dark:bg-black/92 sm:py-5 md:py-6 lg:py-7">
+        <section
+          aria-label="AmiVerse portfolio banner"
+          className="w-full overflow-hidden border-y border-zinc-200/70 bg-white/92 py-4 backdrop-blur dark:border-zinc-800 dark:bg-black/92 sm:py-5 md:py-6 lg:py-7"
+        >
           <AnimatedBanner />
         </section>
 
@@ -866,6 +881,7 @@ export default function PortfolioDetails() {
           ref={(el) => {
             sectionRefs.current.intro = el;
           }}
+          aria-label="Profile details"
           className="border-b border-zinc-200 px-5 py-12 dark:border-zinc-800 sm:px-6 sm:py-14 md:px-20 md:py-16"
         >
           <FadeRow>
@@ -878,7 +894,7 @@ export default function PortfolioDetails() {
                   <button
                     key={s.name}
                     onClick={() => setSocialModal(s)}
-                    aria-label={`Open ${s.name}`}
+                    aria-label={`Open ${s.name} profile`}
                     className={`${socialColors[s.name]} rounded-full bg-white/70 p-2 shadow-sm ring-1 ring-zinc-200/70 backdrop-blur transition-all duration-300 hover:-translate-y-0.5 hover:scale-105 hover:bg-white hover:shadow-[0_10px_24px_rgba(15,23,42,0.1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/70 dark:bg-zinc-900/60 dark:ring-zinc-800 dark:hover:bg-zinc-900 dark:hover:shadow-[0_10px_24px_rgba(0,0,0,0.28)] dark:focus-visible:ring-cyan-300/45`}
                   >
                     {s.icon}
@@ -932,7 +948,7 @@ export default function PortfolioDetails() {
                   className="group inline-flex min-w-0 w-full items-center justify-center gap-3 rounded-full border border-sky-300/70 bg-white/86 px-5 py-3 text-sm font-semibold tracking-[0.02em] text-slate-900 shadow-[0_16px_36px_rgba(15,23,42,0.12)] ring-1 ring-white/70 backdrop-blur-xl transition-all duration-300 hover:-translate-y-0.5 hover:border-sky-400 hover:bg-white hover:shadow-[0_18px_42px_rgba(14,165,233,0.18)] dark:border-cyan-300/35 dark:bg-cyan-300/10 dark:text-cyan-50 dark:shadow-[0_18px_42px_rgba(8,145,178,0.14)] dark:ring-cyan-100/15 dark:hover:border-cyan-200/70 dark:hover:bg-cyan-300/16 sm:w-auto"
                 >
                   <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-sky-500 to-cyan-500 text-white shadow-[0_10px_24px_rgba(14,165,233,0.32)] transition-transform duration-300 group-hover:scale-105 dark:from-cyan-300 dark:to-sky-400 dark:text-slate-950 dark:shadow-[0_10px_24px_rgba(34,211,238,0.22)]">
-                    <FaRegFilePdf className="text-base" />
+                    <FaRegFilePdf className="text-base" aria-hidden="true" />
                   </span>
                   <span className="flex min-w-0 flex-col items-start leading-tight">
                     <span>View my resume</span>
@@ -968,10 +984,11 @@ export default function PortfolioDetails() {
           ref={(el) => {
             sectionRefs.current.skills = el;
           }}
+          aria-labelledby="skills-heading"
           className="border-b border-zinc-200 px-5 py-12 dark:border-zinc-800 sm:px-6 sm:py-14 md:px-20 md:py-16"
         >
           <FadeRow>
-            <h2 className="mb-8 flex items-center gap-3 text-xl font-semibold tracking-tight after:h-px after:flex-1 after:bg-gradient-to-r after:from-sky-300/50 after:to-transparent dark:after:from-cyan-300/20 md:text-2xl">
+            <h2 id="skills-heading" className="mb-8 flex items-center gap-3 text-xl font-semibold tracking-tight after:h-px after:flex-1 after:bg-gradient-to-r after:from-sky-300/50 after:to-transparent dark:after:from-cyan-300/20 md:text-2xl">
               01 - Skills
             </h2>
             <div className="grid w-full grid-cols-[repeat(auto-fit,120px)] justify-center gap-4 sm:gap-5">
@@ -1010,11 +1027,12 @@ export default function PortfolioDetails() {
           ref={(el) => {
             sectionRefs.current.experience = el;
           }}
+          aria-labelledby="experience-heading"
           className="border-b border-zinc-200 px-5 py-12 dark:border-zinc-800 sm:px-6 sm:py-14 md:px-20 md:py-16"
         >
           <FadeRow>
-            <h2 className="mb-8 flex items-center gap-3 text-xl font-semibold tracking-tight after:h-px after:flex-1 after:bg-gradient-to-r after:from-sky-300/50 after:to-transparent dark:after:from-cyan-300/20 md:text-2xl">
-              <FaBriefcase /> 02 - Experience
+            <h2 id="experience-heading" className="mb-8 flex items-center gap-3 text-xl font-semibold tracking-tight after:h-px after:flex-1 after:bg-gradient-to-r after:from-sky-300/50 after:to-transparent dark:after:from-cyan-300/20 md:text-2xl">
+              <FaBriefcase aria-hidden="true" /> 02 - Experience
             </h2>
 
             {data.experience.map((exp, i) => (
@@ -1031,7 +1049,7 @@ export default function PortfolioDetails() {
                     {companyLogoMap[exp.company] && (
                 <img
   src={companyLogoMap[exp.company]}
-  alt={exp.company}
+  alt={`${exp.company} logo`}
   decoding="async"
   loading="lazy"
   className="
@@ -1114,11 +1132,12 @@ export default function PortfolioDetails() {
           ref={(el) => {
             sectionRefs.current.education = el;
           }}
+          aria-labelledby="education-heading"
           className="px-5 py-12 pb-44 sm:px-6 sm:py-14 sm:pb-40 md:px-20 md:py-16 md:pb-48"
         >
           <FadeRow>
-            <h2 className="mb-8 flex items-center gap-3 text-xl font-semibold tracking-tight after:h-px after:flex-1 after:bg-gradient-to-r after:from-sky-300/50 after:to-transparent dark:after:from-cyan-300/20 md:text-2xl">
-              <FaGraduationCap /> 03 - Education
+            <h2 id="education-heading" className="mb-8 flex items-center gap-3 text-xl font-semibold tracking-tight after:h-px after:flex-1 after:bg-gradient-to-r after:from-sky-300/50 after:to-transparent dark:after:from-cyan-300/20 md:text-2xl">
+              <FaGraduationCap aria-hidden="true" /> 03 - Education
             </h2>
 
             {data.education.map((edu, i) => (
@@ -1185,7 +1204,7 @@ export default function PortfolioDetails() {
         </section>
       </div>
 
-      </main>
+      </article>
 
       <div className={bottomCtaWrapperClassName}>
         <motion.div
@@ -1248,7 +1267,7 @@ export default function PortfolioDetails() {
                 <FaChevronUp
                   className={cx(
                     "text-slate-500 transition-transform duration-200 dark:text-cyan-200/55",
-                    useTouchBottomCta
+                    useMobileBottomCta
                       ? "text-xs"
                       : "text-[10px] group-hover:-translate-y-0.5",
                   )}
@@ -1310,7 +1329,7 @@ export default function PortfolioDetails() {
                   aria-label="Collapse section switcher"
                   className={closeCtaClassName}
                 >
-                  <FaChevronDown className={useTouchBottomCta ? "text-xs" : "text-[10px]"} />
+                  <FaChevronDown className={useMobileBottomCta ? "text-xs" : "text-[10px]"} />
                 </motion.button>
               </motion.div>
             )}

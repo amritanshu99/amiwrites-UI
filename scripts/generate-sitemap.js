@@ -1,6 +1,5 @@
 const { SitemapStream, streamToPromise } = require("sitemap");
-const { createWriteStream } = require("fs");
-const { readFile, writeFile } = require("fs/promises");
+const { writeFile } = require("fs/promises");
 const path = require("path");
 
 const SITE_URL = "https://www.amiverse.in";
@@ -25,23 +24,19 @@ async function generateSitemap() {
   ];
 
   const sitemapStream = new SitemapStream({ hostname });
-  const writeStream = createWriteStream(SITEMAP_PATH);
-  sitemapStream.pipe(writeStream);
 
   urls.forEach(({ url, changefreq, priority }) => {
     sitemapStream.write({ url, changefreq, priority, lastmodISO: today });
   });
 
   sitemapStream.end();
-  await streamToPromise(sitemapStream);
-
-  const xml = await readFile(SITEMAP_PATH, "utf8");
+  const xml = (await streamToPromise(sitemapStream)).toString();
   const stylesheet = '<?xml-stylesheet type="text/xsl" href="/sitemap.xsl"?>';
+  const withStylesheet = xml.includes("sitemap.xsl")
+    ? xml
+    : xml.replace("?>", `?>\n${stylesheet}`);
 
-  if (!xml.includes("sitemap.xsl")) {
-    const withStylesheet = xml.replace("?>", `?>\n${stylesheet}`);
-    await writeFile(SITEMAP_PATH, withStylesheet, "utf8");
-  }
+  await writeFile(SITEMAP_PATH, withStylesheet, "utf8");
 
   console.log("Sitemap generated at public/sitemap.xml");
 }

@@ -1,8 +1,12 @@
 const SITE_NAME = "AmiVerse";
 export const SITE_URL = "https://www.amiverse.in";
 const DEFAULT_OG_IMAGE = `${SITE_URL}/og-image.jpg`;
+const DEFAULT_LOGO_IMAGE = `${SITE_URL}/icons/icon-512x512.png`;
+const DEFAULT_IMAGE_ALT = "AmiVerse portfolio preview for Amritanshu Mishra";
 
 const PERSON_ID = `${SITE_URL}/#person`;
+const ORGANIZATION_ID = `${SITE_URL}/#organization`;
+const WEBSITE_ID = `${SITE_URL}/#website`;
 const PRIMARY_SEO_KEYWORDS =
   "Amritanshu Mishra, Amritanshu, AmiVerse, Amiverse.in, website, software engineer, associate consultant, consultant, AI engineer, developer, React developer, Node.js developer, MERN stack, innovator, engineer, Mathura, Shivasha Estate, Migsun Ultimo, Noida, Greater Noida, Ghaziabad, RKGIT, Rajkumar Goel Institute of Technology, Raj Kumar Goel Institute of Technology, RSPS, Ramanlal Shorawala Public School, ECE, Electronics and Communication Engineering, GlobalLogic, Hitachi";
 
@@ -141,13 +145,29 @@ const defaultStructuredData = (title, description, canonical) => ({
       ],
     },
     {
+      "@type": "Organization",
+      "@id": ORGANIZATION_ID,
+      name: SITE_NAME,
+      url: SITE_URL,
+      logo: {
+        "@type": "ImageObject",
+        url: DEFAULT_LOGO_IMAGE,
+        width: 512,
+        height: 512,
+      },
+      founder: {
+        "@id": PERSON_ID,
+      },
+      sameAs: SOCIAL_LINKS,
+    },
+    {
       "@type": "WebSite",
-      "@id": `${SITE_URL}/#website`,
+      "@id": WEBSITE_ID,
       url: SITE_URL,
       name: SITE_NAME,
       description: "Portfolio, blogs, and AI tools by Amritanshu Mishra.",
       publisher: {
-        "@id": PERSON_ID,
+        "@id": ORGANIZATION_ID,
       },
       potentialAction: {
         "@type": "SearchAction",
@@ -157,14 +177,22 @@ const defaultStructuredData = (title, description, canonical) => ({
     },
     {
       "@type": "WebPage",
+      "@id": `${canonical}#webpage`,
       name: title,
       description,
       url: canonical,
+      inLanguage: "en-IN",
       isPartOf: {
-        "@id": `${SITE_URL}/#website`,
+        "@id": WEBSITE_ID,
       },
       about: {
         "@id": PERSON_ID,
+      },
+      primaryImageOfPage: {
+        "@type": "ImageObject",
+        url: DEFAULT_OG_IMAGE,
+        width: 1200,
+        height: 630,
       },
     },
   ],
@@ -175,18 +203,23 @@ export const applySEO = ({
   description,
   path = "/",
   image = DEFAULT_OG_IMAGE,
+  imageAlt = DEFAULT_IMAGE_ALT,
   noindex = false,
   type = "website",
   keywords,
   structuredData,
 }) => {
   const canonical = `${removeTrailingSlash(SITE_URL)}${normalizeToPath(path)}`;
+  const imageUrl = /^https?:\/\//i.test(image)
+    ? image
+    : `${removeTrailingSlash(SITE_URL)}${normalizeToPath(image)}`;
 
   document.title = title;
 
   upsertMeta("meta[name='description']", { name: "description", content: description });
   upsertMeta("meta[name='title']", { name: "title", content: title });
   upsertMeta("meta[name='author']", { name: "author", content: "Amritanshu Mishra" });
+  upsertMeta("meta[name='application-name']", { name: "application-name", content: SITE_NAME });
   upsertMeta("meta[name='robots']", {
     name: "robots",
     content: noindex
@@ -210,10 +243,14 @@ export const applySEO = ({
   });
   upsertMeta("meta[property='og:url']", { property: "og:url", content: canonical });
   upsertMeta("meta[property='og:type']", { property: "og:type", content: type });
-  upsertMeta("meta[property='og:image']", { property: "og:image", content: image });
+  upsertMeta("meta[property='og:site_name']", { property: "og:site_name", content: SITE_NAME });
+  upsertMeta("meta[property='og:locale']", { property: "og:locale", content: "en_IN" });
+  upsertMeta("meta[property='og:image']", { property: "og:image", content: imageUrl });
+  upsertMeta("meta[property='og:image:width']", { property: "og:image:width", content: "1200" });
+  upsertMeta("meta[property='og:image:height']", { property: "og:image:height", content: "630" });
   upsertMeta("meta[property='og:image:alt']", {
     property: "og:image:alt",
-    content: `${SITE_NAME} preview image`,
+    content: imageAlt,
   });
 
   upsertMeta("meta[name='twitter:card']", { name: "twitter:card", content: "summary_large_image" });
@@ -222,8 +259,11 @@ export const applySEO = ({
     name: "twitter:description",
     content: description,
   });
-  upsertMeta("meta[name='twitter:image']", { name: "twitter:image", content: image });
+  upsertMeta("meta[name='twitter:image']", { name: "twitter:image", content: imageUrl });
+  upsertMeta("meta[name='twitter:image:alt']", { name: "twitter:image:alt", content: imageAlt });
   upsertMeta("meta[name='twitter:url']", { name: "twitter:url", content: canonical });
+  upsertMeta("meta[name='twitter:creator']", { name: "twitter:creator", content: "@amritanshu_m" });
+  upsertMeta("meta[name='twitter:site']", { name: "twitter:site", content: "@amritanshu_m" });
 
   upsertLink("canonical", canonical);
 
