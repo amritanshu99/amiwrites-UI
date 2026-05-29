@@ -1,11 +1,11 @@
 // src/api/authApi.js
 import axios from 'axios';
+import { apiUrl } from "../config/api";
 
 export const verifyToken = async (token) => {
-  debugger
   try {
     const res = await axios.post(
-      'https://amiwrites-backend-app-2lp5.onrender.com/api/auth/verify-token',
+      apiUrl("/api/auth/verify-token"),
       {},
       {
         headers: {

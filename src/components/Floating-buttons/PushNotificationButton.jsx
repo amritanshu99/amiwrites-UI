@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { apiUrl } from "../../config/api";
 
 const VAPID_PUBLIC_KEY =
   'BALDbiFNlNyLWEOHi9BxuemRyq-ShZn_5ynesh4btV9-CsRMGfx3kyrB8ma2LiaegXzQt5Glgiha99MKuFKvl64'; // Replace with your real VAPID key
@@ -55,7 +56,7 @@ const PushNotificationButton = () => {
         applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
       });
 
-      await fetch('https://amiwrites-backend-app-2lp5.onrender.com/api/subscribe', {
+      await fetch(apiUrl('/api/subscribe'), {
         method: 'POST',
         body: JSON.stringify(subscription),
         headers: {

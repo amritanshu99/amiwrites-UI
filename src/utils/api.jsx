@@ -1,7 +1,8 @@
 import axios from 'axios';
+import { API_BASE_URL } from "../config/api";
 
 const instance = axios.create({
-  baseURL: 'https://amiwrites-backend-app-2lp5.onrender.com', // adjust as per backend port
+  baseURL: API_BASE_URL,
 });
 
 export default instance;

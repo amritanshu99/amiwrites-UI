@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import Loader from "../Loader/Loader";
+import { apiUrl } from "../../config/api";
 
 const EmotionAnalyzer = () => {
   const [text, setText] = useState("");
@@ -17,7 +18,7 @@ const EmotionAnalyzer = () => {
     try {
       const encodedText = encodeURIComponent(text.trim());
       const res = await axios.get(
-        `https://amiwrites-backend-app-2lp5.onrender.com/api/emotion/${encodedText}`
+        apiUrl(`/api/emotion/${encodedText}`)
       );
 
       setResult(res.data);

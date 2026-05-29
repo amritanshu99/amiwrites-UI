@@ -4,6 +4,7 @@ import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Loader from "../Loader/Loader";
+import { apiUrl } from "../../config/api";
 
 export default function ResetPasswordPageDetails() {
   const { id } = useParams();
@@ -37,7 +38,7 @@ export default function ResetPasswordPageDetails() {
 
     setLoading(true);
     try {
-      await axios.post("https://amiwrites-backend-app-2lp5.onrender.com/api/auth/reset", {
+      await axios.post(apiUrl("/api/auth/reset"), {
         newPassword: password,
         token: id,
       });

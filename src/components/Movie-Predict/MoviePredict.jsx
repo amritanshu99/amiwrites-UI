@@ -2,6 +2,7 @@ import React, { useState,useEffect } from "react";
 import axios from "axios";
 import Loader from "../Loader/Loader";
 import { useLocation } from "react-router-dom";
+import { apiUrl } from "../../config/api";
 const MoviePredict = () => {
   const [movie, setMovie] = useState("");
   const [results, setResults] = useState(null);
@@ -26,7 +27,7 @@ const MoviePredict = () => {
 
     try {
       const response = await axios.post(
-        "https://amiwrites-backend-app-2lp5.onrender.com/api/recommender/recommend",
+        apiUrl("/api/recommender/recommend"),
         { movie, top_n: 5 }
       );
       setResults(response.data.recommendations);

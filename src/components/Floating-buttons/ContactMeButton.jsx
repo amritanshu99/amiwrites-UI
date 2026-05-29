@@ -5,6 +5,7 @@ import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { Bot, Home, Mail, MessageCircle, Send } from "lucide-react";
 import "react-toastify/dist/ReactToastify.css";
+import { apiUrl } from "../../config/api";
 
 export default function ContactMeButton() {
   const navigate = useNavigate();
@@ -65,7 +66,7 @@ export default function ContactMeButton() {
     setLoading(true);
     try {
       const response = await axios.post(
-        "https://amiwrites-backend-app-2lp5.onrender.com/api/contact",
+        apiUrl("/api/contact"),
         form
       );
       if (response.status === 200 || response.status === 201) {

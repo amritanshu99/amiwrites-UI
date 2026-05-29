@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Bot, SendHorizontal, Sparkles } from "lucide-react";
 import { useLocation } from "react-router-dom";
+import { apiUrl } from "../../config/api";
 
 const GREETINGS = [
   {
@@ -141,7 +142,7 @@ const Amibot = () => {
 
     try {
       const response = await fetch(
-        "https://amiwrites-backend-app-2lp5.onrender.com/api/amibot",
+        apiUrl("/api/amibot"),
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

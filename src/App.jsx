@@ -21,6 +21,7 @@ import { initGA, logPageView } from "./analytics";
 import { isTokenExpired } from "./utils/auth";
 import { verifyToken } from "./utils/authApi";
 import { applySEO, seoByRoute } from "./utils/seo";
+import { apiUrl } from "./config/api";
 
 const BlogPage = lazy(() => import("./pages/BlogPage"));
 const AIChatPage = lazy(() => import("./pages/AIChat"));
@@ -58,7 +59,7 @@ const ValidateResetToken = () => {
     const validateToken = async () => {
       try {
         const res = await axios.get(
-          `https://amiwrites-backend-app-2lp5.onrender.com/api/auth/validate-reset-token/${token}`,
+          apiUrl(`/api/auth/validate-reset-token/${token}`),
         );
 
         if (res.data.valid) {

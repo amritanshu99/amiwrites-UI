@@ -4,6 +4,7 @@ import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { useNavigate } from "react-router-dom";
 import Loader from "../Loader/Loader";
+import { apiUrl } from "../../config/api";
 
 export default function AddBlog() {
   const [title, setTitle] = useState("");
@@ -46,7 +47,7 @@ export default function AddBlog() {
 
     try {
       await axios.post(
-        "https://amiwrites-backend-app-2lp5.onrender.com/api/blogs",
+        apiUrl("/api/blogs"),
         { title, content },
         {
           headers: {

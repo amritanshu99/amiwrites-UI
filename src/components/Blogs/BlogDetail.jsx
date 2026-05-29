@@ -67,7 +67,7 @@ const BlogDetails = () => {
     setLoading(true);
     try {
       const res = await axios.get(
-        `https://amiwrites-backend-app-2lp5.onrender.com/api/blogs/${id}`
+        `/api/blogs/${id}`
       );
       setBlog(res.data);
     } catch (error) {
@@ -189,7 +189,7 @@ const BlogDetails = () => {
 
     try {
       const res = await axios.post(
-        "https://amiwrites-backend-app-2lp5.onrender.com/api/gemini/generate",
+        "/api/gemini/generate",
         {
           // Backend returns { response: string }
           prompt: `Summarize this blog titled "${blog.title}" in clear, helpful language:\n\n${plainTextContent}`,
@@ -224,7 +224,6 @@ const BlogDetails = () => {
 
   // --- RL: Impression on page view (DEDUPED & POST-CONTENT via double rAF) ---
   useEffect(() => {
-    const API_BASE = "https://amiwrites-backend-app-2lp5.onrender.com";
     const postId = blog?._id || id;
 
     // require a valid id and content in DOM to consider it a view
@@ -242,7 +241,7 @@ const BlogDetails = () => {
       raf2 = requestAnimationFrame(async () => {
         if (cancelled) return;
         try {
-          await axios.post(`${API_BASE}/api/trending-rl/events/impression`, { postId });
+          await axios.post("/api/trending-rl/events/impression", { postId });
           impressionGuardRef.current.add(postId);
           // eslint-disable-next-line no-console
           console.log("TrendingRL: impression sent (double rAF)", { postId });
@@ -267,7 +266,6 @@ const BlogDetails = () => {
       return;
     }
 
-    const API_BASE = "https://amiwrites-backend-app-2lp5.onrender.com";
     const postId = blog?._id || id;
 
     const findScrollContainer = () => {
@@ -444,7 +442,7 @@ const BlogDetails = () => {
       });
 
       try {
-        await axios.post(`${API_BASE}/api/trending-rl/events/read-end`, {
+        await axios.post("/api/trending-rl/events/read-end", {
           postId,
           dwell_ms,
           scroll_depth,
@@ -554,8 +552,7 @@ const BlogDetails = () => {
   // --- Trending badge: check if this blog is currently in the rail ---
   useEffect(() => {
     if (!blog?._id) return;
-    const API_BASE = "https://amiwrites-backend-app-2lp5.onrender.com";
-    const url = `${API_BASE}/api/trending-rl/trending?limit=2&all=1`;
+    const url = "/api/trending-rl/trending?limit=2&all=1";
 
     (async () => {
       try {

@@ -6,6 +6,7 @@ import Loader from "../Loader/Loader";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Eye, EyeOff } from "lucide-react";
+import { apiUrl } from "../../config/api";
 
 const inputClass =
   "w-full rounded-xl border border-slate-200 bg-white/90 px-3.5 py-2.5 text-sm text-slate-950 shadow-inner shadow-slate-100/70 outline-none transition-colors duration-200 placeholder:text-slate-400 focus:border-sky-400 focus:bg-white focus:ring-4 focus:ring-sky-100 disabled:cursor-not-allowed disabled:opacity-70 dark:border-white/10 dark:bg-white/[0.06] dark:text-white dark:shadow-none dark:placeholder:text-zinc-500 dark:focus:border-cyan-300/50 dark:focus:bg-white/[0.08] dark:focus:ring-cyan-300/10";
@@ -58,7 +59,7 @@ export default function LoginModal({ isOpen, onClose }) {
     setIsLoading(true);
     try {
       const response = await axios.post(
-        "https://amiwrites-backend-app-2lp5.onrender.com/api/auth/login",
+        apiUrl("/api/auth/login"),
         { username, password }
       );
 
@@ -91,7 +92,7 @@ export default function LoginModal({ isOpen, onClose }) {
 
     try {
       await axios.post(
-        "https://amiwrites-backend-app-2lp5.onrender.com/api/auth/request-reset",
+        apiUrl("/api/auth/request-reset"),
         { email }
       );
 

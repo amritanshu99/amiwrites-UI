@@ -4,8 +4,9 @@ import axios from "axios";
 import { useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
 import ProductivityAnalytics from "./ProductivityAnalytics";
+import { apiUrl } from "../../config/api";
 
-const API_BASE = "https://amiwrites-backend-app-2lp5.onrender.com/api/tasks";
+const API_BASE = apiUrl("/api/tasks");
 
 const quotes = [
   "🕶️ Your mission, should you choose to accept it, is to conquer your tasks and crush the day.",

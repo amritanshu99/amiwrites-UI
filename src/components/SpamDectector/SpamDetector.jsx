@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Loader from "../Loader/Loader";
 import { useLocation } from "react-router-dom";
+import { apiUrl } from "../../config/api";
 const SpamDetector = () => {
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
@@ -25,7 +26,7 @@ const SpamDetector = () => {
 
     try {
       const response = await axios.post(
-        "https://amiwrites-backend-app-2lp5.onrender.com/api/spam-check",
+        apiUrl("/api/spam-check"),
         {
           subject,
           body,

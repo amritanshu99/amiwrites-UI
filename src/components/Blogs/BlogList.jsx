@@ -6,9 +6,9 @@ import axios from "../../utils/api";
 import Loader from "../Loader/Loader";
 import PushNotificationButton from "../Floating-buttons/PushNotificationButton";
 import { useDebounce } from "../../hooks/useDebounce";
+import { apiUrl } from "../../config/api";
 
-const API_BASE = "https://amiwrites-backend-app-2lp5.onrender.com";
-const CLICK_API = `${API_BASE}/api/trending-rl/events/click`;
+const CLICK_API = apiUrl("/api/trending-rl/events/click");
 const INITIAL_SKELETON_KEYS = ["init-0", "init-1", "init-2"];
 const PAGINATION_SKELETON_KEYS = ["pag-0", "pag-1", "pag-2"];
 
@@ -326,7 +326,7 @@ const BlogList = () => {
     (async () => {
       try {
         const { data } = await axios.get(
-          `${API_BASE}/api/trending-rl/trending?limit=2&all=1`
+          "/api/trending-rl/trending?limit=2&all=1"
         );
         const items = Array.isArray(data?.items) ? data.items : [];
         const set = new Set(items.map((x) => String(x?._id)));

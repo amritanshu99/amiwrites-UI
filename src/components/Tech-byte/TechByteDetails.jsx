@@ -2,8 +2,9 @@ import React, { useEffect, useState, useCallback, useMemo } from "react";
 import axios from "axios";
 import { useLocation } from "react-router-dom";
 import { ArrowUpRight, Newspaper } from "lucide-react";
+import { apiUrl } from "../../config/api";
 
-const TECH_NEWS_URL = "https://amiwrites-backend-app-2lp5.onrender.com/api/tech-news";
+const TECH_NEWS_URL = apiUrl("/api/tech-news");
 const FALLBACK_NEWS_IMAGE = "/og-image.jpg";
 
 const formatPublishedAt = (publishedAt) => {

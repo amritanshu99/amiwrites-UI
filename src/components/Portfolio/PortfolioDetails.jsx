@@ -35,6 +35,7 @@ import InitialLoader from "./InitialLoader";
 import AchievementsModal from "./AchievementsModal";
 import MemoryLaneCta from "./MemoryLaneCta";
 import { FaCalendarAlt } from "react-icons/fa";
+import { apiUrl, assetUrl } from "../../config/api";
 
 const MemoryLaneGallery = React.lazy(() => import("./MemoryLaneGallery"));
 
@@ -264,8 +265,7 @@ const sectionMeta = [
   { id: "education", label: "Education" },
 ];
 const MIN_LOADER_DURATION_MS = 900;
-const resumeUrl =
-  "https://amiwrites-backend-app-2lp5.onrender.com/images/Resume.pdf";
+const resumeUrl = assetUrl("/images/Resume.pdf");
 const publicAsset = (path) => `${process.env.PUBLIC_URL || ""}${path}`;
 const cx = (...classes) => classes.filter(Boolean).join(" ");
 
@@ -424,7 +424,7 @@ export default function PortfolioDetails() {
     };
 
     axios
-      .get("https://amiwrites-backend-app-2lp5.onrender.com/api/portfolio", {
+      .get(apiUrl("/api/portfolio"), {
         signal: controller.signal,
       })
       .then((res) => {
@@ -571,9 +571,7 @@ export default function PortfolioDetails() {
   const heroImageUrl = useMemo(() => {
     if (!data) return "";
 
-    return `https://amiwrites-backend-app-2lp5.onrender.com${
-      isDark ? data.photoUrlDark : data.photoUrl
-    }`;
+    return assetUrl(isDark ? data.photoUrlDark : data.photoUrl);
   }, [data, isDark]);
 
   useEffect(() => {

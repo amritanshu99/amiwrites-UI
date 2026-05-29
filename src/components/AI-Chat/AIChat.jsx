@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Send, Sparkles } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import AIChatHeader from "./AIChatHeader";
+import { apiUrl } from "../../config/api";
 
 function decodeJWT(token) {
   try {
@@ -82,7 +83,7 @@ const AIChat = () => {
 
     try {
       const response = await fetch(
-        "https://amiwrites-backend-app-2lp5.onrender.com/api/gemini/generate",
+        apiUrl("/api/gemini/generate"),
         {
           method: "POST",
           headers: {
