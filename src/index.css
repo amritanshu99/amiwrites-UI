@@ -97,3 +97,64 @@ html:not(.dark) .amiverse-premium-light-overlay {
   font-family: "Playfair Display", serif;
   letter-spacing: -0.02em;
 }
+
+.hero-name-area {
+  container-type: inline-size;
+}
+
+.hero-name {
+  max-width: min(10.75ch, 100%);
+  font-family: "Inter Tight", sans-serif;
+  font-size: 2.35rem;
+  line-height: 0.9;
+}
+
+.hero-name span {
+  overflow-wrap: normal;
+  word-break: keep-all;
+}
+
+@container (min-width: 22rem) {
+  .hero-name {
+    font-size: 2.75rem;
+  }
+}
+
+@container (min-width: 30rem) {
+  .hero-name {
+    font-size: 3.35rem;
+    max-width: min(11ch, 100%);
+  }
+}
+
+@container (min-width: 40rem) {
+  .hero-name {
+    font-size: 4.25rem;
+    max-width: min(10.5ch, 100%);
+  }
+}
+
+@container (min-width: 54rem) {
+  .hero-name {
+    font-size: 5.2rem;
+  }
+}
+
+@container (min-width: 72rem) {
+  .hero-name {
+    font-size: 6.1rem;
+  }
+}
+
+@media (max-height: 42rem) and (orientation: landscape) {
+  .hero-name {
+    font-size: 2.8rem;
+    line-height: 0.88;
+  }
+}
+
+@media (max-height: 42rem) and (orientation: landscape) and (min-width: 48rem) {
+  .hero-name {
+    font-size: 4rem;
+  }
+}

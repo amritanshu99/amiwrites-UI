@@ -702,7 +702,8 @@ export default function PortfolioDetails() {
 
   if (loading || !data) return <InitialLoader />;
 
-  const [firstName, lastName] = data.name.split(" ");
+  const [firstName, ...lastNameParts] = data.name.trim().split(/\s+/);
+  const lastName = lastNameParts.join(" ");
   const useMobileBottomCta = isCompactViewport;
   const bottomCtaWrapperClassName = cx(
     "pointer-events-none fixed left-0 right-0 z-[80] lg:right-[var(--scrollbar-size)]",
@@ -834,16 +835,15 @@ export default function PortfolioDetails() {
 
             <motion.div
               style={heroTextStyle}
-              className="pointer-events-none absolute inset-0 z-10 flex items-end px-6 pb-[10vh] sm:px-10 sm:pb-[9vh] md:px-20 md:pb-[10vh] lg:pb-[11vh]"
+              className="hero-name-area pointer-events-none absolute inset-0 z-10 flex items-end px-5 pb-[max(2rem,8svh)] min-[380px]:px-6 sm:px-10 sm:pb-[9svh] md:px-16 md:pb-[10svh] lg:px-20 lg:pb-[11vh]"
             >
               <h1
                 id="portfolio-title"
+                aria-label={data.name}
                 style={{ transformOrigin: "left center" }}
                 className="
-                  max-w-[11ch]
-                  text-[2.4rem]
+                  hero-name
                   font-extrabold
-                  leading-[0.9]
                   tracking-normal
                   text-slate-950
                   drop-shadow-[0_12px_34px_rgba(15,23,42,0.24)]
@@ -853,16 +853,10 @@ export default function PortfolioDetails() {
                   dark:text-white
                   dark:drop-shadow-[0_18px_48px_rgba(0,0,0,0.78)]
                   dark:[text-shadow:0_2px_18px_rgba(0,0,0,0.86)]
-                  min-[380px]:text-[2.85rem]
-                  sm:text-[3.7rem]
-                  md:max-w-[9.5ch]
-                  md:text-[4.6rem]
-                  lg:text-[5.45rem]
-                  xl:text-[6.15rem]
                 "
               >
                 <span className="block">{firstName}</span>
-                <span className="block">{lastName}</span>
+                {lastName ? <span className="block">{lastName}</span> : null}
               </h1>
             </motion.div>
           </motion.div>
