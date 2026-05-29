@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import Modal from "./Modal";
 import ResetPasswordForm from "./ResetPasswordForm";
@@ -6,6 +6,12 @@ import Loader from "../Loader/Loader";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Eye, EyeOff } from "lucide-react";
+
+const inputClass =
+  "w-full rounded-xl border border-slate-200 bg-white/90 px-3.5 py-2.5 text-sm text-slate-950 shadow-inner shadow-slate-100/70 outline-none transition-colors duration-200 placeholder:text-slate-400 focus:border-sky-400 focus:bg-white focus:ring-4 focus:ring-sky-100 disabled:cursor-not-allowed disabled:opacity-70 dark:border-white/10 dark:bg-white/[0.06] dark:text-white dark:shadow-none dark:placeholder:text-zinc-500 dark:focus:border-cyan-300/50 dark:focus:bg-white/[0.08] dark:focus:ring-cyan-300/10";
+
+const labelClass =
+  "mb-1.5 block text-sm font-medium text-slate-700 dark:text-zinc-200";
 
 export default function LoginModal({ isOpen, onClose }) {
   const [username, setUsername] = useState("");
@@ -32,10 +38,15 @@ export default function LoginModal({ isOpen, onClose }) {
       setInfo("");
       setShowResetForm(false);
       setIsLoading(false);
+      setShowPassword(false);
     }
   }, [isOpen]);
 
-  const handleLogin = async () => {
+  const handleLogin = async (e) => {
+    e?.preventDefault();
+
+    if (isLoading) return;
+
     setError("");
     setInfo("");
 
@@ -94,12 +105,7 @@ export default function LoginModal({ isOpen, onClose }) {
         "Failed to send reset link.";
       setError(message);
       toast.error("Failed to send reset link.");
-    }
-  };
-
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter" && !showResetForm) {
-      handleLogin();
+      throw new Error(message);
     }
   };
 
@@ -108,6 +114,7 @@ export default function LoginModal({ isOpen, onClose }) {
       isOpen={isOpen}
       onClose={onClose}
       title={showResetForm ? "Reset Password" : "Login"}
+      closeDisabled={isLoading}
     >
       {showResetForm ? (
         <ResetPasswordForm
@@ -119,19 +126,15 @@ export default function LoginModal({ isOpen, onClose }) {
           onSubmit={handleResetPasswordSubmit}
         />
       ) : (
-        <div
-          className="space-y-5 px-2 py-1"
-          onKeyDown={handleKeyDown}
-          tabIndex={-1}
-        >
-          {/* Username */}
+        <form className="space-y-5" onSubmit={handleLogin} noValidate>
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+            <label htmlFor="login-username" className={labelClass}>
               Username
             </label>
             <input
+              id="login-username"
               type="text"
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-white placeholder-gray-400"
+              className={inputClass}
               placeholder="Enter your username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
@@ -140,15 +143,15 @@ export default function LoginModal({ isOpen, onClose }) {
             />
           </div>
 
-          {/* Password */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+            <label htmlFor="login-password" className={labelClass}>
               Password
             </label>
             <div className="relative">
               <input
+                id="login-password"
                 type={showPassword ? "text" : "password"}
-                className="w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-white placeholder-gray-400"
+                className={`${inputClass} pr-11`}
                 placeholder="Enter your password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -158,63 +161,77 @@ export default function LoginModal({ isOpen, onClose }) {
               <button
                 type="button"
                 onClick={() => setShowPassword((prev) => !prev)}
-                className="absolute inset-y-0 right-2 flex items-center text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white"
-                tabIndex={-1}
+                disabled={isLoading}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+                aria-pressed={showPassword}
+                className="absolute inset-y-1.5 right-2 inline-flex w-8 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 disabled:cursor-not-allowed disabled:opacity-60 dark:text-zinc-300 dark:hover:bg-white/10 dark:hover:text-white dark:focus-visible:ring-cyan-300"
               >
-                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
           </div>
 
-          {/* Remember Me */}
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center gap-2">
             <input
               type="checkbox"
               id="rememberMe"
               checked={rememberMe}
               onChange={(e) => setRememberMe(e.target.checked)}
               disabled={isLoading}
-              className="accent-blue-600"
+              className="h-4 w-4 rounded border-slate-300 accent-sky-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/20"
             />
             <label
               htmlFor="rememberMe"
-              className="text-sm text-gray-800 dark:text-gray-300"
+              className="text-sm font-medium text-slate-700 dark:text-zinc-300"
             >
               Remember Me
             </label>
           </div>
 
-          {/* Error / Info */}
-          {error && <p className="text-sm text-red-600">{error}</p>}
-          {info && <p className="text-sm text-green-600">{info}</p>}
-
-          {/* Login Button */}
-          <div className="flex items-center gap-4">
-            <button
-              onClick={handleLogin}
-              className="flex-1 py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:opacity-50"
-              disabled={isLoading}
-            >
-              Login
-            </button>
-            {isLoading && <Loader />}
+          <div aria-live="polite" className="min-h-5">
+            {error && (
+              <p className="text-sm font-medium text-red-600 dark:text-red-400">
+                {error}
+              </p>
+            )}
+            {info && (
+              <p className="text-sm font-medium text-emerald-600 dark:text-emerald-400">
+                {info}
+              </p>
+            )}
           </div>
 
-          {/* Forgot Password */}
+          <button
+            type="submit"
+            className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-slate-950 px-4 text-sm font-semibold text-white shadow-[0_12px_24px_rgba(15,23,42,0.18)] transition-colors duration-200 hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-sky-100 disabled:cursor-not-allowed disabled:opacity-70 dark:bg-cyan-300 dark:text-slate-950 dark:hover:bg-cyan-200 dark:focus-visible:ring-cyan-300/15"
+            disabled={isLoading}
+            aria-busy={isLoading}
+          >
+            {isLoading ? (
+              <>
+                <Loader size="small" label="Logging in" />
+                <span>Logging in</span>
+              </>
+            ) : (
+              "Login"
+            )}
+          </button>
+
           <div className="text-center">
             <button
+              type="button"
               onClick={() => {
                 setShowResetForm(true);
                 setError("");
                 setInfo("");
               }}
-              className="text-sm text-blue-500 hover:underline mt-1"
+              className="rounded-lg px-2 py-1 text-sm font-medium text-sky-700 transition hover:text-sky-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 disabled:cursor-not-allowed disabled:opacity-60 dark:text-cyan-200 dark:hover:text-cyan-100 dark:focus-visible:ring-cyan-300"
               disabled={isLoading}
             >
               Forgot your password?
             </button>
           </div>
-        </div>
+        </form>
       )}
     </Modal>
   );

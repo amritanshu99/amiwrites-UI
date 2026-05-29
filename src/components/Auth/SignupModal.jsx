@@ -1,8 +1,15 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { toast } from "react-toastify";
-import Loader from "../Loader/Loader"; // imported Loader
-import "react-toastify/dist/ReactToastify.css"; // in case not imported globally
+import Loader from "../Loader/Loader";
+import Modal from "./Modal";
+import "react-toastify/dist/ReactToastify.css";
 import { Eye, EyeOff } from "lucide-react";
+
+const inputClass =
+  "w-full rounded-xl border border-slate-200 bg-white/90 px-3.5 py-2.5 text-sm text-slate-950 shadow-inner shadow-slate-100/70 outline-none transition-colors duration-200 placeholder:text-slate-400 focus:border-sky-400 focus:bg-white focus:ring-4 focus:ring-sky-100 disabled:cursor-not-allowed disabled:opacity-70 dark:border-white/10 dark:bg-white/[0.06] dark:text-white dark:shadow-none dark:placeholder:text-zinc-500 dark:focus:border-cyan-300/50 dark:focus:bg-white/[0.08] dark:focus:ring-cyan-300/10";
+
+const labelClass =
+  "mb-1.5 block text-sm font-medium text-slate-700 dark:text-zinc-200";
 
 export default function SignUpModal({ isOpen, onClose }) {
   const [username, setUsername] = useState("");
@@ -12,27 +19,26 @@ export default function SignUpModal({ isOpen, onClose }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  if (!isOpen) return null;
-
   const resetForm = () => {
     setUsername("");
     setEmail("");
     setPassword("");
     setError("");
     setIsSubmitting(false);
+    setShowPassword(false);
   };
 
-  const handleOverlayClick = () => {
+  const handleClose = () => {
+    if (isSubmitting) return;
+
     onClose();
     resetForm();
   };
 
-  const handleModalClick = (e) => {
-    e.stopPropagation();
-  };
-
   const handleSignup = async (e) => {
     e.preventDefault();
+
+    if (isSubmitting) return;
 
     if (!email || !username || !password) {
       setError("Please fill in all fields.");
@@ -73,110 +79,107 @@ export default function SignUpModal({ isOpen, onClose }) {
   };
 
   return (
-    <>
-      <div
-        className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm z-50"
-        onClick={handleOverlayClick}
-      />
-      <div
-        className="fixed inset-0 flex justify-center items-center z-50 p-4"
-        onClick={handleOverlayClick}
-      >
-        <div
-          className="bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-md w-full p-6 relative"
-          onClick={handleModalClick}
-        >
-          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100 text-center">
-            Signup
-          </h2>
-
-          <form className="space-y-4" onSubmit={handleSignup}>
-            <div>
-              <label
-                htmlFor="email"
-                className="block text-gray-700 dark:text-gray-300 mb-1"
-              >
-                Email
-              </label>
-              <input
-                id="email"
-                type="email"
-                placeholder="Enter email"
-                className="w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                disabled={isSubmitting}
-              />
-            </div>
-
-            <div>
-              <label
-                htmlFor="username"
-                className="block text-gray-700 dark:text-gray-300 mb-1"
-              >
-                Username
-              </label>
-              <input
-                id="username"
-                type="text"
-                placeholder="Enter username"
-                className="w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                disabled={isSubmitting}
-              />
-            </div>
-
-            <div>
-              <label
-                htmlFor="password"
-                className="block text-gray-700 dark:text-gray-300 mb-1"
-              >
-                Password
-              </label>
-              <div className="relative">
-                <input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Enter password"
-                  className="w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 pr-10 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  disabled={isSubmitting}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword((prev) => !prev)}
-                  className="absolute inset-y-0 right-2 flex items-center text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white"
-                  tabIndex={-1}
-                >
-                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                </button>
-              </div>
-            </div>
-
-            {error && <p className="text-red-500 text-sm">{error}</p>}
-
-            <div className="flex justify-end pt-2 space-x-3 items-center">
-              <button
-                type="button"
-                onClick={handleOverlayClick}
-                className="px-4 py-2 rounded-md bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200"
-                disabled={isSubmitting}
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="px-4 py-2 rounded-md bg-blue-600 text-white flex items-center"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? <Loader /> : "Signup"}
-              </button>
-            </div>
-          </form>
+    <Modal
+      isOpen={isOpen}
+      onClose={handleClose}
+      title="Sign Up"
+      closeDisabled={isSubmitting}
+    >
+      <form className="space-y-5" onSubmit={handleSignup} noValidate>
+        <div>
+          <label htmlFor="signup-email" className={labelClass}>
+            Email
+          </label>
+          <input
+            id="signup-email"
+            type="email"
+            placeholder="Enter email"
+            className={inputClass}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            autoComplete="email"
+            disabled={isSubmitting}
+          />
         </div>
-      </div>
-    </>
+
+        <div>
+          <label htmlFor="signup-username" className={labelClass}>
+            Username
+          </label>
+          <input
+            id="signup-username"
+            type="text"
+            placeholder="Enter username"
+            className={inputClass}
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            autoComplete="username"
+            disabled={isSubmitting}
+          />
+        </div>
+
+        <div>
+          <label htmlFor="signup-password" className={labelClass}>
+            Password
+          </label>
+          <div className="relative">
+            <input
+              id="signup-password"
+              type={showPassword ? "text" : "password"}
+              placeholder="Enter password"
+              className={`${inputClass} pr-11`}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              autoComplete="new-password"
+              disabled={isSubmitting}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((prev) => !prev)}
+              disabled={isSubmitting}
+              aria-label={showPassword ? "Hide password" : "Show password"}
+              aria-pressed={showPassword}
+              className="absolute inset-y-1.5 right-2 inline-flex w-8 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 disabled:cursor-not-allowed disabled:opacity-60 dark:text-zinc-300 dark:hover:bg-white/10 dark:hover:text-white dark:focus-visible:ring-cyan-300"
+            >
+              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
+          </div>
+        </div>
+
+        <div aria-live="polite" className="min-h-5">
+          {error && (
+            <p className="text-sm font-medium text-red-600 dark:text-red-400">
+              {error}
+            </p>
+          )}
+        </div>
+
+        <div className="grid gap-3 pt-1 sm:grid-cols-2">
+          <button
+            type="button"
+            onClick={handleClose}
+            className="inline-flex h-11 w-full items-center justify-center rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 shadow-sm transition-colors duration-200 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-slate-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/10 dark:bg-white/[0.06] dark:text-zinc-100 dark:hover:bg-white/[0.1] dark:focus-visible:ring-white/10"
+            disabled={isSubmitting}
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-slate-950 px-4 text-sm font-semibold text-white shadow-[0_12px_24px_rgba(15,23,42,0.18)] transition-colors duration-200 hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-sky-100 disabled:cursor-not-allowed disabled:opacity-70 dark:bg-cyan-300 dark:text-slate-950 dark:hover:bg-cyan-200 dark:focus-visible:ring-cyan-300/15"
+            disabled={isSubmitting}
+            aria-busy={isSubmitting}
+          >
+            {isSubmitting ? (
+              <>
+                <Loader size="small" label="Creating account" />
+                <span>Signing up</span>
+              </>
+            ) : (
+              "Sign Up"
+            )}
+          </button>
+        </div>
+      </form>
+    </Modal>
   );
 }

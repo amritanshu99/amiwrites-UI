@@ -7,6 +7,7 @@ const Loader = ({
 }) => {
   const isSmall = size === "small";
   const isFullscreen = fullscreen ?? !isSmall;
+  const inlineSizeClass = isSmall ? "h-4 w-4" : "h-5 w-5";
 
   if (!isFullscreen) {
     return (
@@ -15,7 +16,7 @@ const Loader = ({
         aria-live="polite"
         aria-busy="true"
         aria-label={label}
-        className={`relative inline-flex h-5 w-5 shrink-0 items-center justify-center align-middle text-current motion-reduce:transition-none ${className}`}
+        className={`relative inline-flex ${inlineSizeClass} shrink-0 items-center justify-center align-middle text-current motion-reduce:transition-none ${className}`}
       >
         <span
           aria-hidden="true"
