@@ -4,7 +4,6 @@ import Loader from "../Loader/Loader";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { Bot, Home, Mail, MessageCircle, Send } from "lucide-react";
-import "react-toastify/dist/ReactToastify.css";
 import { apiUrl } from "../../config/api";
 
 export default function ContactMeButton() {

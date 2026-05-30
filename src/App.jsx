@@ -8,8 +8,15 @@ import {
   useParams,
 } from "react-router-dom";
 import axios from "axios";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { Slide, ToastContainer, toast } from "react-toastify";
+import {
+  AlertTriangle,
+  Bell,
+  CheckCircle2,
+  Info,
+  X,
+  XCircle,
+} from "lucide-react";
 import Header from "./components/Layout/Header";
 import Footer from "./components/Layout/Footer";
 import ContactMeButton from "./components/Floating-buttons/ContactMeButton";
@@ -41,6 +48,35 @@ const ReinforcementLearningDetails = lazy(() =>
   import("./pages/ReinforcementLearning"),
 );
 const LegalPage = lazy(() => import("./pages/LegalPage"));
+
+const toastIconByType = {
+  success: CheckCircle2,
+  error: XCircle,
+  warning: AlertTriangle,
+  info: Info,
+  default: Bell,
+};
+
+const AmiToastIcon = ({ type }) => {
+  const Icon = toastIconByType[type] || Bell;
+
+  return (
+    <span className="amiverse-toast-icon" aria-hidden="true">
+      <Icon size={19} strokeWidth={2.35} />
+    </span>
+  );
+};
+
+const AmiToastCloseButton = ({ closeToast }) => (
+  <button
+    type="button"
+    className="amiverse-toast-close"
+    onClick={closeToast}
+    aria-label="Close notification"
+  >
+    <X size={15} strokeWidth={2.4} />
+  </button>
+);
 
 const resolveRouteSeo = (pathname) => {
   if (seoByRoute[pathname]) return seoByRoute[pathname];
@@ -154,12 +190,21 @@ const App = () => {
     <div ref={appShellRef} className="h-screen overflow-y-scroll relative">
       <Header setLoading={setIsLoading} />
       <ToastContainer
+        className="amiverse-toast-container"
+        toastClassName="amiverse-toast"
+        progressClassName="amiverse-toast-progress"
         position="top-right"
         autoClose={5000}
         hideProgressBar={false}
         closeOnClick
         pauseOnHover
+        pauseOnFocusLoss
         draggable
+        newestOnTop
+        limit={3}
+        icon={AmiToastIcon}
+        closeButton={AmiToastCloseButton}
+        transition={Slide}
       />
 
       {isLoading && (

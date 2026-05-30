@@ -89,6 +89,25 @@ export default function Header({ setLoading }) {
     return () => window.removeEventListener("tokenChanged", handleTokenChanged);
   }, []);
 
+  useEffect(() => {
+    const handleOpenLogin = () => {
+      setSignupOpen(false);
+      setLoginOpen(true);
+    };
+    const handleOpenSignup = () => {
+      setLoginOpen(false);
+      setSignupOpen(true);
+    };
+
+    window.addEventListener("open-login-modal", handleOpenLogin);
+    window.addEventListener("open-signup-modal", handleOpenSignup);
+
+    return () => {
+      window.removeEventListener("open-login-modal", handleOpenLogin);
+      window.removeEventListener("open-signup-modal", handleOpenSignup);
+    };
+  }, []);
+
   // Click outside to close popovers
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -316,7 +335,7 @@ export default function Header({ setLoading }) {
                         {isActive && (
                           <ActivePill
                             layoutId="active-pill"
-                            className="absolute inset-0 rounded-[1rem] bg-white/88 ring-1 ring-[#475569]/[0.12] shadow-[0_7px_18px_rgba(71,85,105,0.11)] dark:bg-white/[0.12] dark:ring-white/[0.18] dark:shadow-[0_7px_18px_rgba(15,23,42,0.14)]"
+                            className="absolute inset-0 rounded-[1rem] bg-white/[0.88] ring-1 ring-[#475569]/[0.12] shadow-[0_7px_18px_rgba(71,85,105,0.11)] dark:bg-white/[0.12] dark:ring-white/[0.18] dark:shadow-[0_7px_18px_rgba(15,23,42,0.14)]"
                             transition={{
                               type: "spring",
                               stiffness: 500,

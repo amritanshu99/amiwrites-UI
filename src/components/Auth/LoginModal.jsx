@@ -4,7 +4,6 @@ import Modal from "./Modal";
 import ResetPasswordForm from "./ResetPasswordForm";
 import Loader from "../Loader/Loader";
 import { toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 import { Eye, EyeOff } from "lucide-react";
 import { apiUrl } from "../../config/api";
 

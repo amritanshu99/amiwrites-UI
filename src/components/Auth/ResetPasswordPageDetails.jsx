@@ -1,8 +1,7 @@
 import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify";
 import Loader from "../Loader/Loader";
 import { apiUrl } from "../../config/api";
 
@@ -59,7 +58,6 @@ export default function ResetPasswordPageDetails() {
 
   return (
     <>
-      <ToastContainer position="top-right" autoClose={4000} />
       {loading ? (
         <Loader />
       ) : (

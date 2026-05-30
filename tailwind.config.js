@@ -10,6 +10,9 @@ module.exports = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        cinzel: ["Cinzel", "Playfair Display", "Georgia", "serif"],
+      },
       animation: {
         "fade-in-left": "fadeInLeft 0.8s ease-out forwards",
         "text-glow-hover": "textGlowHover 1.5s ease-in-out infinite alternate",

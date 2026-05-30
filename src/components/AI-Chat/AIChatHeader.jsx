@@ -1,16 +1,74 @@
 import React, { useState } from "react";
-import { Sparkles, ChevronDown, ChevronUp } from "lucide-react";
+import {
+  Activity,
+  Brain,
+  Briefcase,
+  ChevronDown,
+  ChevronUp,
+  HeartPulse,
+  Leaf,
+  Moon,
+  Sparkles,
+  Sunrise,
+  Users,
+  Zap,
+} from "lucide-react";
 
 const CATEGORIES = [
-  "Mental Well-being",
-  "Anxiety",
-  "Depression",
-  "Sleep Issues",
-  "Stress",
-  "Relationships",
-  "Health and diet",
-  "Career",
-  "Daily motivation",
+  {
+    value: "Mental Well-being",
+    label: "Mental well-being",
+    description: "Balanced support",
+    icon: Brain,
+  },
+  {
+    value: "Anxiety",
+    label: "Anxiety",
+    description: "Grounding and calm",
+    icon: Activity,
+  },
+  {
+    value: "Depression",
+    label: "Depression",
+    description: "Gentle next steps",
+    icon: HeartPulse,
+  },
+  {
+    value: "Sleep Issues",
+    label: "Sleep issues",
+    description: "Rest routines",
+    icon: Moon,
+  },
+  {
+    value: "Stress",
+    label: "Stress",
+    description: "Pressure relief",
+    icon: Zap,
+  },
+  {
+    value: "Relationships",
+    label: "Relationships",
+    description: "Clearer connection",
+    icon: Users,
+  },
+  {
+    value: "Health and diet",
+    label: "Health and diet",
+    description: "Daily habits",
+    icon: Leaf,
+  },
+  {
+    value: "Career",
+    label: "Career",
+    description: "Work and goals",
+    icon: Briefcase,
+  },
+  {
+    value: "Daily motivation",
+    label: "Daily motivation",
+    description: "Momentum",
+    icon: Sunrise,
+  },
 ];
 
 const CATEGORY_PROMPTS_MAP = {
@@ -82,75 +140,133 @@ const CATEGORY_PROMPTS_MAP = {
 const AIChatHeader = ({ category, setCategory, onPromptClick }) => {
   const [promptsOpen, setPromptsOpen] = useState(false);
   const currentPrompts = CATEGORY_PROMPTS_MAP[category] || [];
+  const selectedCategory =
+    CATEGORIES.find((item) => item.value === category) || CATEGORIES[0];
+  const SelectedIcon = selectedCategory.icon;
 
   return (
-    <>
-      {/* Header Bar */}
-      <div className="sticky top-[70px] z-40 flex flex-col md:flex-row items-center justify-between gap-4 px-4 py-4 md:px-8 bg-gradient-to-r from-purple-600 via-purple-700 to-purple-800 dark:from-purple-800 dark:via-purple-900 dark:to-black shadow-md border-b border-purple-700 dark:border-purple-900 rounded-b-xl">
-        <div className="flex items-center gap-2 text-white text-lg md:text-2xl font-bold flex-shrink-0">
-          <Sparkles className="text-yellow-400 animate-pulse" size={26} />
-          <span className="truncate">AI Chat – Mental Wellness</span>
-        </div>
+    <aside className="relative min-w-0 overflow-hidden rounded-lg border border-slate-200/80 bg-white/[0.88] p-4 shadow-[0_22px_56px_-38px_rgba(15,23,42,0.28)] backdrop-blur-xl dark:border-white/10 dark:bg-zinc-950/90 dark:shadow-[0_28px_80px_-48px_rgba(0,0,0,0.95)] sm:p-5 lg:sticky lg:top-24">
+      <div className="absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,#0891b2,#10b981,#f59e0b)]" />
 
-        <div className="flex items-center gap-2 w-full md:w-auto">
-          <label
-            htmlFor="category"
-            className="text-white text-sm md:text-base font-medium"
-          >
-            Category:
-          </label>
+      <div className="flex items-start gap-3">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-slate-950 text-cyan-200 shadow-sm dark:bg-cyan-300 dark:text-slate-950">
+          <Sparkles className="h-5 w-5" />
+        </span>
+        <div className="min-w-0">
+          <p className="text-sm font-semibold text-cyan-700 dark:text-cyan-200">
+            Ami AI Chat
+          </p>
+          <h1 className="mt-1 text-xl font-bold leading-7 text-slate-950 dark:text-white sm:text-2xl">
+            Mental wellness desk
+          </h1>
+          <p className="mt-2 break-words text-sm leading-6 text-slate-600 dark:text-zinc-300">
+            Pick a focus area and start with a prompt, or ask your own question.
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-5">
+        <label
+          htmlFor="ai-chat-category"
+          className="mb-2 block text-sm font-semibold text-slate-800 dark:text-zinc-100"
+        >
+          Focus area
+        </label>
+        <div className="relative">
+          <SelectedIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500 dark:text-zinc-400" />
           <select
-            id="category"
+            id="ai-chat-category"
             value={category}
             onChange={(e) => setCategory(e.target.value)}
-            className="bg-white dark:bg-gray-800 dark:text-white text-gray-900 px-4 py-2 rounded-full shadow-sm text-sm md:text-base font-medium focus:outline-none focus:ring-2 focus:ring-purple-400 transition w-full md:w-auto"
+            className="h-11 w-full min-w-0 appearance-none rounded-lg border border-slate-200 bg-white px-9 pr-10 text-sm font-semibold text-slate-900 shadow-sm outline-none transition-colors focus:border-cyan-400 focus:ring-4 focus:ring-cyan-100 dark:border-white/10 dark:bg-white/[0.06] dark:text-white dark:focus:border-cyan-300/60 dark:focus:ring-cyan-300/10"
           >
             {CATEGORIES.map((cat) => (
-              <option key={cat} value={cat}>
-                {cat}
+              <option key={cat.value} value={cat.value}>
+                {cat.label}
               </option>
             ))}
           </select>
+          <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500 dark:text-zinc-400" />
         </div>
       </div>
 
-      {/* Quick Tips Toggle */}
-      <div
-        onClick={() => setPromptsOpen(!promptsOpen)}
-        role="button"
-        aria-expanded={promptsOpen}
-        className="sticky top-[118px] z-30 flex justify-between items-center px-5 py-2 md:px-6 bg-white/40 dark:bg-black/40 backdrop-blur-md text-purple-900 dark:text-purple-300 font-medium text-sm md:text-base border-b border-purple-700 dark:border-purple-900 rounded-b-lg transition hover:bg-white/50 dark:hover:bg-black/50 cursor-pointer select-none"
-      >
-        <span>Quick Tips</span>
-        {promptsOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+      <div className="mt-4 flex gap-2 overflow-x-auto pb-1 lg:grid lg:grid-cols-1 lg:overflow-visible lg:pb-0">
+        {CATEGORIES.map((item) => {
+          const Icon = item.icon;
+          const isSelected = item.value === category;
+
+          return (
+            <button
+              key={item.value}
+              type="button"
+              onClick={() => setCategory(item.value)}
+              className={`flex min-h-[3.25rem] min-w-[10.25rem] items-center gap-2 rounded-lg border px-3 py-2 text-left transition-all duration-200 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-cyan-100 dark:focus-visible:ring-cyan-300/10 lg:min-w-0 ${
+                isSelected
+                  ? "border-cyan-300 bg-cyan-50 text-slate-950 shadow-sm dark:border-cyan-300/40 dark:bg-cyan-300/[0.12] dark:text-white"
+                  : "border-slate-200 bg-white/70 text-slate-700 hover:border-slate-300 hover:bg-white dark:border-white/10 dark:bg-white/[0.04] dark:text-zinc-300 dark:hover:border-white/[0.18] dark:hover:bg-white/[0.07]"
+              }`}
+            >
+              <span
+                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${
+                  isSelected
+                    ? "bg-cyan-600 text-white dark:bg-cyan-300 dark:text-slate-950"
+                    : "bg-slate-100 text-slate-600 dark:bg-white/10 dark:text-zinc-200"
+                }`}
+              >
+                <Icon className="h-4 w-4" />
+              </span>
+              <span className="min-w-0">
+                <span className="block text-sm font-semibold leading-5">
+                  {item.label}
+                </span>
+                <span className="block text-xs leading-4 text-slate-500 dark:text-zinc-400">
+                  {item.description}
+                </span>
+              </span>
+            </button>
+          );
+        })}
       </div>
 
-      {/* Prompt Suggestions */}
+      <button
+        type="button"
+        onClick={() => setPromptsOpen((open) => !open)}
+        aria-expanded={promptsOpen}
+        className="mt-4 flex min-h-11 w-full items-center justify-between rounded-lg border border-slate-200 bg-white/[0.78] px-3 text-sm font-semibold text-slate-800 shadow-sm transition-colors hover:bg-white focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-cyan-100 dark:border-white/10 dark:bg-white/[0.05] dark:text-zinc-100 dark:hover:bg-white/[0.08] dark:focus-visible:ring-cyan-300/10 lg:hidden"
+      >
+        Prompt starters
+        {promptsOpen ? (
+          <ChevronUp className="h-4 w-4" />
+        ) : (
+          <ChevronDown className="h-4 w-4" />
+        )}
+      </button>
+
       <div
-        className={`transition-all duration-500 ease-in-out overflow-hidden bg-white/20 dark:bg-black/30 backdrop-blur-lg border-b border-purple-700 dark:border-purple-900 rounded-b-xl px-4 md:px-6 ${
-          promptsOpen ? "py-4 max-h-[600px]" : "py-0 max-h-0"
+        className={`overflow-hidden transition-all duration-300 lg:mt-5 lg:max-h-none lg:overflow-visible lg:opacity-100 ${
+          promptsOpen ? "mt-3 max-h-[28rem] opacity-100" : "max-h-0 opacity-0"
         }`}
       >
-        <div
-          className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 transition-opacity duration-300 ${
-            promptsOpen ? "opacity-100" : "opacity-0 pointer-events-none"
-          }`}
-        >
-          {currentPrompts.map((prompt, idx) => (
+        <p className="hidden text-sm font-semibold text-slate-800 dark:text-zinc-100 lg:block">
+          Prompt starters
+        </p>
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:mt-3 lg:grid-cols-1">
+          {currentPrompts.map((prompt) => (
             <button
-              key={idx}
+              key={prompt}
+              type="button"
               onClick={() => {
                 onPromptClick(prompt);
                 setPromptsOpen(false);
               }}
-              className="bg-purple-600 hover:bg-purple-700 active:bg-purple-800 text-white text-sm md:text-base px-4 py-2 rounded-full shadow-md transition whitespace-normal break-words max-w-full text-left"
+              className="min-h-11 rounded-lg border border-emerald-200/80 bg-emerald-50/80 px-3 py-2 text-left text-sm font-medium leading-5 text-emerald-950 transition-colors hover:border-emerald-300 hover:bg-emerald-100 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-100 dark:border-emerald-300/[0.15] dark:bg-emerald-300/10 dark:text-emerald-50 dark:hover:bg-emerald-300/[0.15] dark:focus-visible:ring-emerald-300/10"
             >
-              {prompt}
+              <span className="break-words">{prompt}</span>
             </button>
           ))}
         </div>
       </div>
-    </>
+    </aside>
   );
 };
 

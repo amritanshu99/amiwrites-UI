@@ -2,7 +2,6 @@ import { useState } from "react";
 import { toast } from "react-toastify";
 import Loader from "../Loader/Loader";
 import Modal from "./Modal";
-import "react-toastify/dist/ReactToastify.css";
 import { Eye, EyeOff } from "lucide-react";
 import { apiUrl } from "../../config/api";
 
