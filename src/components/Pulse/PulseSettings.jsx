@@ -41,9 +41,18 @@ const EMPTY_RULE = {
 };
 
 const fieldClassName =
-  "mt-1.5 w-full rounded-xl border border-slate-200/80 bg-white/82 px-3.5 py-2.5 text-sm text-slate-950 shadow-sm outline-none transition focus:border-teal-400 focus:ring-4 focus:ring-teal-100 dark:border-white/10 dark:bg-white/[0.06] dark:text-white dark:focus:border-cyan-200/60 dark:focus:ring-cyan-200/10";
+  "mt-1.5 w-full rounded-xl border border-slate-200/80 bg-white/90 px-3.5 py-2.5 text-sm text-slate-950 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-teal-400 focus:ring-4 focus:ring-teal-100 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-50 dark:placeholder:text-zinc-500 dark:shadow-none dark:focus:border-cyan-300/60 dark:focus:ring-cyan-300/10";
 
 const labelClassName = "block text-sm font-semibold text-slate-700 dark:text-zinc-200";
+
+const panelClassName =
+  "rounded-2xl border border-white/75 bg-white/82 p-5 shadow-sm ring-1 ring-white/70 backdrop-blur-2xl dark:border-zinc-800 dark:bg-black/88 dark:ring-white/[0.06] dark:shadow-[0_24px_60px_-44px_rgba(0,0,0,0.95)] sm:p-6";
+
+const insetPanelClassName =
+  "rounded-2xl border border-slate-200/75 bg-white/72 p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-950/70 dark:shadow-none";
+
+const secondaryButtonClassName =
+  "inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-full border border-slate-200 bg-white/80 px-4 py-2 text-sm font-semibold text-slate-800 transition hover:-translate-y-0.5 hover:bg-white disabled:cursor-not-allowed disabled:opacity-65 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100 dark:hover:border-zinc-700 dark:hover:bg-zinc-900 sm:w-auto";
 
 function normalizePulseTitle(title) {
   const normalizedTitle = String(title || "").trim();
@@ -322,19 +331,19 @@ export default function PulseSettings() {
   }
 
   return (
-    <div className="min-h-screen bg-[linear-gradient(135deg,#f8fafc,#ecfdf5_42%,#fff7ed_78%,#f1f5f9)] px-4 py-8 text-slate-950 dark:bg-[linear-gradient(135deg,#030712,#092f2d_42%,#3b1020_78%,#09090b)] dark:text-white sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[linear-gradient(135deg,#f8fafc,#ecfdf5_42%,#fff7ed_78%,#f1f5f9)] px-4 py-8 text-slate-950 dark:bg-[radial-gradient(circle_at_12%_0%,rgba(6,182,212,0.14),transparent_30%),radial-gradient(circle_at_88%_10%,rgba(244,63,94,0.1),transparent_28%),linear-gradient(180deg,#050505_0%,#09090b_52%,#000000_100%)] dark:text-zinc-50 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl">
-        <div className="mb-6 flex flex-col gap-4 rounded-2xl border border-white/70 bg-white/72 p-5 shadow-[0_18px_46px_rgba(15,23,42,0.12)] ring-1 ring-white/70 backdrop-blur-2xl dark:border-white/10 dark:bg-zinc-950/70 dark:shadow-[0_18px_50px_rgba(0,0,0,0.45)] dark:ring-cyan-100/10 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mb-6 flex flex-col gap-4 rounded-2xl border border-white/75 bg-white/82 p-5 shadow-[0_18px_46px_rgba(15,23,42,0.12)] ring-1 ring-white/70 backdrop-blur-2xl dark:border-zinc-800 dark:bg-black/90 dark:shadow-[0_24px_62px_-42px_rgba(0,0,0,0.98)] dark:ring-white/[0.06] sm:flex-row sm:items-center sm:justify-between">
           <div>
             <Link
               to="/"
-              className="mb-3 inline-flex items-center gap-2 text-sm font-semibold text-slate-600 transition hover:text-teal-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-300 dark:text-zinc-300 dark:hover:text-cyan-100"
+              className="mb-3 inline-flex items-center gap-2 text-sm font-semibold text-slate-600 transition hover:text-teal-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-300 dark:text-zinc-300 dark:hover:text-cyan-100 dark:focus-visible:ring-cyan-300/70"
             >
               <ArrowLeft className="h-4 w-4" />
               Back to home
             </Link>
             <div className="flex items-center gap-3">
-              <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-teal-100 text-teal-700 dark:bg-cyan-200/12 dark:text-cyan-100">
+              <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-teal-100 text-teal-700 ring-1 ring-teal-200/70 dark:bg-cyan-300/10 dark:text-cyan-100 dark:ring-cyan-300/20">
                 <Settings2 className="h-5 w-5" />
               </span>
               <div>
@@ -347,7 +356,7 @@ export default function PulseSettings() {
             type="submit"
             form="pulse-settings-form"
             disabled={saving || locating}
-            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-slate-950 px-5 py-2.5 text-sm font-semibold text-white shadow-[0_14px_30px_rgba(15,23,42,0.22)] transition hover:-translate-y-0.5 hover:bg-teal-700 disabled:cursor-not-allowed disabled:opacity-65 dark:bg-cyan-200 dark:text-slate-950 dark:hover:bg-emerald-200"
+            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-slate-950 px-5 py-2.5 text-sm font-semibold text-white shadow-[0_14px_30px_rgba(15,23,42,0.22)] transition hover:-translate-y-0.5 hover:bg-teal-700 disabled:cursor-not-allowed disabled:opacity-65 dark:bg-cyan-300 dark:text-zinc-950 dark:shadow-[0_18px_36px_-24px_rgba(103,232,249,0.65)] dark:hover:bg-cyan-200"
           >
             {saving ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
             Save settings
@@ -355,27 +364,27 @@ export default function PulseSettings() {
         </div>
 
         {error ? (
-          <div className="mb-5 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700 dark:border-red-300/20 dark:bg-red-400/10 dark:text-red-100">
+          <div className="mb-5 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700 dark:border-red-400/30 dark:bg-red-950/35 dark:text-red-100">
             {error}
           </div>
         ) : null}
 
         {success ? (
-          <div className="mb-5 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700 dark:border-emerald-300/20 dark:bg-emerald-300/10 dark:text-emerald-100">
+          <div className="mb-5 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700 dark:border-emerald-300/25 dark:bg-emerald-950/35 dark:text-emerald-100">
             {success}
           </div>
         ) : null}
 
         <form id="pulse-settings-form" onSubmit={handleSubmit} className="space-y-6">
-          <section className="rounded-2xl border border-white/70 bg-white/72 p-5 shadow-sm ring-1 ring-white/70 backdrop-blur-2xl dark:border-white/10 dark:bg-zinc-950/68 dark:ring-cyan-100/10 sm:p-6">
+          <section className={panelClassName}>
             <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <h2 className="text-lg font-bold tracking-normal">Basic</h2>
-              <label className="inline-flex w-fit items-center gap-3 rounded-full border border-slate-200 bg-white/74 px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm dark:border-white/10 dark:bg-white/[0.06] dark:text-zinc-100">
+              <label className="inline-flex w-fit items-center gap-3 rounded-full border border-slate-200 bg-white/80 px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100 dark:shadow-none">
                 <input
                   type="checkbox"
                   checked={form.isEnabled}
                   onChange={(event) => setField("isEnabled", event.target.checked)}
-                  className="h-4 w-4 rounded border-slate-300 text-teal-600 focus:ring-teal-500"
+                  className="h-4 w-4 rounded border-slate-300 text-teal-600 focus:ring-teal-500 dark:border-zinc-700 dark:bg-zinc-950 dark:focus:ring-cyan-300"
                 />
                 Ami Pulse enabled
               </label>
@@ -393,7 +402,7 @@ export default function PulseSettings() {
 
               <div>
                 <span className={labelClassName}>Mode</span>
-                <div className="mt-1.5 grid grid-cols-2 rounded-xl border border-slate-200/80 bg-white/64 p-1 dark:border-white/10 dark:bg-white/[0.04]">
+                <div className="mt-1.5 grid grid-cols-2 rounded-xl border border-slate-200/80 bg-white/70 p-1 dark:border-zinc-800 dark:bg-zinc-950">
                   {["auto", "manual"].map((mode) => (
                     <button
                       key={mode}
@@ -401,8 +410,8 @@ export default function PulseSettings() {
                       onClick={() => setField("mode", mode)}
                       className={`rounded-lg px-4 py-2.5 text-sm font-semibold capitalize transition ${
                         form.mode === mode
-                          ? "bg-slate-950 text-white shadow-sm dark:bg-cyan-200 dark:text-slate-950"
-                          : "text-slate-600 hover:bg-white/80 dark:text-zinc-300 dark:hover:bg-white/[0.07]"
+                          ? "bg-slate-950 text-white shadow-sm dark:bg-cyan-300 dark:text-zinc-950"
+                          : "text-slate-600 hover:bg-white/80 dark:text-zinc-300 dark:hover:bg-zinc-900"
                       }`}
                     >
                       {mode}
@@ -413,7 +422,7 @@ export default function PulseSettings() {
             </div>
           </section>
 
-          <section className="rounded-2xl border border-white/70 bg-white/72 p-5 shadow-sm ring-1 ring-white/70 backdrop-blur-2xl dark:border-white/10 dark:bg-zinc-950/68 dark:ring-cyan-100/10 sm:p-6">
+          <section className={panelClassName}>
             <h2 className="mb-5 text-lg font-bold tracking-normal">Manual Status Values</h2>
             <div className="grid gap-4 md:grid-cols-2">
               <label className={labelClassName}>
@@ -451,14 +460,14 @@ export default function PulseSettings() {
             </div>
           </section>
 
-          <section className="rounded-2xl border border-white/70 bg-white/72 p-5 shadow-sm ring-1 ring-white/70 backdrop-blur-2xl dark:border-white/10 dark:bg-zinc-950/68 dark:ring-cyan-100/10 sm:p-6">
+          <section className={panelClassName}>
             <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <h2 className="text-lg font-bold tracking-normal">Owner Location</h2>
               <button
                 type="button"
                 onClick={handleUseCurrentLocation}
                 disabled={locating}
-                className="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-full border border-teal-200 bg-teal-50 px-4 py-2 text-sm font-semibold text-teal-800 transition hover:-translate-y-0.5 hover:bg-teal-100 disabled:cursor-not-allowed disabled:opacity-65 dark:border-cyan-200/20 dark:bg-cyan-200/10 dark:text-cyan-100 dark:hover:bg-cyan-200/14 sm:w-auto"
+                className="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-full border border-teal-200 bg-teal-50 px-4 py-2 text-sm font-semibold text-teal-800 transition hover:-translate-y-0.5 hover:bg-teal-100 disabled:cursor-not-allowed disabled:opacity-65 dark:border-cyan-300/25 dark:bg-cyan-300/10 dark:text-cyan-100 dark:hover:bg-cyan-300/15 sm:w-auto"
               >
                 {locating ? (
                   <LoaderCircle className="h-4 w-4 animate-spin" />
@@ -533,7 +542,7 @@ export default function PulseSettings() {
             </div>
           </section>
 
-          <section className="rounded-2xl border border-white/70 bg-white/72 p-5 shadow-sm ring-1 ring-white/70 backdrop-blur-2xl dark:border-white/10 dark:bg-zinc-950/68 dark:ring-cyan-100/10 sm:p-6">
+          <section className={panelClassName}>
             <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <h2 className="flex items-center gap-2 text-lg font-bold tracking-normal">
@@ -544,7 +553,7 @@ export default function PulseSettings() {
               <button
                 type="button"
                 onClick={addRule}
-                className="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-full border border-slate-200 bg-white/76 px-4 py-2 text-sm font-semibold text-slate-800 transition hover:-translate-y-0.5 hover:bg-white dark:border-white/10 dark:bg-white/[0.06] dark:text-zinc-100 dark:hover:bg-white/[0.1] sm:w-auto"
+                className={secondaryButtonClassName}
               >
                 <Plus className="h-4 w-4" />
                 Add rule
@@ -556,7 +565,7 @@ export default function PulseSettings() {
                 form.scheduleRules.map((rule, index) => (
                   <div
                     key={`${index}-${rule.status}`}
-                    className="rounded-2xl border border-slate-200/75 bg-white/68 p-4 shadow-sm dark:border-white/10 dark:bg-white/[0.045]"
+                    className={insetPanelClassName}
                   >
                     <div className="mb-4 flex items-center justify-between gap-3">
                       <h3 className="text-sm font-bold uppercase tracking-[0.12em] text-slate-500 dark:text-zinc-400">
@@ -565,7 +574,7 @@ export default function PulseSettings() {
                       <button
                         type="button"
                         onClick={() => removeRule(index)}
-                        className="inline-flex h-9 w-9 items-center justify-center rounded-full text-red-600 transition hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-200 dark:text-red-200 dark:hover:bg-red-400/10"
+                        className="inline-flex h-9 w-9 items-center justify-center rounded-full text-red-600 transition hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-200 dark:text-red-200 dark:hover:bg-red-500/15 dark:focus-visible:ring-red-300/30"
                         aria-label={`Remove rule ${index + 1}`}
                       >
                         <Trash2 className="h-4 w-4" />
@@ -631,7 +640,7 @@ export default function PulseSettings() {
                   </div>
                 ))
               ) : (
-                <div className="rounded-2xl border border-dashed border-slate-300 bg-white/50 p-5 text-sm font-semibold text-slate-600 dark:border-white/15 dark:bg-white/[0.035] dark:text-zinc-300">
+                <div className="rounded-2xl border border-dashed border-slate-300 bg-white/55 p-5 text-sm font-semibold text-slate-600 dark:border-zinc-700 dark:bg-zinc-950/55 dark:text-zinc-300">
                   No schedule rules configured.
                 </div>
               )}
