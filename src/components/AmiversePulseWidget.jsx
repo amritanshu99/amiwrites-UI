@@ -5,8 +5,8 @@ import {
   ChevronUp,
   CloudSun,
   Clock3,
+  HeartPulse,
   MapPin,
-  Radio,
   Sparkles,
   Waves,
   Zap,
@@ -14,8 +14,9 @@ import {
 import { apiUrl } from "../config/api";
 
 const DEFAULT_TIMEZONE = "Asia/Kolkata";
-const BEACON_TITLE = "Amiverse Beacon";
-const BEACON_SOUND_PATH = `${process.env.PUBLIC_URL || ""}/sounds/message.mp3`;
+const OWNER_NAME = "Amritanshu Mishra";
+const PULSE_TITLE = "Ami Pulse";
+const PULSE_SOUND_PATH = `${process.env.PUBLIC_URL || ""}/sounds/ami-pulse.wav`;
 
 const FALLBACK_RULES = [
   {
@@ -75,9 +76,11 @@ function getSafeTimezone(timezone) {
   return timezone || DEFAULT_TIMEZONE;
 }
 
-function getBeaconTitle(title) {
+function getPulseTitle(title) {
   const normalizedTitle = String(title || "").trim();
-  if (!normalizedTitle || /pulse/i.test(normalizedTitle)) return BEACON_TITLE;
+  if (!normalizedTitle) return PULSE_TITLE;
+  if (/^(amiverse\s+)?(beacon|pulse)$/i.test(normalizedTitle)) return PULSE_TITLE;
+  if (/^amiverse\s+beacon$/i.test(normalizedTitle)) return PULSE_TITLE;
   return normalizedTitle;
 }
 
@@ -150,7 +153,7 @@ function doesRuleMatchHour(rule, hour) {
   return hour >= startHour || hour < endHour;
 }
 
-function getBeaconState(config) {
+function getPulseState(config) {
   if (config?.mode === "manual") {
     return {
       status: config.manualStatus || FALLBACK_STATE.status,
@@ -177,9 +180,9 @@ function getBeaconState(config) {
     : FALLBACK_STATE;
 }
 
-function BeaconMetric({ icon: Icon, label, value, tone }) {
+function PulseMetric({ icon: Icon, label, value, tone }) {
   return (
-    <div className="flex min-w-0 items-center gap-2.5 rounded-2xl border border-white/65 bg-white/62 p-3 shadow-sm dark:border-white/10 dark:bg-white/[0.06]">
+    <div className="flex min-w-0 items-center gap-3 rounded-2xl border border-slate-200/80 bg-white/88 p-3.5 shadow-[0_10px_24px_rgba(15,23,42,0.08)] dark:border-white/12 dark:bg-zinc-950/72">
       <span
         className={cx(
           "flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl",
@@ -192,7 +195,7 @@ function BeaconMetric({ icon: Icon, label, value, tone }) {
         <span className="block text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-500 dark:text-zinc-400">
           {label}
         </span>
-        <span className="block truncate text-sm font-bold text-slate-950 dark:text-white">
+        <span className="block truncate text-[15px] font-extrabold leading-tight text-slate-950 dark:text-white">
           {value}
         </span>
       </span>
@@ -210,11 +213,12 @@ export default function AmiversePulseWidget() {
     full: formatTimeInTimezone(DEFAULT_TIMEZONE, true),
     compact: formatTimeInTimezone(DEFAULT_TIMEZONE, false),
   }));
+  const pulseRef = useRef(null);
   const audioRef = useRef(null);
   const audioStopTimerRef = useRef(null);
 
   useEffect(() => {
-    const audio = new Audio(BEACON_SOUND_PATH);
+    const audio = new Audio(PULSE_SOUND_PATH);
     audio.preload = "auto";
     audio.volume = 0.18;
     audioRef.current = audio;
@@ -225,6 +229,18 @@ export default function AmiversePulseWidget() {
       audioRef.current = null;
     };
   }, []);
+
+  useEffect(() => {
+    if (!isExpanded) return undefined;
+
+    const handlePointerDown = (event) => {
+      if (pulseRef.current?.contains(event.target)) return;
+      setIsExpanded(false);
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    return () => document.removeEventListener("pointerdown", handlePointerDown);
+  }, [isExpanded]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -286,7 +302,7 @@ export default function AmiversePulseWidget() {
     return () => controller.abort();
   }, [config?.isEnabled, config?.updatedAt]);
 
-  const playBeaconSound = useCallback(() => {
+  const playPulseSound = useCallback(() => {
     const audio = audioRef.current;
     if (!audio) return;
 
@@ -305,16 +321,16 @@ export default function AmiversePulseWidget() {
     }, 1000);
   }, []);
 
-  const toggleBeacon = useCallback(() => {
-    playBeaconSound();
+  const togglePulse = useCallback(() => {
+    playPulseSound();
     setIsExpanded((previous) => !previous);
-  }, [playBeaconSound]);
+  }, [playPulseSound]);
 
-  const beaconState = useMemo(() => getBeaconState(config), [config, timeLabels.compact]);
+  const pulseState = useMemo(() => getPulseState(config), [config, timeLabels.compact]);
 
   if (loadFailed || !config || !config.isEnabled) return null;
 
-  const beaconTitle = getBeaconTitle(config.widgetTitle);
+  const pulseTitle = getPulseTitle(config.widgetTitle);
   const locationLabel = config.locationLabel || "Location not configured";
   const compactWeather = weather?.temp !== null && weather?.temp !== undefined
     ? `${weather.temp} deg C`
@@ -331,111 +347,114 @@ export default function AmiversePulseWidget() {
   return (
     <aside
       className="pointer-events-none absolute right-3 top-4 z-30 w-[calc(100vw-1.5rem)] max-w-[22rem] sm:right-6 sm:top-6 md:right-8 lg:right-10"
-      aria-label={beaconTitle}
+      aria-label={pulseTitle}
     >
-      <div className="pointer-events-auto flex justify-end">
+      <div ref={pulseRef} className="pointer-events-auto flex justify-end">
         {!isExpanded ? (
           <button
             type="button"
-            onClick={toggleBeacon}
+            onClick={togglePulse}
             aria-expanded={false}
-            aria-label="Toggle Amiverse Beacon"
-            className="group inline-flex min-h-12 max-w-full items-center gap-2.5 rounded-full border border-white/70 bg-white/76 px-3.5 py-2 text-left text-slate-950 shadow-[0_18px_44px_rgba(15,23,42,0.22)] ring-1 ring-white/70 backdrop-blur-2xl transition-all duration-300 hover:-translate-y-0.5 hover:bg-white/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200/80 dark:border-white/14 dark:bg-zinc-950/72 dark:text-white dark:shadow-[0_18px_48px_rgba(0,0,0,0.56)] dark:ring-cyan-100/10 dark:hover:bg-zinc-950/86"
+            aria-label="Toggle Ami Pulse for Amritanshu Mishra"
+            className="group inline-flex min-h-[3.25rem] max-w-full items-center gap-2.5 rounded-full border border-white/80 bg-white/90 px-3.5 py-2.5 text-left text-slate-950 shadow-[0_18px_44px_rgba(15,23,42,0.24)] ring-1 ring-white/80 backdrop-blur-2xl transition-all duration-300 hover:-translate-y-0.5 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-200/90 dark:border-white/16 dark:bg-zinc-950/82 dark:text-white dark:shadow-[0_18px_48px_rgba(0,0,0,0.58)] dark:ring-rose-100/10 dark:hover:bg-zinc-950/92"
           >
-            <span className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-cyan-500 text-white shadow-[0_0_26px_rgba(6,182,212,0.45)] dark:bg-cyan-200 dark:text-slate-950">
-              <span className="absolute inset-0 animate-ping rounded-full bg-cyan-400/35" aria-hidden="true" />
-              <Radio className="relative h-4 w-4" aria-hidden="true" />
+            <span className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-rose-600 text-white shadow-[0_0_26px_rgba(225,29,72,0.42)] dark:bg-rose-200 dark:text-slate-950">
+              <span className="absolute inset-0 animate-ping rounded-full bg-rose-400/30" aria-hidden="true" />
+              <HeartPulse className="relative h-4 w-4" aria-hidden="true" />
             </span>
             <span className="min-w-0 text-sm font-bold">
-              <span className="block truncate">Beacon</span>
-              <span className="block max-w-[15.5rem] truncate text-[11px] font-semibold text-slate-600 dark:text-zinc-300">
-                {compactWeather} / {timeLabels.compact} / {beaconState.mood}
+              <span className="block truncate">{pulseTitle}</span>
+              <span className="block max-w-[15.5rem] truncate text-[11px] font-bold text-slate-700 dark:text-zinc-200">
+                {OWNER_NAME}: {compactWeather} / {timeLabels.compact} / {pulseState.mood}
               </span>
             </span>
-            <ChevronDown className="h-4 w-4 shrink-0 text-slate-500 transition-transform group-hover:translate-y-0.5 dark:text-zinc-300" />
+            <ChevronDown className="h-4 w-4 shrink-0 text-slate-600 transition-transform group-hover:translate-y-0.5 dark:text-zinc-200" />
           </button>
         ) : (
-          <div className="max-h-[76svh] w-full overflow-y-auto rounded-[1.35rem] border border-white/72 bg-white/78 p-4 text-slate-950 shadow-[0_24px_70px_rgba(15,23,42,0.24)] ring-1 ring-white/70 backdrop-blur-2xl transition-all duration-300 dark:border-white/14 dark:bg-zinc-950/76 dark:text-white dark:shadow-[0_24px_78px_rgba(0,0,0,0.62)] dark:ring-cyan-100/10 sm:max-h-[35rem] sm:p-5">
+          <div className="max-h-[76svh] w-full overflow-y-auto rounded-[1.35rem] border border-white/80 bg-white/92 p-4 text-slate-950 shadow-[0_24px_70px_rgba(15,23,42,0.28)] ring-1 ring-white/80 backdrop-blur-2xl transition-all duration-300 dark:border-white/16 dark:bg-zinc-950/86 dark:text-white dark:shadow-[0_24px_78px_rgba(0,0,0,0.66)] dark:ring-rose-100/10 sm:max-h-[35rem] sm:p-5">
             <div className="mb-4 flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <p className="mb-1 inline-flex items-center gap-2 rounded-full border border-cyan-200/70 bg-cyan-50/80 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-cyan-800 dark:border-cyan-200/20 dark:bg-cyan-200/10 dark:text-cyan-100">
-                  <span className="h-2 w-2 rounded-full bg-cyan-500 shadow-[0_0_14px_rgba(6,182,212,0.8)]" aria-hidden="true" />
-                  Live
+                <p className="mb-1 inline-flex items-center gap-2 rounded-full border border-rose-200/80 bg-rose-50/90 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-rose-800 dark:border-rose-200/20 dark:bg-rose-200/10 dark:text-rose-100">
+                  <span className="h-2 w-2 rounded-full bg-rose-500 shadow-[0_0_14px_rgba(225,29,72,0.75)]" aria-hidden="true" />
+                  Amritanshu's live status
                 </p>
                 <h2
-                  id="amiverse-beacon-title"
+                  id="ami-pulse-title"
                   className="truncate text-xl font-bold tracking-normal text-slate-950 dark:text-white"
                 >
-                  {beaconTitle}
+                  {pulseTitle}
                 </h2>
+                <p className="mt-1 text-xs font-semibold leading-relaxed text-slate-700 dark:text-zinc-200">
+                  These readings show {OWNER_NAME}'s saved location, local time, weather, and current mode.
+                </p>
               </div>
 
               <button
                 type="button"
-                onClick={toggleBeacon}
+                onClick={togglePulse}
                 aria-expanded={true}
-                aria-label="Toggle Amiverse Beacon"
-                className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-slate-200/80 bg-white/72 text-slate-700 transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200/80 dark:border-white/10 dark:bg-white/[0.07] dark:text-zinc-100 dark:hover:bg-white/[0.12]"
+                aria-label="Toggle Ami Pulse for Amritanshu Mishra"
+                className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-slate-200/90 bg-white/90 text-slate-800 transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-200/90 dark:border-white/12 dark:bg-white/[0.09] dark:text-zinc-50 dark:hover:bg-white/[0.14]"
               >
                 <ChevronUp className="h-4 w-4" aria-hidden="true" />
               </button>
             </div>
 
             <div className="grid gap-2.5">
-              <BeaconMetric
+              <PulseMetric
                 icon={MapPin}
-                label="Location"
+                label="Amritanshu's location"
                 value={locationLabel}
                 tone="bg-rose-100 text-rose-700 dark:bg-rose-300/12 dark:text-rose-100"
               />
-              <BeaconMetric
+              <PulseMetric
                 icon={CloudSun}
-                label="Weather"
+                label="Weather there"
                 value={weatherLabel}
                 tone="bg-amber-100 text-amber-700 dark:bg-amber-300/12 dark:text-amber-100"
               />
-              <BeaconMetric
+              <PulseMetric
                 icon={Clock3}
-                label="Local time"
+                label="Amritanshu's local time"
                 value={timeLabels.full}
                 tone="bg-sky-100 text-sky-700 dark:bg-cyan-300/12 dark:text-cyan-100"
               />
             </div>
 
-            <div className="mt-4 rounded-2xl border border-white/70 bg-white/62 p-4 dark:border-white/10 dark:bg-white/[0.055]">
-              <p className="mb-2 flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.13em] text-slate-500 dark:text-zinc-400">
-                <Zap className="h-4 w-4 text-teal-600 dark:text-cyan-200" aria-hidden="true" />
-                Current mode
+            <div className="mt-4 rounded-2xl border border-slate-200/80 bg-white/88 p-4 shadow-[0_10px_24px_rgba(15,23,42,0.08)] dark:border-white/12 dark:bg-zinc-950/72">
+              <p className="mb-2 flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.13em] text-slate-600 dark:text-zinc-300">
+                <Zap className="h-4 w-4 text-rose-600 dark:text-rose-200" aria-hidden="true" />
+                Amritanshu's current mode
               </p>
               <p className="text-lg font-bold leading-snug tracking-normal text-slate-950 dark:text-white">
-                {beaconState.status}
+                {pulseState.status}
               </p>
             </div>
 
             <div className="mt-3 grid gap-2.5 sm:grid-cols-2">
-              <div className="rounded-2xl border border-white/70 bg-white/58 p-3 dark:border-white/10 dark:bg-white/[0.05]">
-                <p className="mb-1 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.13em] text-slate-500 dark:text-zinc-400">
-                  <Sparkles className="h-3.5 w-3.5 text-teal-600 dark:text-cyan-200" aria-hidden="true" />
-                  Mood
+              <div className="rounded-2xl border border-slate-200/80 bg-white/86 p-3 shadow-sm dark:border-white/12 dark:bg-zinc-950/70">
+                <p className="mb-1 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.13em] text-slate-600 dark:text-zinc-300">
+                  <Sparkles className="h-3.5 w-3.5 text-rose-600 dark:text-rose-200" aria-hidden="true" />
+                  Amritanshu's mood
                 </p>
-                <p className="truncate text-sm font-bold text-slate-950 dark:text-white">{beaconState.mood}</p>
+                <p className="truncate text-sm font-extrabold text-slate-950 dark:text-white">{pulseState.mood}</p>
               </div>
 
-              <div className="rounded-2xl border border-white/70 bg-white/58 p-3 dark:border-white/10 dark:bg-white/[0.05]">
-                <p className="mb-1 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.13em] text-slate-500 dark:text-zinc-400">
+              <div className="rounded-2xl border border-slate-200/80 bg-white/86 p-3 shadow-sm dark:border-white/12 dark:bg-zinc-950/70">
+                <p className="mb-1 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.13em] text-slate-600 dark:text-zinc-300">
                   <Waves className="h-3.5 w-3.5 text-rose-600 dark:text-rose-200" aria-hidden="true" />
-                  Vibe
+                  Amritanshu's vibe
                 </p>
-                <p className="truncate text-sm font-bold text-slate-950 dark:text-white">{beaconState.vibe}</p>
+                <p className="truncate text-sm font-extrabold text-slate-950 dark:text-white">{pulseState.vibe}</p>
               </div>
             </div>
 
-            <div className="mt-3 rounded-2xl border border-white/70 bg-white/64 p-3 dark:border-white/10 dark:bg-white/[0.055]">
-              <p className="mb-1 text-[10px] font-bold uppercase tracking-[0.13em] text-slate-500 dark:text-zinc-400">
-                Suggestion
+            <div className="mt-3 rounded-2xl border border-slate-200/80 bg-white/88 p-3 shadow-sm dark:border-white/12 dark:bg-zinc-950/72">
+              <p className="mb-1 text-[10px] font-bold uppercase tracking-[0.13em] text-slate-600 dark:text-zinc-300">
+                Smart note for Amritanshu
               </p>
-              <p className="text-sm font-semibold leading-relaxed text-slate-800 dark:text-zinc-100">
-                {beaconState.suggestion}
+              <p className="text-sm font-bold leading-relaxed text-slate-900 dark:text-zinc-50">
+                {pulseState.suggestion}
               </p>
             </div>
 

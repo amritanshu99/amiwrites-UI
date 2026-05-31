@@ -433,13 +433,13 @@ export default function Header({ setLoading }) {
                               Create Blog
                             </Link>
                             <Link
-                              to="/beacon-settings"
+                              to="/ami-pulse-settings"
                               onClick={() => setUserMenuOpen(false)}
                               role="menuitem"
                               className="w-full px-4 py-3 text-sm text-[#111827] dark:text-gray-200 hover:bg-[#475569]/[0.08] dark:hover:bg-white/[0.06] flex items-center gap-2 transition-colors focus-visible:outline-none focus-visible:bg-[#475569]/[0.08] dark:focus-visible:bg-white/[0.06]"
                             >
                               <Activity className="h-4 w-4" />
-                              Amiverse Beacon Settings
+                              Ami Pulse Settings
                             </Link>
                           </>
                         )}

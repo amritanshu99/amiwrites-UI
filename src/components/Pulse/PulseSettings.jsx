@@ -15,7 +15,7 @@ import { apiUrl } from "../../config/api";
 
 const DEFAULT_FORM = {
   isEnabled: true,
-  widgetTitle: "Amiverse Beacon",
+  widgetTitle: "Ami Pulse",
   mode: "auto",
   manualStatus: "Building Amiverse",
   manualMood: "Focused",
@@ -45,9 +45,10 @@ const fieldClassName =
 
 const labelClassName = "block text-sm font-semibold text-slate-700 dark:text-zinc-200";
 
-function normalizeBeaconTitle(title) {
+function normalizePulseTitle(title) {
   const normalizedTitle = String(title || "").trim();
-  if (!normalizedTitle || /pulse/i.test(normalizedTitle)) return DEFAULT_FORM.widgetTitle;
+  if (!normalizedTitle) return DEFAULT_FORM.widgetTitle;
+  if (/^(amiverse\s+)?(beacon|pulse)$/i.test(normalizedTitle)) return DEFAULT_FORM.widgetTitle;
   return normalizedTitle;
 }
 
@@ -67,7 +68,7 @@ function toForm(data) {
     ...DEFAULT_FORM,
     ...data,
     isEnabled: Boolean(data?.isEnabled),
-    widgetTitle: normalizeBeaconTitle(data?.widgetTitle),
+    widgetTitle: normalizePulseTitle(data?.widgetTitle),
     ownerLatitude:
       data?.ownerLatitude === undefined || data?.ownerLatitude === null
         ? ""
@@ -271,7 +272,7 @@ export default function PulseSettings() {
         setForm(toForm(response.data.data));
       }
 
-      setSuccess(response.data?.message || "Amiverse Beacon updated successfully");
+      setSuccess(response.data?.message || "Ami Pulse updated successfully");
     } catch (err) {
       setError(getErrorMessage(err));
     } finally {
@@ -304,7 +305,7 @@ export default function PulseSettings() {
                 <Settings2 className="h-5 w-5" />
               </span>
               <div>
-                <h1 className="text-2xl font-bold tracking-normal sm:text-3xl">Amiverse Beacon Settings</h1>
+                <h1 className="text-2xl font-bold tracking-normal sm:text-3xl">Ami Pulse Settings</h1>
               </div>
             </div>
           </div>
@@ -343,13 +344,13 @@ export default function PulseSettings() {
                   onChange={(event) => setField("isEnabled", event.target.checked)}
                   className="h-4 w-4 rounded border-slate-300 text-teal-600 focus:ring-teal-500"
                 />
-                Beacon enabled
+                Ami Pulse enabled
               </label>
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">
               <label className={labelClassName}>
-                Beacon title
+                Ami Pulse title
                 <input
                   className={fieldClassName}
                   value={form.widgetTitle}
