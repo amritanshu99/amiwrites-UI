@@ -182,7 +182,7 @@ function getPulseState(config) {
 
 function PulseMetric({ icon: Icon, label, value, tone }) {
   return (
-    <div className="flex min-w-0 items-center gap-3 rounded-2xl border border-slate-200/80 bg-white/88 p-3.5 shadow-[0_10px_24px_rgba(15,23,42,0.08)] dark:border-white/12 dark:bg-zinc-950/72">
+    <div className="flex min-w-0 items-center gap-3 rounded-2xl border border-slate-200/85 bg-white/92 p-3.5 shadow-[0_10px_24px_rgba(15,23,42,0.08)] dark:border-white/16 dark:bg-white/[0.075] dark:shadow-[0_12px_28px_rgba(0,0,0,0.28)]">
       <span
         className={cx(
           "flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl",
@@ -192,10 +192,10 @@ function PulseMetric({ icon: Icon, label, value, tone }) {
         <Icon className="h-4 w-4" aria-hidden="true" />
       </span>
       <span className="min-w-0">
-        <span className="block text-xs font-bold text-slate-600 dark:text-zinc-300">
+        <span className="block text-[13px] font-extrabold leading-tight text-slate-700 dark:text-zinc-100">
           {label}
         </span>
-        <span className="block break-words text-[15px] font-extrabold leading-tight text-slate-950 dark:text-white">
+        <span className="mt-0.5 block break-words text-base font-extrabold leading-tight text-slate-950 dark:text-white">
           {value}
         </span>
       </span>
@@ -332,11 +332,6 @@ export default function AmiversePulseWidget() {
 
   const pulseTitle = getPulseTitle(config.widgetTitle);
   const locationLabel = config.locationLabel || "Location not configured";
-  const compactWeather = weather?.temp !== null && weather?.temp !== undefined
-    ? `${weather.temp} deg C`
-    : weatherFailed
-      ? "Weather n/a"
-      : "Weather";
   const weatherLabel = weather
     ? `${weather.temp ?? "--"} deg C ${weather.condition || ""}`.trim()
     : weatherFailed
@@ -356,25 +351,29 @@ export default function AmiversePulseWidget() {
             onClick={togglePulse}
             aria-expanded={false}
             aria-label="Toggle Ami Pulse for Amritanshu Mishra"
-            className="group inline-flex min-h-[3.25rem] max-w-full items-center gap-2.5 rounded-full border border-white/80 bg-white/90 px-3.5 py-2.5 text-left text-slate-950 shadow-[0_18px_44px_rgba(15,23,42,0.24)] ring-1 ring-white/80 backdrop-blur-2xl transition-all duration-300 hover:-translate-y-0.5 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-200/90 dark:border-white/16 dark:bg-zinc-950/82 dark:text-white dark:shadow-[0_18px_48px_rgba(0,0,0,0.58)] dark:ring-rose-100/10 dark:hover:bg-zinc-950/92"
+            className="group inline-flex min-h-[3.45rem] max-w-full items-center gap-3 rounded-full border border-white/85 bg-white/94 px-3.5 py-2.5 text-left text-slate-950 shadow-[0_18px_44px_rgba(15,23,42,0.24)] ring-1 ring-slate-950/5 backdrop-blur-2xl transition-all duration-300 hover:-translate-y-0.5 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-300/90 dark:border-white/18 dark:bg-[#080910]/94 dark:text-white dark:shadow-[0_18px_52px_rgba(0,0,0,0.68)] dark:ring-white/10 dark:hover:bg-[#0d0f17]"
           >
-            <span className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-rose-600 text-white shadow-[0_0_26px_rgba(225,29,72,0.42)] dark:bg-rose-200 dark:text-slate-950">
+            <span className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-rose-600 text-white shadow-[0_0_28px_rgba(225,29,72,0.42)] dark:bg-rose-300 dark:text-slate-950 dark:shadow-[0_0_30px_rgba(253,164,175,0.35)]">
               <span className="absolute inset-0 animate-ping rounded-full bg-rose-400/30" aria-hidden="true" />
               <HeartPulse className="relative h-4 w-4" aria-hidden="true" />
             </span>
-            <span className="min-w-0 text-sm font-bold">
-              <span className="block truncate">{pulseTitle}</span>
-              <span className="block max-w-[15.5rem] truncate text-[11px] font-bold text-slate-700 dark:text-zinc-200">
-                Amritanshu / {compactWeather} / {timeLabels.compact} / {pulseState.mood}
+            <span className="min-w-0">
+              <span className="flex min-w-0 items-center gap-1.5 text-[13px] font-extrabold leading-tight text-slate-950 dark:text-white">
+                <Sparkles className="h-3.5 w-3.5 shrink-0 text-rose-600 dark:text-rose-200" aria-hidden="true" />
+                <span className="truncate">{pulseState.mood || "Current mood"}</span>
+              </span>
+              <span className="mt-0.5 flex max-w-[15.75rem] items-center gap-1.5 truncate text-xs font-bold leading-tight text-slate-700 dark:text-zinc-100">
+                <MapPin className="h-3.5 w-3.5 shrink-0 text-slate-500 dark:text-zinc-300" aria-hidden="true" />
+                <span className="truncate">{locationLabel}</span>
               </span>
             </span>
-            <ChevronDown className="h-4 w-4 shrink-0 text-slate-600 transition-transform group-hover:translate-y-0.5 dark:text-zinc-200" />
+            <ChevronDown className="h-4 w-4 shrink-0 text-slate-600 transition-transform group-hover:translate-y-0.5 dark:text-zinc-100" />
           </button>
         ) : (
-          <div className="max-h-[76svh] w-full overflow-y-auto rounded-[1.35rem] border border-white/80 bg-white/92 p-4 text-slate-950 shadow-[0_24px_70px_rgba(15,23,42,0.28)] ring-1 ring-white/80 backdrop-blur-2xl transition-all duration-300 dark:border-white/16 dark:bg-zinc-950/86 dark:text-white dark:shadow-[0_24px_78px_rgba(0,0,0,0.66)] dark:ring-rose-100/10 sm:max-h-[35rem] sm:p-5">
+          <div className="max-h-[76svh] w-full overflow-y-auto rounded-[1.35rem] border border-white/85 bg-white/95 p-4 text-slate-950 shadow-[0_24px_70px_rgba(15,23,42,0.28)] ring-1 ring-slate-950/5 backdrop-blur-2xl transition-all duration-300 dark:border-white/18 dark:bg-[#080910]/96 dark:text-white dark:shadow-[0_24px_82px_rgba(0,0,0,0.72)] dark:ring-white/10 sm:max-h-[35rem] sm:p-5">
             <div className="mb-4 flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <p className="mb-1 inline-flex items-center gap-2 rounded-full border border-rose-200/80 bg-rose-50/90 px-2.5 py-1 text-[11px] font-bold text-rose-800 dark:border-rose-200/20 dark:bg-rose-200/10 dark:text-rose-100">
+                <p className="mb-1 inline-flex items-center gap-2 rounded-full border border-rose-200/80 bg-rose-50/95 px-2.5 py-1 text-xs font-extrabold text-rose-800 dark:border-rose-200/24 dark:bg-rose-200/12 dark:text-rose-50">
                   <span className="h-2 w-2 rounded-full bg-rose-500 shadow-[0_0_14px_rgba(225,29,72,0.75)]" aria-hidden="true" />
                   For {OWNER_NAME}
                 </p>
@@ -384,8 +383,8 @@ export default function AmiversePulseWidget() {
                 >
                   {pulseTitle}
                 </h2>
-                <p className="mt-1 text-xs font-semibold leading-relaxed text-slate-700 dark:text-zinc-200">
-                  Saved owner location, weather, time and status.
+                <p className="mt-1 text-sm font-bold leading-relaxed text-slate-700 dark:text-zinc-100">
+                  Live Ami Stats: location, weather, time, and current rhythm.
                 </p>
               </div>
 
@@ -394,7 +393,7 @@ export default function AmiversePulseWidget() {
                 onClick={togglePulse}
                 aria-expanded={true}
                 aria-label="Toggle Ami Pulse for Amritanshu Mishra"
-                className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-slate-200/90 bg-white/90 text-slate-800 transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-200/90 dark:border-white/12 dark:bg-white/[0.09] dark:text-zinc-50 dark:hover:bg-white/[0.14]"
+                className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-slate-200/90 bg-white/92 text-slate-800 transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-300/90 dark:border-white/16 dark:bg-white/[0.1] dark:text-white dark:hover:bg-white/[0.16]"
               >
                 <ChevronUp className="h-4 w-4" aria-hidden="true" />
               </button>
@@ -405,24 +404,24 @@ export default function AmiversePulseWidget() {
                 icon={MapPin}
                 label="Location"
                 value={locationLabel}
-                tone="bg-rose-100 text-rose-700 dark:bg-rose-300/12 dark:text-rose-100"
+                tone="bg-rose-100 text-rose-700 dark:bg-rose-300/18 dark:text-rose-50"
               />
               <PulseMetric
                 icon={CloudSun}
                 label="Weather"
                 value={weatherLabel}
-                tone="bg-amber-100 text-amber-700 dark:bg-amber-300/12 dark:text-amber-100"
+                tone="bg-amber-100 text-amber-700 dark:bg-amber-300/18 dark:text-amber-50"
               />
               <PulseMetric
                 icon={Clock3}
                 label="Local time"
                 value={timeLabels.full}
-                tone="bg-sky-100 text-sky-700 dark:bg-cyan-300/12 dark:text-cyan-100"
+                tone="bg-sky-100 text-sky-700 dark:bg-cyan-300/18 dark:text-cyan-50"
               />
             </div>
 
-            <div className="mt-4 rounded-2xl border border-slate-200/80 bg-white/88 p-4 shadow-[0_10px_24px_rgba(15,23,42,0.08)] dark:border-white/12 dark:bg-zinc-950/72">
-              <p className="mb-2 flex items-center gap-2 text-xs font-bold text-slate-600 dark:text-zinc-300">
+            <div className="mt-4 rounded-2xl border border-slate-200/85 bg-white/92 p-4 shadow-[0_10px_24px_rgba(15,23,42,0.08)] dark:border-white/16 dark:bg-white/[0.075] dark:shadow-[0_12px_28px_rgba(0,0,0,0.28)]">
+              <p className="mb-2 flex items-center gap-2 text-[13px] font-extrabold text-slate-700 dark:text-zinc-100">
                 <Zap className="h-4 w-4 text-rose-600 dark:text-rose-200" aria-hidden="true" />
                 Mode
               </p>
@@ -432,16 +431,16 @@ export default function AmiversePulseWidget() {
             </div>
 
             <div className="mt-3 grid gap-2.5 sm:grid-cols-2">
-              <div className="rounded-2xl border border-slate-200/80 bg-white/86 p-3 shadow-sm dark:border-white/12 dark:bg-zinc-950/70">
-                <p className="mb-1 flex items-center gap-2 text-xs font-bold text-slate-600 dark:text-zinc-300">
+              <div className="rounded-2xl border border-slate-200/85 bg-white/92 p-3 shadow-sm dark:border-white/16 dark:bg-white/[0.075]">
+                <p className="mb-1 flex items-center gap-2 text-[13px] font-extrabold text-slate-700 dark:text-zinc-100">
                   <Sparkles className="h-3.5 w-3.5 text-rose-600 dark:text-rose-200" aria-hidden="true" />
                   Mood
                 </p>
                 <p className="truncate text-sm font-extrabold text-slate-950 dark:text-white">{pulseState.mood}</p>
               </div>
 
-              <div className="rounded-2xl border border-slate-200/80 bg-white/86 p-3 shadow-sm dark:border-white/12 dark:bg-zinc-950/70">
-                <p className="mb-1 flex items-center gap-2 text-xs font-bold text-slate-600 dark:text-zinc-300">
+              <div className="rounded-2xl border border-slate-200/85 bg-white/92 p-3 shadow-sm dark:border-white/16 dark:bg-white/[0.075]">
+                <p className="mb-1 flex items-center gap-2 text-[13px] font-extrabold text-slate-700 dark:text-zinc-100">
                   <Waves className="h-3.5 w-3.5 text-rose-600 dark:text-rose-200" aria-hidden="true" />
                   Vibe
                 </p>
@@ -449,8 +448,8 @@ export default function AmiversePulseWidget() {
               </div>
             </div>
 
-            <div className="mt-3 rounded-2xl border border-slate-200/80 bg-white/88 p-3 shadow-sm dark:border-white/12 dark:bg-zinc-950/72">
-              <p className="mb-1 text-xs font-bold text-slate-600 dark:text-zinc-300">
+            <div className="mt-3 rounded-2xl border border-slate-200/85 bg-white/92 p-3 shadow-sm dark:border-white/16 dark:bg-white/[0.075]">
+              <p className="mb-1 text-[13px] font-extrabold text-slate-700 dark:text-zinc-100">
                 Note
               </p>
               <p className="text-sm font-bold leading-relaxed text-slate-900 dark:text-zinc-50">
