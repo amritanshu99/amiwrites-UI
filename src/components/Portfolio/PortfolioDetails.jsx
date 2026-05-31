@@ -859,6 +859,8 @@ export default function PortfolioDetails() {
               </h1>
             </motion.div>
           </motion.div>
+
+          <AmiversePulseWidget />
         </section>
         {/* ================= BRAND BANNER ================= */}
         <section
@@ -867,8 +869,6 @@ export default function PortfolioDetails() {
         >
           <AnimatedBanner />
         </section>
-
-        <AmiversePulseWidget />
 
         {/* ================= INTRO ================= */}
         <section

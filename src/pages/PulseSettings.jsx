@@ -1,18 +1,18 @@
 import { useEffect } from "react";
-import PulseSettingsPanel from "../components/Pulse/PulseSettings";
+import BeaconSettingsPanel from "../components/Pulse/PulseSettings";
 import { applySEO } from "../utils/seo";
 
-const PulseSettings = () => {
+const BeaconSettings = () => {
   useEffect(() => {
     applySEO({
-      path: "/pulse-settings",
-      title: "Pulse Settings | AmiVerse",
-      description: "Admin settings for Amiverse Pulse.",
+      path: "/beacon-settings",
+      title: "Amiverse Beacon Settings | AmiVerse",
+      description: "Admin settings for Amiverse Beacon.",
       noindex: true,
     });
   }, []);
 
-  return <PulseSettingsPanel />;
+  return <BeaconSettingsPanel />;
 };
 
-export default PulseSettings;
+export default BeaconSettings;

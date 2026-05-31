@@ -15,20 +15,12 @@ import { apiUrl } from "../../config/api";
 
 const DEFAULT_FORM = {
   isEnabled: true,
-  widgetTitle: "Amiverse Pulse",
+  widgetTitle: "Amiverse Beacon",
   mode: "auto",
   manualStatus: "Building Amiverse",
   manualMood: "Focused",
   manualVibe: "Future-ready",
   manualSuggestion: "Small progress compounds daily.",
-  ctaPrimary: {
-    label: "Explore Projects",
-    url: "/projects",
-  },
-  ctaSecondary: {
-    label: "Read Blog",
-    url: "/blog",
-  },
   ownerCity: "Greater Noida",
   ownerRegion: "Uttar Pradesh",
   ownerCountry: "India",
@@ -53,6 +45,12 @@ const fieldClassName =
 
 const labelClassName = "block text-sm font-semibold text-slate-700 dark:text-zinc-200";
 
+function normalizeBeaconTitle(title) {
+  const normalizedTitle = String(title || "").trim();
+  if (!normalizedTitle || /pulse/i.test(normalizedTitle)) return DEFAULT_FORM.widgetTitle;
+  return normalizedTitle;
+}
+
 function normalizeRule(rule) {
   return {
     startHour: rule?.startHour ?? "",
@@ -69,14 +67,7 @@ function toForm(data) {
     ...DEFAULT_FORM,
     ...data,
     isEnabled: Boolean(data?.isEnabled),
-    ctaPrimary: {
-      ...DEFAULT_FORM.ctaPrimary,
-      ...(data?.ctaPrimary || {}),
-    },
-    ctaSecondary: {
-      ...DEFAULT_FORM.ctaSecondary,
-      ...(data?.ctaSecondary || {}),
-    },
+    widgetTitle: normalizeBeaconTitle(data?.widgetTitle),
     ownerLatitude:
       data?.ownerLatitude === undefined || data?.ownerLatitude === null
         ? ""
@@ -93,6 +84,19 @@ function toForm(data) {
 }
 
 function buildPayload(form) {
+  const coordinateToPayload = (value) => {
+    const trimmed = String(value ?? "").trim();
+    if (!trimmed) return "";
+
+    const number = Number(trimmed);
+    return Number.isFinite(number) ? number : trimmed;
+  };
+
+  const hourToPayload = (value) => {
+    const number = Number(value);
+    return Number.isFinite(number) ? number : value;
+  };
+
   return {
     isEnabled: Boolean(form.isEnabled),
     widgetTitle: form.widgetTitle,
@@ -101,18 +105,16 @@ function buildPayload(form) {
     manualMood: form.manualMood,
     manualVibe: form.manualVibe,
     manualSuggestion: form.manualSuggestion,
-    ctaPrimary: form.ctaPrimary,
-    ctaSecondary: form.ctaSecondary,
     ownerCity: form.ownerCity,
     ownerRegion: form.ownerRegion,
     ownerCountry: form.ownerCountry,
-    ownerLatitude: form.ownerLatitude,
-    ownerLongitude: form.ownerLongitude,
+    ownerLatitude: coordinateToPayload(form.ownerLatitude),
+    ownerLongitude: coordinateToPayload(form.ownerLongitude),
     ownerTimezone: form.ownerTimezone || DEFAULT_FORM.ownerTimezone,
     locationLabel: form.locationLabel,
     scheduleRules: form.scheduleRules.map((rule) => ({
-      startHour: rule.startHour,
-      endHour: rule.endHour,
+      startHour: hourToPayload(rule.startHour),
+      endHour: hourToPayload(rule.endHour),
       status: rule.status,
       mood: rule.mood,
       vibe: rule.vibe,
@@ -125,6 +127,26 @@ function getErrorMessage(error) {
   const data = error.response?.data;
   if (Array.isArray(data?.errors) && data.errors.length) return data.errors.join(" ");
   return data?.message || data?.error || error.message || "Something went wrong";
+}
+
+function getGeolocationErrorMessage(error) {
+  if (!error || typeof error.code !== "number") {
+    return "Current location could not be detected. Please try again.";
+  }
+
+  if (error.code === error.PERMISSION_DENIED) {
+    return "Location permission was denied. Allow location access for this site and try again.";
+  }
+
+  if (error.code === error.POSITION_UNAVAILABLE) {
+    return "Current location is unavailable. Check device location services and try again.";
+  }
+
+  if (error.code === error.TIMEOUT) {
+    return "Location detection timed out. Move near a clearer signal or try again.";
+  }
+
+  return "Current location could not be detected. Please try again.";
 }
 
 export default function PulseSettings() {
@@ -166,16 +188,6 @@ export default function PulseSettings() {
     setForm((previous) => ({ ...previous, [field]: value }));
   };
 
-  const setCtaField = (ctaKey, field, value) => {
-    setForm((previous) => ({
-      ...previous,
-      [ctaKey]: {
-        ...previous[ctaKey],
-        [field]: value,
-      },
-    }));
-  };
-
   const setRuleField = (index, field, value) => {
     setForm((previous) => ({
       ...previous,
@@ -201,10 +213,11 @@ export default function PulseSettings() {
 
   const handleUseCurrentLocation = () => {
     setError("");
-    setSuccess("");
+    setSuccess("Detecting current location...");
 
     if (!navigator.geolocation) {
-      setError("Geolocation is not available in this browser.");
+      setSuccess("");
+      setError("Geolocation is not available in this browser. Use HTTPS or localhost and try again.");
       return;
     }
 
@@ -217,23 +230,31 @@ export default function PulseSettings() {
           ownerLongitude: position.coords.longitude.toFixed(6),
           ownerTimezone: previous.ownerTimezone || DEFAULT_FORM.ownerTimezone,
         }));
-        setSuccess("Coordinates updated. Review the location label and save.");
+        setSuccess(
+          `Coordinates captured: ${position.coords.latitude.toFixed(6)}, ${position.coords.longitude.toFixed(6)}. Review the location label and save.`,
+        );
         setLocating(false);
       },
-      () => {
-        setError("Location permission was denied or location could not be detected.");
+      (geoError) => {
+        setSuccess("");
+        setError(getGeolocationErrorMessage(geoError));
         setLocating(false);
       },
       {
         enableHighAccuracy: true,
-        timeout: 12000,
-        maximumAge: 60000,
+        timeout: 10000,
+        maximumAge: 0,
       },
     );
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    if (locating) {
+      setError("Wait for current location detection to finish before saving.");
+      return;
+    }
+
     setSaving(true);
     setError("");
     setSuccess("");
@@ -250,7 +271,7 @@ export default function PulseSettings() {
         setForm(toForm(response.data.data));
       }
 
-      setSuccess(response.data?.message || "Amiverse Pulse updated successfully");
+      setSuccess(response.data?.message || "Amiverse Beacon updated successfully");
     } catch (err) {
       setError(getErrorMessage(err));
     } finally {
@@ -283,7 +304,7 @@ export default function PulseSettings() {
                 <Settings2 className="h-5 w-5" />
               </span>
               <div>
-                <h1 className="text-2xl font-bold tracking-normal sm:text-3xl">Pulse Settings</h1>
+                <h1 className="text-2xl font-bold tracking-normal sm:text-3xl">Amiverse Beacon Settings</h1>
               </div>
             </div>
           </div>
@@ -291,7 +312,7 @@ export default function PulseSettings() {
           <button
             type="submit"
             form="pulse-settings-form"
-            disabled={saving}
+            disabled={saving || locating}
             className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-slate-950 px-5 py-2.5 text-sm font-semibold text-white shadow-[0_14px_30px_rgba(15,23,42,0.22)] transition hover:-translate-y-0.5 hover:bg-teal-700 disabled:cursor-not-allowed disabled:opacity-65 dark:bg-cyan-200 dark:text-slate-950 dark:hover:bg-emerald-200"
           >
             {saving ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
@@ -322,13 +343,13 @@ export default function PulseSettings() {
                   onChange={(event) => setField("isEnabled", event.target.checked)}
                   className="h-4 w-4 rounded border-slate-300 text-teal-600 focus:ring-teal-500"
                 />
-                Widget enabled
+                Beacon enabled
               </label>
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">
               <label className={labelClassName}>
-                Widget title
+                Beacon title
                 <input
                   className={fieldClassName}
                   value={form.widgetTitle}
@@ -397,44 +418,6 @@ export default function PulseSettings() {
           </section>
 
           <section className="rounded-2xl border border-white/70 bg-white/72 p-5 shadow-sm ring-1 ring-white/70 backdrop-blur-2xl dark:border-white/10 dark:bg-zinc-950/68 dark:ring-cyan-100/10 sm:p-6">
-            <h2 className="mb-5 text-lg font-bold tracking-normal">CTA</h2>
-            <div className="grid gap-4 md:grid-cols-2">
-              <label className={labelClassName}>
-                Primary CTA label
-                <input
-                  className={fieldClassName}
-                  value={form.ctaPrimary.label}
-                  onChange={(event) => setCtaField("ctaPrimary", "label", event.target.value)}
-                />
-              </label>
-              <label className={labelClassName}>
-                Primary CTA URL
-                <input
-                  className={fieldClassName}
-                  value={form.ctaPrimary.url}
-                  onChange={(event) => setCtaField("ctaPrimary", "url", event.target.value)}
-                />
-              </label>
-              <label className={labelClassName}>
-                Secondary CTA label
-                <input
-                  className={fieldClassName}
-                  value={form.ctaSecondary.label}
-                  onChange={(event) => setCtaField("ctaSecondary", "label", event.target.value)}
-                />
-              </label>
-              <label className={labelClassName}>
-                Secondary CTA URL
-                <input
-                  className={fieldClassName}
-                  value={form.ctaSecondary.url}
-                  onChange={(event) => setCtaField("ctaSecondary", "url", event.target.value)}
-                />
-              </label>
-            </div>
-          </section>
-
-          <section className="rounded-2xl border border-white/70 bg-white/72 p-5 shadow-sm ring-1 ring-white/70 backdrop-blur-2xl dark:border-white/10 dark:bg-zinc-950/68 dark:ring-cyan-100/10 sm:p-6">
             <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <h2 className="text-lg font-bold tracking-normal">Owner Location</h2>
               <button
@@ -448,7 +431,7 @@ export default function PulseSettings() {
                 ) : (
                   <LocateFixed className="h-4 w-4" />
                 )}
-                Use my current location
+                {locating ? "Detecting current location..." : "Use my current location"}
               </button>
             </div>
 
