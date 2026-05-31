@@ -265,7 +265,7 @@ const sectionMeta = [
   { id: "experience", label: "Experience" },
   { id: "education", label: "Education" },
 ];
-const MIN_LOADER_DURATION_MS = 900;
+const MIN_LOADER_DURATION_MS = 1200;
 const resumeUrl = assetUrl("/images/Resume.pdf");
 const publicAsset = (path) => `${process.env.PUBLIC_URL || ""}${path}`;
 const cx = (...classes) => classes.filter(Boolean).join(" ");

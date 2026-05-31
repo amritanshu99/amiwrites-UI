@@ -138,6 +138,7 @@ const App = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const appShellRef = useRef(null);
+  const initialLoaderMode = location.pathname === "/" ? "showcase" : "session";
 
   const logout = () => {
     localStorage.removeItem("token");
@@ -191,7 +192,7 @@ const App = () => {
   }, [location.pathname]);
 
   if (!shouldRender) {
-    return <InitialLoader mode="session" />;
+    return <InitialLoader mode={initialLoaderMode} />;
   }
 
   return (
@@ -222,7 +223,7 @@ const App = () => {
       )}
 
       <main id="main" className="flex-1" tabIndex={-1}>
-        <Suspense fallback={<InitialLoader mode="session" />}>
+        <Suspense fallback={<InitialLoader mode={initialLoaderMode} />}>
           <Routes>
             <Route path="/" element={<Portfolio />} />
             <Route path="/blogs" element={<BlogPage />} />

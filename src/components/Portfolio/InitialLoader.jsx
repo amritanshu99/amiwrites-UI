@@ -264,7 +264,7 @@ const InitialLoader = ({ mode = "showcase" }) => {
           />
           <div
             data-loader-animate
-            className="absolute inset-0 bg-[linear-gradient(110deg,transparent_0%,rgba(255,255,255,0.04)_44%,transparent_56%,rgba(255,255,255,0.02)_70%,transparent_100%)] opacity-[0.46] animate-[screenFlicker_6.8s_ease-in-out_infinite]"
+            className="absolute inset-0 bg-[linear-gradient(110deg,transparent_0%,rgba(255,255,255,0.035)_44%,transparent_56%,rgba(255,255,255,0.018)_70%,transparent_100%)] opacity-[0.34]"
           />
         </>
       )}
@@ -792,28 +792,6 @@ const InitialLoader = ({ mode = "showcase" }) => {
             }
             100% {
               transform: translate3d(0, 18px, 0);
-            }
-          }
-
-          @keyframes screenFlicker {
-            0%,
-            100% {
-              opacity: 0.38;
-            }
-            18% {
-              opacity: 0.34;
-            }
-            32% {
-              opacity: 0.47;
-            }
-            48% {
-              opacity: 0.37;
-            }
-            68% {
-              opacity: 0.5;
-            }
-            82% {
-              opacity: 0.35;
             }
           }
 
