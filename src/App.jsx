@@ -33,6 +33,7 @@ import { apiUrl } from "./config/api";
 const BlogPage = lazy(() => import("./pages/BlogPage"));
 const AIChatPage = lazy(() => import("./pages/AIChat"));
 const AddBlogDetails = lazy(() => import("./pages/AddBlogDetails"));
+const PulseSettings = lazy(() => import("./pages/PulseSettings"));
 const BlogsDetails = lazy(() => import("./pages/BlogsDetails"));
 const TechByte = lazy(() => import("./pages/TechByte"));
 const ResetPasswordPage = lazy(() => import("./pages/ResetPasswordPage"));
@@ -225,12 +226,21 @@ const App = () => {
           <Routes>
             <Route path="/" element={<Portfolio />} />
             <Route path="/blogs" element={<BlogPage />} />
+            <Route path="/blog" element={<BlogPage />} />
             <Route path="/ai-chat" element={<AIChatPage />} />
             <Route
               path="/add-blog"
               element={
                 <ProtectedAdminRoute>
                   <AddBlogDetails />
+                </ProtectedAdminRoute>
+              }
+            />
+            <Route
+              path="/pulse-settings"
+              element={
+                <ProtectedAdminRoute>
+                  <PulseSettings />
                 </ProtectedAdminRoute>
               }
             />

@@ -34,6 +34,7 @@ import {
 import InitialLoader from "./InitialLoader";
 import AchievementsModal from "./AchievementsModal";
 import MemoryLaneCta from "./MemoryLaneCta";
+import AmiversePulseWidget from "../AmiversePulseWidget";
 import { FaCalendarAlt } from "react-icons/fa";
 import { apiUrl, assetUrl } from "../../config/api";
 
@@ -866,6 +867,8 @@ export default function PortfolioDetails() {
         >
           <AnimatedBanner />
         </section>
+
+        <AmiversePulseWidget />
 
         {/* ================= INTRO ================= */}
         <section

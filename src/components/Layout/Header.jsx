@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import {
+  Activity,
+  FilePenLine,
   Menu,
   X,
   LogOut,
@@ -419,6 +421,28 @@ export default function Header({ setLoading }) {
                         <div className="px-4 py-3 text-sm text-[#111827] dark:text-gray-200 border-b border-[#475569]/[0.10] dark:border-white/10">
                           Hi, <span className="font-medium">{username}</span>!
                         </div>
+                        {username === "amritanshu99" && (
+                          <>
+                            <Link
+                              to="/add-blog"
+                              onClick={() => setUserMenuOpen(false)}
+                              role="menuitem"
+                              className="w-full px-4 py-3 text-sm text-[#111827] dark:text-gray-200 hover:bg-[#475569]/[0.08] dark:hover:bg-white/[0.06] flex items-center gap-2 transition-colors focus-visible:outline-none focus-visible:bg-[#475569]/[0.08] dark:focus-visible:bg-white/[0.06]"
+                            >
+                              <FilePenLine className="h-4 w-4" />
+                              Create Blog
+                            </Link>
+                            <Link
+                              to="/pulse-settings"
+                              onClick={() => setUserMenuOpen(false)}
+                              role="menuitem"
+                              className="w-full px-4 py-3 text-sm text-[#111827] dark:text-gray-200 hover:bg-[#475569]/[0.08] dark:hover:bg-white/[0.06] flex items-center gap-2 transition-colors focus-visible:outline-none focus-visible:bg-[#475569]/[0.08] dark:focus-visible:bg-white/[0.06]"
+                            >
+                              <Activity className="h-4 w-4" />
+                              Pulse Settings
+                            </Link>
+                          </>
+                        )}
                         <button
                           onClick={handleLogout}
                           role="menuitem"
