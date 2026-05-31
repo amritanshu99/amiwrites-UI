@@ -224,17 +224,50 @@ export default function PulseSettings() {
 
     setLocating(true);
     navigator.geolocation.getCurrentPosition(
-      (position) => {
+      async (position) => {
+        const latitude = position.coords.latitude.toFixed(6);
+        const longitude = position.coords.longitude.toFixed(6);
+
         setForm((previous) => ({
           ...previous,
-          ownerLatitude: position.coords.latitude.toFixed(6),
-          ownerLongitude: position.coords.longitude.toFixed(6),
+          ownerLatitude: latitude,
+          ownerLongitude: longitude,
           ownerTimezone: previous.ownerTimezone || DEFAULT_FORM.ownerTimezone,
         }));
-        setSuccess(
-          `Coordinates captured: ${position.coords.latitude.toFixed(6)}, ${position.coords.longitude.toFixed(6)}. Review the location label and save.`,
-        );
-        setLocating(false);
+        setSuccess(`Coordinates captured: ${latitude}, ${longitude}. Looking up city details...`);
+
+        try {
+          const response = await axios.get(apiUrl("/api/pulse/admin/reverse-geocode"), {
+            headers: authHeaders,
+            params: {
+              lat: latitude,
+              lon: longitude,
+            },
+          });
+          const location = response.data?.data || {};
+          const nextLabel =
+            location.locationLabel ||
+            [location.ownerCity, location.ownerCountry].filter(Boolean).join(", ");
+
+          setForm((previous) => ({
+            ...previous,
+            ownerCity: location.ownerCity || previous.ownerCity,
+            ownerRegion: location.ownerRegion || previous.ownerRegion,
+            ownerCountry: location.ownerCountry || previous.ownerCountry,
+            locationLabel: nextLabel || previous.locationLabel,
+          }));
+          setSuccess(
+            nextLabel
+              ? `Current location detected as ${nextLabel}. Review the fields and save.`
+              : "Coordinates captured. Review the location fields and save.",
+          );
+        } catch {
+          setSuccess(
+            `Coordinates captured: ${latitude}, ${longitude}. City lookup failed, so edit the city fields manually before saving.`,
+          );
+        } finally {
+          setLocating(false);
+        }
       },
       (geoError) => {
         setSuccess("");

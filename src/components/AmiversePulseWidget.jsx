@@ -192,10 +192,10 @@ function PulseMetric({ icon: Icon, label, value, tone }) {
         <Icon className="h-4 w-4" aria-hidden="true" />
       </span>
       <span className="min-w-0">
-        <span className="block text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-500 dark:text-zinc-400">
+        <span className="block text-xs font-bold text-slate-600 dark:text-zinc-300">
           {label}
         </span>
-        <span className="block truncate text-[15px] font-extrabold leading-tight text-slate-950 dark:text-white">
+        <span className="block break-words text-[15px] font-extrabold leading-tight text-slate-950 dark:text-white">
           {value}
         </span>
       </span>
@@ -365,7 +365,7 @@ export default function AmiversePulseWidget() {
             <span className="min-w-0 text-sm font-bold">
               <span className="block truncate">{pulseTitle}</span>
               <span className="block max-w-[15.5rem] truncate text-[11px] font-bold text-slate-700 dark:text-zinc-200">
-                {OWNER_NAME}: {compactWeather} / {timeLabels.compact} / {pulseState.mood}
+                Amritanshu / {compactWeather} / {timeLabels.compact} / {pulseState.mood}
               </span>
             </span>
             <ChevronDown className="h-4 w-4 shrink-0 text-slate-600 transition-transform group-hover:translate-y-0.5 dark:text-zinc-200" />
@@ -374,9 +374,9 @@ export default function AmiversePulseWidget() {
           <div className="max-h-[76svh] w-full overflow-y-auto rounded-[1.35rem] border border-white/80 bg-white/92 p-4 text-slate-950 shadow-[0_24px_70px_rgba(15,23,42,0.28)] ring-1 ring-white/80 backdrop-blur-2xl transition-all duration-300 dark:border-white/16 dark:bg-zinc-950/86 dark:text-white dark:shadow-[0_24px_78px_rgba(0,0,0,0.66)] dark:ring-rose-100/10 sm:max-h-[35rem] sm:p-5">
             <div className="mb-4 flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <p className="mb-1 inline-flex items-center gap-2 rounded-full border border-rose-200/80 bg-rose-50/90 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-rose-800 dark:border-rose-200/20 dark:bg-rose-200/10 dark:text-rose-100">
+                <p className="mb-1 inline-flex items-center gap-2 rounded-full border border-rose-200/80 bg-rose-50/90 px-2.5 py-1 text-[11px] font-bold text-rose-800 dark:border-rose-200/20 dark:bg-rose-200/10 dark:text-rose-100">
                   <span className="h-2 w-2 rounded-full bg-rose-500 shadow-[0_0_14px_rgba(225,29,72,0.75)]" aria-hidden="true" />
-                  Amritanshu's live status
+                  For {OWNER_NAME}
                 </p>
                 <h2
                   id="ami-pulse-title"
@@ -385,7 +385,7 @@ export default function AmiversePulseWidget() {
                   {pulseTitle}
                 </h2>
                 <p className="mt-1 text-xs font-semibold leading-relaxed text-slate-700 dark:text-zinc-200">
-                  These readings show {OWNER_NAME}'s saved location, local time, weather, and current mode.
+                  Saved owner location, weather, time and status.
                 </p>
               </div>
 
@@ -403,28 +403,28 @@ export default function AmiversePulseWidget() {
             <div className="grid gap-2.5">
               <PulseMetric
                 icon={MapPin}
-                label="Amritanshu's location"
+                label="Location"
                 value={locationLabel}
                 tone="bg-rose-100 text-rose-700 dark:bg-rose-300/12 dark:text-rose-100"
               />
               <PulseMetric
                 icon={CloudSun}
-                label="Weather there"
+                label="Weather"
                 value={weatherLabel}
                 tone="bg-amber-100 text-amber-700 dark:bg-amber-300/12 dark:text-amber-100"
               />
               <PulseMetric
                 icon={Clock3}
-                label="Amritanshu's local time"
+                label="Local time"
                 value={timeLabels.full}
                 tone="bg-sky-100 text-sky-700 dark:bg-cyan-300/12 dark:text-cyan-100"
               />
             </div>
 
             <div className="mt-4 rounded-2xl border border-slate-200/80 bg-white/88 p-4 shadow-[0_10px_24px_rgba(15,23,42,0.08)] dark:border-white/12 dark:bg-zinc-950/72">
-              <p className="mb-2 flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.13em] text-slate-600 dark:text-zinc-300">
+              <p className="mb-2 flex items-center gap-2 text-xs font-bold text-slate-600 dark:text-zinc-300">
                 <Zap className="h-4 w-4 text-rose-600 dark:text-rose-200" aria-hidden="true" />
-                Amritanshu's current mode
+                Mode
               </p>
               <p className="text-lg font-bold leading-snug tracking-normal text-slate-950 dark:text-white">
                 {pulseState.status}
@@ -433,25 +433,25 @@ export default function AmiversePulseWidget() {
 
             <div className="mt-3 grid gap-2.5 sm:grid-cols-2">
               <div className="rounded-2xl border border-slate-200/80 bg-white/86 p-3 shadow-sm dark:border-white/12 dark:bg-zinc-950/70">
-                <p className="mb-1 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.13em] text-slate-600 dark:text-zinc-300">
+                <p className="mb-1 flex items-center gap-2 text-xs font-bold text-slate-600 dark:text-zinc-300">
                   <Sparkles className="h-3.5 w-3.5 text-rose-600 dark:text-rose-200" aria-hidden="true" />
-                  Amritanshu's mood
+                  Mood
                 </p>
                 <p className="truncate text-sm font-extrabold text-slate-950 dark:text-white">{pulseState.mood}</p>
               </div>
 
               <div className="rounded-2xl border border-slate-200/80 bg-white/86 p-3 shadow-sm dark:border-white/12 dark:bg-zinc-950/70">
-                <p className="mb-1 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.13em] text-slate-600 dark:text-zinc-300">
+                <p className="mb-1 flex items-center gap-2 text-xs font-bold text-slate-600 dark:text-zinc-300">
                   <Waves className="h-3.5 w-3.5 text-rose-600 dark:text-rose-200" aria-hidden="true" />
-                  Amritanshu's vibe
+                  Vibe
                 </p>
                 <p className="truncate text-sm font-extrabold text-slate-950 dark:text-white">{pulseState.vibe}</p>
               </div>
             </div>
 
             <div className="mt-3 rounded-2xl border border-slate-200/80 bg-white/88 p-3 shadow-sm dark:border-white/12 dark:bg-zinc-950/72">
-              <p className="mb-1 text-[10px] font-bold uppercase tracking-[0.13em] text-slate-600 dark:text-zinc-300">
-                Smart note for Amritanshu
+              <p className="mb-1 text-xs font-bold text-slate-600 dark:text-zinc-300">
+                Note
               </p>
               <p className="text-sm font-bold leading-relaxed text-slate-900 dark:text-zinc-50">
                 {pulseState.suggestion}
