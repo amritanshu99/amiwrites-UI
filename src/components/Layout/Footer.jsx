@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useCallback } from "react";
+import { Heart } from "lucide-react";
 
 const productLinks = [
   { label: "AI Chat", href: "/ai-chat" },
@@ -140,9 +141,40 @@ const Footer = () => {
 
         <div className="mt-1.5 flex flex-col gap-0.5 border-t border-[#475569]/20 pt-1 text-[10px] text-[#475569] dark:border-slate-800/80 dark:text-slate-400 sm:mt-2 sm:flex-row sm:items-center sm:justify-between sm:gap-2 sm:pt-1.5 sm:text-[11px]">
           <p>Copyright {new Date().getFullYear()} Amiverse. All rights reserved.</p>
-          <p className="text-[#475569] dark:text-slate-400">Made with love by Amritanshu Mishra.</p>
+          <p className="inline-flex items-center gap-1.5 text-[#475569] dark:text-slate-400">
+            <span>Made with</span>
+            <span className="sr-only">love</span>
+            <Heart
+              className="h-3.5 w-3.5 animate-[footerHeartBeat_1.15s_ease-in-out_infinite] fill-rose-500 text-rose-500 drop-shadow-[0_0_8px_rgba(244,63,94,0.38)]"
+              aria-hidden="true"
+              strokeWidth={2.4}
+            />
+            <span>by Amritanshu Mishra.</span>
+          </p>
         </div>
       </div>
+      <style>
+        {`
+          @keyframes footerHeartBeat {
+            0%,
+            100% {
+              transform: scale(1);
+            }
+            14% {
+              transform: scale(1.24);
+            }
+            28% {
+              transform: scale(1);
+            }
+            42% {
+              transform: scale(1.16);
+            }
+            70% {
+              transform: scale(1);
+            }
+          }
+        `}
+      </style>
     </footer>
   );
 };

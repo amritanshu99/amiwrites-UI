@@ -491,7 +491,7 @@ const InitialLoader = ({ mode = "showcase" }) => {
           [data-loader-root] {
             contain: layout paint;
             isolation: isolate;
-            width: 100vw;
+            width: 100%;
             height: 100vh;
             height: 100svh;
             --loader-frame-top: max(clamp(2.7rem, 7.5vh, 5.75rem), env(safe-area-inset-top));
@@ -514,8 +514,10 @@ const InitialLoader = ({ mode = "showcase" }) => {
           }
 
           @supports (height: 100dvh) {
-            [data-loader-root] {
-              height: 100dvh;
+            @media (hover: hover) and (pointer: fine) {
+              [data-loader-root] {
+                height: 100dvh;
+              }
             }
           }
 

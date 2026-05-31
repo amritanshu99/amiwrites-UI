@@ -124,9 +124,16 @@ const ValidateResetToken = () => {
   return <ResetPasswordPage token={token} />;
 };
 
+const hasTokenPendingVerification = () => {
+  const token = localStorage.getItem("token");
+  return Boolean(token && !isTokenExpired(token));
+};
+
 const App = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const [shouldRender, setShouldRender] = useState(false);
+  const [shouldRender, setShouldRender] = useState(
+    () => !hasTokenPendingVerification(),
+  );
   const location = useLocation();
   const navigate = useNavigate();
   const appShellRef = useRef(null);

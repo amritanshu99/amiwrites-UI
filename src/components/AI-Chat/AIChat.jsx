@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   AlertTriangle,
   Bot,
@@ -125,11 +125,57 @@ const AIChat = () => {
   const [input, setInput] = useState("");
   const [category, setCategory] = useState("Mental Well-being");
   const [isResponding, setIsResponding] = useState(false);
-  const messagesEndRef = useRef(null);
+  const messagesContainerRef = useRef(null);
   const inputRef = useRef(null);
   const typingTimerRef = useRef(null);
+  const scrollFrameRef = useRef(null);
+  const shouldAutoScrollRef = useRef(true);
+  const forceScrollRef = useRef(true);
+
+  const isMessagePaneNearBottom = useCallback(() => {
+    const messagePane = messagesContainerRef.current;
+    if (!messagePane) return true;
+
+    const distanceFromBottom =
+      messagePane.scrollHeight - messagePane.scrollTop - messagePane.clientHeight;
+
+    return distanceFromBottom < 96;
+  }, []);
+
+  const scrollMessagesToBottom = useCallback((behavior = "auto") => {
+    const messagePane = messagesContainerRef.current;
+    if (!messagePane) return;
+
+    if (scrollFrameRef.current) {
+      window.cancelAnimationFrame(scrollFrameRef.current);
+    }
+
+    scrollFrameRef.current = window.requestAnimationFrame(() => {
+      scrollFrameRef.current = null;
+      messagePane.scrollTo({
+        top: messagePane.scrollHeight,
+        behavior,
+      });
+      shouldAutoScrollRef.current = true;
+    });
+  }, []);
+
+  const handleMessagesScroll = useCallback(() => {
+    shouldAutoScrollRef.current = isMessagePaneNearBottom();
+  }, [isMessagePaneNearBottom]);
+
+  const resizeComposer = useCallback(() => {
+    const inputElement = inputRef.current;
+    if (!inputElement) return;
+
+    inputElement.style.height = "auto";
+    inputElement.style.height = `${Math.min(inputElement.scrollHeight, 128)}px`;
+  }, []);
 
   useEffect(() => {
+    forceScrollRef.current = true;
+    shouldAutoScrollRef.current = true;
+
     if (token) {
       const decoded = decodeJWT(token);
       if (decoded?.username) {
@@ -150,8 +196,15 @@ const AIChat = () => {
   }, [token]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+    if (!forceScrollRef.current && !shouldAutoScrollRef.current) return;
+
+    scrollMessagesToBottom("auto");
+    forceScrollRef.current = false;
+  }, [messages, scrollMessagesToBottom]);
+
+  useEffect(() => {
+    resizeComposer();
+  }, [input, resizeComposer]);
 
   useEffect(() => {
     const onTokenChanged = () => {
@@ -165,6 +218,9 @@ const AIChat = () => {
     return () => {
       if (typingTimerRef.current) {
         clearInterval(typingTimerRef.current);
+      }
+      if (scrollFrameRef.current) {
+        window.cancelAnimationFrame(scrollFrameRef.current);
       }
     };
   }, []);
@@ -191,6 +247,8 @@ const AIChat = () => {
       content: trimmedInput,
     };
 
+    forceScrollRef.current = true;
+    shouldAutoScrollRef.current = true;
     setMessages((prev) => [
       ...prev,
       userMessage,
@@ -266,7 +324,11 @@ const AIChat = () => {
   };
 
   const handleComposerKeyDown = (event) => {
-    if (event.key === "Enter" && !event.shiftKey) {
+    if (
+      event.key === "Enter" &&
+      !event.shiftKey &&
+      !event.nativeEvent?.isComposing
+    ) {
       event.preventDefault();
       handleSend();
     }
@@ -389,19 +451,22 @@ const AIChat = () => {
           </header>
 
           <div
+            ref={messagesContainerRef}
             role="log"
             aria-live="polite"
-            className="min-h-0 flex-1 overflow-y-auto bg-slate-50/70 px-3 py-4 dark:bg-black/30 sm:px-5 sm:py-5"
+            aria-relevant="additions text"
+            onScroll={handleMessagesScroll}
+            className="min-h-0 flex-1 overflow-y-auto overscroll-contain bg-slate-50/70 px-3 py-4 dark:bg-black/30 sm:px-5 sm:py-5"
           >
             <div className="space-y-4">
               {messages.map((msg, idx) => (
                 <MessageBubble key={`${msg.role}-${idx}`} message={msg} />
               ))}
-              <div ref={messagesEndRef} />
+              <div aria-hidden="true" className="h-px" />
             </div>
           </div>
 
-          <div className="border-t border-slate-200 bg-white/[0.92] p-3 dark:border-white/10 dark:bg-zinc-950/[0.92] sm:p-4">
+          <div className="border-t border-slate-200 bg-white/[0.92] px-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 dark:border-white/10 dark:bg-zinc-950/[0.92] sm:p-4">
             <div className="mb-3 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-5 text-amber-950 dark:border-amber-300/20 dark:bg-amber-300/10 dark:text-amber-100">
               <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
               <p>
@@ -410,7 +475,13 @@ const AIChat = () => {
               </p>
             </div>
 
-            <div className="flex items-end gap-2">
+            <form
+              className="flex items-end gap-2"
+              onSubmit={(event) => {
+                event.preventDefault();
+                handleSend();
+              }}
+            >
               <textarea
                 ref={inputRef}
                 rows={1}
@@ -422,8 +493,7 @@ const AIChat = () => {
                 aria-label="Message"
               />
               <button
-                type="button"
-                onClick={handleSend}
+                type="submit"
                 disabled={!input.trim() || isResponding}
                 className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-slate-950 text-white shadow-[0_16px_28px_-20px_rgba(15,23,42,0.95)] transition-colors hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-cyan-100 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-cyan-300 dark:text-slate-950 dark:hover:bg-cyan-200 dark:focus-visible:ring-cyan-300/[0.15]"
                 aria-label="Send message"
@@ -435,7 +505,7 @@ const AIChat = () => {
                   <Send className="h-5 w-5" />
                 )}
               </button>
-            </div>
+            </form>
           </div>
         </section>
       </div>
