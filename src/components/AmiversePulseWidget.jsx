@@ -341,7 +341,7 @@ export default function AmiversePulseWidget() {
 
   return (
     <aside
-      className="pointer-events-none absolute right-3 top-4 z-30 w-[calc(100vw-1.5rem)] max-w-[22rem] sm:right-6 sm:top-6 md:right-8 lg:right-10"
+      className="pointer-events-none absolute right-3 top-4 z-30 w-[calc(100vw-1.5rem)] max-w-[23.5rem] sm:right-6 sm:top-6 md:right-8 lg:right-10"
       aria-label={pulseTitle}
     >
       <div ref={pulseRef} className="pointer-events-auto flex justify-end">
@@ -357,12 +357,18 @@ export default function AmiversePulseWidget() {
               <span className="absolute inset-0 animate-ping rounded-full bg-rose-400/30" aria-hidden="true" />
               <HeartPulse className="relative h-4 w-4" aria-hidden="true" />
             </span>
-            <span className="min-w-0">
-              <span className="flex min-w-0 items-center gap-1.5 text-[13px] font-extrabold leading-tight text-slate-950 dark:text-white">
-                <Sparkles className="h-3.5 w-3.5 shrink-0 text-rose-600 dark:text-rose-200" aria-hidden="true" />
-                <span className="truncate">{pulseState.mood || "Current mood"}</span>
+            <span className="min-w-0 max-w-[17.25rem]">
+              <span className="flex min-w-0 items-center gap-2 text-[13px] font-extrabold leading-tight text-slate-950 dark:text-white">
+                <span className="inline-flex min-w-0 items-center gap-1.5">
+                  <Sparkles className="h-3.5 w-3.5 shrink-0 text-rose-600 dark:text-rose-200" aria-hidden="true" />
+                  <span className="truncate">{pulseState.mood || "Current mood"}</span>
+                </span>
+                <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-slate-950/[0.045] px-1.5 py-0.5 text-[11px] font-extrabold text-slate-700 dark:bg-white/[0.09] dark:text-zinc-50">
+                  <Clock3 className="h-3 w-3" aria-hidden="true" />
+                  <span>{timeLabels.compact}</span>
+                </span>
               </span>
-              <span className="mt-0.5 flex max-w-[15.75rem] items-center gap-1.5 truncate text-xs font-bold leading-tight text-slate-700 dark:text-zinc-100">
+              <span className="mt-0.5 flex max-w-[17.25rem] items-center gap-1.5 truncate text-xs font-bold leading-tight text-slate-700 dark:text-zinc-100">
                 <MapPin className="h-3.5 w-3.5 shrink-0 text-slate-500 dark:text-zinc-300" aria-hidden="true" />
                 <span className="truncate">{locationLabel}</span>
               </span>
