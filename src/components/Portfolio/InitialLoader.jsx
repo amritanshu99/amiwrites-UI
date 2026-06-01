@@ -212,12 +212,10 @@ const InitialLoader = ({ mode = "showcase" }) => {
       {!shouldOptimize && (
         <>
           <div
-            data-loader-animate
-            className="absolute inset-x-0 top-0 h-[20vh] bg-black shadow-[0_20px_60px_rgba(0,0,0,0.9)] animate-[letterboxBreath_8s_ease-in-out_infinite]"
+            className="absolute inset-x-0 top-0 h-[20vh] bg-black shadow-[0_20px_60px_rgba(0,0,0,0.9)]"
           />
           <div
-            data-loader-animate
-            className="absolute inset-x-0 bottom-0 h-[22vh] bg-black shadow-[0_-20px_60px_rgba(0,0,0,0.9)] animate-[letterboxBreath_8s_ease-in-out_infinite_reverse]"
+            className="absolute inset-x-0 bottom-0 h-[22vh] bg-black shadow-[0_-20px_60px_rgba(0,0,0,0.9)]"
           />
         </>
       )}
@@ -229,15 +227,15 @@ const InitialLoader = ({ mode = "showcase" }) => {
         <>
           <div
             data-loader-animate
-            className="absolute left-1/2 top-[-14%] h-[82vh] w-[52vw] max-w-[720px] -translate-x-1/2 bg-[linear-gradient(180deg,rgba(255,255,255,0.16),rgba(255,255,255,0.05)_22%,rgba(255,255,255,0.015)_44%,rgba(255,255,255,0)_82%)] opacity-60 blur-[120px] animate-[projectorBloom_9s_ease-in-out_infinite]"
+            className="absolute left-1/2 top-[-14%] h-[82vh] w-[52vw] max-w-[720px] -translate-x-1/2 bg-[linear-gradient(180deg,rgba(255,255,255,0.13),rgba(255,255,255,0.045)_22%,rgba(255,255,255,0.012)_44%,rgba(255,255,255,0)_82%)] opacity-50 blur-[120px] animate-[projectorBloom_12s_ease-in-out_infinite]"
           />
           <div
             data-loader-animate
-            className="absolute left-[-12%] top-[-18%] h-[78vh] w-[40vw] min-w-[220px] rotate-[16deg] bg-[linear-gradient(90deg,rgba(255,255,255,0),rgba(255,255,255,0.14),rgba(255,255,255,0.02),rgba(255,255,255,0))] opacity-35 blur-3xl animate-[beamSweepLeft_9s_ease-in-out_infinite]"
+            className="absolute left-[-12%] top-[-18%] h-[78vh] w-[40vw] min-w-[220px] rotate-[16deg] bg-[linear-gradient(90deg,rgba(255,255,255,0),rgba(255,255,255,0.1),rgba(255,255,255,0.016),rgba(255,255,255,0))] opacity-[0.24] blur-3xl animate-[beamSweepLeft_13s_ease-in-out_infinite]"
           />
           <div
             data-loader-animate
-            className="absolute right-[-12%] top-[-10%] h-[70vh] w-[38vw] min-w-[220px] -rotate-[16deg] bg-[linear-gradient(90deg,rgba(255,255,255,0),rgba(255,255,255,0.1),rgba(255,255,255,0.015),rgba(255,255,255,0))] opacity-30 blur-3xl animate-[beamSweepRight_11s_ease-in-out_infinite]"
+            className="absolute right-[-12%] top-[-10%] h-[70vh] w-[38vw] min-w-[220px] -rotate-[16deg] bg-[linear-gradient(90deg,rgba(255,255,255,0),rgba(255,255,255,0.085),rgba(255,255,255,0.012),rgba(255,255,255,0))] opacity-[0.22] blur-3xl animate-[beamSweepRight_15s_ease-in-out_infinite]"
           />
         </>
       )}
@@ -255,15 +253,12 @@ const InitialLoader = ({ mode = "showcase" }) => {
       {!shouldOptimize && (
         <>
           <div
-            data-loader-animate
-            className="absolute inset-0 opacity-[0.16] [background-image:radial-gradient(rgba(255,255,255,0.24)_0.8px,transparent_0.9px)] [background-size:4px_4px] animate-[grainDrift_10s_linear_infinite]"
+            className="absolute inset-0 opacity-[0.08] [background-image:radial-gradient(rgba(255,255,255,0.22)_0.65px,transparent_0.75px)] [background-size:5px_5px]"
           />
           <div
-            data-loader-animate
-            className="absolute inset-0 opacity-[0.34] [background:repeating-linear-gradient(0deg,transparent_0px,transparent_2px,rgba(255,255,255,0.03)_3px,transparent_4px)] animate-[scanlines_9.5s_linear_infinite]"
+            className="absolute inset-0 opacity-[0.12] [background:repeating-linear-gradient(0deg,transparent_0px,transparent_3px,rgba(255,255,255,0.026)_4px,transparent_5px)]"
           />
           <div
-            data-loader-animate
             className="absolute inset-0 bg-[linear-gradient(110deg,transparent_0%,rgba(255,255,255,0.035)_44%,transparent_56%,rgba(255,255,255,0.018)_70%,transparent_100%)] opacity-[0.34]"
           />
         </>
@@ -435,12 +430,7 @@ const InitialLoader = ({ mode = "showcase" }) => {
                   Current cue
                 </p>
                 <p
-                  key={shouldCycleStatus ? currentStatus : "static-status"}
-                  className={`mt-2 font-cinzel text-[0.64rem] uppercase tracking-[0.16em] text-white/[0.72] min-[380px]:text-[0.68rem] min-[380px]:tracking-[0.22em] sm:text-[0.74rem] sm:tracking-[0.28em] ${
-                    shouldCycleStatus
-                      ? "animate-[statusSwap_650ms_cubic-bezier(.22,1,.36,1)_both]"
-                      : ""
-                  }`}
+                  className="mt-2 min-h-[1.1rem] font-cinzel text-[0.64rem] uppercase tracking-[0.16em] text-white/[0.72] transition-colors duration-300 min-[380px]:text-[0.68rem] min-[380px]:tracking-[0.22em] sm:text-[0.74rem] sm:tracking-[0.28em]"
                 >
                   {currentStatus}
                 </p>
@@ -451,7 +441,7 @@ const InitialLoader = ({ mode = "showcase" }) => {
                   {...(showAnimatedStatusDots ? { "data-loader-animate": true } : {})}
                   className={`h-1.5 w-1.5 rounded-full ${
                     showAnimatedStatusDots
-                      ? "bg-white/[0.75] animate-[dotPulse_1.15s_ease-in-out_infinite]"
+                      ? "bg-white/[0.68] animate-[dotPulse_1.8s_ease-in-out_infinite]"
                       : "bg-white/[0.4]"
                   }`}
                 />
@@ -459,7 +449,7 @@ const InitialLoader = ({ mode = "showcase" }) => {
                   {...(showAnimatedStatusDots ? { "data-loader-animate": true } : {})}
                   className={`h-1.5 w-1.5 rounded-full ${
                     showAnimatedStatusDots
-                      ? "bg-white/[0.52] animate-[dotPulse_1.15s_ease-in-out_180ms_infinite]"
+                      ? "bg-white/[0.46] animate-[dotPulse_1.8s_ease-in-out_240ms_infinite]"
                       : "bg-white/[0.28]"
                   }`}
                 />
@@ -467,7 +457,7 @@ const InitialLoader = ({ mode = "showcase" }) => {
                   {...(showAnimatedStatusDots ? { "data-loader-animate": true } : {})}
                   className={`h-1.5 w-1.5 rounded-full ${
                     showAnimatedStatusDots
-                      ? "bg-white/[0.34] animate-[dotPulse_1.15s_ease-in-out_360ms_infinite]"
+                      ? "bg-white/[0.28] animate-[dotPulse_1.8s_ease-in-out_480ms_infinite]"
                       : "bg-white/[0.18]"
                   }`}
                 />
@@ -476,9 +466,7 @@ const InitialLoader = ({ mode = "showcase" }) => {
 
             <p
               {...(!shouldOptimize ? { "data-loader-animate": true } : {})}
-              className={`loader-footer mt-7 max-w-full text-[0.54rem] uppercase tracking-[0.28em] text-white/[0.34] min-[380px]:tracking-[0.38em] sm:text-[0.62rem] sm:tracking-[0.48em] ${
-                shouldOptimize ? "" : "animate-[footerBlink_2.4s_ease-in-out_infinite]"
-              }`}
+              className="loader-footer mt-7 max-w-full text-[0.54rem] uppercase tracking-[0.28em] text-white/[0.42] min-[380px]:tracking-[0.38em] sm:text-[0.62rem] sm:tracking-[0.48em]"
             >
               {footerLabel}
             </p>
@@ -696,8 +684,8 @@ const InitialLoader = ({ mode = "showcase" }) => {
 
           @keyframes openingReveal {
             0% {
-              opacity: 0;
-              transform: translate3d(0, 14px, 0) scale(0.985);
+              opacity: 0.82;
+              transform: translate3d(0, 8px, 0) scale(0.992);
             }
             100% {
               opacity: 1;
@@ -720,12 +708,12 @@ const InitialLoader = ({ mode = "showcase" }) => {
           @keyframes projectorBloom {
             0%,
             100% {
-              transform: translate3d(-50%, 0, 0) scaleY(0.96);
-              opacity: 0.42;
+              transform: translate3d(-50%, 0, 0) scaleY(0.98);
+              opacity: 0.38;
             }
             50% {
-              transform: translate3d(-50%, 0, 0) scaleY(1.04);
-              opacity: 0.72;
+              transform: translate3d(-50%, 0, 0) scaleY(1.02);
+              opacity: 0.54;
             }
           }
 
@@ -745,11 +733,11 @@ const InitialLoader = ({ mode = "showcase" }) => {
             0%,
             100% {
               transform: rotate(16deg) translate3d(0, 0, 0);
-              opacity: 0.22;
+              opacity: 0.18;
             }
             50% {
-              transform: rotate(13deg) translate3d(4%, 2%, 0);
-              opacity: 0.42;
+              transform: rotate(14deg) translate3d(2%, 1%, 0);
+              opacity: 0.3;
             }
           }
 
@@ -757,23 +745,23 @@ const InitialLoader = ({ mode = "showcase" }) => {
             0%,
             100% {
               transform: rotate(-16deg) translate3d(0, 0, 0);
-              opacity: 0.16;
+              opacity: 0.14;
             }
             50% {
-              transform: rotate(-12deg) translate3d(-5%, 2%, 0);
-              opacity: 0.34;
+              transform: rotate(-14deg) translate3d(-2%, 1%, 0);
+              opacity: 0.26;
             }
           }
 
           @keyframes centerGlow {
             0%,
             100% {
-              opacity: 0.3;
+              opacity: 0.28;
               transform: scale(0.98);
             }
             50% {
-              opacity: 0.62;
-              transform: scale(1.06);
+              opacity: 0.42;
+              transform: scale(1.03);
             }
           }
 
@@ -908,11 +896,11 @@ const InitialLoader = ({ mode = "showcase" }) => {
             0%,
             100% {
               transform: scale(0.9);
-              opacity: 0.38;
+              opacity: 0.42;
             }
             50% {
-              transform: scale(1.24);
-              opacity: 1;
+              transform: scale(1.14);
+              opacity: 0.82;
             }
           }
 
