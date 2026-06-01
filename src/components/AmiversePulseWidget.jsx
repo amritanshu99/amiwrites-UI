@@ -224,10 +224,19 @@ export default function AmiversePulseWidget() {
   const audioRef = useRef(null);
   const audioStopTimerRef = useRef(null);
 
-  useEffect(() => {
+  const createPulseAudio = useCallback(() => {
     const audio = new Audio(PULSE_SOUND_PATH);
     audio.preload = "auto";
     audio.volume = 0.24;
+    audio.addEventListener("error", () => {
+      console.warn("AmiPulse heartbeat audio failed to load.");
+    });
+
+    return audio;
+  }, []);
+
+  useEffect(() => {
+    const audio = createPulseAudio();
     audio.load();
     audioRef.current = audio;
 
@@ -236,7 +245,7 @@ export default function AmiversePulseWidget() {
       audio.pause();
       audioRef.current = null;
     };
-  }, []);
+  }, [createPulseAudio]);
 
   useEffect(() => {
     if (!isExpanded) return undefined;
@@ -325,28 +334,50 @@ export default function AmiversePulseWidget() {
   }, [config?.isEnabled, config?.updatedAt]);
 
   const playPulseSound = useCallback(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
+    const audio = audioRef.current || createPulseAudio();
+    audioRef.current = audio;
 
     window.clearTimeout(audioStopTimerRef.current);
     audio.pause();
-    audio.currentTime = 0;
 
-    const playPromise = audio.play();
-    if (playPromise?.catch) {
-      playPromise.catch(() => {});
+    try {
+      audio.currentTime = 0;
+    } catch (error) {
+      console.warn("AmiPulse heartbeat audio could not be reset.", error);
     }
 
-    audioStopTimerRef.current = window.setTimeout(() => {
+    const stopAudio = () => {
       audio.pause();
-      audio.currentTime = 0;
-    }, PULSE_SOUND_STOP_MS);
-  }, []);
+
+      try {
+        audio.currentTime = 0;
+      } catch (error) {
+        console.warn("AmiPulse heartbeat audio could not be reset after playback.", error);
+      }
+    };
+
+    const playPromise = audio.play();
+    if (playPromise?.then) {
+      playPromise
+        .then(() => {
+          audioStopTimerRef.current = window.setTimeout(stopAudio, PULSE_SOUND_STOP_MS);
+        })
+        .catch((error) => {
+          console.warn("AmiPulse heartbeat audio playback was blocked or failed.", error);
+        });
+      return;
+    }
+
+    audioStopTimerRef.current = window.setTimeout(stopAudio, PULSE_SOUND_STOP_MS);
+  }, [createPulseAudio]);
 
   const togglePulse = useCallback(() => {
-    playPulseSound();
-    setIsExpanded((previous) => !previous);
-  }, [playPulseSound]);
+    const shouldExpand = !isExpanded;
+    if (shouldExpand) {
+      playPulseSound();
+    }
+    setIsExpanded(shouldExpand);
+  }, [isExpanded, playPulseSound]);
 
   const pulseState = useMemo(
     () => getPulseState(config, new Date(timeLabels.tick)),
@@ -366,7 +397,7 @@ export default function AmiversePulseWidget() {
 
   return (
     <aside
-      className="pointer-events-none absolute left-3 right-3 top-4 z-30 sm:left-auto sm:right-6 sm:top-6 sm:w-[min(25rem,calc(100vw-3rem))] md:right-8 lg:right-10"
+      className="pointer-events-none absolute left-3 right-3 top-4 z-30 origin-top-right scale-90 sm:left-auto sm:right-6 sm:top-6 sm:w-[min(25rem,calc(100vw-3rem))] md:right-8 md:scale-100 lg:right-10"
       aria-label={pulseTitle}
     >
       <div ref={pulseRef} className="pointer-events-auto flex justify-end">
@@ -384,7 +415,7 @@ export default function AmiversePulseWidget() {
             <span className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-slate-950 text-white shadow-[0_16px_34px_-18px_rgba(15,23,42,0.9)] ring-1 ring-slate-800/80 dark:bg-white dark:text-slate-950 dark:ring-white/70">
               <span className="absolute -right-1 -top-1 h-3 w-3 rounded-full border-2 border-white bg-emerald-400 shadow-[0_0_16px_rgba(52,211,153,0.8)] dark:border-zinc-950" aria-hidden="true" />
               <span className="absolute inset-0 rounded-xl bg-gradient-to-br from-white/12 to-transparent" aria-hidden="true" />
-              <HeartPulse className="relative h-5 w-5" aria-hidden="true" />
+              <HeartPulse className="relative h-5 w-5 text-[#E53935]" aria-hidden="true" />
             </span>
             <span className="min-w-0 flex-1 sm:max-w-[17.5rem]">
               <span className="flex min-w-0 items-center gap-2">
