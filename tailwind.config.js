@@ -47,6 +47,7 @@ module.exports = {
 
         /* --------- REFINED: slower, softer, professional shimmer ---------- */
         "headline-shimmer": "headlineShimmer 3s ease-in-out infinite",
+        "ami-pulse-heartbeat": "amiPulseHeartbeat 2.2s ease-in-out infinite",
       },
       keyframes: {
         fadeInLeft: {
@@ -154,6 +155,13 @@ module.exports = {
         headlineShimmer: {
           "0%": { "background-position": "-150% 0" },
           "100%": { "background-position": "150% 0" },
+        },
+        amiPulseHeartbeat: {
+          "0%, 100%": { transform: "scale(1)" },
+          "14%": { transform: "scale(1.08)" },
+          "28%": { transform: "scale(1)" },
+          "42%": { transform: "scale(1.05)" },
+          "70%": { transform: "scale(1)" },
         },
       },
     },
