@@ -22,6 +22,7 @@ const PULSE_SOUND_VOLUME = 0.42;
 const PULSE_SOUND_STOP_MS = 2200;
 const SMALL_SCREEN_QUERY = "(max-width: 639px)";
 const SMALL_SCREEN_AUTO_COLLAPSE_MS = 5000;
+const PULSE_STATS_LABEL = `${OWNER_NAME}’s current stats`;
 
 function getIsSmallScreen() {
   return (
@@ -257,6 +258,11 @@ export default function AmiversePulseWidget() {
   const audioStopTimerRef = useRef(null);
   const autoCollapseTimerRef = useRef(null);
 
+  const collapsePulse = useCallback(() => {
+    window.clearTimeout(autoCollapseTimerRef.current);
+    setIsExpanded(false);
+  }, []);
+
   const createPulseAudio = useCallback(() => {
     const audio = new Audio();
     audio.src = PULSE_SOUND_PATH;
@@ -300,7 +306,7 @@ export default function AmiversePulseWidget() {
   useEffect(() => {
     window.clearTimeout(autoCollapseTimerRef.current);
 
-    if (!isSmallScreen) return undefined;
+    if (!isSmallScreen || !config?.isEnabled) return undefined;
 
     setIsExpanded(true);
     autoCollapseTimerRef.current = window.setTimeout(() => {
@@ -308,19 +314,19 @@ export default function AmiversePulseWidget() {
     }, SMALL_SCREEN_AUTO_COLLAPSE_MS);
 
     return () => window.clearTimeout(autoCollapseTimerRef.current);
-  }, [isSmallScreen]);
+  }, [config?.isEnabled, isSmallScreen]);
 
   useEffect(() => {
     if (!isExpanded) return undefined;
 
     const handlePointerDown = (event) => {
       if (pulseRef.current?.contains(event.target)) return;
-      setIsExpanded(false);
+      collapsePulse();
     };
 
     const handleKeyDown = (event) => {
       if (event.key === "Escape") {
-        setIsExpanded(false);
+        collapsePulse();
       }
     };
 
@@ -331,7 +337,7 @@ export default function AmiversePulseWidget() {
       document.removeEventListener("pointerdown", handlePointerDown);
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [isExpanded]);
+  }, [collapsePulse, isExpanded]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -461,7 +467,6 @@ export default function AmiversePulseWidget() {
       ? "Weather unavailable"
       : "Loading weather";
   const updatedAtLabel = formatUpdatedAt(config.updatedAt, config.ownerTimezone);
-  const showFloatingButton = !isExpanded && isSmallScreen && !isMobilePreviewVisible;
 
   return (
     <aside
@@ -480,7 +485,7 @@ export default function AmiversePulseWidget() {
             onClick={togglePulse}
             aria-expanded={false}
             aria-controls="ami-pulse-panel"
-            aria-label="Expand Ami Pulse for Amritanshu Mishra"
+            aria-label={isSmallScreen ? "Open Ami Pulse" : "Expand Ami Pulse for Amritanshu Mishra"}
             className={cx(
               "group relative isolate inline-flex items-center overflow-hidden border bg-white/[0.86] text-left text-slate-950 shadow-[0_22px_58px_-34px_rgba(15,23,42,0.52),0_1px_0_rgba(255,255,255,0.9)_inset] ring-1 ring-sky-100/80 backdrop-blur-2xl transition-all duration-300 hover:-translate-y-0.5 hover:border-cyan-200 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/80 dark:border-white/[0.1] dark:bg-zinc-950/[0.86] dark:text-white dark:shadow-[0_26px_68px_-38px_rgba(0,0,0,0.95),0_0_0_1px_rgba(255,255,255,0.04)_inset] dark:ring-cyan-100/10 dark:hover:border-cyan-100/25 dark:hover:bg-zinc-950/[0.94]",
               isSmallScreen
@@ -534,6 +539,68 @@ export default function AmiversePulseWidget() {
               <ChevronDown className="h-4 w-4" aria-hidden="true" />
             </span>
           </button>
+        ) : isSmallScreen ? (
+          <div
+            id="ami-pulse-panel"
+            className="relative isolate w-full max-w-[calc(100vw-1.5rem)] overflow-hidden rounded-[1.7rem] border border-white/80 bg-white/[0.9] p-4 text-slate-950 shadow-[0_24px_70px_-36px_rgba(15,23,42,0.55),0_1px_0_rgba(255,255,255,0.95)_inset] ring-1 ring-sky-100/90 backdrop-blur-2xl transition-all duration-300 dark:border-white/[0.1] dark:bg-zinc-950/[0.9] dark:text-white dark:shadow-[0_28px_78px_-40px_rgba(0,0,0,0.98),0_0_0_1px_rgba(255,255,255,0.04)_inset] dark:ring-cyan-100/10"
+          >
+            <span className="pointer-events-none absolute inset-0 -z-10 bg-[linear-gradient(135deg,rgba(255,255,255,0.94),rgba(240,249,255,0.82)_46%,rgba(236,253,245,0.72))] dark:bg-[linear-gradient(135deg,rgba(24,24,27,0.97),rgba(9,9,11,0.92)_54%,rgba(12,74,110,0.5))]" />
+            <span className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-cyan-200/90 to-transparent dark:via-cyan-100/25" />
+
+            <div className="relative z-10 flex items-center gap-4">
+              <span className="relative flex h-[4.15rem] w-[4.15rem] shrink-0 items-center justify-center rounded-2xl bg-slate-950 text-white shadow-[0_18px_38px_-20px_rgba(15,23,42,0.94)] ring-1 ring-slate-800/80 dark:bg-white dark:text-slate-950 dark:ring-white/70">
+                <span className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/16 to-transparent" aria-hidden="true" />
+                <span className="absolute -right-1.5 -top-1.5 h-5 w-5 rounded-full border-[3px] border-white bg-emerald-400 shadow-[0_0_18px_rgba(52,211,153,0.85)] motion-safe:animate-pulse dark:border-zinc-950" aria-hidden="true" />
+                <HeartPulse className="relative h-8 w-8 text-rose-400" aria-hidden="true" />
+              </span>
+
+              <div className="min-w-0 flex-1">
+                <div className="flex min-w-0 flex-wrap items-center gap-2.5">
+                  <h2
+                    id="ami-pulse-title"
+                    className="truncate text-[1.35rem] font-extrabold leading-tight tracking-tight text-slate-950 dark:text-white"
+                  >
+                    {pulseTitle}
+                  </h2>
+                  <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50/90 px-2.5 py-1 text-xs font-extrabold uppercase tracking-wide text-emerald-700 shadow-sm ring-1 ring-white/70 dark:border-emerald-300/20 dark:bg-emerald-300/10 dark:text-emerald-200 dark:ring-white/[0.04]">
+                    <Radio className="h-3.5 w-3.5" aria-hidden="true" />
+                    Live
+                  </span>
+                </div>
+
+                <p className="mt-2 line-clamp-2 text-base font-extrabold leading-snug text-slate-700 dark:text-zinc-200">
+                  {pulseState.status}
+                </p>
+
+                <div className="mt-3 flex min-w-0 flex-wrap items-center gap-2 text-sm font-extrabold leading-tight text-slate-500 dark:text-zinc-300">
+                  <span className="inline-flex min-w-0 items-center gap-2 rounded-full bg-slate-950/[0.04] px-3 py-1.5 dark:bg-white/[0.07]">
+                    <Sparkles className="h-4 w-4 shrink-0 text-cyan-600 dark:text-cyan-200" aria-hidden="true" />
+                    <span className="truncate">{pulseState.mood || "Current mood"}</span>
+                  </span>
+                  <span className="inline-flex shrink-0 items-center gap-2 rounded-full bg-slate-950/[0.04] px-3 py-1.5 dark:bg-white/[0.07]">
+                    <Clock3 className="h-4 w-4" aria-hidden="true" />
+                    <span>{timeLabels.compact}</span>
+                  </span>
+                </div>
+
+                <p className="mt-3 inline-flex max-w-full items-center gap-2 rounded-full border border-cyan-100 bg-cyan-50/80 px-3 py-1.5 text-xs font-extrabold text-cyan-800 shadow-sm ring-1 ring-white/70 dark:border-cyan-100/10 dark:bg-cyan-300/[0.08] dark:text-cyan-100 dark:ring-white/[0.04]">
+                  <Activity className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                  <span className="truncate">{PULSE_STATS_LABEL}</span>
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={togglePulse}
+                aria-expanded={true}
+                aria-controls="ami-pulse-panel"
+                aria-label="Collapse Ami Pulse"
+                className="inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-slate-200/80 bg-white/[0.82] text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/80 dark:border-white/10 dark:bg-white/[0.07] dark:text-white dark:hover:bg-white/[0.11]"
+              >
+                <ChevronDown className="h-5 w-5" aria-hidden="true" />
+              </button>
+            </div>
+          </div>
         ) : (
           <div
             id="ami-pulse-panel"
@@ -564,7 +631,7 @@ export default function AmiversePulseWidget() {
                   </p>
                   <p className="mt-2 inline-flex max-w-full items-center gap-2 rounded-full border border-cyan-100 bg-cyan-50/80 px-2.5 py-1 text-[11px] font-extrabold text-cyan-800 shadow-sm ring-1 ring-white/70 dark:border-cyan-100/10 dark:bg-cyan-300/[0.08] dark:text-cyan-100 dark:ring-white/[0.04]">
                     <Activity className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-                    <span className="truncate">{OWNER_NAME}’s Pulse Stats</span>
+                    <span className="truncate">{PULSE_STATS_LABEL}</span>
                   </p>
                 </div>
               </div>
@@ -574,7 +641,7 @@ export default function AmiversePulseWidget() {
                 onClick={togglePulse}
                 aria-expanded={true}
                 aria-controls="ami-pulse-panel"
-                aria-label="Toggle Ami Pulse for Amritanshu Mishra"
+                aria-label="Collapse Ami Pulse"
                 className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200/80 bg-white/[0.78] text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/80 dark:border-white/10 dark:bg-white/[0.07] dark:text-white dark:hover:bg-white/[0.11]"
               >
                 <ChevronUp className="h-4 w-4" aria-hidden="true" />

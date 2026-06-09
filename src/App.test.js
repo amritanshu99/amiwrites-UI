@@ -1,9 +1,9 @@
+import { getHourInTimezone } from "./components/AmiversePulseWidget";
+
 jest.mock("axios", () => ({
   get: jest.fn(),
   isCancel: jest.fn(),
 }));
-
-import { getHourInTimezone } from "./components/AmiversePulseWidget";
 
 test("returns the owner hour in the configured timezone", () => {
   const hour = getHourInTimezone(
