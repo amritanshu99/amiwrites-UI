@@ -461,6 +461,7 @@ export default function AmiversePulseWidget() {
       ? "Weather unavailable"
       : "Loading weather";
   const updatedAtLabel = formatUpdatedAt(config.updatedAt, config.ownerTimezone);
+  const showFloatingButton = !isExpanded && isSmallScreen && !isMobilePreviewVisible;
 
   return (
     <aside
