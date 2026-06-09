@@ -20,6 +20,16 @@ const OWNER_NAME = "Amritanshu Mishra";
 const PULSE_TITLE = "Ami Pulse";
 const PULSE_SOUND_VOLUME = 0.42;
 const PULSE_SOUND_STOP_MS = 2200;
+const SMALL_SCREEN_QUERY = "(max-width: 639px)";
+const SMALL_SCREEN_PREVIEW_MS = 5000;
+
+function getIsSmallScreen() {
+  return (
+    typeof window !== "undefined" &&
+    typeof window.matchMedia === "function" &&
+    window.matchMedia(SMALL_SCREEN_QUERY).matches
+  );
+}
 
 const publicAssetPath = (path) => {
   const normalizedPath = path.startsWith("/") ? path : `/${path}`;
@@ -231,6 +241,8 @@ export default function AmiversePulseWidget() {
   const [weather, setWeather] = useState(null);
   const [weatherFailed, setWeatherFailed] = useState(false);
   const [loadFailed, setLoadFailed] = useState(false);
+  const [isSmallScreen, setIsSmallScreen] = useState(getIsSmallScreen);
+  const [isMobilePreviewVisible, setIsMobilePreviewVisible] = useState(getIsSmallScreen);
   const [isExpanded, setIsExpanded] = useState(false);
   const [timeLabels, setTimeLabels] = useState(() => {
     const now = new Date();
@@ -244,6 +256,7 @@ export default function AmiversePulseWidget() {
   const pulseRef = useRef(null);
   const audioRef = useRef(null);
   const audioStopTimerRef = useRef(null);
+  const mobilePreviewTimerRef = useRef(null);
 
   const createPulseAudio = useCallback(() => {
     const audio = new Audio();
@@ -264,10 +277,43 @@ export default function AmiversePulseWidget() {
 
     return () => {
       window.clearTimeout(audioStopTimerRef.current);
+      window.clearTimeout(mobilePreviewTimerRef.current);
       audio.pause();
       audioRef.current = null;
     };
   }, [createPulseAudio]);
+
+  useEffect(() => {
+    if (typeof window.matchMedia !== "function") return undefined;
+
+    const mediaQuery = window.matchMedia(SMALL_SCREEN_QUERY);
+
+    const syncSmallScreen = () => {
+      setIsSmallScreen(mediaQuery.matches);
+    };
+
+    syncSmallScreen();
+    mediaQuery.addEventListener("change", syncSmallScreen);
+
+    return () => mediaQuery.removeEventListener("change", syncSmallScreen);
+  }, []);
+
+  useEffect(() => {
+    window.clearTimeout(mobilePreviewTimerRef.current);
+
+    if (!isSmallScreen) {
+      setIsMobilePreviewVisible(false);
+      return undefined;
+    }
+
+    setIsExpanded(false);
+    setIsMobilePreviewVisible(true);
+    mobilePreviewTimerRef.current = window.setTimeout(() => {
+      setIsMobilePreviewVisible(false);
+    }, SMALL_SCREEN_PREVIEW_MS);
+
+    return () => window.clearTimeout(mobilePreviewTimerRef.current);
+  }, [isSmallScreen]);
 
   useEffect(() => {
     if (!isExpanded) return undefined;
@@ -400,6 +446,8 @@ export default function AmiversePulseWidget() {
   }, [createPulseAudio]);
 
   const togglePulse = useCallback(() => {
+    window.clearTimeout(mobilePreviewTimerRef.current);
+    setIsMobilePreviewVisible(false);
     playPulseSound();
     setIsExpanded((current) => !current);
   }, [playPulseSound]);
@@ -419,10 +467,16 @@ export default function AmiversePulseWidget() {
       ? "Weather unavailable"
       : "Loading weather";
   const updatedAtLabel = formatUpdatedAt(config.updatedAt, config.ownerTimezone);
+  const showFloatingButton = !isExpanded && isSmallScreen && !isMobilePreviewVisible;
 
   return (
     <aside
-      className="pointer-events-none absolute left-3 right-3 top-4 z-30 origin-top-right sm:left-auto sm:right-6 sm:top-6 sm:w-[min(24.5rem,calc(100vw-3rem))] md:right-8 lg:right-10"
+      className={cx(
+        "pointer-events-none absolute z-30 origin-top-right",
+        showFloatingButton
+          ? "right-4 top-4"
+          : "left-3 right-3 top-4 sm:left-auto sm:right-6 sm:top-6 sm:w-[min(24.5rem,calc(100vw-3rem))] md:right-8 lg:right-10",
+      )}
       aria-label={pulseTitle}
     >
       <div ref={pulseRef} className="pointer-events-auto flex justify-end">
@@ -432,17 +486,33 @@ export default function AmiversePulseWidget() {
             onClick={togglePulse}
             aria-expanded={false}
             aria-controls="ami-pulse-panel"
-            aria-label="Toggle Ami Pulse for Amritanshu Mishra"
-            className="group relative isolate inline-flex min-h-[4.35rem] w-full max-w-full items-center gap-3 overflow-hidden rounded-2xl border border-white/70 bg-white/[0.86] px-3.5 py-3 text-left text-slate-950 shadow-[0_22px_58px_-34px_rgba(15,23,42,0.52),0_1px_0_rgba(255,255,255,0.9)_inset] ring-1 ring-sky-100/80 backdrop-blur-2xl transition-all duration-300 hover:-translate-y-0.5 hover:border-cyan-200 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/80 dark:border-white/[0.1] dark:bg-zinc-950/[0.86] dark:text-white dark:shadow-[0_26px_68px_-38px_rgba(0,0,0,0.95),0_0_0_1px_rgba(255,255,255,0.04)_inset] dark:ring-cyan-100/10 dark:hover:border-cyan-100/25 dark:hover:bg-zinc-950/[0.94] sm:w-auto sm:min-w-[22rem]"
+            aria-label="Expand Ami Pulse for Amritanshu Mishra"
+            className={cx(
+              "group relative isolate inline-flex items-center overflow-hidden border bg-white/[0.86] text-left text-slate-950 shadow-[0_22px_58px_-34px_rgba(15,23,42,0.52),0_1px_0_rgba(255,255,255,0.9)_inset] ring-1 ring-sky-100/80 backdrop-blur-2xl transition-all duration-300 hover:-translate-y-0.5 hover:border-cyan-200 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/80 dark:border-white/[0.1] dark:bg-zinc-950/[0.86] dark:text-white dark:shadow-[0_26px_68px_-38px_rgba(0,0,0,0.95),0_0_0_1px_rgba(255,255,255,0.04)_inset] dark:ring-cyan-100/10 dark:hover:border-cyan-100/25 dark:hover:bg-zinc-950/[0.94]",
+              showFloatingButton
+                ? "h-14 w-14 justify-center rounded-full border-white/80 p-0"
+                : "min-h-[4.35rem] w-full max-w-full gap-3 rounded-2xl border-white/70 px-3.5 py-3 sm:w-auto sm:min-w-[22rem]",
+            )}
           >
             <span className="pointer-events-none absolute inset-0 -z-10 bg-[linear-gradient(135deg,rgba(255,255,255,0.92),rgba(240,249,255,0.78)_48%,rgba(236,253,245,0.64))] dark:bg-[linear-gradient(135deg,rgba(24,24,27,0.96),rgba(9,9,11,0.9)_52%,rgba(12,74,110,0.5))]" />
             <span className="pointer-events-none absolute inset-x-4 top-0 h-px bg-gradient-to-r from-transparent via-cyan-200/85 to-transparent dark:via-cyan-100/25" />
-            <span className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-slate-950 text-white shadow-[0_16px_34px_-18px_rgba(15,23,42,0.9)] ring-1 ring-slate-800/80 dark:bg-white dark:text-slate-950 dark:ring-white/70">
-              <span className="absolute inset-0 rounded-xl bg-gradient-to-br from-white/16 to-transparent" aria-hidden="true" />
+            <span
+              className={cx(
+                "relative flex h-12 w-12 shrink-0 items-center justify-center bg-slate-950 text-white shadow-[0_16px_34px_-18px_rgba(15,23,42,0.9)] ring-1 ring-slate-800/80 dark:bg-white dark:text-slate-950 dark:ring-white/70",
+                showFloatingButton ? "rounded-full motion-safe:animate-ami-pulse-heartbeat" : "rounded-xl",
+              )}
+            >
+              <span
+                className={cx(
+                  "absolute inset-0 bg-gradient-to-br from-white/16 to-transparent",
+                  showFloatingButton ? "rounded-full" : "rounded-xl",
+                )}
+                aria-hidden="true"
+              />
               <span className="absolute -right-1 -top-1 h-3.5 w-3.5 rounded-full border-2 border-white bg-emerald-400 shadow-[0_0_16px_rgba(52,211,153,0.8)] motion-safe:animate-pulse dark:border-zinc-950" aria-hidden="true" />
-              <HeartPulse className="relative h-5 w-5 text-rose-400" aria-hidden="true" />
+              <HeartPulse className="relative h-5 w-5 text-rose-400 motion-safe:animate-ami-pulse-heartbeat" aria-hidden="true" />
             </span>
-            <span className="min-w-0 flex-1 sm:max-w-[18rem]">
+            <span className={cx("min-w-0 flex-1 sm:max-w-[18rem]", showFloatingButton && "sr-only")}>
               <span className="flex min-w-0 items-center gap-2.5">
                 <span className="truncate text-sm font-extrabold leading-tight text-slate-950 dark:text-white">
                   {pulseTitle}
@@ -466,7 +536,7 @@ export default function AmiversePulseWidget() {
                 </span>
               </span>
             </span>
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-200/80 bg-white/[0.82] text-slate-600 shadow-sm transition-transform group-hover:translate-y-0.5 dark:border-white/[0.08] dark:bg-white/[0.07] dark:text-zinc-100">
+            <span className={cx("flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-200/80 bg-white/[0.82] text-slate-600 shadow-sm transition-transform group-hover:translate-y-0.5 dark:border-white/[0.08] dark:bg-white/[0.07] dark:text-zinc-100", showFloatingButton && "sr-only")}>
               <ChevronDown className="h-4 w-4" aria-hidden="true" />
             </span>
           </button>
@@ -497,6 +567,10 @@ export default function AmiversePulseWidget() {
                   </h2>
                   <p className="mt-1 line-clamp-2 text-sm font-semibold leading-relaxed text-slate-600 dark:text-zinc-300">
                     {pulseState.status}
+                  </p>
+                  <p className="mt-2 inline-flex max-w-full items-center gap-2 rounded-full border border-cyan-100 bg-cyan-50/80 px-2.5 py-1 text-[11px] font-extrabold text-cyan-800 shadow-sm ring-1 ring-white/70 dark:border-cyan-100/10 dark:bg-cyan-300/[0.08] dark:text-cyan-100 dark:ring-white/[0.04]">
+                    <Activity className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                    <span className="truncate">{OWNER_NAME}’s Current Stats</span>
                   </p>
                 </div>
               </div>
