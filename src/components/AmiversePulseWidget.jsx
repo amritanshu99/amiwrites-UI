@@ -18,10 +18,7 @@ import { apiUrl } from "../config/api";
 const DEFAULT_TIMEZONE = "Asia/Kolkata";
 const OWNER_NAME = "Amritanshu Mishra";
 const PULSE_TITLE = "Ami Pulse";
-const PULSE_SOUND_VOLUME = 0.42;
-const PULSE_SOUND_STOP_MS = 2200;
 const SMALL_SCREEN_QUERY = "(max-width: 639px)";
-const SMALL_SCREEN_AUTO_COLLAPSE_MS = 5000;
 const PULSE_STATS_LABEL = `${OWNER_NAME}’s current stats`;
 
 function getIsSmallScreen() {
@@ -31,15 +28,6 @@ function getIsSmallScreen() {
     window.matchMedia(SMALL_SCREEN_QUERY).matches
   );
 }
-
-const publicAssetPath = (path) => {
-  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
-  const publicUrl = (process.env.PUBLIC_URL || "").replace(/\/+$/, "");
-
-  return publicUrl ? `${publicUrl}${normalizedPath}` : normalizedPath;
-};
-
-const PULSE_SOUND_PATH = publicAssetPath("/sounds/ami-pulse.mp3");
 
 const FALLBACK_RULES = [
   {
@@ -243,7 +231,7 @@ export default function AmiversePulseWidget() {
   const [weatherFailed, setWeatherFailed] = useState(false);
   const [loadFailed, setLoadFailed] = useState(false);
   const [isSmallScreen, setIsSmallScreen] = useState(getIsSmallScreen);
-  const [isExpanded, setIsExpanded] = useState(getIsSmallScreen);
+  const [isExpanded, setIsExpanded] = useState(false);
   const [timeLabels, setTimeLabels] = useState(() => {
     const now = new Date();
 
@@ -254,39 +242,10 @@ export default function AmiversePulseWidget() {
     };
   });
   const pulseRef = useRef(null);
-  const audioRef = useRef(null);
-  const audioStopTimerRef = useRef(null);
-  const autoCollapseTimerRef = useRef(null);
 
   const collapsePulse = useCallback(() => {
-    window.clearTimeout(autoCollapseTimerRef.current);
     setIsExpanded(false);
   }, []);
-
-  const createPulseAudio = useCallback(() => {
-    const audio = new Audio();
-    audio.src = PULSE_SOUND_PATH;
-    audio.preload = "auto";
-    audio.volume = PULSE_SOUND_VOLUME;
-    audio.addEventListener("error", () => {
-      console.warn("AmiPulse heartbeat audio failed to load.", audio.currentSrc || PULSE_SOUND_PATH);
-    });
-
-    return audio;
-  }, []);
-
-  useEffect(() => {
-    const audio = createPulseAudio();
-    audio.load();
-    audioRef.current = audio;
-
-    return () => {
-      window.clearTimeout(audioStopTimerRef.current);
-      window.clearTimeout(autoCollapseTimerRef.current);
-      audio.pause();
-      audioRef.current = null;
-    };
-  }, [createPulseAudio]);
 
   useEffect(() => {
     if (typeof window.matchMedia !== "function") return undefined;
@@ -302,19 +261,6 @@ export default function AmiversePulseWidget() {
 
     return () => mediaQuery.removeEventListener("change", syncSmallScreen);
   }, []);
-
-  useEffect(() => {
-    window.clearTimeout(autoCollapseTimerRef.current);
-
-    if (!isSmallScreen || !config?.isEnabled) return undefined;
-
-    setIsExpanded(true);
-    autoCollapseTimerRef.current = window.setTimeout(() => {
-      setIsExpanded(false);
-    }, SMALL_SCREEN_AUTO_COLLAPSE_MS);
-
-    return () => window.clearTimeout(autoCollapseTimerRef.current);
-  }, [config?.isEnabled, isSmallScreen]);
 
   useEffect(() => {
     if (!isExpanded) return undefined;
@@ -402,55 +348,9 @@ export default function AmiversePulseWidget() {
     return () => controller.abort();
   }, [config?.isEnabled, config?.updatedAt]);
 
-  const playPulseSound = useCallback(() => {
-    const audio = audioRef.current || createPulseAudio();
-    audioRef.current = audio;
-
-    window.clearTimeout(audioStopTimerRef.current);
-    audio.pause();
-    audio.muted = false;
-    audio.volume = PULSE_SOUND_VOLUME;
-
-    try {
-      audio.currentTime = 0;
-    } catch (error) {
-      console.warn("AmiPulse heartbeat audio could not be reset.", error);
-    }
-
-    if (audio.readyState === 0) {
-      audio.load();
-    }
-
-    const stopAudio = () => {
-      audio.pause();
-
-      try {
-        audio.currentTime = 0;
-      } catch (error) {
-        console.warn("AmiPulse heartbeat audio could not be reset after playback.", error);
-      }
-    };
-
-    const playPromise = audio.play();
-    if (playPromise?.then) {
-      playPromise
-        .then(() => {
-          audioStopTimerRef.current = window.setTimeout(stopAudio, PULSE_SOUND_STOP_MS);
-        })
-        .catch((error) => {
-          console.warn("AmiPulse heartbeat audio playback was blocked or failed.", error);
-        });
-      return;
-    }
-
-    audioStopTimerRef.current = window.setTimeout(stopAudio, PULSE_SOUND_STOP_MS);
-  }, [createPulseAudio]);
-
   const togglePulse = useCallback(() => {
-    window.clearTimeout(autoCollapseTimerRef.current);
-    playPulseSound();
     setIsExpanded((current) => !current);
-  }, [playPulseSound]);
+  }, []);
 
   const pulseState = useMemo(
     () => getPulseState(config, new Date(timeLabels.tick)),
@@ -473,7 +373,7 @@ export default function AmiversePulseWidget() {
       className={cx(
         "pointer-events-none absolute z-30 origin-top-right",
         !isExpanded && isSmallScreen
-          ? "right-4 top-4"
+          ? "right-3 top-3"
           : "left-3 right-3 top-4 sm:left-auto sm:right-6 sm:top-6 sm:w-[min(24.5rem,calc(100vw-3rem))] md:right-8 lg:right-10",
       )}
       aria-label={pulseTitle}
@@ -489,7 +389,7 @@ export default function AmiversePulseWidget() {
             className={cx(
               "group relative isolate inline-flex items-center overflow-hidden border bg-white/[0.86] text-left text-slate-950 shadow-[0_22px_58px_-34px_rgba(15,23,42,0.52),0_1px_0_rgba(255,255,255,0.9)_inset] ring-1 ring-sky-100/80 backdrop-blur-2xl transition-all duration-300 hover:-translate-y-0.5 hover:border-cyan-200 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/80 dark:border-white/[0.1] dark:bg-zinc-950/[0.86] dark:text-white dark:shadow-[0_26px_68px_-38px_rgba(0,0,0,0.95),0_0_0_1px_rgba(255,255,255,0.04)_inset] dark:ring-cyan-100/10 dark:hover:border-cyan-100/25 dark:hover:bg-zinc-950/[0.94]",
               isSmallScreen
-                ? "h-14 w-14 justify-center rounded-full border-white/80 p-0"
+                ? "min-h-[3.25rem] w-[11.75rem] max-w-[calc(100vw-1.5rem)] gap-2 rounded-full border-white/80 py-1.5 pl-1.5 pr-3"
                 : "min-h-[4.35rem] w-full max-w-full gap-3 rounded-2xl border-white/70 px-3.5 py-3 sm:w-auto sm:min-w-[22rem]",
             )}
           >
@@ -497,8 +397,8 @@ export default function AmiversePulseWidget() {
             <span className="pointer-events-none absolute inset-x-4 top-0 h-px bg-gradient-to-r from-transparent via-cyan-200/85 to-transparent dark:via-cyan-100/25" />
             <span
               className={cx(
-                "relative flex h-12 w-12 shrink-0 items-center justify-center bg-slate-950 text-white shadow-[0_16px_34px_-18px_rgba(15,23,42,0.9)] ring-1 ring-slate-800/80 dark:bg-white dark:text-slate-950 dark:ring-white/70",
-                isSmallScreen ? "rounded-full motion-safe:animate-ami-pulse-heartbeat" : "rounded-xl",
+                "relative flex shrink-0 items-center justify-center bg-slate-950 text-white shadow-[0_16px_34px_-18px_rgba(15,23,42,0.9)] ring-1 ring-slate-800/80 dark:bg-white dark:text-slate-950 dark:ring-white/70",
+                isSmallScreen ? "h-10 w-10 rounded-full motion-safe:animate-ami-pulse-heartbeat" : "h-12 w-12 rounded-xl",
               )}
             >
               <span
@@ -511,29 +411,48 @@ export default function AmiversePulseWidget() {
               <span className="absolute -right-1 -top-1 h-3.5 w-3.5 rounded-full border-2 border-white bg-emerald-400 shadow-[0_0_16px_rgba(52,211,153,0.8)] motion-safe:animate-pulse dark:border-zinc-950" aria-hidden="true" />
               <HeartPulse className="relative h-5 w-5 text-rose-400 motion-safe:animate-ami-pulse-heartbeat" aria-hidden="true" />
             </span>
-            <span className={cx("min-w-0 flex-1 sm:max-w-[18rem]", isSmallScreen && "sr-only")}>
-              <span className="flex min-w-0 items-center gap-2.5">
-                <span className="truncate text-sm font-extrabold leading-tight text-slate-950 dark:text-white">
-                  {pulseTitle}
-                </span>
-                <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-extrabold uppercase text-emerald-700 dark:border-emerald-300/20 dark:bg-emerald-300/10 dark:text-emerald-200">
-                  <Radio className="h-3 w-3" aria-hidden="true" />
-                  Live
-                </span>
-              </span>
-              <span className="mt-1.5 block truncate text-xs font-bold leading-tight text-slate-700 dark:text-zinc-200">
-                {pulseState.status}
-              </span>
-              <span className="mt-2.5 flex min-w-0 items-center gap-2 text-[11px] font-semibold leading-tight text-slate-500 dark:text-zinc-400">
-                <span className="inline-flex min-w-0 items-center gap-1.5 rounded-full bg-slate-950/[0.04] px-2 py-1 dark:bg-white/[0.07]">
-                  <Sparkles className="h-3.5 w-3.5 shrink-0 text-cyan-600 dark:text-cyan-200" aria-hidden="true" />
-                  <span className="truncate">{pulseState.mood || "Current mood"}</span>
-                </span>
-                <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-slate-950/[0.04] px-2 py-1 dark:bg-white/[0.07]">
-                  <Clock3 className="h-3.5 w-3.5" aria-hidden="true" />
-                  <span>{timeLabels.compact}</span>
-                </span>
-              </span>
+            <span className={cx("min-w-0 flex-1", isSmallScreen ? "max-w-[7.6rem]" : "sm:max-w-[18rem]")}>
+              {isSmallScreen ? (
+                <>
+                  <span className="flex min-w-0 items-center gap-1.5">
+                    <span className="truncate text-[11px] font-extrabold leading-tight text-slate-950 dark:text-white">
+                      {pulseTitle}
+                    </span>
+                    <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.8)] motion-safe:animate-pulse" aria-hidden="true" />
+                  </span>
+                  <span className="mt-0.5 flex min-w-0 items-center gap-1 text-[10px] font-bold leading-tight text-slate-600 dark:text-zinc-300">
+                    <Sparkles className="h-3 w-3 shrink-0 text-cyan-600 dark:text-cyan-200" aria-hidden="true" />
+                    <span className="min-w-0 truncate">{pulseState.mood || "Live now"}</span>
+                    <span className="shrink-0 text-slate-400 dark:text-zinc-500" aria-hidden="true">/</span>
+                    <span className="shrink-0">{timeLabels.compact}</span>
+                  </span>
+                </>
+              ) : (
+                <>
+                  <span className="flex min-w-0 items-center gap-2.5">
+                    <span className="truncate text-sm font-extrabold leading-tight text-slate-950 dark:text-white">
+                      {pulseTitle}
+                    </span>
+                    <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-extrabold uppercase text-emerald-700 dark:border-emerald-300/20 dark:bg-emerald-300/10 dark:text-emerald-200">
+                      <Radio className="h-3 w-3" aria-hidden="true" />
+                      Live
+                    </span>
+                  </span>
+                  <span className="mt-1.5 block truncate text-xs font-bold leading-tight text-slate-700 dark:text-zinc-200">
+                    {pulseState.status}
+                  </span>
+                  <span className="mt-2.5 flex min-w-0 items-center gap-2 text-[11px] font-semibold leading-tight text-slate-500 dark:text-zinc-400">
+                    <span className="inline-flex min-w-0 items-center gap-1.5 rounded-full bg-slate-950/[0.04] px-2 py-1 dark:bg-white/[0.07]">
+                      <Sparkles className="h-3.5 w-3.5 shrink-0 text-cyan-600 dark:text-cyan-200" aria-hidden="true" />
+                      <span className="truncate">{pulseState.mood || "Current mood"}</span>
+                    </span>
+                    <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-slate-950/[0.04] px-2 py-1 dark:bg-white/[0.07]">
+                      <Clock3 className="h-3.5 w-3.5" aria-hidden="true" />
+                      <span>{timeLabels.compact}</span>
+                    </span>
+                  </span>
+                </>
+              )}
             </span>
             <span className={cx("flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-200/80 bg-white/[0.82] text-slate-600 shadow-sm transition-transform group-hover:translate-y-0.5 dark:border-white/[0.08] dark:bg-white/[0.07] dark:text-zinc-100", isSmallScreen && "sr-only")}>
               <ChevronDown className="h-4 w-4" aria-hidden="true" />
