@@ -2,12 +2,13 @@ import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import Loader from "../Loader/Loader";
 import { toast } from "react-toastify";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Bot, Home, Mail, MessageCircle, Send } from "lucide-react";
 import { apiUrl } from "../../config/api";
 
 export default function ContactMeButton() {
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({ name: "", email: "", reason: "" });
@@ -22,6 +23,8 @@ export default function ContactMeButton() {
   }, []);
 
   const isExpanded = !collapsed || hovered;
+  const isAmiBotRoute = pathname === "/amibot" || pathname === "/amibot-admin";
+
   useEffect(() => {
     audioRef.current = new Audio("/sounds/message.mp3");
     audioRef.current.load();
@@ -84,6 +87,8 @@ export default function ContactMeButton() {
       setLoading(false);
     }
   };
+
+  if (isAmiBotRoute) return null;
 
   return (
     <>

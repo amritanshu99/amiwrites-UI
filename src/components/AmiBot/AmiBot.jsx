@@ -7,9 +7,12 @@ import {
   Database,
   History,
   LogIn,
+  MessageSquareText,
   SendHorizontal,
+  ShieldCheck,
   Sparkles,
   Trash2,
+  Wifi,
 } from "lucide-react";
 import { useLocation } from "react-router-dom";
 import { apiUrl } from "../../config/api";
@@ -35,6 +38,9 @@ const PROMPT_SUGGESTIONS = [
   "Which projects are mentioned in the data?",
   "What skills are listed in the uploaded files?",
 ];
+
+const surfaceClassName =
+  "border border-white/85 bg-white/88 shadow-[0_26px_70px_-46px_rgba(15,23,42,0.45)] ring-1 ring-sky-100/70 backdrop-blur-2xl dark:border-zinc-900 dark:bg-black/92 dark:ring-white/[0.06] dark:shadow-[0_26px_80px_-44px_rgba(0,0,0,0.98)]";
 
 function parseJwt(token) {
   try {
@@ -78,6 +84,7 @@ function sourceSummary(sources = []) {
 }
 
 const PromptSuggestionButton = React.memo(function PromptSuggestionButton({
+  compact = false,
   onSelect,
   prompt,
 }) {
@@ -89,9 +96,14 @@ const PromptSuggestionButton = React.memo(function PromptSuggestionButton({
     <button
       type="button"
       onClick={handleClick}
-      className="min-h-[46px] rounded-2xl border border-white/85 bg-white/80 px-3.5 py-3 text-left text-sm font-medium text-slate-700 shadow-sm shadow-slate-200/60 transition duration-200 hover:-translate-y-0.5 hover:border-sky-300/80 hover:bg-sky-50/95 hover:text-sky-800 focus:outline-none focus-visible:ring-4 focus-visible:ring-sky-100 dark:border-zinc-800 dark:bg-black dark:text-zinc-200 dark:shadow-none dark:hover:border-zinc-700 dark:hover:bg-zinc-950 dark:hover:text-white dark:focus-visible:ring-white/10 motion-reduce:transform-none"
+      className={`group inline-flex items-center gap-2 border border-slate-200/80 bg-white/82 text-left font-semibold text-slate-700 shadow-sm shadow-slate-200/60 transition duration-200 hover:-translate-y-0.5 hover:border-sky-300/80 hover:bg-sky-50 hover:text-sky-800 focus:outline-none focus-visible:ring-4 focus-visible:ring-sky-100 dark:border-zinc-800 dark:bg-zinc-950/86 dark:text-zinc-200 dark:shadow-none dark:hover:border-zinc-700 dark:hover:bg-zinc-900 dark:hover:text-white dark:focus-visible:ring-white/10 motion-reduce:transform-none ${
+        compact
+          ? "min-h-10 min-w-[13.5rem] flex-none rounded-xl px-3 py-2 text-xs"
+          : "min-h-[46px] rounded-2xl px-3.5 py-3 text-sm"
+      }`}
     >
-      {prompt}
+      <MessageSquareText className="h-4 w-4 shrink-0 text-sky-600 transition group-hover:text-sky-700 dark:text-cyan-100" />
+      <span className="line-clamp-2">{prompt}</span>
     </button>
   );
 });
@@ -137,23 +149,23 @@ const ChatMessage = React.memo(function ChatMessage({ message }) {
 
   return (
     <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
-      <div className="max-w-[94%] sm:max-w-[82%] md:max-w-[72%]">
+      <div className="max-w-[92%] sm:max-w-[82%] lg:max-w-[46rem]">
         <div
-          className={`mb-1.5 flex items-center gap-2 ${
+          className={`mb-1.5 flex flex-wrap items-center gap-2 ${
             isUser ? "justify-end" : "justify-start"
           }`}
         >
-          <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-zinc-500">
+          <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-zinc-500">
             {isUser ? "You" : "AmiBot"}
           </span>
           <MessageBadge message={message} />
         </div>
 
         <div
-          className={`whitespace-pre-wrap break-words rounded-[22px] border px-3.5 py-2.5 text-sm leading-6 [overflow-wrap:anywhere] sm:rounded-[24px] sm:px-5 sm:py-3 sm:text-[15px] sm:leading-7 ${
+          className={`whitespace-pre-wrap break-words rounded-2xl border px-3.5 py-2.5 text-sm leading-6 [overflow-wrap:anywhere] sm:px-4 sm:py-3 sm:text-[15px] sm:leading-7 ${
             isUser
-              ? "border-sky-300/30 bg-gradient-to-br from-sky-400 via-cyan-400 to-cyan-500 text-slate-950 shadow-[0_22px_50px_rgba(56,189,248,0.24)]"
-              : "border-white/85 bg-white/88 text-slate-700 shadow-[0_18px_45px_rgba(148,163,184,0.18)] backdrop-blur-xl dark:border-zinc-800 dark:bg-black dark:text-zinc-100 dark:shadow-[0_18px_45px_rgba(0,0,0,0.34)]"
+              ? "border-sky-300/35 bg-[linear-gradient(135deg,#0284c7,#06b6d4)] text-white shadow-[0_18px_44px_rgba(14,165,233,0.22)]"
+              : "border-white/85 bg-white/92 text-slate-700 shadow-[0_16px_42px_rgba(148,163,184,0.18)] backdrop-blur-xl dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100 dark:shadow-[0_16px_42px_rgba(0,0,0,0.34)]"
           }`}
         >
           {message.text}
@@ -166,20 +178,20 @@ const ChatMessage = React.memo(function ChatMessage({ message }) {
 const TypingIndicator = React.memo(function TypingIndicator() {
   return (
     <div className="flex justify-start">
-      <div className="max-w-[94%] sm:max-w-[82%] md:max-w-[72%]">
+      <div className="max-w-[92%] sm:max-w-[82%] lg:max-w-[46rem]">
         <div className="mb-1.5 flex items-center gap-2">
-          <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-zinc-500">
+          <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-zinc-500">
             AmiBot
           </span>
         </div>
-        <div className="rounded-[22px] border border-white/85 bg-white/88 px-3.5 py-2.5 text-slate-700 shadow-[0_18px_45px_rgba(148,163,184,0.18)] backdrop-blur-xl dark:border-zinc-800 dark:bg-black dark:text-zinc-200 dark:shadow-[0_18px_45px_rgba(0,0,0,0.34)] sm:rounded-[24px] sm:px-4 sm:py-3">
+        <div className="rounded-2xl border border-white/85 bg-white/92 px-3.5 py-3 text-slate-700 shadow-[0_16px_42px_rgba(148,163,184,0.18)] backdrop-blur-xl dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-200 dark:shadow-[0_16px_42px_rgba(0,0,0,0.34)]">
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1.5">
               <span className="h-2 w-2 animate-bounce rounded-full bg-sky-300 [animation-delay:-0.3s] dark:bg-cyan-200" />
               <span className="h-2 w-2 animate-bounce rounded-full bg-sky-400 [animation-delay:-0.15s] dark:bg-cyan-300" />
               <span className="h-2 w-2 animate-bounce rounded-full bg-cyan-500 dark:bg-cyan-400" />
             </div>
-            <span className="text-sm text-slate-500 dark:text-zinc-300">
+            <span className="text-sm font-medium text-slate-500 dark:text-zinc-300">
               Checking data...
             </span>
           </div>
@@ -188,6 +200,26 @@ const TypingIndicator = React.memo(function TypingIndicator() {
     </div>
   );
 });
+
+function StatusTile({ icon: Icon, label, value }) {
+  return (
+    <div className="rounded-2xl border border-slate-200/80 bg-white/72 p-3 text-sm text-slate-700 dark:border-zinc-800 dark:bg-zinc-950/72 dark:text-zinc-200">
+      <div className="flex items-center gap-2">
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-sky-50 text-sky-700 dark:bg-cyan-300/10 dark:text-cyan-100">
+          <Icon className="h-4 w-4" />
+        </span>
+        <div className="min-w-0">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-zinc-500">
+            {label}
+          </p>
+          <p className="truncate font-semibold text-slate-900 dark:text-white">
+            {value}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 const AmiBot = () => {
   const { pathname } = useLocation();
@@ -199,6 +231,7 @@ const AmiBot = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(() => Boolean(getAuthToken()));
   const bottomRef = useRef(null);
   const inputRef = useRef(null);
+  const formRef = useRef(null);
 
   const refreshAuthState = useCallback(() => {
     setIsAuthenticated(Boolean(getAuthToken()));
@@ -363,53 +396,74 @@ const AmiBot = () => {
     }
   }, [input, loading]);
 
+  const handleInputKeyDown = useCallback((event) => {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      formRef.current?.requestSubmit();
+    }
+  }, []);
+
   const canSend = useMemo(() => input.trim().length > 0 && !loading, [input, loading]);
 
+  const authAction = isAuthenticated ? (
+    <button
+      type="button"
+      onClick={handleClearHistory}
+      className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white/82 px-3.5 py-2 text-sm font-semibold text-slate-800 transition hover:-translate-y-0.5 hover:bg-white disabled:cursor-not-allowed disabled:opacity-60 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100 dark:hover:border-zinc-700"
+      disabled={loading || historyLoading}
+    >
+      <Trash2 className="h-4 w-4" />
+      <span>Clear history</span>
+    </button>
+  ) : (
+    <button
+      type="button"
+      onClick={handleOpenLogin}
+      className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-slate-950 px-3.5 py-2 text-sm font-semibold text-white shadow-[0_12px_26px_rgba(15,23,42,0.2)] transition hover:-translate-y-0.5 hover:bg-sky-700 dark:bg-cyan-300 dark:text-zinc-950 dark:hover:bg-cyan-200"
+    >
+      <LogIn className="h-4 w-4" />
+      <span>Login</span>
+    </button>
+  );
+
   return (
-    <section className="amiverse-premium-light-page relative isolate min-h-[calc(100dvh-4rem)] overflow-hidden px-2 pb-[max(5.75rem,env(safe-area-inset-bottom))] pt-2 text-slate-900 transition-colors duration-300 dark:bg-none dark:bg-black dark:text-zinc-100 sm:px-5 sm:pb-5 sm:pt-4 lg:px-8">
+    <section className="amiverse-premium-light-page relative isolate min-h-[calc(100svh-4rem)] overflow-hidden px-3 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 text-slate-900 transition-colors duration-300 dark:bg-black dark:text-zinc-100 sm:px-5 sm:py-5 lg:px-8">
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="amiverse-premium-light-overlay absolute inset-0 dark:bg-[linear-gradient(180deg,rgba(0,0,0,1)_0%,rgba(0,0,0,1)_100%)]" />
-        <div className="absolute inset-x-0 top-0 h-28 bg-[linear-gradient(180deg,rgba(245,248,250,0.44),rgba(245,248,250,0))] dark:bg-transparent" />
-        <div className="absolute inset-0 opacity-[0.24] [background-image:linear-gradient(rgba(148,163,184,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(148,163,184,0.1)_1px,transparent_1px)] [background-size:72px_72px] dark:opacity-[0.08] dark:[background-image:linear-gradient(rgba(255,255,255,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.025)_1px,transparent_1px)]" />
+        <div className="amiverse-premium-light-overlay absolute inset-0 dark:bg-[linear-gradient(180deg,#000_0%,#09090b_54%,#000_100%)]" />
+        <div className="absolute inset-x-0 top-0 h-28 bg-[linear-gradient(180deg,rgba(245,248,250,0.46),rgba(245,248,250,0))] dark:bg-transparent" />
+        <div className="absolute inset-0 opacity-[0.22] [background-image:linear-gradient(rgba(148,163,184,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(148,163,184,0.1)_1px,transparent_1px)] [background-size:72px_72px] dark:opacity-[0.08] dark:[background-image:linear-gradient(rgba(255,255,255,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.025)_1px,transparent_1px)]" />
       </div>
 
-      <div className="relative mx-auto flex min-h-[calc(100dvh-5.5rem)] max-w-7xl flex-col gap-2 lg:h-[calc(100dvh-5.5rem)] lg:min-h-0 lg:flex-row lg:gap-4">
-        <aside className="relative overflow-hidden rounded-2xl border border-white/85 bg-[linear-gradient(155deg,rgba(255,255,255,0.96),rgba(247,251,255,0.94),rgba(236,246,255,0.92))] p-3.5 shadow-[0_32px_80px_-46px_rgba(15,23,42,0.22)] ring-1 ring-sky-100/70 backdrop-blur-xl dark:border-zinc-900 dark:bg-[linear-gradient(160deg,rgba(0,0,0,0.98),rgba(0,0,0,1),rgba(0,0,0,1))] dark:ring-white/5 dark:shadow-[0_32px_90px_-42px_rgba(0,0,0,0.96)] sm:rounded-[30px] sm:p-5 lg:flex lg:w-[360px] lg:max-w-[380px] lg:min-h-0 lg:max-h-full lg:flex-col lg:overflow-y-auto lg:pr-4">
-          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-sky-300/70 to-transparent dark:via-cyan-300/80" />
-
-          <div className="relative">
-            <div className="flex items-start justify-between gap-3">
-              <div className="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-50/90 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.26em] text-sky-700 dark:border-cyan-300/20 dark:bg-cyan-300/10 dark:text-cyan-100">
-                <span className="h-2 w-2 rounded-full bg-sky-500 shadow-[0_0_12px_rgba(14,165,233,0.45)] dark:bg-cyan-300 dark:shadow-[0_0_18px_rgba(103,232,249,0.9)]" />
-                AmiBot
-              </div>
-
-              <div className="flex h-11 w-11 items-center justify-center rounded-[18px] border border-sky-200/80 bg-white/75 text-sky-700 shadow-sm dark:border-zinc-800 dark:bg-black dark:text-cyan-100">
-                <Sparkles className="h-5 w-5" />
-              </div>
+      <div className="relative mx-auto grid min-h-[calc(100svh-5.5rem)] w-full min-w-0 max-w-7xl gap-3 lg:grid-cols-[minmax(18rem,22rem)_minmax(0,1fr)] lg:gap-4">
+        <aside className={`hidden min-h-0 flex-col overflow-hidden rounded-2xl p-4 lg:flex ${surfaceClassName}`}>
+          <div className="flex items-start justify-between gap-3">
+            <div className="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-50/90 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-sky-700 dark:border-cyan-300/20 dark:bg-cyan-300/10 dark:text-cyan-100">
+              <span className="h-2 w-2 rounded-full bg-sky-500 shadow-[0_0_12px_rgba(14,165,233,0.45)] dark:bg-cyan-300 dark:shadow-[0_0_18px_rgba(103,232,249,0.9)]" />
+              AmiBot
             </div>
 
-            <h1 className="mt-4 text-2xl font-semibold text-slate-950 dark:text-white sm:text-[2rem]">
-              Data-Grounded AmiBot
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-sky-200/80 bg-white/75 text-sky-700 shadow-sm dark:border-zinc-800 dark:bg-black dark:text-cyan-100">
+              <Sparkles className="h-5 w-5" />
+            </div>
+          </div>
+
+          <div className="mt-4">
+            <h1 className="text-2xl font-semibold text-slate-950 dark:text-white">
+              Data-grounded chat
             </h1>
-            <p className="mt-3 text-sm leading-7 text-slate-600 dark:text-zinc-300 sm:text-[15px]">
-              Answers come from the uploaded AmiVerse PDF and Excel knowledge. Logged-in users get saved history and admin follow-up when data is missing.
+            <p className="mt-3 text-sm leading-7 text-slate-600 dark:text-zinc-300">
+              Answers stay tied to AmiVerse knowledge, with saved history for signed-in users.
             </p>
           </div>
 
-          <div className="relative mt-5 grid gap-2">
-            <div className="rounded-2xl border border-slate-200/80 bg-white/75 p-3 text-sm text-slate-700 dark:border-zinc-800 dark:bg-black dark:text-zinc-200">
-              <div className="flex items-center gap-2 font-semibold">
-                <Database className="h-4 w-4 text-sky-700 dark:text-cyan-100" />
-                Uploaded knowledge only
-              </div>
-            </div>
-            <div className="rounded-2xl border border-slate-200/80 bg-white/75 p-3 text-sm text-slate-700 dark:border-zinc-800 dark:bg-black dark:text-zinc-200">
-              <div className="flex items-center gap-2 font-semibold">
-                <History className="h-4 w-4 text-sky-700 dark:text-cyan-100" />
-                {isAuthenticated ? "History enabled" : "Guest session"}
-              </div>
-            </div>
+          <div className="mt-5 grid gap-2">
+            <StatusTile icon={Database} label="Source" value="Uploaded files" />
+            <StatusTile
+              icon={History}
+              label="Session"
+              value={isAuthenticated ? "History on" : "Guest chat"}
+            />
+            <StatusTile icon={ShieldCheck} label="Fallback" value="Admin review" />
           </div>
 
           {historyError ? (
@@ -419,11 +473,11 @@ const AmiBot = () => {
             </div>
           ) : null}
 
-          <div className="relative mt-5">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500 dark:text-zinc-500">
-              Suggested prompts
+          <div className="mt-5 min-h-0 flex-1 overflow-y-auto pr-1">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-zinc-500">
+              Prompt starters
             </p>
-            <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
+            <div className="mt-3 grid gap-2">
               {PROMPT_SUGGESTIONS.map((prompt) => (
                 <PromptSuggestionButton
                   key={prompt}
@@ -434,65 +488,65 @@ const AmiBot = () => {
             </div>
           </div>
 
-          <div className="mt-5 flex flex-col gap-2">
-            {isAuthenticated ? (
-              <button
-                type="button"
-                onClick={handleClearHistory}
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-slate-200 bg-white/80 px-4 py-2 text-sm font-semibold text-slate-800 transition hover:-translate-y-0.5 hover:bg-white disabled:cursor-not-allowed disabled:opacity-60 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
-                disabled={loading || historyLoading}
-              >
-                <Trash2 className="h-4 w-4" />
-                Clear history
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={handleOpenLogin}
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-slate-950 px-4 py-2 text-sm font-semibold text-white shadow-[0_14px_30px_rgba(15,23,42,0.2)] transition hover:-translate-y-0.5 hover:bg-sky-700 dark:bg-cyan-300 dark:text-zinc-950 dark:hover:bg-cyan-200"
-              >
-                <LogIn className="h-4 w-4" />
-                Login for history
-              </button>
-            )}
-          </div>
+          <div className="mt-4">{authAction}</div>
         </aside>
 
-        <div className="relative flex min-h-[60dvh] flex-1 flex-col overflow-hidden rounded-2xl border border-white/85 bg-[linear-gradient(180deg,rgba(255,255,255,0.94),rgba(248,252,255,0.92),rgba(242,249,255,0.9))] shadow-[0_32px_90px_-46px_rgba(15,23,42,0.22)] ring-1 ring-sky-100/70 backdrop-blur-2xl dark:border-zinc-900 dark:bg-[linear-gradient(180deg,rgba(0,0,0,0.98),rgba(0,0,0,1),rgba(0,0,0,1))] dark:ring-white/5 dark:shadow-[0_32px_100px_-44px_rgba(0,0,0,0.98)] sm:rounded-[30px] lg:min-h-0">
-          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-sky-300/75 to-transparent dark:via-white/30" />
-
-          <div className="flex items-center justify-between gap-3 border-b border-slate-200/80 px-4 py-3.5 dark:border-zinc-900 sm:px-6 sm:py-4">
+        <div className={`flex min-h-[calc(100svh-5.75rem)] w-full min-w-0 max-w-full flex-col overflow-hidden rounded-2xl lg:min-h-0 ${surfaceClassName}`}>
+          <div className="flex flex-col gap-3 border-b border-slate-200/80 px-3.5 py-3.5 dark:border-zinc-900 sm:flex-row sm:items-center sm:justify-between sm:px-5 sm:py-4">
             <div className="flex min-w-0 items-center gap-3">
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[18px] border border-sky-200 bg-white/85 text-sky-700 shadow-sm dark:border-zinc-800 dark:bg-black dark:text-cyan-100">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-sky-200 bg-white/85 text-sky-700 shadow-sm dark:border-zinc-800 dark:bg-black dark:text-cyan-100">
                 <Bot className="h-5 w-5" />
               </div>
               <div className="min-w-0">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500 dark:text-zinc-500">
-                  Live Conversation
-                </p>
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-zinc-500">
+                    Live chat
+                  </p>
+                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-bold text-emerald-700 dark:bg-emerald-300/10 dark:text-emerald-100">
+                    <Wifi className="h-3 w-3" />
+                    Online
+                  </span>
+                </div>
                 <h2 className="truncate text-base font-semibold text-slate-950 dark:text-white sm:text-lg">
                   AmiBot Knowledge Chat
                 </h2>
-                <p className="hidden text-sm text-slate-500 dark:text-zinc-400 sm:block">
-                  {isAuthenticated
-                    ? "Logged-in chat history is active."
-                    : "Guest chats are temporary."}
-                </p>
               </div>
             </div>
 
-            <div className="hidden items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700 dark:border-emerald-300/20 dark:bg-emerald-300/10 dark:text-emerald-100 sm:inline-flex">
-              <span className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.45)] dark:bg-emerald-300 dark:shadow-[0_0_14px_rgba(134,239,172,0.75)]" />
-              Online
+            <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+              <span className="inline-flex min-h-10 items-center rounded-xl border border-slate-200 bg-white/74 px-3 text-xs font-semibold text-slate-600 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-300">
+                {isAuthenticated ? "History active" : "Guest mode"}
+              </span>
+              <div className="lg:hidden">{authAction}</div>
             </div>
           </div>
 
-          <div className="relative flex-1 overflow-hidden">
+          <div className="min-w-0 max-w-full overflow-hidden border-b border-slate-200/80 px-3 py-2 dark:border-zinc-900 lg:hidden">
+            <div className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              {PROMPT_SUGGESTIONS.map((prompt) => (
+                <PromptSuggestionButton
+                  compact
+                  key={prompt}
+                  onSelect={handleSuggestionClick}
+                  prompt={prompt}
+                />
+              ))}
+            </div>
+          </div>
+
+          {historyError ? (
+            <div className="mx-3 mt-3 flex items-start gap-2 rounded-2xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-800 dark:border-amber-300/25 dark:bg-amber-300/10 dark:text-amber-100 sm:mx-5 lg:hidden">
+              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+              {historyError}
+            </div>
+          ) : null}
+
+          <div className="relative min-h-0 flex-1 overflow-hidden">
             <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(224,242,254,0.26),rgba(255,255,255,0)_34%)] dark:bg-[linear-gradient(180deg,rgba(255,255,255,0.035),rgba(0,0,0,0)_34%)]" />
 
             <div
               aria-live="polite"
-              className="relative flex h-full flex-col gap-3 overflow-y-auto px-2.5 py-3 sm:gap-4 sm:px-6 sm:py-6"
+              className="relative flex h-full flex-col gap-3 overflow-y-auto px-3 py-3 sm:gap-4 sm:px-6 sm:py-5"
               role="log"
             >
               {historyLoading ? (
@@ -515,28 +569,27 @@ const AmiBot = () => {
           </div>
 
           <form
-            className="border-t border-slate-200/80 bg-white/65 px-2 py-2.5 backdrop-blur-xl dark:border-zinc-900 dark:bg-black sm:px-5 sm:py-4"
+            ref={formRef}
+            className="border-t border-slate-200/80 bg-white/70 px-2.5 py-2.5 backdrop-blur-xl dark:border-zinc-900 dark:bg-black/82 sm:px-5 sm:py-4"
             onSubmit={handleSubmit}
           >
-            <div className="rounded-[20px] border border-white/85 bg-white/85 p-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.92)] dark:border-zinc-800 dark:bg-black dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] sm:rounded-[24px] sm:p-2">
-              <div className="flex items-center gap-1.5 sm:gap-3">
-                <div className="hidden h-12 w-12 items-center justify-center rounded-[18px] border border-sky-200 bg-white/80 text-sm font-semibold uppercase tracking-[0.3em] text-sky-700 dark:border-zinc-800 dark:bg-black dark:text-cyan-100 sm:flex">
-                  AI
-                </div>
-
-                <input
+            <div className="rounded-2xl border border-white/85 bg-white/88 p-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.92)] dark:border-zinc-800 dark:bg-zinc-950 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] sm:p-2">
+              <div className="flex items-end gap-1.5 sm:gap-3">
+                <textarea
                   ref={inputRef}
                   aria-label="Type your message"
                   autoComplete="off"
-                  className="h-11 flex-1 rounded-[16px] border border-transparent bg-transparent px-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:border-sky-300/60 focus:outline-none focus:ring-4 focus:ring-sky-100 dark:text-white dark:placeholder:text-zinc-500 dark:focus:border-zinc-700 dark:focus:ring-white/10 sm:h-12 sm:rounded-[18px] sm:px-4 sm:text-base"
+                  className="max-h-32 min-h-11 flex-1 resize-none rounded-xl border border-transparent bg-transparent px-2.5 py-2.5 text-sm leading-6 text-slate-800 placeholder:text-slate-400 focus:border-sky-300/60 focus:outline-none focus:ring-4 focus:ring-sky-100 dark:text-white dark:placeholder:text-zinc-500 dark:focus:border-zinc-700 dark:focus:ring-white/10 sm:min-h-12 sm:px-4 sm:text-base"
+                  maxLength={2000}
                   onChange={(event) => setInput(event.target.value)}
+                  onKeyDown={handleInputKeyDown}
                   placeholder="Ask AmiBot from uploaded data..."
-                  type="text"
+                  rows={1}
                   value={input}
                 />
 
                 <button
-                  className="inline-flex h-11 items-center justify-center gap-1.5 rounded-[16px] bg-gradient-to-r from-sky-500 via-cyan-500 to-cyan-600 px-3 text-sm font-semibold text-white shadow-[0_18px_40px_rgba(14,165,233,0.28)] transition duration-200 hover:-translate-y-0.5 hover:from-sky-600 hover:via-cyan-600 hover:to-cyan-700 focus:outline-none focus-visible:ring-4 focus-visible:ring-sky-100 disabled:cursor-not-allowed disabled:opacity-55 dark:text-white dark:focus-visible:ring-cyan-300/20 motion-reduce:transform-none sm:h-12 sm:gap-2 sm:rounded-[18px] sm:px-5 sm:text-base"
+                  className="inline-flex h-11 shrink-0 items-center justify-center gap-1.5 rounded-xl bg-[linear-gradient(135deg,#0284c7,#06b6d4)] px-3 text-sm font-semibold text-white shadow-[0_16px_34px_rgba(14,165,233,0.26)] transition duration-200 hover:-translate-y-0.5 hover:from-sky-600 hover:to-cyan-700 focus:outline-none focus-visible:ring-4 focus-visible:ring-sky-100 disabled:cursor-not-allowed disabled:opacity-55 dark:focus-visible:ring-cyan-300/20 motion-reduce:transform-none sm:h-12 sm:gap-2 sm:px-5 sm:text-base"
                   disabled={!canSend}
                   type="submit"
                 >
@@ -548,11 +601,12 @@ const AmiBot = () => {
               </div>
             </div>
 
-            <p className="px-2 pt-2 text-[11px] font-medium uppercase tracking-[0.2em] text-slate-500 dark:text-zinc-500">
-              {isAuthenticated
-                ? "Missing answers are sent to admin."
-                : "Login enables history and admin follow-up."}
-            </p>
+            <div className="flex items-center justify-between gap-3 px-2 pt-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-zinc-500">
+              <span>
+                {isAuthenticated ? "Admin follow-up enabled" : "Login for saved history"}
+              </span>
+              <span>{input.length}/2000</span>
+            </div>
           </form>
         </div>
       </div>
