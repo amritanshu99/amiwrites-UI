@@ -200,7 +200,8 @@ const BlogDetails = () => {
       setSummary(aiText);
     } catch (err) {
       console.error("Summary error:", err);
-      setSummaryError("Failed to generate summary. Please try again.");
+      const apiMessage = err?.response?.data?.error || err?.response?.data?.message;
+      setSummaryError(apiMessage || "Failed to generate summary. Please try again.");
     } finally {
       setSummarizing(false);
     }

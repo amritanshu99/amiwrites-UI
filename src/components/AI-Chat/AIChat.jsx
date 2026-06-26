@@ -115,6 +115,29 @@ const openAuthModal = (eventName) => {
   window.dispatchEvent(new Event(eventName));
 };
 
+const readGeminiResponse = async (response) => {
+  const rawText = await response.text();
+  let data = {};
+
+  if (rawText) {
+    try {
+      data = JSON.parse(rawText);
+    } catch {
+      data = { error: rawText };
+    }
+  }
+
+  if (!response.ok) {
+    const error = new Error(
+      data?.error || data?.message || `HTTP error! Status: ${response.status}`
+    );
+    error.status = response.status;
+    throw error;
+  }
+
+  return data;
+};
+
 const AIChat = () => {
   const [token, setToken] = useState(() => localStorage.getItem("token"));
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -266,11 +289,7 @@ const AIChat = () => {
         body: JSON.stringify({ prompt: expertPrompt }),
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-
-      const data = await response.json();
+      const data = await readGeminiResponse(response);
       const fullText = data.response || "Sorry, I did not get a response.";
       let index = 0;
       let currentText = "";
@@ -315,8 +334,9 @@ const AIChat = () => {
         ...prev.slice(0, -1),
         {
           role: "ai",
-          content:
-            "Sorry, something went wrong while fetching the response. Please try again later.",
+          content: error.status === 429
+            ? error.message
+            : "Sorry, something went wrong while fetching the response. Please try again later.",
         },
       ]);
       setIsResponding(false);
