@@ -7,10 +7,6 @@
   --scrollbar-thumb: rgba(56, 189, 248, 0.72);
   --scrollbar-thumb-hover: rgba(14, 165, 233, 0.92);
   --scrollbar-track: rgba(15, 23, 42, 0.52);
-  --ami-motion-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
-  --ami-motion-ease-in: cubic-bezier(0.4, 0, 1, 1);
-  --ami-motion-fast: 160ms;
-  --ami-motion-medium: 240ms;
   --amiverse-premium-light-page-bg:
     radial-gradient(circle at 12% -12%, rgba(14, 165, 233, 0.24), transparent 31%),
     radial-gradient(circle at 88% 4%, rgba(99, 102, 241, 0.16), transparent 29%),
@@ -342,53 +338,6 @@ body {
 
 body {
   overscroll-behavior-y: none;
-}
-
-.ami-app-shell {
-  scroll-behavior: smooth;
-}
-
-.ami-route-shell {
-  min-height: calc(100svh - 4rem);
-  transform-origin: 50% 1.25rem;
-  backface-visibility: hidden;
-  will-change: opacity, transform;
-}
-
-.ami-app-shell :where(a, button, [role="button"], input, textarea, select, summary) {
-  transition-timing-function: var(--ami-motion-ease-out);
-}
-
-.ami-app-shell :where(a, button, [role="button"], summary) {
-  -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation;
-}
-
-.ami-app-shell :where(a, button, [role="button"]):focus-visible {
-  transition-duration: 80ms;
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .ami-app-shell :where(a, button, [role="button"], summary) {
-    transition-duration: var(--ami-motion-fast);
-  }
-
-  .ami-app-shell main :where(a, button, [role="button"]):not(:disabled):not([aria-disabled="true"]):active {
-    filter: brightness(0.98);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  html:focus-within,
-  .ami-app-shell {
-    scroll-behavior: auto;
-  }
-
-  .ami-route-shell {
-    opacity: 1 !important;
-    transform: none !important;
-    will-change: auto;
-  }
 }
 
 html:not(.dark) body.amiverse-premium-light-page,
