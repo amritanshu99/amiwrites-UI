@@ -140,6 +140,7 @@ const App = () => {
   const navigate = useNavigate();
   const appShellRef = useRef(null);
   const initialLoaderMode = location.pathname === "/" ? "showcase" : "session";
+  const isAmiBotWorkspace = location.pathname === "/amibot";
 
   const logout = () => {
     localStorage.removeItem("token");
@@ -185,19 +186,25 @@ const App = () => {
 
   useEffect(() => {
     if (appShellRef.current) {
-      appShellRef.current.scrollTo({ top: 0, behavior: "smooth" });
+      appShellRef.current.scrollTo({
+        top: 0,
+        behavior: isAmiBotWorkspace ? "auto" : "smooth",
+      });
       return;
     }
 
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }, [location.pathname]);
+    window.scrollTo({ top: 0, behavior: isAmiBotWorkspace ? "auto" : "smooth" });
+  }, [isAmiBotWorkspace, location.pathname]);
 
   if (!shouldRender) {
     return <InitialLoader mode={initialLoaderMode} />;
   }
 
   return (
-    <div ref={appShellRef} className="h-screen overflow-y-scroll relative">
+    <div
+      ref={appShellRef}
+      className={`h-screen relative ${isAmiBotWorkspace ? "overflow-hidden" : "overflow-y-scroll"}`}
+    >
       <Header setLoading={setIsLoading} />
       <ToastContainer
         className="amiverse-toast-container"
@@ -223,7 +230,15 @@ const App = () => {
         </div>
       )}
 
-      <main id="main" className="flex-1" tabIndex={-1}>
+      <main
+        id="main"
+        className={
+          isAmiBotWorkspace
+            ? "h-[calc(100svh_-_4rem_-_env(safe-area-inset-top))] min-h-0 sm:h-[calc(100svh_-_4.25rem_-_env(safe-area-inset-top))] lg:h-[calc(100svh_-_4.5rem_-_env(safe-area-inset-top))]"
+            : "flex-1"
+        }
+        tabIndex={-1}
+      >
         <Suspense fallback={<InitialLoader mode={initialLoaderMode} />}>
           <Routes>
             <Route path="/" element={<Portfolio />} />
@@ -279,7 +294,7 @@ const App = () => {
       </main>
 
       <ContactMeButton />
-      <Footer />
+      {!isAmiBotWorkspace && <Footer />}
     </div>
   );
 };

@@ -22,7 +22,7 @@ const AmiBotDetails = () => {
   }, []);
 
   return (
-    <div className="amiverse-premium-light-page min-h-screen">
+    <div className="amiverse-premium-light-page h-full min-h-0 overflow-hidden">
       <AmiBot />
     </div>
   );

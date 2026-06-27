@@ -51,7 +51,7 @@ test("renders the AmiBot chat workspace and fills a prompt starter", async () =>
   expect(screen.getByRole("button", { name: /send message/i })).toBeDisabled();
 
   fireEvent.click(
-    screen.getByRole("button", { name: /summarize the uploaded knowledge/i })
+    screen.getAllByRole("button", { name: /summarize the uploaded knowledge/i })[0]
   );
 
   await waitFor(() => {
@@ -80,8 +80,7 @@ test("sends a message and renders a sourced markdown answer", async () => {
   expect(
     await screen.findByText("What skills are in the uploaded files?")
   ).toBeInTheDocument();
-  expect(await screen.findByText(/AmiBot answer from/i)).toBeInTheDocument();
-  expect(screen.getByText(/knowledge\./i)).toBeInTheDocument();
+  expect(await screen.findByText("AmiBot answer from knowledge.")).toBeInTheDocument();
   expect(screen.getByText("Profile.pdf")).toBeInTheDocument();
 
   expect(global.fetch).toHaveBeenCalledWith(

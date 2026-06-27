@@ -66,7 +66,14 @@ const thinkingTexts = [
 ];
 
 const surfaceClassName =
-  "rounded-lg border border-slate-200/80 bg-white/[0.9] shadow-[0_24px_70px_-46px_rgba(15,23,42,0.32)] backdrop-blur-xl dark:border-white/10 dark:bg-zinc-950/[0.9] dark:shadow-[0_30px_90px_-52px_rgba(0,0,0,0.95)]";
+  "rounded-lg border border-slate-200/80 bg-white/[0.96] shadow-sm dark:border-white/10 dark:bg-zinc-950/[0.96] lg:bg-white/[0.9] lg:shadow-[0_24px_70px_-46px_rgba(15,23,42,0.32)] lg:backdrop-blur-xl lg:dark:bg-zinc-950/[0.9] lg:dark:shadow-[0_30px_90px_-52px_rgba(0,0,0,0.95)]";
+
+function isCoarseInputDevice() {
+  return Boolean(
+    typeof window !== "undefined" &&
+      window.matchMedia?.("(pointer: coarse)")?.matches
+  );
+}
 
 function parseJwt(token) {
   try {
@@ -572,11 +579,15 @@ const AmiBot = () => {
       ]);
     } finally {
       setLoading(false);
-      inputRef.current?.focus();
+      if (!isCoarseInputDevice()) {
+        inputRef.current?.focus();
+      }
     }
   }, [input, loading]);
 
   const handleInputKeyDown = useCallback((event) => {
+    if (isCoarseInputDevice()) return;
+
     if (
       event.key === "Enter" &&
       !event.shiftKey &&
@@ -613,9 +624,9 @@ const AmiBot = () => {
   );
 
   return (
-    <section className="min-h-[calc(100svh-4rem)] w-screen max-w-full overflow-x-hidden bg-[linear-gradient(180deg,#f8fafc_0%,#e0f2fe_46%,#ecfdf5_100%)] px-3 py-4 text-slate-900 dark:bg-[linear-gradient(180deg,#050505_0%,#0b1115_58%,#000000_100%)] dark:text-zinc-100 sm:px-5 sm:py-6 lg:px-8">
-      <div className="mx-auto grid w-full min-w-0 max-w-7xl gap-4 overflow-hidden lg:grid-cols-[20rem_minmax(0,1fr)] lg:gap-5">
-        <aside className={`relative w-full min-w-0 max-w-full overflow-hidden p-4 sm:p-5 lg:sticky lg:top-24 lg:self-start ${surfaceClassName}`}>
+    <section className="h-full min-h-0 w-screen max-w-full overflow-hidden bg-[linear-gradient(180deg,#f8fafc_0%,#e0f2fe_46%,#ecfdf5_100%)] p-2 text-slate-900 dark:bg-[linear-gradient(180deg,#050505_0%,#0b1115_58%,#000000_100%)] dark:text-zinc-100 sm:px-5 sm:py-6 lg:px-8">
+      <div className="mx-auto grid h-full w-full min-w-0 max-w-7xl gap-0 overflow-hidden lg:grid-cols-[20rem_minmax(0,1fr)] lg:gap-5">
+        <aside className={`relative hidden w-full min-w-0 max-w-full overflow-hidden p-4 sm:p-5 lg:sticky lg:top-24 lg:block lg:self-start ${surfaceClassName}`}>
           <div className="absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,#0891b2,#10b981,#f59e0b)]" />
 
           <div className="flex items-start gap-3">
@@ -679,11 +690,11 @@ const AmiBot = () => {
           </div>
         </aside>
 
-        <section className={`flex min-h-[34rem] w-full min-w-0 max-w-full flex-col overflow-hidden sm:min-h-[38rem] lg:h-[calc(100svh-8.5rem)] ${surfaceClassName}`}>
-          <header className="border-b border-slate-200 bg-white/[0.86] px-4 py-4 dark:border-white/10 dark:bg-white/[0.04] sm:px-5">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <section className={`flex h-full min-h-0 w-full min-w-0 max-w-full flex-col overflow-hidden lg:h-[calc(100svh-8.5rem)] ${surfaceClassName}`}>
+          <header className="border-b border-slate-200 bg-white/[0.94] px-3 py-3 dark:border-white/10 dark:bg-white/[0.04] sm:px-5 sm:py-4">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
               <div className="flex min-w-0 items-center gap-3">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-slate-950 text-cyan-200 shadow-sm dark:bg-cyan-300 dark:text-slate-950">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-950 text-cyan-200 shadow-sm dark:bg-cyan-300 dark:text-slate-950 sm:h-10 sm:w-10">
                   <Bot className="h-5 w-5" />
                 </span>
                 <div className="min-w-0">
@@ -694,13 +705,13 @@ const AmiBot = () => {
                       Online
                     </span>
                   </div>
-                  <h2 className="mt-1 truncate text-xl font-bold leading-7 text-slate-950 dark:text-white sm:text-2xl">
+                  <h2 className="mt-0.5 truncate text-lg font-bold leading-6 text-slate-950 dark:text-white sm:mt-1 sm:text-2xl sm:leading-7">
                     AmiBot Knowledge Chat
                   </h2>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-2 text-xs text-slate-600 dark:text-zinc-300 sm:flex">
+              <div className="hidden grid-cols-2 gap-2 text-xs text-slate-600 dark:text-zinc-300 min-[390px]:grid sm:flex">
                 <span className="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 font-semibold dark:border-white/10 dark:bg-white/[0.06]">
                   <History className="h-3.5 w-3.5 text-cyan-700 dark:text-cyan-200" />
                   {isAuthenticated ? "History active" : "Guest mode"}
@@ -713,11 +724,24 @@ const AmiBot = () => {
             </div>
           </header>
 
+          <div className="border-b border-slate-200 bg-white/[0.9] px-3 py-2 dark:border-white/10 dark:bg-zinc-950/[0.88] lg:hidden">
+            <div className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              {PROMPT_SUGGESTIONS.map((prompt) => (
+                <PromptSuggestionButton
+                  compact
+                  key={prompt}
+                  onSelect={handleSuggestionClick}
+                  prompt={prompt}
+                />
+              ))}
+            </div>
+          </div>
+
           <div
             ref={messagesContainerRef}
             aria-live="polite"
             aria-relevant="additions text"
-            className="min-h-0 flex-1 overflow-y-auto overscroll-contain bg-slate-50/70 px-3 py-4 dark:bg-black/30 sm:px-5 sm:py-5"
+            className="min-h-0 flex-1 touch-pan-y overflow-y-auto overscroll-contain bg-slate-50/70 px-3 py-3 [-webkit-overflow-scrolling:touch] dark:bg-black/30 sm:px-5 sm:py-5"
             onScroll={handleMessagesScroll}
             role="log"
           >
@@ -742,17 +766,17 @@ const AmiBot = () => {
             )}
           </div>
 
-          <div className="min-w-0 max-w-full overflow-hidden border-t border-slate-200 bg-white/[0.92] px-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 dark:border-white/10 dark:bg-zinc-950/[0.92] sm:p-4">
+          <div className="min-w-0 max-w-full overflow-hidden border-t border-slate-200 bg-white/[0.96] px-3 pb-[calc(0.65rem+env(safe-area-inset-bottom))] pt-2 dark:border-white/10 dark:bg-zinc-950/[0.96] sm:p-4">
             <form
               ref={formRef}
-              className="flex w-full min-w-0 max-w-full flex-col gap-2 lg:flex-row lg:items-end"
+              className="flex w-full min-w-0 max-w-full items-end gap-2"
               onSubmit={handleSubmit}
             >
               <textarea
                 ref={inputRef}
                 aria-label="Type your message"
                 autoComplete="off"
-                className="min-h-12 max-h-32 w-full min-w-0 max-w-[calc(100vw-3rem)] flex-1 resize-none overflow-y-hidden rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm leading-6 text-slate-950 shadow-inner shadow-slate-100/70 outline-none transition-colors placeholder:text-slate-400 focus:border-cyan-400 focus:ring-4 focus:ring-cyan-100 dark:border-white/10 dark:bg-white/[0.06] dark:text-white dark:shadow-none dark:placeholder:text-zinc-500 dark:focus:border-cyan-300/60 dark:focus:ring-cyan-300/10 sm:text-base lg:w-0 lg:max-w-none"
+                className="min-h-12 max-h-32 w-0 min-w-0 flex-1 resize-none overflow-y-hidden rounded-lg border border-slate-200 bg-white px-3.5 py-3 text-sm leading-6 text-slate-950 shadow-inner shadow-slate-100/70 outline-none transition-colors placeholder:text-slate-400 focus:border-cyan-400 focus:ring-4 focus:ring-cyan-100 dark:border-white/10 dark:bg-white/[0.06] dark:text-white dark:shadow-none dark:placeholder:text-zinc-500 dark:focus:border-cyan-300/60 dark:focus:ring-cyan-300/10 sm:px-4 sm:text-base"
                 maxLength={2000}
                 onChange={(event) => setInput(event.target.value)}
                 onKeyDown={handleInputKeyDown}
@@ -763,7 +787,7 @@ const AmiBot = () => {
 
               <button
                 aria-label="Send message"
-                className="inline-flex h-12 w-full max-w-[calc(100vw-3rem)] shrink-0 items-center justify-center gap-2 rounded-lg bg-slate-950 px-4 text-white shadow-[0_16px_28px_-20px_rgba(15,23,42,0.95)] transition-colors hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-cyan-100 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-cyan-300 dark:text-slate-950 dark:hover:bg-cyan-200 dark:focus-visible:ring-cyan-300/10 lg:w-12 lg:max-w-none lg:px-0"
+                className="inline-flex h-12 w-12 shrink-0 items-center justify-center gap-2 rounded-lg bg-slate-950 px-0 text-white shadow-[0_16px_28px_-20px_rgba(15,23,42,0.95)] transition-colors hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-cyan-100 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-cyan-300 dark:text-slate-950 dark:hover:bg-cyan-200 dark:focus-visible:ring-cyan-300/10"
                 disabled={!canSend}
                 title="Send message"
                 type="submit"
@@ -773,13 +797,13 @@ const AmiBot = () => {
                 ) : (
                   <SendHorizontal className="h-5 w-5" />
                 )}
-                <span className="text-sm font-semibold lg:hidden">
+                <span className="sr-only">
                   {loading ? "Sending..." : "Send"}
                 </span>
               </button>
             </form>
 
-            <div className="mt-2 flex items-center justify-between gap-3 px-1 text-xs font-semibold text-slate-500 dark:text-zinc-400">
+            <div className="mt-1.5 flex items-center justify-between gap-3 px-1 text-[11px] font-semibold text-slate-500 dark:text-zinc-400 sm:mt-2 sm:text-xs">
               <span>{isAuthenticated ? "History active" : "Guest mode"}</span>
               <span>{input.length}/2000</span>
             </div>
