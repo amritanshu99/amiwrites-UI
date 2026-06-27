@@ -8,7 +8,6 @@ import {
   useParams,
 } from "react-router-dom";
 import axios from "axios";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Slide, ToastContainer, toast } from "react-toastify";
 import {
   AlertTriangle,
@@ -141,11 +140,6 @@ const App = () => {
   const navigate = useNavigate();
   const appShellRef = useRef(null);
   const initialLoaderMode = location.pathname === "/" ? "showcase" : "session";
-  const prefersReducedMotion = useReducedMotion();
-  const routeTransition = {
-    duration: prefersReducedMotion ? 0 : 0.34,
-    ease: [0.22, 1, 0.36, 1],
-  };
 
   const logout = () => {
     localStorage.removeItem("token");
@@ -231,69 +225,56 @@ const App = () => {
 
       <main id="main" className="flex-1" tabIndex={-1}>
         <Suspense fallback={<InitialLoader mode={initialLoaderMode} />}>
-          <AnimatePresence mode="wait" initial={false}>
-            <motion.div
-              key={location.pathname}
-              className="amiverse-route-frame"
-              initial={prefersReducedMotion ? false : { opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={
-                prefersReducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: -6 }
+          <Routes>
+            <Route path="/" element={<Portfolio />} />
+            <Route path="/blogs" element={<BlogPage />} />
+            <Route path="/blog" element={<BlogPage />} />
+            <Route path="/ai-chat" element={<AIChatPage />} />
+            <Route
+              path="/add-blog"
+              element={
+                <ProtectedAdminRoute>
+                  <AddBlogDetails />
+                </ProtectedAdminRoute>
               }
-              transition={routeTransition}
-            >
-              <Routes location={location}>
-                <Route path="/" element={<Portfolio />} />
-                <Route path="/blogs" element={<BlogPage />} />
-                <Route path="/blog" element={<BlogPage />} />
-                <Route path="/ai-chat" element={<AIChatPage />} />
-                <Route
-                  path="/add-blog"
-                  element={
-                    <ProtectedAdminRoute>
-                      <AddBlogDetails />
-                    </ProtectedAdminRoute>
-                  }
-                />
-                <Route
-                  path="/ami-pulse-settings"
-                  element={
-                    <ProtectedAdminRoute>
-                      <AmiPulseSettings />
-                    </ProtectedAdminRoute>
-                  }
-                />
-                <Route path="/beacon-settings" element={<Navigate to="/ami-pulse-settings" replace />} />
-                <Route path="/pulse-settings" element={<Navigate to="/ami-pulse-settings" replace />} />
-                <Route path="/blogs/:id" element={<BlogsDetails />} />
-                <Route path="/tech-byte" element={<TechByte />} />
-                <Route path="/reset-password/:id" element={<ValidateResetToken />} />
-                <Route path="/legal/:slug" element={<LegalPage />} />
-                <Route path="/ai-tools" element={<AIToolsDetails />} />
-                <Route path="/task-manager" element={<TaskManagerDetails />} />
-                <Route path="/spam-check" element={<SpamDetectorDetails />} />
-                <Route path="/movie-recommender" element={<MoviePredictDetails />} />
-                <Route
-                  path="/emotion-analyzer"
-                  element={<EmotionAnalyzerDetails />}
-                />
-                <Route path="/amibot" element={<AmiBotDetails />} />
-                <Route
-                  path="/amibot-admin"
-                  element={
-                    <ProtectedAdminRoute>
-                      <AmiBotAdmin />
-                    </ProtectedAdminRoute>
-                  }
-                />
-                <Route
-                  path="/Reinforcement-Learning"
-                  element={<ReinforcementLearningDetails />}
-                />
-                <Route path="*" element={<Navigate to="/" replace />} />
-              </Routes>
-            </motion.div>
-          </AnimatePresence>
+            />
+            <Route
+              path="/ami-pulse-settings"
+              element={
+                <ProtectedAdminRoute>
+                  <AmiPulseSettings />
+                </ProtectedAdminRoute>
+              }
+            />
+            <Route path="/beacon-settings" element={<Navigate to="/ami-pulse-settings" replace />} />
+            <Route path="/pulse-settings" element={<Navigate to="/ami-pulse-settings" replace />} />
+            <Route path="/blogs/:id" element={<BlogsDetails />} />
+            <Route path="/tech-byte" element={<TechByte />} />
+            <Route path="/reset-password/:id" element={<ValidateResetToken />} />
+            <Route path="/legal/:slug" element={<LegalPage />} />
+            <Route path="/ai-tools" element={<AIToolsDetails />} />
+            <Route path="/task-manager" element={<TaskManagerDetails />} />
+            <Route path="/spam-check" element={<SpamDetectorDetails />} />
+            <Route path="/movie-recommender" element={<MoviePredictDetails />} />
+            <Route
+              path="/emotion-analyzer"
+              element={<EmotionAnalyzerDetails />}
+            />
+            <Route path="/amibot" element={<AmiBotDetails />} />
+            <Route
+              path="/amibot-admin"
+              element={
+                <ProtectedAdminRoute>
+                  <AmiBotAdmin />
+                </ProtectedAdminRoute>
+              }
+            />
+            <Route
+              path="/Reinforcement-Learning"
+              element={<ReinforcementLearningDetails />}
+            />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
         </Suspense>
       </main>
 
