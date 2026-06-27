@@ -32,10 +32,10 @@ const navSurfaceClass =
   "rounded-2xl border border-[#475569]/12 bg-white/68 p-2 shadow-md shadow-slate-400/15 backdrop-blur-md dark:border-zinc-800/75 dark:bg-[linear-gradient(160deg,rgba(18,18,18,0.98),rgba(5,5,5,0.98),rgba(0,0,0,1))] dark:shadow-[0_24px_62px_-42px_rgba(0,0,0,0.94)] sm:p-2.5";
 
 const textLinkClass =
-  "inline-flex rounded-md px-2 py-0.5 text-[#475569] transition-[background-color,color,transform] duration-200 hover:translate-x-0.5 hover:bg-[#475569]/8 hover:text-[#111827] dark:text-zinc-200 dark:hover:bg-white/5 dark:hover:text-white motion-reduce:transition-none motion-reduce:hover:translate-x-0";
+  "inline-flex rounded-md px-2 py-0.5 text-[#475569] transition-colors hover:bg-[#475569]/8 hover:text-[#111827] dark:text-zinc-200 dark:hover:bg-white/5 dark:hover:text-white";
 
 const legalLinkClass =
-  "inline-flex w-full items-center rounded-lg border border-[#475569]/18 bg-white/88 px-2 py-0.5 text-[#475569] shadow-sm shadow-slate-400/25 backdrop-blur-md transition-[background-color,border-color,box-shadow,color,transform] duration-200 hover:-translate-y-px hover:border-[#475569]/50 hover:bg-[#475569]/8 hover:text-[#111827] hover:shadow-[0_8px_22px_rgba(71,85,105,0.12)] dark:border-zinc-800/80 dark:bg-[linear-gradient(145deg,rgba(15,15,15,0.98),rgba(2,2,2,1))] dark:text-zinc-100 dark:shadow-none dark:hover:border-zinc-700 dark:hover:bg-[linear-gradient(145deg,rgba(28,28,28,0.98),rgba(6,6,6,1))] dark:hover:text-white motion-reduce:transition-none motion-reduce:hover:translate-y-0 sm:px-2.5 sm:py-1";
+  "inline-flex w-full items-center rounded-lg border border-[#475569]/18 bg-white/88 px-2 py-0.5 text-[#475569] shadow-sm shadow-slate-400/25 backdrop-blur-md transition-all hover:border-[#475569]/50 hover:bg-[#475569]/8 hover:text-[#111827] hover:shadow-[0_8px_22px_rgba(71,85,105,0.12)] dark:border-zinc-800/80 dark:bg-[linear-gradient(145deg,rgba(15,15,15,0.98),rgba(2,2,2,1))] dark:text-zinc-100 dark:shadow-none dark:hover:border-zinc-700 dark:hover:bg-[linear-gradient(145deg,rgba(28,28,28,0.98),rgba(6,6,6,1))] dark:hover:text-white sm:px-2.5 sm:py-1";
 
 const Footer = () => {
   const scrollToTop = useCallback(() => {
@@ -145,7 +145,7 @@ const Footer = () => {
             <span>Made with</span>
             <span className="sr-only">love</span>
             <Heart
-              className="h-3.5 w-3.5 animate-[footerHeartBeat_1.65s_ease-in-out_infinite] fill-rose-500 text-rose-500 drop-shadow-[0_0_8px_rgba(244,63,94,0.38)] motion-reduce:animate-none"
+              className="h-3.5 w-3.5 animate-[footerHeartBeat_1.15s_ease-in-out_infinite] fill-rose-500 text-rose-500 drop-shadow-[0_0_8px_rgba(244,63,94,0.38)]"
               aria-hidden="true"
               strokeWidth={2.4}
             />

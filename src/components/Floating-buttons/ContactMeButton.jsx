@@ -108,16 +108,15 @@ export default function ContactMeButton() {
           focus-visible:ring-2 focus-visible:ring-cyan-300 active:translate-y-0
           dark:border-cyan-100/10 dark:bg-slate-950/95 dark:ring-cyan-100/10
           md:bottom-[calc(1.5rem+env(safe-area-inset-bottom))] md:right-6
-          motion-reduce:transition-none motion-reduce:hover:translate-y-0
           ${isExpanded ? "w-40 justify-start px-4 py-2.5" : "w-14 justify-center px-0 py-0"}
         `}
         style={{
-          transitionProperty: "width, padding, background-color, box-shadow, transform",
+          transitionProperty: "width, padding, background-color, box-shadow",
         }}
       >
         <span className="absolute inset-0 bg-[linear-gradient(135deg,rgba(14,165,233,0.95),rgba(20,184,166,0.76)_48%,rgba(15,23,42,0.92))] opacity-95 transition-opacity duration-300 group-hover:opacity-100 dark:bg-[linear-gradient(135deg,rgba(7,89,133,0.96),rgba(13,148,136,0.68)_50%,rgba(2,6,23,0.98))] dark:opacity-100" />
         <span className="absolute inset-x-3 top-0 h-px bg-white/[0.55] dark:bg-cyan-100/24" />
-        <span className="amiverse-pulse-aura absolute -inset-1 rounded-full bg-cyan-300/20 blur-xl transition-opacity duration-300 group-hover:opacity-100 dark:bg-cyan-500/10 dark:group-hover:opacity-80" />
+        <span className="absolute -inset-1 rounded-full bg-cyan-300/20 opacity-0 blur-xl transition-opacity duration-300 group-hover:opacity-100 dark:bg-cyan-500/10 dark:group-hover:opacity-80" />
         <span className="relative z-10 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/[0.16] ring-1 ring-white/25 transition-transform duration-300 group-hover:scale-105 dark:bg-black/20 dark:ring-cyan-100/20">
           <MessageCircle size={19} strokeWidth={2.2} />
         </span>
@@ -138,7 +137,7 @@ export default function ContactMeButton() {
           onClick={() => !loading && setOpen(false)}
         >
           <div
-            className="amiverse-panel-in relative w-full max-w-md overflow-hidden rounded-2xl border border-white/[0.55] bg-white/[0.92] p-6 shadow-[0_28px_80px_rgba(15,23,42,0.28)] ring-1 ring-slate-900/5 backdrop-blur-2xl transition-transform duration-300 dark:border-cyan-100/10 dark:bg-zinc-950/[0.92] dark:shadow-[0_30px_90px_rgba(0,0,0,0.68)] dark:ring-white/10 sm:p-8"
+            className="relative w-full max-w-md overflow-hidden rounded-2xl border border-white/[0.55] bg-white/[0.92] p-6 shadow-[0_28px_80px_rgba(15,23,42,0.28)] ring-1 ring-slate-900/5 backdrop-blur-2xl transition-transform duration-300 animate-fade-in dark:border-cyan-100/10 dark:bg-zinc-950/[0.92] dark:shadow-[0_30px_90px_rgba(0,0,0,0.68)] dark:ring-white/10 sm:p-8"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-[linear-gradient(180deg,rgba(14,165,233,0.14),rgba(255,255,255,0))] dark:bg-[linear-gradient(180deg,rgba(34,211,238,0.12),rgba(9,9,11,0))]" />

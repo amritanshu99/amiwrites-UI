@@ -258,7 +258,7 @@ export default function Header({ setLoading }) {
             {/* Brand */}
             <Link
               to="/"
-              className="group flex min-w-0 max-w-[calc(100%-7rem)] shrink items-center gap-2 rounded-[1.15rem] px-2 py-1.5 transition-[background-color,box-shadow,transform] duration-200 hover:-translate-y-px hover:bg-white/64 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#475569]/[0.45] dark:hover:bg-white/10 dark:focus-visible:ring-white/70 motion-reduce:transition-none motion-reduce:hover:translate-y-0 sm:max-w-none"
+              className="group flex min-w-0 max-w-[calc(100%-7rem)] shrink items-center gap-2 rounded-[1.15rem] px-2 py-1.5 transition-colors duration-200 hover:bg-white/64 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#475569]/[0.45] dark:hover:bg-white/10 dark:focus-visible:ring-white/70 sm:max-w-none"
               aria-label="AmiVerse Home"
             >
               <img
@@ -322,7 +322,7 @@ export default function Header({ setLoading }) {
                     key={link.name}
                     to={link.to}
                     className={({ isActive }) =>
-                       `relative inline-flex h-10 items-center rounded-[1rem] outline-none transition-[background-color,color,transform] duration-200 hover:-translate-y-px focus-visible:ring-2 focus-visible:ring-[#475569]/[0.45] dark:focus-visible:ring-white/70 motion-reduce:transition-none motion-reduce:hover:translate-y-0
+                       `relative inline-flex h-10 items-center rounded-[1rem] outline-none transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-[#475569]/[0.45] dark:focus-visible:ring-white/70
                        text-[12.5px] sm:text-[13px] md:text-sm px-3 md:px-3.5 snap-center
                        ${
                          isActive
@@ -377,7 +377,7 @@ export default function Header({ setLoading }) {
               {/* Theme toggle */}
               <button
                 onClick={() => setDarkMode((prev) => !prev)}
-                className="group relative inline-flex h-10 w-10 items-center justify-center rounded-[1.05rem] bg-white/72 text-[#111827] shadow-[0_8px_20px_rgba(71,85,105,0.11)] ring-1 ring-[#475569]/[0.12] transition-[background-color,box-shadow,transform] duration-200 hover:-translate-y-px hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#475569]/[0.45] dark:bg-white/[0.08] dark:text-white dark:ring-white/20 dark:hover:bg-white/[0.14] dark:focus-visible:ring-white/70 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+                className="group relative inline-flex h-10 w-10 items-center justify-center rounded-[1.05rem] bg-white/72 text-[#111827] shadow-[0_8px_20px_rgba(71,85,105,0.11)] ring-1 ring-[#475569]/[0.12] transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#475569]/[0.45] dark:bg-white/[0.08] dark:text-white dark:ring-white/20 dark:hover:bg-white/[0.14] dark:focus-visible:ring-white/70"
                 aria-label="Toggle Dark Mode"
                 type="button"
               >
@@ -396,7 +396,7 @@ export default function Header({ setLoading }) {
                     id="user-menu-button"
                     ref={userButtonRef}
                     onClick={() => setUserMenuOpen((p) => !p)}
-                    className="inline-flex h-10 w-10 items-center justify-center rounded-[1.05rem] bg-white/72 text-[#111827] shadow-[0_8px_20px_rgba(71,85,105,0.11)] ring-1 ring-[#475569]/[0.12] transition-[background-color,box-shadow,transform] duration-200 hover:-translate-y-px hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#475569]/[0.45] dark:bg-white/[0.08] dark:text-white dark:ring-white/20 dark:hover:bg-white/[0.14] dark:focus-visible:ring-white/70 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-[1.05rem] bg-white/72 text-[#111827] shadow-[0_8px_20px_rgba(71,85,105,0.11)] ring-1 ring-[#475569]/[0.12] transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#475569]/[0.45] dark:bg-white/[0.08] dark:text-white dark:ring-white/20 dark:hover:bg-white/[0.14] dark:focus-visible:ring-white/70"
                     aria-label="User menu"
                     aria-haspopup="menu"
                     aria-expanded={userMenuOpen}
@@ -470,14 +470,14 @@ export default function Header({ setLoading }) {
                 <div className="hidden md:flex gap-1.5 lg:gap-2">
                   <button
                     onClick={() => setLoginOpen(true)}
-                    className="min-h-10 rounded-[1.05rem] bg-[#111827] px-3.5 py-2 text-sm font-semibold text-white shadow-[0_9px_22px_rgba(71,85,105,0.15)] ring-1 ring-[#111827]/[0.10] transition-[background-color,box-shadow,transform] duration-200 hover:-translate-y-px hover:bg-[#475569] hover:shadow-[0_12px_26px_rgba(71,85,105,0.18)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#475569]/[0.50] focus-visible:ring-offset-slate-100 dark:bg-white/[0.92] dark:text-slate-950 dark:hover:bg-white dark:focus-visible:ring-white/80 dark:focus-visible:ring-offset-slate-950 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+                    className="min-h-10 rounded-[1.05rem] bg-[#111827] px-3.5 py-2 text-sm font-semibold text-white shadow-[0_9px_22px_rgba(71,85,105,0.15)] ring-1 ring-[#111827]/[0.10] transition hover:bg-[#475569] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#475569]/[0.50] focus-visible:ring-offset-slate-100 dark:bg-white/[0.92] dark:text-slate-950 dark:hover:bg-white dark:focus-visible:ring-white/80 dark:focus-visible:ring-offset-slate-950"
                     type="button"
                   >
                     Login
                   </button>
                   <button
                     onClick={() => setSignupOpen(true)}
-                    className="min-h-10 rounded-[1.05rem] bg-white/72 px-3.5 py-2 text-sm font-semibold text-[#111827] shadow-[0_9px_22px_rgba(71,85,105,0.11)] ring-1 ring-[#475569]/[0.12] transition-[background-color,box-shadow,transform] duration-200 hover:-translate-y-px hover:bg-white hover:shadow-[0_12px_26px_rgba(71,85,105,0.14)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#475569]/[0.50] focus-visible:ring-offset-slate-100 dark:bg-white/[0.08] dark:text-white dark:ring-white/[0.24] dark:hover:bg-white/[0.14] dark:focus-visible:ring-white/80 dark:focus-visible:ring-offset-slate-950 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+                    className="min-h-10 rounded-[1.05rem] bg-white/72 px-3.5 py-2 text-sm font-semibold text-[#111827] shadow-[0_9px_22px_rgba(71,85,105,0.11)] ring-1 ring-[#475569]/[0.12] transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#475569]/[0.50] focus-visible:ring-offset-slate-100 dark:bg-white/[0.08] dark:text-white dark:ring-white/[0.24] dark:hover:bg-white/[0.14] dark:focus-visible:ring-white/80 dark:focus-visible:ring-offset-slate-950"
                     type="button"
                   >
                     Sign Up
@@ -489,7 +489,7 @@ export default function Header({ setLoading }) {
               <button
                 ref={mobileMenuButtonRef}
                 onClick={() => setMenuOpen((p) => !p)}
-                className="sm:hidden inline-flex h-10 w-10 items-center justify-center rounded-[1.05rem] bg-white/72 text-[#111827] shadow-[0_8px_20px_rgba(71,85,105,0.11)] ring-1 ring-[#475569]/[0.12] transition-[background-color,box-shadow,transform] duration-200 hover:-translate-y-px hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#475569]/[0.45] dark:bg-white/[0.08] dark:text-white dark:ring-white/20 dark:hover:bg-white/[0.14] dark:focus-visible:ring-white/70 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+                className="sm:hidden inline-flex h-10 w-10 items-center justify-center rounded-[1.05rem] bg-white/72 text-[#111827] shadow-[0_8px_20px_rgba(71,85,105,0.11)] ring-1 ring-[#475569]/[0.12] transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#475569]/[0.45] dark:bg-white/[0.08] dark:text-white dark:ring-white/20 dark:hover:bg-white/[0.14] dark:focus-visible:ring-white/70"
                 aria-label="Toggle menu"
                 aria-expanded={menuOpen}
                 aria-controls="mobile-menu"

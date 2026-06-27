@@ -80,9 +80,8 @@ test("sends a message and renders a sourced markdown answer", async () => {
   expect(
     await screen.findByText("What skills are in the uploaded files?")
   ).toBeInTheDocument();
-  expect(
-    await screen.findByText("AmiBot answer from knowledge.")
-  ).toBeInTheDocument();
+  expect(await screen.findByText(/AmiBot answer from/i)).toBeInTheDocument();
+  expect(screen.getByText(/knowledge\./i)).toBeInTheDocument();
   expect(screen.getByText("Profile.pdf")).toBeInTheDocument();
 
   expect(global.fetch).toHaveBeenCalledWith(

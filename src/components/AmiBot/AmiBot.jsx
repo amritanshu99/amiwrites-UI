@@ -152,13 +152,13 @@ const PromptSuggestionButton = React.memo(function PromptSuggestionButton({
     <button
       type="button"
       onClick={handleClick}
-      className={`group inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white/80 text-left font-semibold text-slate-700 shadow-sm transition-[background-color,border-color,box-shadow,color,transform] duration-200 hover:-translate-y-0.5 hover:border-cyan-300 hover:bg-cyan-50 hover:text-slate-950 hover:shadow-md focus:outline-none focus-visible:ring-4 focus-visible:ring-cyan-100 dark:border-white/10 dark:bg-white/[0.05] dark:text-zinc-200 dark:hover:border-cyan-300/30 dark:hover:bg-cyan-300/10 dark:hover:text-white dark:focus-visible:ring-cyan-300/10 motion-reduce:transition-none motion-reduce:hover:translate-y-0 ${
+      className={`group inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white/80 text-left font-semibold text-slate-700 shadow-sm transition-colors hover:border-cyan-300 hover:bg-cyan-50 hover:text-slate-950 focus:outline-none focus-visible:ring-4 focus-visible:ring-cyan-100 dark:border-white/10 dark:bg-white/[0.05] dark:text-zinc-200 dark:hover:border-cyan-300/30 dark:hover:bg-cyan-300/10 dark:hover:text-white dark:focus-visible:ring-cyan-300/10 ${
         compact
           ? "min-h-10 min-w-[13.5rem] flex-none px-3 py-2 text-xs"
           : "min-h-11 px-3 py-2 text-sm"
       }`}
     >
-      <MessageSquareText className="h-4 w-4 shrink-0 text-sky-600 transition-transform duration-200 group-hover:scale-110 dark:text-cyan-100 motion-reduce:transition-none" />
+      <MessageSquareText className="h-4 w-4 shrink-0 text-sky-600 transition group-hover:text-sky-700 dark:text-cyan-100" />
       <span className="line-clamp-2">{prompt}</span>
     </button>
   );
@@ -227,7 +227,7 @@ const ChatMessage = React.memo(function ChatMessage({ message }) {
   return (
     <div className={`flex w-full ${isUser ? "justify-end" : "justify-start"}`}>
       <article
-        className={`amiverse-message-in max-w-[92%] overflow-hidden rounded-lg border px-4 py-3 shadow-sm sm:max-w-[78%] lg:max-w-[46rem] ${
+        className={`max-w-[92%] overflow-hidden rounded-lg border px-4 py-3 shadow-sm sm:max-w-[78%] lg:max-w-[46rem] ${
           isUser
             ? "border-cyan-500/20 bg-cyan-600 text-white shadow-cyan-900/10"
             : "border-slate-200 bg-white text-slate-800 dark:border-white/10 dark:bg-white/[0.06] dark:text-zinc-100"
@@ -285,7 +285,7 @@ const TypingIndicator = React.memo(function TypingIndicator() {
 
   return (
     <div className="flex justify-start">
-      <article className="amiverse-message-in max-w-[92%] rounded-lg border border-slate-200 bg-white px-4 py-3 text-slate-700 shadow-sm dark:border-white/10 dark:bg-white/[0.06] dark:text-zinc-200 sm:max-w-[78%] lg:max-w-[46rem]">
+      <article className="max-w-[92%] rounded-lg border border-slate-200 bg-white px-4 py-3 text-slate-700 shadow-sm dark:border-white/10 dark:bg-white/[0.06] dark:text-zinc-200 sm:max-w-[78%] lg:max-w-[46rem]">
         <div className="mb-2 flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-zinc-400">
           <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-cyan-50 text-cyan-700 ring-1 ring-cyan-100 dark:bg-cyan-300/10 dark:text-cyan-100 dark:ring-cyan-300/15">
             <LoaderCircle className="h-3.5 w-3.5 animate-spin" />
@@ -593,7 +593,7 @@ const AmiBot = () => {
     <button
       type="button"
       onClick={handleClearHistory}
-      className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm font-semibold text-slate-800 shadow-sm transition-[background-color,box-shadow,transform] duration-200 enabled:hover:-translate-y-0.5 enabled:hover:bg-slate-50 enabled:hover:shadow-md focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-cyan-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/10 dark:bg-white/[0.06] dark:text-zinc-100 dark:enabled:hover:bg-white/[0.1] dark:focus-visible:ring-cyan-300/10 motion-reduce:transition-none motion-reduce:enabled:hover:translate-y-0"
+      className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm font-semibold text-slate-800 shadow-sm transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-cyan-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/10 dark:bg-white/[0.06] dark:text-zinc-100 dark:hover:bg-white/[0.1] dark:focus-visible:ring-cyan-300/10"
       disabled={loading || historyLoading}
       aria-label="Clear AmiBot history"
     >
@@ -604,7 +604,7 @@ const AmiBot = () => {
     <button
       type="button"
       onClick={handleOpenLogin}
-      className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg bg-slate-950 px-3.5 py-2 text-sm font-semibold text-white shadow-[0_14px_28px_-18px_rgba(15,23,42,0.9)] transition-[background-color,box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:bg-slate-800 hover:shadow-[0_18px_34px_-20px_rgba(15,23,42,0.95)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-cyan-100 dark:bg-cyan-300 dark:text-slate-950 dark:hover:bg-cyan-200 dark:focus-visible:ring-cyan-300/10 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+      className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg bg-slate-950 px-3.5 py-2 text-sm font-semibold text-white shadow-[0_14px_28px_-18px_rgba(15,23,42,0.9)] transition-colors hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-cyan-100 dark:bg-cyan-300 dark:text-slate-950 dark:hover:bg-cyan-200 dark:focus-visible:ring-cyan-300/10"
       aria-label="Login for AmiBot history"
     >
       <LogIn className="h-4 w-4" />
@@ -615,7 +615,7 @@ const AmiBot = () => {
   return (
     <section className="min-h-[calc(100svh-4rem)] w-screen max-w-full overflow-x-hidden bg-[linear-gradient(180deg,#f8fafc_0%,#e0f2fe_46%,#ecfdf5_100%)] px-3 py-4 text-slate-900 dark:bg-[linear-gradient(180deg,#050505_0%,#0b1115_58%,#000000_100%)] dark:text-zinc-100 sm:px-5 sm:py-6 lg:px-8">
       <div className="mx-auto grid w-full min-w-0 max-w-7xl gap-4 overflow-hidden lg:grid-cols-[20rem_minmax(0,1fr)] lg:gap-5">
-        <aside className={`amiverse-panel-in relative w-full min-w-0 max-w-full overflow-hidden p-4 sm:p-5 lg:sticky lg:top-24 lg:self-start ${surfaceClassName}`}>
+        <aside className={`relative w-full min-w-0 max-w-full overflow-hidden p-4 sm:p-5 lg:sticky lg:top-24 lg:self-start ${surfaceClassName}`}>
           <div className="absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,#0891b2,#10b981,#f59e0b)]" />
 
           <div className="flex items-start gap-3">
@@ -679,7 +679,7 @@ const AmiBot = () => {
           </div>
         </aside>
 
-        <section className={`amiverse-panel-in flex min-h-[34rem] w-full min-w-0 max-w-full flex-col overflow-hidden sm:min-h-[38rem] lg:h-[calc(100svh-8.5rem)] ${surfaceClassName}`}>
+        <section className={`flex min-h-[34rem] w-full min-w-0 max-w-full flex-col overflow-hidden sm:min-h-[38rem] lg:h-[calc(100svh-8.5rem)] ${surfaceClassName}`}>
           <header className="border-b border-slate-200 bg-white/[0.86] px-4 py-4 dark:border-white/10 dark:bg-white/[0.04] sm:px-5">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex min-w-0 items-center gap-3">
@@ -763,7 +763,7 @@ const AmiBot = () => {
 
               <button
                 aria-label="Send message"
-                className="inline-flex h-12 w-full max-w-[calc(100vw-3rem)] shrink-0 items-center justify-center gap-2 rounded-lg bg-slate-950 px-4 text-white shadow-[0_16px_28px_-20px_rgba(15,23,42,0.95)] transition-[background-color,box-shadow,transform] duration-200 enabled:hover:-translate-y-0.5 enabled:hover:bg-slate-800 enabled:hover:shadow-[0_20px_34px_-20px_rgba(15,23,42,0.95)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-cyan-100 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-cyan-300 dark:text-slate-950 dark:enabled:hover:bg-cyan-200 dark:focus-visible:ring-cyan-300/10 motion-reduce:transition-none motion-reduce:enabled:hover:translate-y-0 lg:w-12 lg:max-w-none lg:px-0"
+                className="inline-flex h-12 w-full max-w-[calc(100vw-3rem)] shrink-0 items-center justify-center gap-2 rounded-lg bg-slate-950 px-4 text-white shadow-[0_16px_28px_-20px_rgba(15,23,42,0.95)] transition-colors hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-cyan-100 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-cyan-300 dark:text-slate-950 dark:hover:bg-cyan-200 dark:focus-visible:ring-cyan-300/10 lg:w-12 lg:max-w-none lg:px-0"
                 disabled={!canSend}
                 title="Send message"
                 type="submit"
