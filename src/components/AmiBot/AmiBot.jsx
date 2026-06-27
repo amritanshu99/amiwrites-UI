@@ -42,6 +42,29 @@ const PROMPT_SUGGESTIONS = [
   "What skills are listed in the uploaded files?",
 ];
 
+const thinkingTexts = [
+  "Thinking…",
+  "Reasoning through this…",
+  "Analyzing your request…",
+  "Understanding the context…",
+  "Breaking this down…",
+  "Connecting the dots…",
+  "Working through the logic…",
+  "Planning the best response…",
+  "Reviewing possible answers…",
+  "Building a clear answer…",
+  "Evaluating the options…",
+  "Structuring the response…",
+  "Finding the simplest explanation…",
+  "Preparing a helpful answer…",
+  "Checking assumptions…",
+  "Thinking carefully…",
+  "Refining the answer…",
+  "Looking for the key insight…",
+  "Validating the logic…",
+  "Pulling everything together…",
+];
+
 const surfaceClassName =
   "rounded-lg border border-slate-200/80 bg-white/[0.9] shadow-[0_24px_70px_-46px_rgba(15,23,42,0.32)] backdrop-blur-xl dark:border-white/10 dark:bg-zinc-950/[0.9] dark:shadow-[0_30px_90px_-52px_rgba(0,0,0,0.95)]";
 
@@ -243,12 +266,38 @@ const ChatMessage = React.memo(function ChatMessage({ message }) {
 });
 
 const TypingIndicator = React.memo(function TypingIndicator() {
+  const [thinkingTextIndex, setThinkingTextIndex] = useState(0);
+  const thinkingText = thinkingTexts[thinkingTextIndex];
+
+  useEffect(() => {
+    const prefersReducedMotion =
+      typeof window !== "undefined" &&
+      window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+
+    if (prefersReducedMotion) return undefined;
+
+    const intervalId = window.setInterval(() => {
+      setThinkingTextIndex((index) => (index + 1) % thinkingTexts.length);
+    }, 1750);
+
+    return () => window.clearInterval(intervalId);
+  }, []);
+
   return (
     <div className="flex justify-start">
       <article className="max-w-[92%] rounded-lg border border-slate-200 bg-white px-4 py-3 text-slate-700 shadow-sm dark:border-white/10 dark:bg-white/[0.06] dark:text-zinc-200 sm:max-w-[78%] lg:max-w-[46rem]">
         <div className="mb-2 flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-zinc-400">
-          <LoaderCircle className="h-3.5 w-3.5 animate-spin" />
-          <span>AmiBot is checking knowledge</span>
+          <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-cyan-50 text-cyan-700 ring-1 ring-cyan-100 dark:bg-cyan-300/10 dark:text-cyan-100 dark:ring-cyan-300/15">
+            <LoaderCircle className="h-3.5 w-3.5 animate-spin" />
+          </span>
+          <span className="min-w-0">
+            <span className="mr-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-cyan-700 dark:text-cyan-200">
+              AmiBot
+            </span>
+            <span aria-live="polite" className="text-slate-600 dark:text-zinc-300">
+              {thinkingText}
+            </span>
+          </span>
         </div>
         <div className="flex items-center gap-1.5">
           <span className="h-2 w-2 animate-bounce rounded-full bg-cyan-300 [animation-delay:-0.3s]" />
