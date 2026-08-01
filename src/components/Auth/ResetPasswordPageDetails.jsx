@@ -1,12 +1,11 @@
 import React, { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
 import Loader from "../Loader/Loader";
 import { apiUrl } from "../../config/api";
 
-export default function ResetPasswordPageDetails() {
-  const { id } = useParams();
+export default function ResetPasswordPageDetails({ token }) {
   const navigate = useNavigate();
 
   const [password, setPassword] = useState("");
@@ -25,6 +24,12 @@ export default function ResetPasswordPageDetails() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (typeof token !== "string" || !token || token.length > 2048) {
+      toast.error("Invalid or expired reset link.");
+      navigate("/", { replace: true });
+      return;
+    }
+
     if (!validatePassword(password)) {
       toast.error("Password must be 10+ characters, include an uppercase & special character.");
       return;
@@ -37,10 +42,14 @@ export default function ResetPasswordPageDetails() {
 
     setLoading(true);
     try {
-      await axios.post(apiUrl("/api/auth/reset"), {
-        newPassword: password,
-        token: id,
-      });
+      await axios.post(
+        apiUrl("/api/auth/reset"),
+        {
+          newPassword: password,
+          token,
+        },
+        { timeout: 10000 },
+      );
 
       toast.success("Password reset successful! Please login.");
       setPassword("");
@@ -66,11 +75,14 @@ export default function ResetPasswordPageDetails() {
             <h2 className="text-2xl font-bold text-center text-blue-700 dark:text-white">Reset Your Password</h2>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block mb-1 text-sm text-gray-700 dark:text-gray-200 font-medium">
+                <label htmlFor="reset-new-password" className="block mb-1 text-sm text-gray-700 dark:text-gray-200 font-medium">
                   New Password
                 </label>
                 <input
+                  id="reset-new-password"
                   type="password"
+                  autoComplete="new-password"
+                  maxLength={128}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter new password"
@@ -79,11 +91,14 @@ export default function ResetPasswordPageDetails() {
                 />
               </div>
               <div>
-                <label className="block mb-1 text-sm text-gray-700 dark:text-gray-200 font-medium">
+                <label htmlFor="reset-confirm-password" className="block mb-1 text-sm text-gray-700 dark:text-gray-200 font-medium">
                   Confirm Password
                 </label>
                 <input
+                  id="reset-confirm-password"
                   type="password"
+                  autoComplete="new-password"
+                  maxLength={128}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="Confirm new password"

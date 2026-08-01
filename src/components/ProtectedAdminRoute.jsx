@@ -1,26 +1,64 @@
-// components/ProtectedAdminRoute.js
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
+import { LoaderCircle } from "lucide-react";
+import { isTokenExpired, parseJwt } from "../utils/auth";
+import { verifyToken } from "../utils/authApi";
 
-function parseJwt(token) {
-  try {
-    const base64Payload = token.split('.')[1];
-    const payload = atob(base64Payload);
-    return JSON.parse(payload);
-  } catch {
-    return null;
-  }
-}
+const ADMIN_USERNAME = "amritanshu99";
 
 const ProtectedAdminRoute = ({ children }) => {
-  const token = localStorage.getItem("token");
-  const decoded = token ? parseJwt(token) : null;
+  const [accessState, setAccessState] = useState("checking");
 
-  if (decoded?.username === "amritanshu99") {
-    return children;
+  useEffect(() => {
+    let disposed = false;
+    let requestVersion = 0;
+
+    const checkAccess = async () => {
+      const currentVersion = ++requestVersion;
+      const token = localStorage.getItem("token");
+      const decoded = parseJwt(token);
+
+      if (!token || isTokenExpired(token) || decoded?.username !== ADMIN_USERNAME) {
+        if (!disposed && currentVersion === requestVersion) setAccessState("denied");
+        return;
+      }
+
+      setAccessState("checking");
+      const isValid = await verifyToken(token);
+      const tokenIsCurrent = localStorage.getItem("token") === token;
+
+      if (!disposed && currentVersion === requestVersion) {
+        setAccessState(isValid && tokenIsCurrent ? "allowed" : "denied");
+      }
+    };
+
+    const handleTokenChange = () => checkAccess();
+    checkAccess();
+    window.addEventListener("tokenChanged", handleTokenChange);
+    window.addEventListener("storage", handleTokenChange);
+
+    return () => {
+      disposed = true;
+      requestVersion += 1;
+      window.removeEventListener("tokenChanged", handleTokenChange);
+      window.removeEventListener("storage", handleTokenChange);
+    };
+  }, []);
+
+  if (accessState === "checking") {
+    return (
+      <div
+        className="flex min-h-[50svh] items-center justify-center text-slate-600 dark:text-zinc-300"
+        role="status"
+        aria-label="Verifying admin access"
+      >
+        <LoaderCircle className="h-7 w-7 animate-spin" aria-hidden="true" />
+        <span className="sr-only">Verifying admin access…</span>
+      </div>
+    );
   }
 
-  return <Navigate to="/blogs" replace />;
+  return accessState === "allowed" ? children : <Navigate to="/blogs" replace />;
 };
 
 export default ProtectedAdminRoute;

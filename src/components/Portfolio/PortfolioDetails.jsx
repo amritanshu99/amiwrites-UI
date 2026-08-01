@@ -705,7 +705,7 @@ export default function PortfolioDetails() {
   const lastName = lastNameParts.join(" ");
   const useMobileBottomCta = isCompactViewport;
   const bottomCtaWrapperClassName = cx(
-    "pointer-events-none fixed left-0 right-0 z-[80] lg:right-[var(--scrollbar-size)]",
+    "amiverse-portfolio-section-switcher pointer-events-none fixed left-0 right-0 z-[80] lg:right-[var(--scrollbar-size)]",
     useMobileBottomCta
       ? "bottom-0 px-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))]"
       : "bottom-[max(1rem,env(safe-area-inset-bottom))] px-3 sm:px-6",

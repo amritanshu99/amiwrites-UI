@@ -24,7 +24,7 @@ import Loader from "./components/Loader/Loader";
 import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
 import InitialLoader from "./components/Portfolio/InitialLoader";
 import Portfolio from "./pages/Portfolio";
-import { initGA, logPageView } from "./analytics";
+import { getPublicPagePath, initGA, logPageView } from "./analytics";
 import { isTokenExpired } from "./utils/auth";
 import { verifyToken } from "./utils/authApi";
 import { applySEO, seoByRoute } from "./utils/seo";
@@ -92,28 +92,44 @@ const ValidateResetToken = () => {
   const { id: token } = useParams();
   const navigate = useNavigate();
   const [isValidating, setIsValidating] = useState(true);
+  const normalizedToken = typeof token === "string" ? token.trim() : "";
 
   useEffect(() => {
+    if (!normalizedToken || normalizedToken.length > 2048) {
+      toast.error("Invalid or expired reset link.");
+      navigate("/", { replace: true });
+      return undefined;
+    }
+
+    if (window.location.pathname.startsWith("/reset-password/")) {
+      window.history.replaceState(window.history.state, "", "/reset-password");
+    }
+
+    const controller = new AbortController();
+
     const validateToken = async () => {
       try {
         const res = await axios.get(
-          apiUrl(`/api/auth/validate-reset-token/${token}`),
+          apiUrl(`/api/auth/validate-reset-token/${encodeURIComponent(normalizedToken)}`),
+          { signal: controller.signal, timeout: 10000 },
         );
 
         if (res.data.valid) {
           setIsValidating(false);
         } else {
           toast.error("Invalid or expired reset link.");
-          navigate("/");
+          navigate("/", { replace: true });
         }
-      } catch (err) {
+      } catch (error) {
+        if (axios.isCancel(error) || error?.code === "ERR_CANCELED") return;
         toast.error("Invalid or expired reset link.");
-        navigate("/");
+        navigate("/", { replace: true });
       }
     };
 
     validateToken();
-  }, [token, navigate]);
+    return () => controller.abort();
+  }, [normalizedToken, navigate]);
 
   if (isValidating) {
     return (
@@ -123,7 +139,7 @@ const ValidateResetToken = () => {
     );
   }
 
-  return <ResetPasswordPage token={token} />;
+  return <ResetPasswordPage token={normalizedToken} />;
 };
 
 const hasTokenPendingVerification = () => {
@@ -173,13 +189,13 @@ const App = () => {
   }, []);
 
   useEffect(() => {
-    logPageView(location.pathname + location.search);
+    logPageView(location.pathname);
   }, [location]);
 
   useEffect(() => {
     const routeSeo = resolveRouteSeo(location.pathname);
     applySEO({
-      path: location.pathname,
+      path: getPublicPagePath(location.pathname),
       ...routeSeo,
     });
   }, [location.pathname]);

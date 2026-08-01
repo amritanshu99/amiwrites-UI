@@ -98,7 +98,7 @@ export default function ContactMeButton() {
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         className={`
-          group fixed bottom-[calc(4.9rem+env(safe-area-inset-bottom))] right-4 z-[90]
+          amiverse-contact-trigger group fixed bottom-[calc(4.9rem+env(safe-area-inset-bottom))] right-4 z-[90]
           inline-flex min-h-14 items-center overflow-hidden rounded-full
           border border-white/25 bg-slate-950/95 font-semibold text-white
           shadow-[0_18px_42px_rgba(2,6,23,0.28),0_0_0_1px_rgba(255,255,255,0.08)]

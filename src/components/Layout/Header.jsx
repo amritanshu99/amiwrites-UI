@@ -17,16 +17,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import SignupModal from "../Auth/SignupModal";
 import LoginModal from "../Auth/LoginModal";
 import { toast } from "react-toastify";
-
-function parseJwt(token) {
-  try {
-    const base64Payload = token.split(".")[1];
-    const payload = atob(base64Payload);
-    return JSON.parse(payload);
-  } catch {
-    return null;
-  }
-}
+import { useVerifiedAuth } from "../../hooks/useVerifiedAuth";
 
 // a11y-friendly animated pill
 const ActivePill = motion.create("span");
@@ -36,9 +27,8 @@ export default function Header({ setLoading }) {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
   const [signupOpen, setSignupOpen] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [username, setUsername] = useState(null);
   const [mounted, setMounted] = useState(false);
+  const { isAuthenticated, username, isAdmin } = useVerifiedAuth();
 
   // For sm/md screen tab scrolling
   const navScrollRef = useRef(null);
@@ -70,27 +60,6 @@ export default function Header({ setLoading }) {
       localStorage.setItem("theme", "light");
     }
   }, [darkMode]);
-
-  const updateAuthStateFromToken = () => {
-    const token = localStorage.getItem("token");
-    setIsAuthenticated(!!token);
-    if (token) {
-      const decoded = parseJwt(token);
-      setUsername(decoded?.username || null);
-    } else {
-      setUsername(null);
-    }
-  };
-
-  useEffect(() => {
-    updateAuthStateFromToken();
-  }, [loginOpen, signupOpen]);
-
-  useEffect(() => {
-    const handleTokenChanged = () => updateAuthStateFromToken();
-    window.addEventListener("tokenChanged", handleTokenChanged);
-    return () => window.removeEventListener("tokenChanged", handleTokenChanged);
-  }, []);
 
   useEffect(() => {
     const handleOpenLogin = () => {
@@ -422,7 +391,7 @@ export default function Header({ setLoading }) {
                         <div className="px-4 py-3 text-sm text-[#111827] dark:text-gray-200 border-b border-[#475569]/[0.10] dark:border-white/10">
                           Hi, <span className="font-medium">{username}</span>!
                         </div>
-                        {username === "amritanshu99" && (
+                        {isAdmin && (
                           <>
                             <Link
                               to="/add-blog"

@@ -3,9 +3,40 @@ import axios from "axios";
 import { useLocation } from "react-router-dom";
 import { ArrowUpRight, Newspaper } from "lucide-react";
 import { apiUrl } from "../../config/api";
+import { getSafeHttpsUrl, getSafeImageUrl } from "../../utils/safeUrl";
 
 const TECH_NEWS_URL = apiUrl("/api/tech-news");
 const FALLBACK_NEWS_IMAGE = "/og-image.jpg";
+// Intentionally match non-printing control characters in feed text.
+// eslint-disable-next-line no-control-regex
+const CONTROL_CHARACTERS = /[\u0000-\u001F\u007F]/g;
+
+const cleanArticleText = (value, fallback, maxLength) => {
+  if (typeof value !== "string") return fallback;
+  const normalized = value.replace(CONTROL_CHARACTERS, " ").replace(/\s+/g, " ").trim();
+  return normalized ? normalized.slice(0, maxLength) : fallback;
+};
+
+const normalizeArticle = (article) => {
+  if (!article || typeof article !== "object" || Array.isArray(article)) return null;
+  const url = getSafeHttpsUrl(article.url);
+  if (!url) return null;
+
+  return {
+    url,
+    image: getSafeImageUrl(article.image, FALLBACK_NEWS_IMAGE),
+    title: cleanArticleText(article.title, "Untitled story", 200),
+    description: cleanArticleText(article.description, "No description available.", 600),
+    publishedAt:
+      typeof article.publishedAt === "string" || typeof article.publishedAt === "number"
+        ? article.publishedAt
+        : null,
+    source: {
+      name: cleanArticleText(article.source?.name, "Unknown Source", 100),
+      url: getSafeHttpsUrl(article.source?.url),
+    },
+  };
+};
 
 const formatPublishedAt = (publishedAt) => {
   if (!publishedAt) return "Date unavailable";
@@ -62,7 +93,10 @@ function TechNewsCards() {
       .get(TECH_NEWS_URL, { signal: controller.signal })
       .then((res) => {
         if (isMounted) {
-          setArticles(Array.isArray(res.data?.articles) ? res.data.articles : []);
+          const nextArticles = Array.isArray(res.data?.articles)
+            ? res.data.articles.slice(0, 50).map(normalizeArticle).filter(Boolean)
+            : [];
+          setArticles(nextArticles);
           setLoading(false);
         }
       })
@@ -91,8 +125,9 @@ function TechNewsCards() {
   }, [pathname]);
 
   const openArticle = useCallback((url) => {
-    if (!url) return;
-    window.open(url, "_blank", "noopener,noreferrer");
+    const safeUrl = getSafeHttpsUrl(url);
+    if (!safeUrl) return;
+    window.open(safeUrl, "_blank", "noopener,noreferrer");
   }, []);
 
   const handleReadMoreClick = useCallback((e, url) => {
@@ -203,7 +238,7 @@ function TechNewsCards() {
                         </h2>
 
                         <p className="mt-3 line-clamp-4 text-sm leading-5 text-zinc-600 dark:text-zinc-300 sm:mt-4 sm:leading-6 sm:text-[15px]">
-                          {featuredArticle.description || "No description available."}
+                          {featuredArticle.description}
                         </p>
 
                         <div className="mt-auto pt-4 sm:pt-5">
@@ -257,21 +292,27 @@ function TechNewsCards() {
                       </h2>
 
                       <p className="mt-2.5 flex-grow line-clamp-3 text-sm leading-5 text-zinc-600 dark:text-zinc-300 sm:mt-3 sm:line-clamp-4 sm:leading-6">
-                        {article.description || "No description available."}
+                        {article.description}
                       </p>
 
                       <div className="mt-3 text-xs text-zinc-500 dark:text-zinc-400 sm:mt-4">
                         <span>
                           Source:{" "}
-                          <a
-                            href={article.source?.url || "#"}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            onClick={(e) => e.stopPropagation()}
-                            className="font-medium text-sky-700 underline underline-offset-2 dark:text-sky-300"
-                          >
-                            {article.source?.name || "Unknown"}
-                          </a>
+                          {article.source.url ? (
+                            <a
+                              href={article.source.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={(e) => e.stopPropagation()}
+                              className="font-medium text-sky-700 underline underline-offset-2 dark:text-sky-300"
+                            >
+                              {article.source.name}
+                            </a>
+                          ) : (
+                            <span className="font-medium text-zinc-600 dark:text-zinc-300">
+                              {article.source.name}
+                            </span>
+                          )}
                         </span>
                       </div>
 

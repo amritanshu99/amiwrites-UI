@@ -340,6 +340,20 @@ body {
   overscroll-behavior-y: none;
 }
 
+.amiverse-contact-trigger,
+.amiverse-portfolio-section-switcher {
+  transition:
+    opacity 180ms ease,
+    visibility 180ms ease;
+}
+
+body.ami-pulse-expanded .amiverse-contact-trigger,
+body.ami-pulse-expanded .amiverse-portfolio-section-switcher {
+  pointer-events: none !important;
+  visibility: hidden;
+  opacity: 0;
+}
+
 html:not(.dark) body.amiverse-premium-light-page,
 html:not(.dark) .amiverse-premium-light-page {
   background: var(--amiverse-premium-light-page-bg);

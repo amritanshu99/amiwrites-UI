@@ -6,21 +6,12 @@ import axios from "../../utils/api";
 import Loader from "../Loader/Loader";
 import PushNotificationButton from "../Floating-buttons/PushNotificationButton";
 import { useDebounce } from "../../hooks/useDebounce";
+import { useVerifiedAuth } from "../../hooks/useVerifiedAuth";
 import { apiUrl } from "../../config/api";
 
 const CLICK_API = apiUrl("/api/trending-rl/events/click");
 const INITIAL_SKELETON_KEYS = ["init-0", "init-1", "init-2"];
 const PAGINATION_SKELETON_KEYS = ["pag-0", "pag-1", "pag-2"];
-
-function parseJwt(token) {
-  try {
-    const base64Payload = token.split(".")[1];
-    const payload = atob(base64Payload);
-    return JSON.parse(payload);
-  } catch {
-    return null;
-  }
-}
 
 function getPlainTextPreview(content, maxLength = 170) {
   if (!content) return "No preview available.";
@@ -35,42 +26,6 @@ function getPlainTextPreview(content, maxLength = 170) {
     ? `${plainText.slice(0, maxLength).trim()}...`
     : plainText;
 }
-
-const readAuthState = () => {
-  const token = localStorage.getItem("token");
-  return {
-    isAuthenticated: Boolean(token),
-    username: token ? parseJwt(token)?.username || null : null,
-  };
-};
-
-const useAuth = () => {
-  const [authState, setAuthState] = useState(readAuthState);
-
-  useEffect(() => {
-    const checkAuth = () => {
-      const next = readAuthState();
-      setAuthState((prev) =>
-        prev.isAuthenticated === next.isAuthenticated && prev.username === next.username
-          ? prev
-          : next
-      );
-    };
-
-    checkAuth();
-    window.addEventListener("storage", checkAuth);
-    window.addEventListener("tokenChanged", checkAuth);
-    window.addEventListener("focus", checkAuth);
-
-    return () => {
-      window.removeEventListener("storage", checkAuth);
-      window.removeEventListener("tokenChanged", checkAuth);
-      window.removeEventListener("focus", checkAuth);
-    };
-  }, []);
-
-  return authState;
-};
 
 const BlogSkeleton = memo(function BlogSkeleton() {
   return (
@@ -204,7 +159,7 @@ const BlogCard = memo(function BlogCard({
 });
 
 const BlogList = () => {
-  const { isAuthenticated, username } = useAuth();
+  const { isAdmin, verifiedAdminToken } = useVerifiedAuth();
   const [blogs, setBlogs] = useState([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
@@ -220,8 +175,6 @@ const BlogList = () => {
   const debouncedSearch = useDebounce(search, 500);
 
   const [trendingIds, setTrendingIds] = useState(() => new Set());
-  const isAdmin = isAuthenticated && username === "amritanshu99";
-
   const trackClick = useCallback((postId) => {
     if (!postId) return;
 
@@ -531,13 +484,15 @@ const BlogList = () => {
   );
 
   const handleDelete = useCallback(async (id) => {
-    const token = localStorage.getItem("token");
-    if (!token) return toast.error("Login required to delete blog");
+    const tokenIsCurrent = localStorage.getItem("token") === verifiedAdminToken;
+    if (!isAdmin || !verifiedAdminToken || !tokenIsCurrent) {
+      return toast.error("Verified admin access is required to delete a blog");
+    }
 
     setDeletingId(id);
     try {
       await axios.delete(`/api/blogs/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${verifiedAdminToken}` },
       });
 
       toast.success("Blog deleted");
@@ -556,7 +511,7 @@ const BlogList = () => {
     } finally {
       setDeletingId(null);
     }
-  }, [debouncedSearch, fetchBlogs, filter]);
+  }, [debouncedSearch, fetchBlogs, filter, isAdmin, verifiedAdminToken]);
 
   useEffect(() => {
     resetRef.current = true;

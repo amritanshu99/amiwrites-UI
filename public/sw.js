@@ -1,9 +1,33 @@
+const DEFAULT_NOTIFICATION_URL = '/blogs';
+const DEFAULT_NOTIFICATION_ICON = '/favicon.ico';
+
+const cleanNotificationText = (value, fallback, maxLength) => {
+  if (typeof value !== 'string') return fallback;
+  const normalized = value.replace(/[\u0000-\u001F\u007F]/g, ' ').replace(/\s+/g, ' ').trim();
+  return normalized ? normalized.slice(0, maxLength) : fallback;
+};
+
+const getSafeSameOriginUrl = (value, fallback) => {
+  try {
+    const candidate = typeof value === 'string' && value.length <= 2048 ? value : fallback;
+    const url = new URL(candidate, self.location.origin);
+    const isSafe =
+      url.origin === self.location.origin &&
+      url.protocol === self.location.protocol &&
+      !url.username &&
+      !url.password;
+    return isSafe ? url.href : new URL(fallback, self.location.origin).href;
+  } catch {
+    return new URL(fallback, self.location.origin).href;
+  }
+};
+
 self.addEventListener('push', event => {
   let data = {
     title: 'Notification',
     body: 'You have a new message.',
-    icon: '/favicon.ico',
-    url: 'https://www.amiverse.in/blogs'
+    icon: DEFAULT_NOTIFICATION_ICON,
+    url: DEFAULT_NOTIFICATION_URL
   };
 
   if (event.data) {
@@ -14,27 +38,31 @@ self.addEventListener('push', event => {
       } else {
         data = { ...data, ...payload };
       }
-    } catch (e) {
-      console.error('Push event payload JSON parsing error:', e);
+    } catch {
+      // Ignore malformed payloads and use the safe defaults.
     }
   }
 
-  console.log('Push notification data:', data);
+  const title = cleanNotificationText(data.title, 'Notification', 100);
+  const body = cleanNotificationText(data.body, 'You have a new message.', 240);
+  const icon = getSafeSameOriginUrl(data.icon, DEFAULT_NOTIFICATION_ICON);
+  const url = getSafeSameOriginUrl(data.url, DEFAULT_NOTIFICATION_URL);
 
   event.waitUntil(
-    self.registration.showNotification(data.title, {
-      body: data.body,
-      icon: data.icon,
-      data: { url: data.url }
+    self.registration.showNotification(title, {
+      body,
+      icon,
+      data: { url }
     })
   );
 });
 
 self.addEventListener('notificationclick', event => {
   event.notification.close();
-  const urlToOpen = event.notification.data?.url || 'https://www.amiverse.in/blogs';
-
-  console.log('Notification click URL:', urlToOpen);
+  const urlToOpen = getSafeSameOriginUrl(
+    event.notification.data?.url,
+    DEFAULT_NOTIFICATION_URL
+  );
 
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then(windowClients => {

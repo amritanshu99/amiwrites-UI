@@ -12,6 +12,7 @@ import { useParams, useLocation } from "react-router-dom";
 import axios from "../../utils/api";
 import Loader from "../Loader/Loader";
 import { applySEO, SITE_URL } from "../../utils/seo";
+import { sanitizeBlogHtml, sanitizedHtmlToText } from "../../utils/sanitizeHtml";
 import {
   CalendarDays,
   CheckCircle2,
@@ -78,13 +79,15 @@ const BlogDetails = () => {
     }
   }, [id]);
 
-  // Clean plain text from blog HTML content (memoized)
+  const sanitizedBlogContent = useMemo(
+    () => sanitizeBlogHtml(blog?.content),
+    [blog?.content],
+  );
+
+  // Derive summary text only from the same sanitized HTML that is rendered.
   const plainTextContent = useMemo(() => {
-    if (!blog?.content) return "";
-    const temp = document.createElement("div");
-    temp.innerHTML = blog.content;
-    return (temp.textContent || temp.innerText || "").trim();
-  }, [blog?.content]);
+    return sanitizedHtmlToText(sanitizedBlogContent);
+  }, [sanitizedBlogContent]);
 
   const readingMinutes = useMemo(() => {
     if (!plainTextContent) return 1;
@@ -164,7 +167,7 @@ const BlogDetails = () => {
   }, [fetchBlog]);
 
   useEffect(() => {
-    if (!blog?.content || !articleRef.current) return;
+    if (!sanitizedBlogContent || !articleRef.current) return;
 
     const images = articleRef.current.querySelectorAll(".blog-content img");
     images.forEach((img, index) => {
@@ -172,7 +175,7 @@ const BlogDetails = () => {
       img.setAttribute("decoding", "async");
       if (index > 0) img.setAttribute("fetchpriority", "low");
     });
-  }, [blog?.content]);
+  }, [sanitizedBlogContent]);
 
   const currentURL = useMemo(
     () => (typeof window !== "undefined" ? window.location.href : ""),
@@ -691,7 +694,7 @@ const BlogDetails = () => {
         <div
           className="blog-content max-w-none overflow-hidden text-slate-800 dark:text-zinc-100"
           style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}
-          dangerouslySetInnerHTML={{ __html: blog.content }}
+          dangerouslySetInnerHTML={{ __html: sanitizedBlogContent }}
         />
 
         {/* AI Summary Section */}

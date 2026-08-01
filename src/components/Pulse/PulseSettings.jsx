@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import {
@@ -21,14 +21,33 @@ const DEFAULT_FORM = {
   manualMood: "Focused",
   manualVibe: "Future-ready",
   manualSuggestion: "Small progress compounds daily.",
-  ownerCity: "Greater Noida",
-  ownerRegion: "Uttar Pradesh",
-  ownerCountry: "India",
-  ownerLatitude: "28.4744",
-  ownerLongitude: "77.5040",
+  ownerCity: "",
+  ownerRegion: "",
+  ownerCountry: "",
+  ownerLatitude: "",
+  ownerLongitude: "",
   ownerTimezone: "Asia/Kolkata",
-  locationLabel: "Greater Noida, India",
+  locationLabel: "Location not shared",
   scheduleRules: [],
+};
+
+const MAX_RULES = 24;
+const FIELD_LIMITS = {
+  title: 60,
+  status: 180,
+  short: 80,
+  suggestion: 320,
+  location: 120,
+  timezone: 64,
+};
+// Intentionally match non-printing control characters in admin-provided text.
+// eslint-disable-next-line no-control-regex
+const CONTROL_CHARACTERS = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g;
+let nextRuleKey = 0;
+
+const createRuleKey = () => {
+  nextRuleKey += 1;
+  return `pulse-rule-${nextRuleKey}`;
 };
 
 const EMPTY_RULE = {
@@ -61,34 +80,87 @@ function normalizePulseTitle(title) {
   return normalizedTitle;
 }
 
+function cleanText(value, maxLength) {
+  if (typeof value !== "string" && typeof value !== "number") return "";
+
+  return String(value)
+    .replace(CONTROL_CHARACTERS, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, maxLength);
+}
+
+function getAuthHeaders() {
+  const token = localStorage.getItem("token");
+  return token ? { Authorization: `Bearer ${token}` } : null;
+}
+
+function getValidatedTimezone(value) {
+  const timezone = cleanText(value, FIELD_LIMITS.timezone);
+  if (!timezone) return null;
+
+  try {
+    new Intl.DateTimeFormat("en-US", { timeZone: timezone }).format();
+    return timezone;
+  } catch {
+    return null;
+  }
+}
+
+function normalizeCoordinate(value, min, max) {
+  if (typeof value !== "string" && typeof value !== "number") return "";
+  const candidate = String(value).trim().slice(0, 32);
+  if (!candidate) return "";
+  const number = Number(candidate);
+  return Number.isFinite(number) && number >= min && number <= max ? candidate : "";
+}
+
+function normalizeHour(value) {
+  if (typeof value !== "string" && typeof value !== "number") return "";
+  const candidate = String(value).trim();
+  if (!candidate) return "";
+  const hour = Number(candidate);
+  return Number.isInteger(hour) && hour >= 0 && hour <= 23 ? hour : "";
+}
+
 function normalizeRule(rule) {
+  if (!rule || typeof rule !== "object" || Array.isArray(rule)) return null;
+
   return {
-    startHour: rule?.startHour ?? "",
-    endHour: rule?.endHour ?? "",
-    status: rule?.status || "",
-    mood: rule?.mood || "",
-    vibe: rule?.vibe || "",
-    suggestion: rule?.suggestion || "",
+    _key: createRuleKey(),
+    startHour: normalizeHour(rule.startHour),
+    endHour: normalizeHour(rule.endHour),
+    status: cleanText(rule.status, FIELD_LIMITS.status),
+    mood: cleanText(rule.mood, FIELD_LIMITS.short),
+    vibe: cleanText(rule.vibe, FIELD_LIMITS.short),
+    suggestion: cleanText(rule.suggestion, FIELD_LIMITS.suggestion),
   };
 }
 
-function toForm(data) {
+export function toForm(data) {
+  const source = data && typeof data === "object" && !Array.isArray(data) ? data : {};
+
   return {
-    ...DEFAULT_FORM,
-    ...data,
-    isEnabled: Boolean(data?.isEnabled),
-    widgetTitle: normalizePulseTitle(data?.widgetTitle),
-    ownerLatitude:
-      data?.ownerLatitude === undefined || data?.ownerLatitude === null
-        ? ""
-        : String(data.ownerLatitude),
-    ownerLongitude:
-      data?.ownerLongitude === undefined || data?.ownerLongitude === null
-        ? ""
-        : String(data.ownerLongitude),
-    ownerTimezone: data?.ownerTimezone || DEFAULT_FORM.ownerTimezone,
-    scheduleRules: Array.isArray(data?.scheduleRules)
-      ? data.scheduleRules.map(normalizeRule)
+    isEnabled: source.isEnabled === true,
+    widgetTitle: normalizePulseTitle(cleanText(source.widgetTitle, FIELD_LIMITS.title)),
+    mode: source.mode === "manual" ? "manual" : "auto",
+    manualStatus:
+      cleanText(source.manualStatus, FIELD_LIMITS.status) || DEFAULT_FORM.manualStatus,
+    manualMood: cleanText(source.manualMood, FIELD_LIMITS.short) || DEFAULT_FORM.manualMood,
+    manualVibe: cleanText(source.manualVibe, FIELD_LIMITS.short) || DEFAULT_FORM.manualVibe,
+    manualSuggestion:
+      cleanText(source.manualSuggestion, FIELD_LIMITS.suggestion) ||
+      DEFAULT_FORM.manualSuggestion,
+    ownerCity: cleanText(source.ownerCity, FIELD_LIMITS.short),
+    ownerRegion: cleanText(source.ownerRegion, FIELD_LIMITS.short),
+    ownerCountry: cleanText(source.ownerCountry, FIELD_LIMITS.short),
+    ownerLatitude: normalizeCoordinate(source.ownerLatitude, -90, 90),
+    ownerLongitude: normalizeCoordinate(source.ownerLongitude, -180, 180),
+    ownerTimezone: getValidatedTimezone(source.ownerTimezone) || DEFAULT_FORM.ownerTimezone,
+    locationLabel:
+      cleanText(source.locationLabel, FIELD_LIMITS.location) || DEFAULT_FORM.locationLabel,
+    scheduleRules: Array.isArray(source.scheduleRules)
+      ? source.scheduleRules.slice(0, MAX_RULES).map(normalizeRule).filter(Boolean)
       : [],
   };
 }
@@ -109,34 +181,102 @@ function buildPayload(form) {
 
   return {
     isEnabled: Boolean(form.isEnabled),
-    widgetTitle: form.widgetTitle,
-    mode: form.mode,
-    manualStatus: form.manualStatus,
-    manualMood: form.manualMood,
-    manualVibe: form.manualVibe,
-    manualSuggestion: form.manualSuggestion,
-    ownerCity: form.ownerCity,
-    ownerRegion: form.ownerRegion,
-    ownerCountry: form.ownerCountry,
+    widgetTitle: cleanText(form.widgetTitle, FIELD_LIMITS.title),
+    mode: form.mode === "manual" ? "manual" : "auto",
+    manualStatus: cleanText(form.manualStatus, FIELD_LIMITS.status),
+    manualMood: cleanText(form.manualMood, FIELD_LIMITS.short),
+    manualVibe: cleanText(form.manualVibe, FIELD_LIMITS.short),
+    manualSuggestion: cleanText(form.manualSuggestion, FIELD_LIMITS.suggestion),
+    ownerCity: cleanText(form.ownerCity, FIELD_LIMITS.short),
+    ownerRegion: cleanText(form.ownerRegion, FIELD_LIMITS.short),
+    ownerCountry: cleanText(form.ownerCountry, FIELD_LIMITS.short),
     ownerLatitude: coordinateToPayload(form.ownerLatitude),
     ownerLongitude: coordinateToPayload(form.ownerLongitude),
-    ownerTimezone: form.ownerTimezone || DEFAULT_FORM.ownerTimezone,
-    locationLabel: form.locationLabel,
-    scheduleRules: form.scheduleRules.map((rule) => ({
+    ownerTimezone: getValidatedTimezone(form.ownerTimezone) || DEFAULT_FORM.ownerTimezone,
+    locationLabel: cleanText(form.locationLabel, FIELD_LIMITS.location),
+    scheduleRules: form.scheduleRules.slice(0, MAX_RULES).map((rule) => ({
       startHour: hourToPayload(rule.startHour),
       endHour: hourToPayload(rule.endHour),
-      status: rule.status,
-      mood: rule.mood,
-      vibe: rule.vibe,
-      suggestion: rule.suggestion,
+      status: cleanText(rule.status, FIELD_LIMITS.status),
+      mood: cleanText(rule.mood, FIELD_LIMITS.short),
+      vibe: cleanText(rule.vibe, FIELD_LIMITS.short),
+      suggestion: cleanText(rule.suggestion, FIELD_LIMITS.suggestion),
     })),
   };
 }
 
 function getErrorMessage(error) {
   const data = error.response?.data;
-  if (Array.isArray(data?.errors) && data.errors.length) return data.errors.join(" ");
-  return data?.message || data?.error || error.message || "Something went wrong";
+  const validationErrors = Array.isArray(data?.errors)
+    ? data.errors.filter((item) => typeof item === "string").join(" ")
+    : "";
+  const candidate =
+    validationErrors ||
+    (typeof data?.message === "string" ? data.message : "") ||
+    (typeof data?.error === "string" ? data.error : "") ||
+    (typeof error?.message === "string" ? error.message : "");
+
+  return cleanText(candidate, 240) || "Something went wrong. Please try again.";
+}
+
+export function validateForm(form) {
+  if (!cleanText(form.widgetTitle, FIELD_LIMITS.title)) return "Add a title for Ami Pulse.";
+  if (!getValidatedTimezone(form.ownerTimezone)) return "Enter a valid IANA timezone, such as Asia/Kolkata.";
+
+  const latitudeText = String(form.ownerLatitude ?? "").trim();
+  const longitudeText = String(form.ownerLongitude ?? "").trim();
+  if (Boolean(latitudeText) !== Boolean(longitudeText)) {
+    return "Enter both latitude and longitude, or leave both blank.";
+  }
+  if (latitudeText) {
+    const latitude = Number(latitudeText);
+    const longitude = Number(longitudeText);
+    if (!Number.isFinite(latitude) || latitude < -90 || latitude > 90) {
+      return "Latitude must be between -90 and 90.";
+    }
+    if (!Number.isFinite(longitude) || longitude < -180 || longitude > 180) {
+      return "Longitude must be between -180 and 180.";
+    }
+  }
+
+  if (form.scheduleRules.length > MAX_RULES) return `Use no more than ${MAX_RULES} schedule rules.`;
+  const invalidRule = form.scheduleRules.find((rule) => {
+    const startHourText = String(rule.startHour ?? "").trim();
+    const endHourText = String(rule.endHour ?? "").trim();
+    const startHour = Number(rule.startHour);
+    const endHour = Number(rule.endHour);
+    return (
+      !startHourText ||
+      !endHourText ||
+      !Number.isInteger(startHour) ||
+      !Number.isInteger(endHour) ||
+      startHour < 0 ||
+      startHour > 23 ||
+      endHour < 0 ||
+      endHour > 23
+    );
+  });
+
+  if (invalidRule) return "Every schedule hour is required and must be a whole number from 0 to 23.";
+
+  const occupiedHours = new Set();
+  for (const rule of form.scheduleRules) {
+    const startHour = Number(rule.startHour);
+    const endHour = Number(rule.endHour);
+
+    for (let hour = 0; hour < 24; hour += 1) {
+      const matches =
+        startHour === endHour ||
+        (startHour < endHour
+          ? hour >= startHour && hour < endHour
+          : hour >= startHour || hour < endHour);
+      if (!matches) continue;
+      if (occupiedHours.has(hour)) return "Schedule rules cannot overlap.";
+      occupiedHours.add(hour);
+    }
+  }
+
+  return "";
 }
 
 function getGeolocationErrorMessage(error) {
@@ -167,13 +307,15 @@ export default function PulseSettings() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  const authHeaders = useMemo(() => {
-    const token = localStorage.getItem("token");
-    return token ? { Authorization: `Bearer ${token}` } : {};
-  }, []);
-
   useEffect(() => {
     const controller = new AbortController();
+    const authHeaders = getAuthHeaders();
+
+    if (!authHeaders) {
+      setError("Your admin session has expired. Sign in again to continue.");
+      setLoading(false);
+      return () => controller.abort();
+    }
 
     axios
       .get(apiUrl("/api/pulse/admin"), {
@@ -192,7 +334,7 @@ export default function PulseSettings() {
       .finally(() => setLoading(false));
 
     return () => controller.abort();
-  }, [authHeaders]);
+  }, []);
 
   const setField = (field, value) => {
     setForm((previous) => ({ ...previous, [field]: value }));
@@ -210,7 +352,10 @@ export default function PulseSettings() {
   const addRule = () => {
     setForm((previous) => ({
       ...previous,
-      scheduleRules: [...previous.scheduleRules, { ...EMPTY_RULE }],
+      scheduleRules:
+        previous.scheduleRules.length >= MAX_RULES
+          ? previous.scheduleRules
+          : [...previous.scheduleRules, { ...EMPTY_RULE, _key: createRuleKey() }],
     }));
   };
 
@@ -246,6 +391,9 @@ export default function PulseSettings() {
         setSuccess(`Coordinates captured: ${latitude}, ${longitude}. Looking up city details...`);
 
         try {
+          const authHeaders = getAuthHeaders();
+          if (!authHeaders) throw new Error("Your admin session has expired. Sign in again to continue.");
+
           const response = await axios.get(apiUrl("/api/pulse/admin/reverse-geocode"), {
             headers: authHeaders,
             params: {
@@ -298,11 +446,21 @@ export default function PulseSettings() {
       return;
     }
 
+    const validationMessage = validateForm(form);
+    if (validationMessage) {
+      setError(validationMessage);
+      setSuccess("");
+      return;
+    }
+
     setSaving(true);
     setError("");
     setSuccess("");
 
     try {
+      const authHeaders = getAuthHeaders();
+      if (!authHeaders) throw new Error("Your admin session has expired. Sign in again to continue.");
+
       const response = await axios.put(apiUrl("/api/pulse/admin"), buildPayload(form), {
         headers: {
           "Content-Type": "application/json",
@@ -324,8 +482,13 @@ export default function PulseSettings() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-50 text-slate-950 dark:bg-black dark:text-white">
-        <LoaderCircle className="h-8 w-8 animate-spin text-teal-600 dark:text-cyan-200" />
+      <div
+        className="flex min-h-screen items-center justify-center bg-slate-50 text-slate-950 dark:bg-black dark:text-white"
+        role="status"
+        aria-label="Loading Ami Pulse settings"
+      >
+        <LoaderCircle className="h-8 w-8 animate-spin text-teal-600 dark:text-cyan-200" aria-hidden="true" />
+        <span className="sr-only">Loading Ami Pulse settings…</span>
       </div>
     );
   }
@@ -364,13 +527,13 @@ export default function PulseSettings() {
         </div>
 
         {error ? (
-          <div className="mb-5 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700 dark:border-red-400/30 dark:bg-red-950/35 dark:text-red-100">
+          <div role="alert" className="mb-5 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700 dark:border-red-400/30 dark:bg-red-950/35 dark:text-red-100">
             {error}
           </div>
         ) : null}
 
         {success ? (
-          <div className="mb-5 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700 dark:border-emerald-300/25 dark:bg-emerald-950/35 dark:text-emerald-100">
+          <div role="status" className="mb-5 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700 dark:border-emerald-300/25 dark:bg-emerald-950/35 dark:text-emerald-100">
             {success}
           </div>
         ) : null}
@@ -396,18 +559,20 @@ export default function PulseSettings() {
                 <input
                   className={fieldClassName}
                   value={form.widgetTitle}
+                  maxLength={FIELD_LIMITS.title}
                   onChange={(event) => setField("widgetTitle", event.target.value)}
                 />
               </label>
 
-              <div>
-                <span className={labelClassName}>Mode</span>
+              <div role="group" aria-labelledby="ami-pulse-mode-label">
+                <span id="ami-pulse-mode-label" className={labelClassName}>Mode</span>
                 <div className="mt-1.5 grid grid-cols-2 rounded-xl border border-slate-200/80 bg-white/70 p-1 dark:border-zinc-800 dark:bg-zinc-950">
                   {["auto", "manual"].map((mode) => (
                     <button
                       key={mode}
                       type="button"
                       onClick={() => setField("mode", mode)}
+                      aria-pressed={form.mode === mode}
                       className={`rounded-lg px-4 py-2.5 text-sm font-semibold capitalize transition ${
                         form.mode === mode
                           ? "bg-slate-950 text-white shadow-sm dark:bg-cyan-300 dark:text-zinc-950"
@@ -430,6 +595,7 @@ export default function PulseSettings() {
                 <input
                   className={fieldClassName}
                   value={form.manualStatus}
+                  maxLength={FIELD_LIMITS.status}
                   onChange={(event) => setField("manualStatus", event.target.value)}
                 />
               </label>
@@ -438,6 +604,7 @@ export default function PulseSettings() {
                 <input
                   className={fieldClassName}
                   value={form.manualMood}
+                  maxLength={FIELD_LIMITS.short}
                   onChange={(event) => setField("manualMood", event.target.value)}
                 />
               </label>
@@ -446,6 +613,7 @@ export default function PulseSettings() {
                 <input
                   className={fieldClassName}
                   value={form.manualVibe}
+                  maxLength={FIELD_LIMITS.short}
                   onChange={(event) => setField("manualVibe", event.target.value)}
                 />
               </label>
@@ -454,6 +622,7 @@ export default function PulseSettings() {
                 <textarea
                   className={`${fieldClassName} min-h-24 resize-y`}
                   value={form.manualSuggestion}
+                  maxLength={FIELD_LIMITS.suggestion}
                   onChange={(event) => setField("manualSuggestion", event.target.value)}
                 />
               </label>
@@ -484,6 +653,7 @@ export default function PulseSettings() {
                 <input
                   className={fieldClassName}
                   value={form.locationLabel}
+                  maxLength={FIELD_LIMITS.location}
                   onChange={(event) => setField("locationLabel", event.target.value)}
                 />
               </label>
@@ -492,6 +662,7 @@ export default function PulseSettings() {
                 <input
                   className={fieldClassName}
                   value={form.ownerCity}
+                  maxLength={FIELD_LIMITS.short}
                   onChange={(event) => setField("ownerCity", event.target.value)}
                 />
               </label>
@@ -500,6 +671,7 @@ export default function PulseSettings() {
                 <input
                   className={fieldClassName}
                   value={form.ownerRegion}
+                  maxLength={FIELD_LIMITS.short}
                   onChange={(event) => setField("ownerRegion", event.target.value)}
                 />
               </label>
@@ -508,6 +680,7 @@ export default function PulseSettings() {
                 <input
                   className={fieldClassName}
                   value={form.ownerCountry}
+                  maxLength={FIELD_LIMITS.short}
                   onChange={(event) => setField("ownerCountry", event.target.value)}
                 />
               </label>
@@ -517,6 +690,8 @@ export default function PulseSettings() {
                   className={fieldClassName}
                   type="number"
                   step="0.000001"
+                  min="-90"
+                  max="90"
                   value={form.ownerLatitude}
                   onChange={(event) => setField("ownerLatitude", event.target.value)}
                 />
@@ -527,6 +702,8 @@ export default function PulseSettings() {
                   className={fieldClassName}
                   type="number"
                   step="0.000001"
+                  min="-180"
+                  max="180"
                   value={form.ownerLongitude}
                   onChange={(event) => setField("ownerLongitude", event.target.value)}
                 />
@@ -536,6 +713,10 @@ export default function PulseSettings() {
                 <input
                   className={fieldClassName}
                   value={form.ownerTimezone}
+                  maxLength={FIELD_LIMITS.timezone}
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck={false}
                   onChange={(event) => setField("ownerTimezone", event.target.value)}
                 />
               </label>
@@ -553,6 +734,8 @@ export default function PulseSettings() {
               <button
                 type="button"
                 onClick={addRule}
+                disabled={form.scheduleRules.length >= MAX_RULES}
+                title={form.scheduleRules.length >= MAX_RULES ? `Maximum ${MAX_RULES} rules` : undefined}
                 className={secondaryButtonClassName}
               >
                 <Plus className="h-4 w-4" />
@@ -564,7 +747,7 @@ export default function PulseSettings() {
               {form.scheduleRules.length ? (
                 form.scheduleRules.map((rule, index) => (
                   <div
-                    key={`${index}-${rule.status}`}
+                    key={rule._key}
                     className={insetPanelClassName}
                   >
                     <div className="mb-4 flex items-center justify-between gap-3">
@@ -589,6 +772,8 @@ export default function PulseSettings() {
                           type="number"
                           min="0"
                           max="23"
+                          step="1"
+                          required
                           value={rule.startHour}
                           onChange={(event) => setRuleField(index, "startHour", event.target.value)}
                         />
@@ -600,6 +785,8 @@ export default function PulseSettings() {
                           type="number"
                           min="0"
                           max="23"
+                          step="1"
+                          required
                           value={rule.endHour}
                           onChange={(event) => setRuleField(index, "endHour", event.target.value)}
                         />
@@ -609,6 +796,7 @@ export default function PulseSettings() {
                         <input
                           className={fieldClassName}
                           value={rule.status}
+                          maxLength={FIELD_LIMITS.status}
                           onChange={(event) => setRuleField(index, "status", event.target.value)}
                         />
                       </label>
@@ -617,6 +805,7 @@ export default function PulseSettings() {
                         <input
                           className={fieldClassName}
                           value={rule.mood}
+                          maxLength={FIELD_LIMITS.short}
                           onChange={(event) => setRuleField(index, "mood", event.target.value)}
                         />
                       </label>
@@ -625,6 +814,7 @@ export default function PulseSettings() {
                         <input
                           className={fieldClassName}
                           value={rule.vibe}
+                          maxLength={FIELD_LIMITS.short}
                           onChange={(event) => setRuleField(index, "vibe", event.target.value)}
                         />
                       </label>
@@ -633,6 +823,7 @@ export default function PulseSettings() {
                         <textarea
                           className={`${fieldClassName} min-h-20 resize-y`}
                           value={rule.suggestion}
+                          maxLength={FIELD_LIMITS.suggestion}
                           onChange={(event) => setRuleField(index, "suggestion", event.target.value)}
                         />
                       </label>

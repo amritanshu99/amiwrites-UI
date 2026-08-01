@@ -3,7 +3,7 @@ import ResetPasswordPageDetails from '../components/Auth/ResetPasswordPageDetail
 
 import { applySEO, seoByRoute } from "../utils/seo";
 
-const ResetPasswordPage = () => {
+const ResetPasswordPage = ({ token }) => {
   useEffect(() => {
     const routeSeo = seoByRoute["/reset-password"] || {
       title: "Reset Password | AmiVerse",
@@ -19,7 +19,7 @@ const ResetPasswordPage = () => {
 
   return (
     <div>
-      <ResetPasswordPageDetails />
+      <ResetPasswordPageDetails token={token} />
     </div>
   );
 };
