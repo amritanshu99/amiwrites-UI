@@ -3,8 +3,7 @@ import { Navigate } from "react-router-dom";
 import { LoaderCircle } from "lucide-react";
 import { isTokenExpired, parseJwt } from "../utils/auth";
 import { verifyToken } from "../utils/authApi";
-
-const ADMIN_USERNAME = "amritanshu99";
+import { ADMIN_USERNAME } from "../config/auth";
 
 const ProtectedAdminRoute = ({ children }) => {
   const [accessState, setAccessState] = useState("checking");

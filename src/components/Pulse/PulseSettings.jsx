@@ -12,6 +12,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { apiUrl } from "../../config/api";
+import { getGeolocationErrorMessage } from "../../utils/pulseLocation";
 
 const DEFAULT_FORM = {
   isEnabled: true,
@@ -277,26 +278,6 @@ export function validateForm(form) {
   }
 
   return "";
-}
-
-function getGeolocationErrorMessage(error) {
-  if (!error || typeof error.code !== "number") {
-    return "Current location could not be detected. Please try again.";
-  }
-
-  if (error.code === error.PERMISSION_DENIED) {
-    return "Location permission was denied. Allow location access for this site and try again.";
-  }
-
-  if (error.code === error.POSITION_UNAVAILABLE) {
-    return "Current location is unavailable. Check device location services and try again.";
-  }
-
-  if (error.code === error.TIMEOUT) {
-    return "Location detection timed out. Move near a clearer signal or try again.";
-  }
-
-  return "Current location could not be detected. Please try again.";
 }
 
 export default function PulseSettings() {

@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { isTokenExpired, parseJwt } from "../utils/auth";
 import { verifyToken } from "../utils/authApi";
+import { ADMIN_USERNAME } from "../config/auth";
 
-const ADMIN_USERNAME = "amritanshu99";
 const MAX_TIMEOUT_MS = 2_147_483_647;
 
 let inFlightVerification = null;

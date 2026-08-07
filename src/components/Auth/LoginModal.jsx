@@ -6,6 +6,12 @@ import Loader from "../Loader/Loader";
 import { toast } from "react-toastify";
 import { Eye, EyeOff } from "lucide-react";
 import { apiUrl } from "../../config/api";
+import { ADMIN_USERNAME } from "../../config/auth";
+import { parseJwt } from "../../utils/auth";
+import {
+  getGeolocationErrorMessage,
+  updatePulseLocationFromBrowser,
+} from "../../utils/pulseLocation";
 
 const inputClass =
   "w-full rounded-xl border border-slate-200 bg-white/90 px-3.5 py-2.5 text-sm text-slate-950 shadow-inner shadow-slate-100/70 outline-none transition-colors duration-200 placeholder:text-slate-400 focus:border-sky-400 focus:bg-white focus:ring-4 focus:ring-sky-100 disabled:cursor-not-allowed disabled:opacity-70 dark:border-white/10 dark:bg-white/[0.06] dark:text-white dark:shadow-none dark:placeholder:text-zinc-500 dark:focus:border-cyan-300/50 dark:focus:bg-white/[0.08] dark:focus:ring-cyan-300/10";
@@ -65,6 +71,8 @@ export default function LoginModal({ isOpen, onClose }) {
       const { token } = response.data;
       localStorage.setItem("token", token);
 
+      const isAdminLogin = parseJwt(token)?.username === ADMIN_USERNAME;
+
       if (rememberMe) {
         localStorage.setItem("rememberedUsername", username);
       } else {
@@ -74,6 +82,17 @@ export default function LoginModal({ isOpen, onClose }) {
       toast.success("Login successful! Welcome back.");
       window.dispatchEvent(new Event("tokenChanged"));
       onClose();
+
+      if (isAdminLogin) {
+        toast.info("Allow location access to refresh your Ami Pulse location.");
+        void updatePulseLocationFromBrowser(token)
+          .then(({ locationLabel }) => {
+            toast.success(`Ami Pulse location updated to ${locationLabel}.`);
+          })
+          .catch((locationError) => {
+            toast.warning(getGeolocationErrorMessage(locationError));
+          });
+      }
     } catch (err) {
       const message =
         err.response?.data?.message ||
