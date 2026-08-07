@@ -25,18 +25,16 @@ import {
 } from "react-icons/si";
 import {
   motion,
-  useScroll,
-  useTransform,
-  useInView,
   AnimatePresence,
   useReducedMotion,
 } from "framer-motion";
+import { Link } from "react-router-dom";
 import InitialLoader from "./InitialLoader";
-import AchievementsModal from "./AchievementsModal";
 import MemoryLaneCta from "./MemoryLaneCta";
 import AmiversePulseWidget from "../AmiversePulseWidget";
 import { FaCalendarAlt } from "react-icons/fa";
 import { apiUrl, assetUrl } from "../../config/api";
+import portfolioFallback from "../../data/portfolioFallback";
 
 const MemoryLaneGallery = React.lazy(() => import("./MemoryLaneGallery"));
 
@@ -142,11 +140,12 @@ const Tooltip = React.memo(({ children, content }) => {
   const [show, setShow] = useState(false);
 
   return (
-    <div className="relative flex justify-center">
+    <div className="relative flex h-full w-full justify-center">
       <motion.div
         onHoverStart={() => setShow(true)}
         onHoverEnd={() => setShow(false)}
         onTap={() => setShow((prev) => !prev)}
+        className="h-full w-full"
       >
         {children}
       </motion.div>
@@ -170,123 +169,151 @@ const Tooltip = React.memo(({ children, content }) => {
   );
 });
 
-/* ================= ANIMATED BANNER ================= */
-const AnimatedBanner = React.memo(() => {
-  const ref = useRef(null);
-  const inView = useInView(ref, { once: true, margin: "-120px" });
-
-  return (
-    <motion.div
-      ref={ref}
-      initial={{ opacity: 0, scale: 0.96, y: 24 }}
-      animate={inView ? { opacity: 1, scale: 1, y: 0 } : {}}
-      transition={{ duration: 0.52, ease: [0.22, 1, 0.36, 1] }}
-      className="w-full will-change-transform"
-    >
-      <img
-        src={publicAsset("/banner-optimized.jpg")}
-        alt="Amritanshu Mishra Banner"
-        width="1584"
-        height="396"
-        className="
-            w-full
-            block
-            h-auto
-            object-cover
-            object-center
-            shadow-[0_18px_46px_rgba(15,23,42,0.16)]
-            sm:h-[clamp(160px,19vw,280px)]
-            sm:object-[center_58%]
-          "
-        loading="lazy"
-        decoding="async"
-      />
-    </motion.div>
-  );
-});
-
 /* ================= FADE ROW ================= */
-const FadeRow = React.memo(({ children }) => {
-  const ref = useRef(null);
-  const inView = useInView(ref, { once: true, margin: "-160px" });
+const FadeRow = React.memo(({ children, reduceMotion = false, delay = 0 }) => {
   return (
     <motion.div
-      ref={ref}
-      initial={{ opacity: 0, y: 18 }}
-      animate={inView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.45, ease: "easeOut" }}
+      initial={reduceMotion ? false : { opacity: 0, y: 16 }}
+      whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.12 }}
+      transition={{
+        duration: 0.5,
+        delay,
+        ease: [0.22, 1, 0.36, 1],
+      }}
     >
       {children}
     </motion.div>
   );
 });
 
-/* ================= SOCIAL MODAL ================= */
-const SocialModal = ({ isOpen, onClose, platform, url, icon }) => {
-  if (!isOpen) return null;
+const staggerCardContainerVariants = {
+  hidden: {},
+  visible: {
+    transition: {
+      delayChildren: 0.08,
+      staggerChildren: 0.075,
+    },
+  },
+};
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.95 }}
-        className="bg-white dark:bg-zinc-900 rounded-xl p-5 w-[280px] text-center"
-      >
-        <div className="text-2xl mb-2">{icon}</div>
-        <h3 className="text-sm font-semibold mb-1">{platform}</h3>
-        <p className="text-xs text-zinc-600 dark:text-zinc-400 mb-4">
-          Open profile in a new tab?
-        </p>
-        <div className="flex justify-center gap-2">
-          <button
-            onClick={onClose}
-            className="px-3 py-1 text-xs rounded border border-zinc-300 dark:border-zinc-700"
-          >
-            Cancel
-          </button>
-          <a
-            href={url}
-            target="_blank"
-            rel="noreferrer"
-            className="px-3 py-1 text-xs rounded bg-black text-white dark:bg-white dark:text-black"
-          >
-            Open
-          </a>
-        </div>
-      </motion.div>
-    </div>
-  );
+const staggerSkillContainerVariants = {
+  hidden: {},
+  visible: {
+    transition: {
+      delayChildren: 0.06,
+      staggerChildren: 0.045,
+    },
+  },
+};
+
+const revealCardVariants = {
+  hidden: { opacity: 0, y: 20, scale: 0.985 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: {
+      duration: 0.56,
+      ease: [0.22, 1, 0.36, 1],
+    },
+  },
+};
+
+const heroCopyContainerVariants = {
+  hidden: {},
+  visible: {
+    transition: {
+      delayChildren: 0.14,
+      staggerChildren: 0.085,
+    },
+  },
+};
+
+const heroCopyItemVariants = {
+  hidden: { opacity: 0, y: 18 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.64,
+      ease: [0.22, 1, 0.36, 1],
+    },
+  },
 };
 
 const sectionMeta = [
   { id: "intro", label: "Intro" },
+  { id: "work", label: "Work" },
   { id: "skills", label: "Skills" },
   { id: "experience", label: "Experience" },
   { id: "education", label: "Education" },
+  { id: "contact", label: "Contact" },
 ];
 const MIN_LOADER_DURATION_MS = 1200;
 const resumeUrl = assetUrl("/images/Resume.pdf");
 const publicAsset = (path) => `${process.env.PUBLIC_URL || ""}${path}`;
+const contactBannerUrl = publicAsset("/banner-optimized.jpg");
 const cx = (...classes) => classes.filter(Boolean).join(" ");
+
+const proofPoints = [
+  { value: "7+ years", label: "Product engineering" },
+  { value: "MERN + GraphQL", label: "Full-stack delivery" },
+  { value: "AI focused", label: "Practical innovation" },
+];
+
+const featuredProjects = [
+  {
+    title: "AmiBot",
+    label: "AI assistant",
+    description:
+      "A context-aware assistant built to turn questions into clear, useful actions across the AmiVerse ecosystem.",
+    result: "Conversational AI · Admin controls · Responsive UX",
+    stack: ["React", "Node.js", "AI"],
+    to: "/amibot",
+  },
+  {
+    title: "Task Manager",
+    label: "Productivity system",
+    description:
+      "A professional Kanban workspace that combines focused task execution with useful productivity analytics.",
+    result: "Drag-and-drop workflow · Analytics · Mobile ready",
+    stack: ["React", "Node.js", "Analytics"],
+    to: "/task-manager",
+  },
+  {
+    title: "AI Tools",
+    label: "Applied AI lab",
+    description:
+      "A collection of approachable AI utilities that solve focused problems without adding unnecessary complexity.",
+    result: "Multiple tools · Clear workflows · Fast discovery",
+    stack: ["AI", "ML", "JavaScript"],
+    to: "/ai-tools",
+  },
+];
 
 /* ================= MAIN ================= */
 export default function PortfolioDetails() {
-  const [data, setData] = useState(null);
+  const [data, setData] = useState(portfolioFallback);
   const [loading, setLoading] = useState(true);
-  const [modal, setModal] = useState({ isOpen: false });
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [hasOpenedGallery, setHasOpenedGallery] = useState(false);
-  const [isDark, setIsDark] = useState(false);
-  const [socialModal, setSocialModal] = useState(null);
+  const [isDark, setIsDark] = useState(() => {
+    if (typeof document === "undefined") return false;
+
+    try {
+      return (
+        document.documentElement.classList.contains("dark") ||
+        window.localStorage.getItem("theme") === "dark"
+      );
+    } catch {
+      return document.documentElement.classList.contains("dark");
+    }
+  });
   const [imageLoaded, setImageLoaded] = useState(false);
   const [backgroundImageLoaded, setBackgroundImageLoaded] = useState(false);
   const [activeSection, setActiveSection] = useState("intro");
-  const [isBottomCtaExpanded, setIsBottomCtaExpanded] = useState(() =>
-    typeof window !== "undefined"
-      ? !window.matchMedia("(max-width: 767px)").matches
-      : true,
-  );
+  const [isBottomCtaExpanded, setIsBottomCtaExpanded] = useState(false);
   const [isTouchDevice, setIsTouchDevice] = useState(false);
   const [isCompactViewport, setIsCompactViewport] = useState(() =>
     typeof window !== "undefined"
@@ -302,7 +329,6 @@ export default function PortfolioDetails() {
   const pendingScrollTargetRef = useRef(null);
   const pendingScrollTimerRef = useRef(null);
 
-  const heroRef = useRef(null);
   const portfolioBackgroundImage = publicAsset(
     isDark ? "/ny-dark-optimized.jpg" : "/ny-bg-optimized.jpg",
   );
@@ -357,47 +383,20 @@ export default function PortfolioDetails() {
     }, 900);
   }, [updateBottomCtaExpanded]);
 
-  const heroScroll = useScroll({
-    target: heroRef,
-    offset: ["start start", "0.4 end"],
-  });
-
-  const imageScale = useTransform(
-    heroScroll.scrollYProgress,
-    [0, 0.2],
-    [1.05, 1],
-  );
-  const textY = useTransform(
-    heroScroll.scrollYProgress,
-    [0, 0.2],
-    [0, -30],
-  );
-  const textOpacity = useTransform(
-    heroScroll.scrollYProgress,
-    [0, 0.4],
-    [1, 0.65],
-  );
-  const shouldReduceHeroMotion =
-    prefersReducedMotion || isTouchDevice || isCompactViewport;
-  const heroImageStyle = useMemo(
-    () => (shouldReduceHeroMotion ? undefined : { scale: imageScale }),
-    [imageScale, shouldReduceHeroMotion],
-  );
-  const heroTextStyle = useMemo(
-    () =>
-      shouldReduceHeroMotion ? undefined : { y: textY, opacity: textOpacity },
-    [shouldReduceHeroMotion, textOpacity, textY],
-  );
-
   useEffect(() => {
-    const sync = () => {
+    const syncTheme = () => {
       const nextIsDark = document.documentElement.classList.contains("dark");
-      setIsDark((prev) => (prev === nextIsDark ? prev : nextIsDark));
+      setIsDark((current) => (current === nextIsDark ? current : nextIsDark));
     };
-    sync();
-    const obs = new MutationObserver(sync);
-    obs.observe(document.documentElement, { attributes: true });
-    return () => obs.disconnect();
+
+    syncTheme();
+    const observer = new MutationObserver(syncTheme);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+
+    return () => observer.disconnect();
   }, []);
 
   useEffect(() => {
@@ -409,47 +408,38 @@ export default function PortfolioDetails() {
 
   useEffect(() => {
     const controller = new AbortController();
-    const loadStart = Date.now();
-    let loaderTimeout;
-    let isCancelled = false;
-
-    const finishLoading = () => {
-      const elapsed = Date.now() - loadStart;
-      const remaining = Math.max(MIN_LOADER_DURATION_MS - elapsed, 0);
-
-      loaderTimeout = setTimeout(() => {
-        if (!isCancelled) {
-          setLoading(false);
-        }
-      }, remaining);
-    };
+    const loaderTimeout = window.setTimeout(() => {
+      setLoading(false);
+    }, MIN_LOADER_DURATION_MS);
 
     axios
       .get(apiUrl("/api/portfolio"), {
         signal: controller.signal,
       })
       .then((res) => {
-        setData(res.data);
+        if (res.data && typeof res.data === "object") {
+          setData((current) => ({
+            ...current,
+            ...res.data,
+            title: portfolioFallback.title,
+            description: portfolioFallback.description,
+            experience: portfolioFallback.experience,
+            education: portfolioFallback.education,
+          }));
+        }
       })
       .catch((error) => {
         if (axios.isCancel(error)) return;
-        setData(null);
-      })
-      .finally(() => {
-        finishLoading();
       });
 
     return () => {
-      isCancelled = true;
       controller.abort();
-      if (loaderTimeout) {
-        clearTimeout(loaderTimeout);
-      }
+      window.clearTimeout(loaderTimeout);
     };
   }, []);
 
   useEffect(() => {
-    if (loading || !data) return;
+    if (loading) return undefined;
 
     const sections = sectionMeta
       .map(({ id }) => ({ id, element: sectionRefs.current[id] }))
@@ -572,11 +562,34 @@ export default function PortfolioDetails() {
   const heroImageUrl = useMemo(() => {
     if (!data) return "";
 
-    return assetUrl(isDark ? data.photoUrlDark : data.photoUrl);
+    const preferredPhoto = isDark && data.photoUrlDark
+      ? data.photoUrlDark
+      : data.photoUrl;
+
+    return assetUrl(preferredPhoto);
   }, [data, isDark]);
 
+  const handleHeroImageError = useCallback(
+    (event) => {
+      const image = event.currentTarget;
+      const fallbackUrl = assetUrl(data.photoUrl);
+
+      if (
+        image.dataset.fallbackApplied !== "true" &&
+        image.src !== fallbackUrl
+      ) {
+        image.dataset.fallbackApplied = "true";
+        image.src = fallbackUrl;
+        return;
+      }
+
+      markHeroImageLoaded();
+    },
+    [data.photoUrl, markHeroImageLoaded],
+  );
+
   useEffect(() => {
-    if (!heroImageUrl) return;
+    if (!heroImageUrl) return undefined;
 
     setImageLoaded(false);
 
@@ -587,7 +600,7 @@ export default function PortfolioDetails() {
 
     if (heroImage.complete) {
       markHeroImageLoaded();
-      return;
+      return undefined;
     }
 
     heroImage.addEventListener("load", markHeroImageLoaded);
@@ -598,29 +611,28 @@ export default function PortfolioDetails() {
   }, [heroImageUrl, markHeroImageLoaded]);
 
   useEffect(() => {
-    if (!heroImageUrl) return undefined;
+    setBackgroundImageLoaded(false);
 
-    const preloadImage = document.createElement("link");
-    preloadImage.rel = "preload";
-    preloadImage.as = "image";
-    preloadImage.href = heroImageUrl;
-    preloadImage.fetchPriority = "high";
-    document.head.appendChild(preloadImage);
+    const backgroundImage = new Image();
+    backgroundImage.decoding = "async";
+    backgroundImage.fetchPriority = "low";
+    backgroundImage.src = portfolioBackgroundImage;
 
-    return () => {
-      document.head.removeChild(preloadImage);
-    };
-  }, [heroImageUrl]);
+    const markBackgroundImageLoaded = () => setBackgroundImageLoaded(true);
 
-  useEffect(() => {
-    const collapseTimer = window.setTimeout(() => {
-      updateBottomCtaExpanded(false);
-    }, 2000);
+    if (backgroundImage.complete) {
+      markBackgroundImageLoaded();
+      return undefined;
+    }
+
+    backgroundImage.addEventListener("load", markBackgroundImageLoaded);
+    backgroundImage.addEventListener("error", markBackgroundImageLoaded);
 
     return () => {
-      window.clearTimeout(collapseTimer);
+      backgroundImage.removeEventListener("load", markBackgroundImageLoaded);
+      backgroundImage.removeEventListener("error", markBackgroundImageLoaded);
     };
-  }, [updateBottomCtaExpanded]);
+  }, [portfolioBackgroundImage]);
 
   useEffect(() => {
     if (isCompactViewport) {
@@ -677,29 +689,14 @@ export default function PortfolioDetails() {
       document.removeEventListener("pointerdown", handlePointerDownOutside);
   }, [isBottomCtaExpanded, isTouchDevice, updateBottomCtaExpanded]);
 
-  useEffect(() => {
-    setBackgroundImageLoaded(false);
-
-    const backgroundImage = new Image();
-    backgroundImage.decoding = "async";
-    backgroundImage.fetchPriority = "low";
-    backgroundImage.src = portfolioBackgroundImage;
-
-    const markLoaded = () => setBackgroundImageLoaded(true);
-
-    if (backgroundImage.complete) {
-      markLoaded();
-      return;
-    }
-
-    backgroundImage.addEventListener("load", markLoaded);
-
-    return () => {
-      backgroundImage.removeEventListener("load", markLoaded);
-    };
-  }, [portfolioBackgroundImage]);
-
-  if (loading || !data) return <InitialLoader />;
+  if (loading) {
+    return (
+      <InitialLoader
+        mode="showcase"
+        durationMs={MIN_LOADER_DURATION_MS}
+      />
+    );
+  }
 
   const [firstName, ...lastNameParts] = data.name.trim().split(/\s+/);
   const lastName = lastNameParts.join(" ");
@@ -761,113 +758,136 @@ export default function PortfolioDetails() {
         aria-labelledby="portfolio-title"
         className="relative isolate w-full max-w-full overflow-hidden bg-white text-zinc-900 dark:bg-black dark:text-zinc-100"
       >
-      {/* ===== PREMIUM NY BACKGROUND ===== */}
       <div
         aria-hidden="true"
-        className="pointer-events-none fixed inset-y-0 left-0 right-0 z-0 bg-cover bg-center transition-opacity duration-500 lg:right-[var(--scrollbar-size)]"
+        className="portfolio-ny-background pointer-events-none fixed inset-y-0 left-0 right-0 z-0 bg-cover transition-opacity duration-500 lg:right-[var(--scrollbar-size)]"
         style={{
           backgroundImage: `url(${portfolioBackgroundImage})`,
           opacity: backgroundImageLoaded ? 1 : 0,
         }}
       >
-        {/* corporate neutral tint (not too white, not too dark) */}
-        <div className="absolute inset-0 bg-white/25 dark:bg-black/35" />
-
-        {/* slightly stronger corporate tint */}
-        <div className="absolute inset-0 bg-white/35 dark:bg-black/45" />
-
-        {/* stronger readability but still elegant */}
-        <div
-          className="absolute inset-0 bg-gradient-to-b 
-    from-white/20 
-    via-transparent 
-    to-white/55 
-    dark:from-black/40 
-    dark:to-black/80"
-        />
-
-        {/* subtle corporate depth */}
-        <div className="absolute inset-0 shadow-[inset_0_0_180px_rgba(0,0,0,0.28)]" />
+        <div className="absolute inset-0 bg-white/10 dark:bg-black/38" />
+        <div className="absolute inset-0 bg-gradient-to-b from-white/5 via-transparent to-slate-100/18 dark:from-black/22 dark:via-black/8 dark:to-black/58" />
+        <div className="absolute inset-0 shadow-[inset_0_0_140px_rgba(15,23,42,0.1)] dark:shadow-[inset_0_0_180px_rgba(0,0,0,0.46)]" />
       </div>
 
-      {/* PAGE HEIGHT WRAPPER (controls sticky duration) */}
-     <div className="relative z-10">
-
+      <div className="relative z-10">
         {/* ================= HERO ================= */}
-        <section
-          ref={heroRef}
-          className="relative min-h-[88svh] sm:min-h-[98svh] md:min-h-[108svh] lg:min-h-[112svh] xl:min-h-[114svh]"
-        >
-          <motion.div
-            style={heroImageStyle}
-            className="sticky top-0 z-10 h-[72svh] min-h-[420px] overflow-hidden bg-white dark:bg-black sm:h-[78svh] sm:min-h-[500px] md:h-[84svh] md:min-h-[560px] lg:h-[86svh] xl:h-[88svh]"
-          >
-            <motion.img
-              src={heroImageUrl}
-              alt={`${data.name} portfolio portrait`}
-              width="1920"
-              height="1080"
-              onLoad={markHeroImageLoaded}
-              initial={false}
-              animate={{
-                opacity: imageLoaded ? 1 : 0,
-                scale: 1,
-              }}
-              transition={{ duration: 0.28, ease: "easeOut" }}
-              className="
-                h-full w-full
-                object-cover
-                object-[center_14%]
-                sm:object-[center_15%]
-                md:object-[center_17%]
-                lg:object-[center_22%]
-                block transform-gpu will-change-transform
-              "
-              loading="eager"
-              fetchPriority="high"
-              decoding="async"
-            />
+        <section className="portfolio-hero relative isolate overflow-hidden bg-slate-100 text-slate-950 dark:bg-black dark:text-white">
+          <img
+            key={`ambient-${heroImageUrl}`}
+            src={heroImageUrl}
+            alt=""
+            aria-hidden="true"
+            width={isDark ? 1024 : 1477}
+            height={isDark ? 1024 : 1317}
+            className="portfolio-hero-ambient pointer-events-none absolute -inset-8 hidden h-[calc(100%+4rem)] w-[calc(100%+4rem)] max-w-none object-cover object-center opacity-25 blur-3xl dark:opacity-[0.16] lg:block"
+            loading="eager"
+            decoding="async"
+          />
+          <div
+            aria-hidden="true"
+            className="portfolio-hero-foundation absolute inset-0"
+          />
+          <motion.img
+            key={heroImageUrl}
+            src={heroImageUrl}
+            alt={`${data.name} portfolio portrait`}
+            width={isDark ? 1024 : 1477}
+            height={isDark ? 1024 : 1317}
+            onLoad={markHeroImageLoaded}
+            onError={handleHeroImageError}
+            initial={
+              prefersReducedMotion
+                ? false
+                : { opacity: 0, x: 20, scale: 1.012 }
+            }
+            animate={{
+              opacity: imageLoaded ? 1 : 0,
+              x: 0,
+              scale: 1,
+            }}
+            transition={{ duration: 0.86, ease: [0.22, 1, 0.36, 1] }}
+            className="portfolio-hero-image absolute inset-0 h-full w-full max-w-none object-cover object-[38%_17%] saturate-[1.03] contrast-[1.02] will-change-[opacity,transform] sm:object-[46%_18%] lg:left-auto lg:right-0 lg:w-auto lg:object-contain lg:object-right dark:saturate-100 dark:contrast-[1.06]"
+            loading="eager"
+            fetchPriority="high"
+            decoding="async"
+          />
+          <div
+            aria-hidden="true"
+            className="portfolio-hero-scrim portfolio-hero-scrim-light absolute inset-0 dark:hidden"
+          />
+          <div
+            aria-hidden="true"
+            className="portfolio-hero-scrim portfolio-hero-scrim-dark absolute inset-0 hidden dark:block"
+          />
+          <div
+            aria-hidden="true"
+            className="portfolio-hero-colorwash pointer-events-none absolute inset-0 overflow-hidden dark:hidden"
+          />
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 hidden bg-[radial-gradient(circle_at_8%_20%,rgba(34,211,238,0.07),transparent_32%)] dark:block"
+          />
 
-            <div className="absolute inset-0 bg-gradient-to-b from-white/12 via-white/10 to-white/88 dark:from-black/34 dark:via-black/20 dark:to-black/90" />
-            <div className="absolute inset-0 bg-gradient-to-r from-white/42 via-white/8 to-white/12 dark:from-black/54 dark:via-transparent dark:to-black/18" />
-            <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-white dark:from-black to-transparent" />
-
+          <div className="relative z-10 mx-auto flex h-full max-w-7xl items-end px-5 pb-14 sm:px-8 sm:pb-16 lg:items-center lg:px-12 lg:pb-0">
             <motion.div
-              style={heroTextStyle}
-              className="hero-name-area pointer-events-none absolute inset-0 z-10 flex items-end px-5 pb-[max(2rem,8svh)] min-[380px]:px-6 sm:px-10 sm:pb-[9svh] md:px-16 md:pb-[10svh] lg:px-20 lg:pb-[11vh]"
+              variants={heroCopyContainerVariants}
+              initial={prefersReducedMotion ? false : "hidden"}
+              animate="visible"
+              className="hero-name-area w-full max-w-lg"
             >
-              <h1
+              <motion.p
+                variants={heroCopyItemVariants}
+                className="mb-4 flex items-center gap-3 text-xs font-bold uppercase tracking-[0.24em] text-sky-800 [text-shadow:0_1px_8px_rgba(255,255,255,0.92)] before:h-px before:w-8 before:shrink-0 before:bg-sky-700/60 dark:text-cyan-200 dark:[text-shadow:0_2px_12px_rgba(0,0,0,0.72)] dark:before:bg-cyan-200/55 sm:text-sm"
+              >
+                Building useful products with clarity
+              </motion.p>
+              <motion.h1
+                variants={heroCopyItemVariants}
                 id="portfolio-title"
                 aria-label={data.name}
-                style={{ transformOrigin: "left center" }}
-                className="
-                  hero-name
-                  font-extrabold
-                  tracking-normal
-                  text-slate-950
-                  drop-shadow-[0_12px_34px_rgba(15,23,42,0.24)]
-                  [text-shadow:0_2px_20px_rgba(255,255,255,0.9)]
-                  [font-variation-settings:'wght'_840]
-                  antialiased
-                  dark:text-white
-                  dark:drop-shadow-[0_18px_48px_rgba(0,0,0,0.78)]
-                  dark:[text-shadow:0_2px_18px_rgba(0,0,0,0.86)]
-                "
+                className="hero-name font-extrabold tracking-tight text-slate-950 antialiased drop-shadow-[0_2px_14px_rgba(255,255,255,0.55)] dark:text-white dark:drop-shadow-[0_10px_36px_rgba(0,0,0,0.48)]"
               >
                 <span className="block">{firstName}</span>
                 {lastName ? <span className="block">{lastName}</span> : null}
-              </h1>
+              </motion.h1>
+              <motion.p
+                variants={heroCopyItemVariants}
+                className="mt-5 text-lg font-semibold text-slate-950 dark:text-white sm:text-xl lg:text-2xl"
+              >
+                {data.title || portfolioFallback.title}
+              </motion.p>
+              <motion.p
+                variants={heroCopyItemVariants}
+                className="portfolio-hero-summary mt-3 max-w-lg text-sm leading-relaxed text-slate-700 dark:text-slate-200 sm:text-base"
+              >
+                React, Node.js, GraphQL, and AI—combined to solve real product problems.
+              </motion.p>
+              <motion.div
+                variants={heroCopyItemVariants}
+                className="portfolio-hero-actions mt-7 flex flex-row gap-2 min-[360px]:gap-3"
+              >
+                <button
+                  type="button"
+                  onClick={() => scrollToSection("work")}
+                  className="inline-flex min-h-12 min-w-0 flex-1 items-center justify-center whitespace-nowrap rounded-full bg-gradient-to-r from-slate-950 to-sky-950 px-2 py-3 text-xs font-bold text-white shadow-[0_16px_38px_rgba(15,23,42,0.2)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_44px_rgba(14,116,144,0.24)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300 dark:from-white dark:to-cyan-50 dark:text-slate-950 dark:shadow-[0_16px_38px_rgba(0,0,0,0.28)] dark:hover:shadow-[0_18px_46px_rgba(34,211,238,0.16)] dark:focus-visible:ring-cyan-200 min-[360px]:px-4 min-[360px]:text-sm sm:px-6"
+                >
+                  Selected work <span className="ml-2" aria-hidden="true">&rarr;</span>
+                </button>
+                <a
+                  href={resumeUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex min-h-12 min-w-0 flex-1 items-center justify-center whitespace-nowrap rounded-full border border-slate-900/15 bg-white/[0.94] px-2 py-3 text-xs font-bold text-slate-950 shadow-[0_12px_28px_rgba(15,23,42,0.1)] transition duration-300 hover:-translate-y-0.5 hover:border-sky-300 hover:bg-white hover:shadow-[0_16px_34px_rgba(14,116,144,0.14)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300 dark:border-white/20 dark:bg-slate-950/[0.88] dark:text-white dark:shadow-[0_12px_28px_rgba(0,0,0,0.3)] dark:hover:border-cyan-300/35 dark:hover:bg-slate-950 dark:focus-visible:ring-cyan-200 min-[360px]:px-4 min-[360px]:text-sm sm:px-6"
+                >
+                  <FaRegFilePdf className="mr-2" aria-hidden="true" /> View résumé
+                </a>
+              </motion.div>
             </motion.div>
-          </motion.div>
+          </div>
 
-          <AmiversePulseWidget />
-        </section>
-        {/* ================= BRAND BANNER ================= */}
-        <section
-          aria-label="AmiVerse portfolio banner"
-          className="w-full overflow-hidden border-y border-zinc-200/70 bg-white/92 py-4 backdrop-blur dark:border-zinc-800 dark:bg-black/92 sm:py-5 md:py-6 lg:py-7"
-        >
-          <AnimatedBanner />
+          {!isCompactViewport && <AmiversePulseWidget />}
         </section>
 
         {/* ================= INTRO ================= */}
@@ -877,98 +897,133 @@ export default function PortfolioDetails() {
             sectionRefs.current.intro = el;
           }}
           aria-label="Profile details"
-          className="border-b border-zinc-200 px-5 py-12 dark:border-zinc-800 sm:px-6 sm:py-14 md:px-20 md:py-16"
+          className="portfolio-section-surface border-b border-slate-200/70 bg-slate-50/[0.78] px-5 py-14 dark:border-zinc-800/80 dark:bg-zinc-950/[0.86] sm:px-8 md:py-20 lg:px-12"
         >
-          <FadeRow>
-            <div className="w-full max-w-none space-y-6">
-              <p className="w-full max-w-5xl text-base font-medium leading-relaxed tracking-normal text-zinc-800 [text-wrap:pretty] dark:text-zinc-100 sm:text-lg md:text-xl">
-                {data.description}
-              </p>
-              <div className="flex flex-wrap gap-3 text-zinc-500">
-                {socialProfiles.map((s) => (
-                  <button
-                    key={s.name}
-                    onClick={() => setSocialModal(s)}
-                    aria-label={`Open ${s.name} profile`}
-                    className={`${socialColors[s.name]} rounded-full bg-white/70 p-2 shadow-sm ring-1 ring-zinc-200/70 backdrop-blur transition-all duration-300 hover:-translate-y-0.5 hover:scale-105 hover:bg-white hover:shadow-[0_10px_24px_rgba(15,23,42,0.1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/70 dark:bg-zinc-900/60 dark:ring-zinc-800 dark:hover:bg-zinc-900 dark:hover:shadow-[0_10px_24px_rgba(0,0,0,0.28)] dark:focus-visible:ring-cyan-300/45`}
+          <FadeRow reduceMotion={prefersReducedMotion}>
+            <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[1.25fr_0.75fr] lg:items-start">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.22em] text-sky-700 dark:text-cyan-300">
+                  About me
+                </p>
+                <h2 className="mt-3 max-w-3xl text-3xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-4xl">
+                  Engineering thoughtful products from idea to impact.
+                </h2>
+                <p className="mt-5 max-w-3xl text-base leading-8 text-slate-600 dark:text-zinc-300 sm:text-lg">
+                  {portfolioFallback.description}
+                </p>
+
+                <div className="mt-7 flex flex-wrap items-center gap-3">
+                  <a
+                    href={contactActions.emailHref}
+                    className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-slate-950 px-5 py-2.5 text-sm font-bold text-white transition hover:-translate-y-0.5 hover:bg-sky-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300 dark:bg-cyan-300 dark:text-slate-950 dark:hover:bg-cyan-200"
                   >
-                    {s.icon}
-                  </button>
-                ))}
+                    <FaEnvelope aria-hidden="true" /> Email me
+                  </a>
+                  <a
+                    href={contactActions.phoneHref}
+                    className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-slate-300 bg-white/[0.94] px-5 py-2.5 text-sm font-bold text-slate-800 transition hover:-translate-y-0.5 hover:border-sky-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300 dark:border-white/15 dark:bg-zinc-950/[0.94] dark:text-white"
+                  >
+                    <FaPhoneAlt aria-hidden="true" /> Call
+                  </a>
+                  <div className="flex items-center gap-2 text-zinc-500" aria-label="Social profiles">
+                    {socialProfiles.map((social) => (
+                      <a
+                        key={social.name}
+                        href={social.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        aria-label={`Open ${social.name} profile`}
+                        className={`${socialColors[social.name]} inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white/[0.94] shadow-sm transition hover:-translate-y-0.5 hover:border-sky-200 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300 dark:border-white/10 dark:bg-zinc-950/[0.94]`}
+                      >
+                        {social.icon}
+                      </a>
+                    ))}
+                  </div>
+                </div>
               </div>
 
-              <nav
-                className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center"
-                aria-label="Direct contact actions"
+              <aside aria-label="Professional highlights">
+                <motion.div
+                  variants={staggerCardContainerVariants}
+                  initial={prefersReducedMotion ? false : "hidden"}
+                  whileInView={prefersReducedMotion ? undefined : "visible"}
+                  viewport={{ once: true, amount: 0.16 }}
+                  className="grid auto-rows-fr gap-3 sm:grid-cols-2 lg:grid-cols-1"
+                >
+                  {proofPoints.map((point) => (
+                    <motion.div
+                      key={point.value}
+                      variants={revealCardVariants}
+                      className="h-full min-h-[94px] rounded-2xl border border-white/80 bg-white/[0.92] p-5 shadow-[0_14px_34px_rgba(15,23,42,0.07)] ring-1 ring-slate-900/[0.025] transition duration-300 hover:-translate-y-0.5 hover:border-sky-200 hover:shadow-[0_18px_40px_rgba(14,116,144,0.1)] dark:border-white/10 dark:bg-zinc-950/[0.94] dark:ring-white/[0.03] dark:hover:border-cyan-300/20"
+                    >
+                      <p className="text-lg font-bold text-slate-950 dark:text-white">{point.value}</p>
+                      <p className="mt-1 text-sm text-slate-500 dark:text-zinc-400">{point.label}</p>
+                    </motion.div>
+                  ))}
+                  <motion.div variants={revealCardVariants} className="h-full">
+                    <MemoryLaneCta onClick={openMemoryLane} />
+                  </motion.div>
+                </motion.div>
+              </aside>
+            </div>
+          </FadeRow>
+        </section>
+
+        {/* ================= SELECTED WORK ================= */}
+        <section
+          id="work"
+          ref={(el) => {
+            sectionRefs.current.work = el;
+          }}
+          aria-labelledby="work-heading"
+          className="portfolio-section-surface border-b border-slate-200/70 bg-white/[0.76] px-5 py-14 dark:border-zinc-800/80 dark:bg-black/[0.84] sm:px-8 md:py-20 lg:px-12"
+        >
+          <FadeRow reduceMotion={prefersReducedMotion}>
+            <div className="mx-auto max-w-7xl">
+              <div className="max-w-3xl">
+                <p className="text-xs font-bold uppercase tracking-[0.22em] text-sky-700 dark:text-cyan-300">01 · Selected work</p>
+                <h2 id="work-heading" className="mt-3 text-3xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-4xl">
+                  Products built to be useful, not just impressive.
+                </h2>
+                <p className="mt-4 text-base leading-7 text-slate-600 dark:text-zinc-300 sm:text-lg">
+                  A few AmiVerse projects that combine product thinking, engineering, and practical AI.
+                </p>
+              </div>
+
+              <motion.div
+                variants={staggerCardContainerVariants}
+                initial={prefersReducedMotion ? false : "hidden"}
+                whileInView={prefersReducedMotion ? undefined : "visible"}
+                viewport={{ once: true, amount: 0.16 }}
+                className="mt-9 grid gap-5 lg:grid-cols-3"
               >
-                <a
-                  href={contactActions.phoneHref}
-                  aria-label={`Call Amritanshu Mishra at ${contactActions.phoneDisplay}`}
-                  className="group inline-flex min-h-12 w-full min-w-0 items-center justify-center gap-3 rounded-full border border-emerald-300/60 bg-white/82 px-4 py-2.5 text-sm font-semibold text-slate-900 shadow-[0_14px_32px_rgba(15,23,42,0.1)] ring-1 ring-white/70 backdrop-blur-xl transition-all duration-300 hover:-translate-y-0.5 hover:border-emerald-400 hover:bg-white hover:shadow-[0_18px_40px_rgba(16,185,129,0.16)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300/70 dark:border-emerald-300/25 dark:bg-emerald-300/10 dark:text-emerald-50 dark:shadow-[0_16px_36px_rgba(0,0,0,0.26)] dark:ring-emerald-100/10 dark:hover:border-emerald-200/55 dark:hover:bg-emerald-300/15 dark:focus-visible:ring-emerald-200/45 sm:w-auto sm:justify-start"
-                >
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 text-white shadow-[0_10px_22px_rgba(16,185,129,0.26)] transition-transform duration-300 group-hover:scale-105 dark:from-emerald-300 dark:to-teal-300 dark:text-slate-950 dark:shadow-[0_10px_22px_rgba(45,212,191,0.18)]">
-                    <FaPhoneAlt className="text-sm" aria-hidden="true" />
-                  </span>
-                  <span className="flex min-w-0 flex-col items-start leading-tight">
-                    <span>Call</span>
-                    <span className="hidden whitespace-nowrap text-[12px] font-medium text-slate-500 dark:text-emerald-100/75 sm:block">
-                      {contactActions.phoneDisplay}
-                    </span>
-                  </span>
-                </a>
-
-                <a
-                  href={contactActions.emailHref}
-                  aria-label={`Email Amritanshu Mishra at ${contactActions.emailDisplay}`}
-                  className="group inline-flex min-h-12 w-full min-w-0 items-center justify-center gap-3 rounded-full border border-sky-300/60 bg-white/82 px-4 py-2.5 text-sm font-semibold text-slate-900 shadow-[0_14px_32px_rgba(15,23,42,0.1)] ring-1 ring-white/70 backdrop-blur-xl transition-all duration-300 hover:-translate-y-0.5 hover:border-sky-400 hover:bg-white hover:shadow-[0_18px_40px_rgba(14,165,233,0.16)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/70 dark:border-cyan-300/25 dark:bg-cyan-300/10 dark:text-cyan-50 dark:shadow-[0_16px_36px_rgba(0,0,0,0.26)] dark:ring-cyan-100/10 dark:hover:border-cyan-200/55 dark:hover:bg-cyan-300/15 dark:focus-visible:ring-cyan-200/45 sm:w-auto sm:justify-start"
-                >
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-sky-500 to-cyan-500 text-white shadow-[0_10px_22px_rgba(14,165,233,0.26)] transition-transform duration-300 group-hover:scale-105 dark:from-cyan-300 dark:to-sky-300 dark:text-slate-950 dark:shadow-[0_10px_22px_rgba(34,211,238,0.18)]">
-                    <FaEnvelope className="text-sm" aria-hidden="true" />
-                  </span>
-                  <span className="flex min-w-0 flex-col items-start leading-tight">
-                    <span>Email</span>
-                    <span className="hidden max-w-[16rem] truncate text-[12px] font-medium text-slate-500 dark:text-cyan-100/75 sm:block">
-                      {contactActions.emailDisplay}
-                    </span>
-                  </span>
-                </a>
-              </nav>
-
-              <div className="flex w-full max-w-full flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-                <a
-                  href={resumeUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  aria-label="View my resume in a new tab"
-                  className="group inline-flex min-w-0 w-full items-center justify-center gap-3 rounded-full border border-sky-300/70 bg-white/86 px-5 py-3 text-sm font-semibold tracking-[0.02em] text-slate-900 shadow-[0_16px_36px_rgba(15,23,42,0.12)] ring-1 ring-white/70 backdrop-blur-xl transition-all duration-300 hover:-translate-y-0.5 hover:border-sky-400 hover:bg-white hover:shadow-[0_18px_42px_rgba(14,165,233,0.18)] dark:border-cyan-300/35 dark:bg-cyan-300/10 dark:text-cyan-50 dark:shadow-[0_18px_42px_rgba(8,145,178,0.14)] dark:ring-cyan-100/15 dark:hover:border-cyan-200/70 dark:hover:bg-cyan-300/16 sm:w-auto"
-                >
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-sky-500 to-cyan-500 text-white shadow-[0_10px_24px_rgba(14,165,233,0.32)] transition-transform duration-300 group-hover:scale-105 dark:from-cyan-300 dark:to-sky-400 dark:text-slate-950 dark:shadow-[0_10px_24px_rgba(34,211,238,0.22)]">
-                    <FaRegFilePdf className="text-base" aria-hidden="true" />
-                  </span>
-                  <span className="flex min-w-0 flex-col items-start leading-tight">
-                    <span>View my resume</span>
-                    <span className="text-[11px] font-medium text-slate-500 dark:text-cyan-100/75">
-                      Opens PDF in a new tab
-                    </span>
-                  </span>
-                  <span className="shrink-0 text-base text-slate-400 transition-transform duration-300 group-hover:translate-x-0.5 dark:text-cyan-100/75">
-                    &rarr;
-                  </span>
-                </a>
-
-                <button
-                  type="button"
-                  onClick={() => scrollToSection("experience")}
-                  className="group inline-flex min-w-0 w-full items-center justify-center gap-2 rounded-full border border-zinc-300/70 bg-white/78 px-5 py-3 text-sm font-semibold tracking-wide text-slate-900 shadow-[0_12px_28px_rgba(15,23,42,0.08)] ring-1 ring-white/65 backdrop-blur-xl transition-all duration-300 hover:-translate-y-0.5 hover:border-sky-300 hover:bg-white dark:border-white/15 dark:bg-white/[0.06] dark:text-zinc-100 dark:shadow-[0_16px_36px_rgba(0,0,0,0.26)] dark:ring-white/10 dark:hover:border-cyan-300/40 dark:hover:bg-cyan-300/10 sm:w-auto"
-                >
-                  Explore my experience
-                  <span className="text-slate-400 transition-transform duration-300 group-hover:translate-x-0.5 dark:text-cyan-100/70">
-                    &rarr;
-                  </span>
-                </button>
-
-                <MemoryLaneCta onClick={openMemoryLane} />
-              </div>
+                {featuredProjects.map((project) => (
+                  <motion.article
+                    key={project.title}
+                    variants={revealCardVariants}
+                    className="group relative flex h-full flex-col overflow-hidden rounded-3xl border border-white/85 bg-slate-50/[0.92] p-6 shadow-[0_18px_46px_rgba(15,23,42,0.08)] ring-1 ring-slate-900/[0.03] transition duration-300 hover:-translate-y-1 hover:border-sky-200 hover:shadow-[0_26px_58px_rgba(14,116,144,0.14)] dark:border-white/10 dark:bg-zinc-950/[0.94] dark:ring-white/[0.035] dark:hover:border-cyan-300/25"
+                  >
+                    <span className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-sky-400/65 to-transparent opacity-70 dark:via-cyan-300/45" aria-hidden="true" />
+                    <p className="text-xs font-bold uppercase tracking-[0.18em] text-sky-700 dark:text-cyan-300">{project.label}</p>
+                    <h3 className="mt-4 text-2xl font-bold tracking-tight text-slate-950 dark:text-white">{project.title}</h3>
+                    <p className="mt-3 flex-1 text-sm leading-7 text-slate-600 dark:text-zinc-300">{project.description}</p>
+                    <p className="mt-5 border-t border-slate-200 pt-4 text-sm font-semibold text-slate-700 dark:border-white/10 dark:text-zinc-200">{project.result}</p>
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      {project.stack.map((item) => (
+                        <span key={item} className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-600 ring-1 ring-slate-200 dark:bg-white/[0.06] dark:text-zinc-300 dark:ring-white/10">
+                          {item}
+                        </span>
+                      ))}
+                    </div>
+                    <Link
+                      to={project.to}
+                      className="mt-6 inline-flex min-h-11 items-center justify-center rounded-full bg-slate-950 px-5 py-2.5 text-sm font-bold text-white transition group-hover:bg-sky-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300 dark:bg-white dark:text-slate-950 dark:group-hover:bg-cyan-200"
+                    >
+                      Explore project <span className="ml-2" aria-hidden="true">&rarr;</span>
+                    </Link>
+                  </motion.article>
+                ))}
+              </motion.div>
             </div>
           </FadeRow>
         </section>
@@ -980,39 +1035,43 @@ export default function PortfolioDetails() {
             sectionRefs.current.skills = el;
           }}
           aria-labelledby="skills-heading"
-          className="border-b border-zinc-200 px-5 py-12 dark:border-zinc-800 sm:px-6 sm:py-14 md:px-20 md:py-16"
+          className="portfolio-section-surface border-b border-slate-200/70 bg-slate-50/[0.78] px-5 py-14 dark:border-zinc-800/80 dark:bg-zinc-950/[0.86] sm:px-8 md:py-20 lg:px-12"
         >
-          <FadeRow>
-            <h2 id="skills-heading" className="mb-8 flex items-center gap-3 text-xl font-semibold tracking-tight after:h-px after:flex-1 after:bg-gradient-to-r after:from-sky-300/50 after:to-transparent dark:after:from-cyan-300/20 md:text-2xl">
-              01 - Skills
-            </h2>
-            <div className="grid w-full grid-cols-[repeat(auto-fit,120px)] justify-center gap-4 sm:gap-5">
+          <FadeRow reduceMotion={prefersReducedMotion}>
+            <div className="mx-auto max-w-7xl">
+              <p className="text-xs font-bold uppercase tracking-[0.22em] text-sky-700 dark:text-cyan-300">02 · Core capabilities</p>
+              <h2 id="skills-heading" className="mt-3 text-3xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-4xl">
+                A focused toolkit for end-to-end delivery.
+              </h2>
+              <p className="mt-4 max-w-3xl text-base leading-7 text-slate-600 dark:text-zinc-300 sm:text-lg">
+                Strongest across modern JavaScript products, backed by practical data and AI experience.
+              </p>
+            </div>
+            <motion.div
+              variants={staggerSkillContainerVariants}
+              initial={prefersReducedMotion ? false : "hidden"}
+              whileInView={prefersReducedMotion ? undefined : "visible"}
+              viewport={{ once: true, amount: 0.16 }}
+              className="mx-auto mt-9 grid max-w-7xl auto-rows-fr grid-cols-2 gap-3 sm:grid-cols-4 xl:grid-cols-8"
+            >
               {data.skills.map(({ skill, expertise }) => (
                 <Tooltip key={skill} content={expertise}>
                   <motion.div
-                    whileHover={{ scale: 1.04, y: -5 }}
-                    whileTap={{ scale: 0.95 }}
-                    transition={{ type: "spring", stiffness: 260, damping: 18 }}
-                    className="
-                      group relative flex h-[120px] w-[120px] shrink-0
-                      cursor-pointer flex-col items-center justify-center gap-2
-                      rounded-2xl border border-zinc-200/70 bg-white/75 p-4
-                      shadow-sm ring-1 ring-white/60 backdrop-blur-xl transition-all duration-300
-                      hover:border-sky-200 hover:bg-white hover:shadow-[0_16px_38px_rgba(14,165,233,0.14)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/70
-                      dark:border-zinc-800 dark:bg-zinc-900/55 dark:hover:border-sky-400/35
-                      dark:ring-white/5 dark:hover:bg-zinc-900 dark:hover:shadow-[0_16px_38px_rgba(0,0,0,0.45)] dark:focus-visible:ring-cyan-300/45
-                    "
+                    variants={revealCardVariants}
+                    whileHover={prefersReducedMotion ? undefined : { y: -3 }}
+                    transition={{ duration: 0.2 }}
+                    className="group flex h-full min-h-28 w-full min-w-0 flex-col items-center justify-center gap-2.5 overflow-hidden rounded-2xl border border-white/85 bg-white/[0.92] p-3 text-center shadow-[0_12px_30px_rgba(15,23,42,0.07)] ring-1 ring-slate-900/[0.025] transition duration-300 hover:border-sky-200 hover:shadow-[0_18px_38px_rgba(14,116,144,0.12)] dark:border-white/10 dark:bg-zinc-950/[0.94] dark:ring-white/[0.035] dark:hover:border-cyan-300/25"
                   >
-                    <div className={`text-3xl transition-transform duration-300 group-hover:scale-110 ${skillColors[skill]}`}>
+                    <div className={`flex h-10 w-10 items-center justify-center rounded-xl bg-slate-50/90 text-2xl ring-1 ring-slate-200/70 transition duration-300 group-hover:-translate-y-0.5 group-hover:scale-105 group-hover:ring-sky-200 dark:bg-white/[0.055] dark:ring-white/10 dark:group-hover:ring-cyan-300/20 ${skillColors[skill]}`}>
                       {skillIconMap[skill]}
                     </div>
-                    <span className="text-sm font-semibold text-center leading-tight">
+                    <span className="text-xs font-bold leading-tight text-slate-800 dark:text-zinc-100 sm:text-sm">
                       {skill}
                     </span>
                   </motion.div>
                 </Tooltip>
               ))}
-            </div>
+            </motion.div>
           </FadeRow>
         </section>
 
@@ -1023,101 +1082,64 @@ export default function PortfolioDetails() {
             sectionRefs.current.experience = el;
           }}
           aria-labelledby="experience-heading"
-          className="border-b border-zinc-200 px-5 py-12 dark:border-zinc-800 sm:px-6 sm:py-14 md:px-20 md:py-16"
+          className="portfolio-section-surface border-b border-slate-200/70 bg-white/[0.76] px-5 py-14 dark:border-zinc-800/80 dark:bg-black/[0.84] sm:px-8 md:py-20 lg:px-12"
         >
-          <FadeRow>
-            <h2 id="experience-heading" className="mb-8 flex items-center gap-3 text-xl font-semibold tracking-tight after:h-px after:flex-1 after:bg-gradient-to-r after:from-sky-300/50 after:to-transparent dark:after:from-cyan-300/20 md:text-2xl">
-              <FaBriefcase aria-hidden="true" /> 02 - Experience
-            </h2>
+          <FadeRow reduceMotion={prefersReducedMotion}>
+            <div className="mx-auto max-w-7xl">
+              <p className="text-xs font-bold uppercase tracking-[0.22em] text-sky-700 dark:text-cyan-300">03 · Experience</p>
+              <h2 id="experience-heading" className="mt-3 flex items-center gap-3 text-3xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-4xl">
+                <FaBriefcase className="text-2xl text-sky-700 dark:text-cyan-300" aria-hidden="true" /> Career journey
+              </h2>
 
-            {data.experience.map((exp, i) => (
-              <div
-                key={i}
-                className="group mb-4 grid min-w-0 gap-4 rounded-2xl border border-zinc-200/55 bg-white/10 p-4 shadow-none ring-0 backdrop-blur-0 transition-all duration-300 last:mb-0 hover:-translate-y-0.5 hover:border-sky-200/80 hover:bg-white/24 dark:border-white/10 dark:bg-transparent dark:hover:border-sky-300/24 dark:hover:bg-white/[0.03] sm:grid-cols-[160px_1fr] sm:gap-5 sm:p-5 md:grid-cols-[220px_1fr]"
+              <motion.div
+                variants={staggerCardContainerVariants}
+                initial={prefersReducedMotion ? false : "hidden"}
+                whileInView={prefersReducedMotion ? undefined : "visible"}
+                viewport={{ once: true, amount: 0.12 }}
+                className="mt-9 space-y-5"
               >
-                <div className="flex items-center gap-2 text-sm font-medium text-zinc-500 dark:text-zinc-400 sm:items-start sm:pt-1">
-  <FaCalendarAlt className="text-xs text-sky-500/80 dark:text-sky-300/80" />
-  <span>{exp.duration}</span>
-</div>
-                <div className="min-w-0">
-                  <div className="flex items-center gap-3">
-                    {companyLogoMap[exp.company] && (
-                <img
-  src={companyLogoMap[exp.company]}
-  alt={`${exp.company} logo`}
-  decoding="async"
-  loading="lazy"
-  className="
-    w-11 h-11 rounded-2xl object-contain
-    bg-white/80 dark:bg-zinc-950/70
-    backdrop-blur-xl
-    p-2
-    border border-zinc-200/70 dark:border-zinc-700/60
-
-    shadow-sm
-
-    transition-all duration-300
-    group-hover:scale-105
-  "
-/>
-
-                    )}
-
-                    <div className="min-w-0">
-                      <h3 className="break-words text-lg font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">{exp.role}</h3>
-                      <p className="break-words text-sm text-zinc-500 dark:text-zinc-400">{exp.company}</p>
+                {data.experience.map((exp, i) => (
+                  <motion.article
+                    key={`${exp.company}-${exp.duration}`}
+                    variants={revealCardVariants}
+                    className="group grid min-w-0 gap-5 rounded-3xl border border-white/85 bg-slate-50/[0.92] p-5 shadow-[0_18px_46px_rgba(15,23,42,0.075)] ring-1 ring-slate-900/[0.025] transition duration-300 hover:-translate-y-0.5 hover:border-sky-200 hover:shadow-[0_24px_52px_rgba(14,116,144,0.11)] dark:border-white/10 dark:bg-zinc-950/[0.94] dark:ring-white/[0.035] dark:hover:border-cyan-300/25 sm:grid-cols-[180px_1fr] sm:p-7 md:grid-cols-[220px_1fr]"
+                  >
+                    <div className="flex items-start gap-2 text-sm font-semibold text-slate-500 dark:text-zinc-400 sm:pt-1">
+                      <FaCalendarAlt className="mt-0.5 shrink-0 text-sky-600 dark:text-cyan-300" aria-hidden="true" />
+                      <span>{exp.duration}</span>
                     </div>
-                  </div>
-
-                  <p className="mt-2 break-words text-base leading-relaxed text-zinc-800 dark:text-zinc-200">{exp.description}</p>
-
-                  {exp.achievements?.length > 0 && (
-                  <motion.button
-  whileHover={{ x: 4 }}
-  whileTap={{ scale: 0.97 }}
-  className="
-    group mt-4 inline-flex items-center gap-2
-    px-3 py-1.5
-    text-xs font-semibold tracking-wide
-
-    rounded-full
-    border border-zinc-200 dark:border-zinc-700
-
-    bg-transparent dark:bg-transparent
-    backdrop-blur-xl
-
-    text-zinc-700 dark:text-zinc-300
-    transition-all duration-300
-
-    hover:bg-white/20 dark:hover:bg-white/10
-    hover:border-zinc-300 dark:hover:border-zinc-600
-
-    shadow-sm hover:shadow-md
-  "
-  onClick={() =>
-    setModal({
-      isOpen: true,
-      title: `${exp.role} @ ${exp.company}`,
-      achievements: exp.achievements,
-    })
-  }
->
-  View achievements
-
-  <span
-    className="
-      transition-transform duration-300
-      group-hover:translate-x-1
-    "
-  >
-    &rarr;
-  </span>
-</motion.button>
-
-                  )}
-                </div>
-              </div>
-            ))}
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-3">
+                        {companyLogoMap[exp.company] && (
+                          <img
+                            src={companyLogoMap[exp.company]}
+                            alt={`${exp.company} logo`}
+                            decoding="async"
+                            loading="lazy"
+                            className="h-12 w-12 rounded-2xl border border-slate-200 bg-white p-2 object-contain shadow-sm dark:border-white/10 dark:bg-white/[0.06]"
+                          />
+                        )}
+                        <div className="min-w-0">
+                          <h3 className="break-words text-xl font-bold tracking-tight text-slate-950 dark:text-white">{exp.role}</h3>
+                          <p className="mt-0.5 break-words text-sm font-semibold text-sky-700 dark:text-cyan-300">{exp.company}</p>
+                        </div>
+                      </div>
+                      <p className="mt-4 break-words text-base leading-7 text-slate-600 dark:text-zinc-300">{exp.description}</p>
+                      {exp.achievements?.length > 0 && (
+                        <ul className="mt-4 grid gap-2 text-sm leading-6 text-slate-700 dark:text-zinc-200">
+                          {exp.achievements.slice(0, 3).map((achievement) => (
+                            <li key={achievement} className="flex gap-3">
+                              <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-sky-500 dark:bg-cyan-300" aria-hidden="true" />
+                              <span>{achievement}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  </motion.article>
+                ))}
+              </motion.div>
+            </div>
           </FadeRow>
         </section>
 
@@ -1128,73 +1150,140 @@ export default function PortfolioDetails() {
             sectionRefs.current.education = el;
           }}
           aria-labelledby="education-heading"
-          className="px-5 py-12 pb-44 sm:px-6 sm:py-14 sm:pb-40 md:px-20 md:py-16 md:pb-48"
+          className="portfolio-section-surface border-b border-slate-200/70 bg-slate-50/[0.78] px-5 py-14 dark:border-zinc-800/80 dark:bg-zinc-950/[0.86] sm:px-8 md:py-20 lg:px-12"
         >
-          <FadeRow>
-            <h2 id="education-heading" className="mb-8 flex items-center gap-3 text-xl font-semibold tracking-tight after:h-px after:flex-1 after:bg-gradient-to-r after:from-sky-300/50 after:to-transparent dark:after:from-cyan-300/20 md:text-2xl">
-              <FaGraduationCap aria-hidden="true" /> 03 - Education
-            </h2>
+          <FadeRow reduceMotion={prefersReducedMotion}>
+            <div className="mx-auto max-w-7xl">
+              <p className="text-xs font-bold uppercase tracking-[0.22em] text-sky-700 dark:text-cyan-300">04 · Education</p>
+              <h2 id="education-heading" className="mt-3 flex items-center gap-3 text-3xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-4xl">
+                <FaGraduationCap className="text-2xl text-sky-700 dark:text-cyan-300" aria-hidden="true" /> Foundations
+              </h2>
 
-            {data.education.map((edu, i) => (
-              <div
-                key={i}
-                className="mb-4 grid min-w-0 gap-4 rounded-2xl border border-zinc-200/55 bg-white/10 p-4 shadow-none ring-0 backdrop-blur-0 transition-all duration-300 last:mb-0 hover:-translate-y-0.5 hover:border-sky-200/80 hover:bg-white/24 dark:border-white/10 dark:bg-transparent dark:hover:border-sky-300/24 dark:hover:bg-white/[0.03] sm:grid-cols-[160px_1fr] sm:gap-5 sm:p-5 md:grid-cols-[220px_1fr]"
+              <motion.div
+                variants={staggerCardContainerVariants}
+                initial={prefersReducedMotion ? false : "hidden"}
+                whileInView={prefersReducedMotion ? undefined : "visible"}
+                viewport={{ once: true, amount: 0.16 }}
+                className="mt-9 grid gap-5 lg:grid-cols-2"
               >
-                <div className="flex items-center gap-2 text-sm font-medium text-zinc-500 dark:text-zinc-400 sm:items-start sm:pt-1">
-  <FaCalendarAlt className="text-xs text-sky-500/80 dark:text-sky-300/80" />
-  <span>{edu.duration}</span>
-</div>
-                <div className="min-w-0">
-                  <h3 className="break-words text-lg font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">{edu.degree}</h3>
-                  <p className="break-words text-sm text-zinc-500 dark:text-zinc-400">{edu.institution}</p>
+                {data.education.map((edu) => (
+                  <motion.article
+                    key={`${edu.degree}-${edu.duration}`}
+                    variants={revealCardVariants}
+                    className="rounded-3xl border border-white/85 bg-white/[0.92] p-6 shadow-[0_18px_46px_rgba(15,23,42,0.075)] ring-1 ring-slate-900/[0.025] transition duration-300 hover:-translate-y-0.5 hover:border-sky-200 hover:shadow-[0_24px_52px_rgba(14,116,144,0.11)] dark:border-white/10 dark:bg-zinc-950/[0.94] dark:ring-white/[0.035] dark:hover:border-cyan-300/20 sm:p-7"
+                  >
+                    <div className="flex items-center gap-2 text-sm font-semibold text-sky-700 dark:text-cyan-300">
+                      <FaCalendarAlt aria-hidden="true" /> {edu.duration}
+                    </div>
+                    <h3 className="mt-4 break-words text-xl font-bold tracking-tight text-slate-950 dark:text-white">{edu.degree}</h3>
+                    <p className="mt-2 break-words text-sm leading-6 text-slate-500 dark:text-zinc-400">{edu.institution}</p>
+                    {edu.achievements?.length > 0 && (
+                      <ul className="mt-5 space-y-2 text-sm leading-6 text-slate-700 dark:text-zinc-200">
+                        {edu.achievements.slice(0, 2).map((achievement) => (
+                          <li key={achievement} className="flex gap-3">
+                            <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-sky-500 dark:bg-cyan-300" aria-hidden="true" />
+                            <span>{achievement}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </motion.article>
+                ))}
+              </motion.div>
+            </div>
+          </FadeRow>
+        </section>
 
-                  {edu.achievements?.length > 0 && (
-                <motion.button
-  whileHover={{ x: 4 }}
-  whileTap={{ scale: 0.97 }}
-  className="
-    group mt-4 inline-flex items-center gap-2
-    px-3 py-1.5
-    text-xs font-semibold tracking-wide
+        {/* ================= CONTACT SIGNATURE ================= */}
+        <section
+          id="contact"
+          ref={(el) => {
+            sectionRefs.current.contact = el;
+          }}
+          aria-labelledby="contact-heading"
+          className="portfolio-section-surface bg-white/[0.76] px-5 py-14 pb-40 dark:bg-black/[0.84] sm:px-8 md:py-20 md:pb-44 lg:px-12"
+        >
+          <FadeRow reduceMotion={prefersReducedMotion}>
+            <div className="mx-auto max-w-7xl">
+              <p className="text-xs font-bold uppercase tracking-[0.22em] text-sky-700 dark:text-cyan-300">
+                05 / Contact
+              </p>
+              <h2
+                id="contact-heading"
+                className="mt-3 max-w-3xl text-3xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-4xl"
+              >
+                Let&apos;s build something useful.
+              </h2>
+              <p className="mt-4 max-w-2xl text-base leading-7 text-slate-600 dark:text-zinc-300 sm:text-lg">
+                Have a product problem, an AI idea, or a thoughtful collaboration in mind? Start with a direct note.
+              </p>
 
-    rounded-full
-    border border-zinc-200 dark:border-zinc-700
-
-    bg-transparent dark:bg-transparent
-    backdrop-blur-xl
-
-    text-zinc-700 dark:text-zinc-300
-    transition-all duration-300
-
-    hover:bg-white/20 dark:hover:bg-white/10
-    hover:border-zinc-300 dark:hover:border-zinc-600
-
-    shadow-sm hover:shadow-md
-  "
-  onClick={() =>
-    setModal({
-      isOpen: true,
-      title: `${edu.degree} @ ${edu.institution}`,
-      achievements: edu.achievements,
-    })
-  }
->
-  View achievements
-
-  <span
-    className="
-      transition-transform duration-300
-      group-hover:translate-x-1
-    "
-  >
-    &rarr;
-  </span>
-</motion.button>
-
-                  )}
+              <figure className="group mt-9 overflow-hidden rounded-[1.75rem] border border-slate-200/80 bg-zinc-950 shadow-[0_26px_70px_rgba(15,23,42,0.18)] ring-1 ring-slate-900/[0.04] transition duration-500 hover:-translate-y-0.5 hover:shadow-[0_30px_78px_rgba(14,116,144,0.2)] dark:border-white/10 dark:ring-white/[0.04]">
+                <div className="relative h-[210px] overflow-hidden bg-[#111] sm:aspect-[4/1] sm:h-auto">
+                  <img
+                    src={contactBannerUrl}
+                    alt=""
+                    aria-hidden="true"
+                    width="1584"
+                    height="396"
+                    loading="lazy"
+                    decoding="async"
+                    className="h-full w-full object-cover object-[18%_center] sm:object-contain"
+                  />
+                  <span
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-y-0 right-0 w-[30%] bg-gradient-to-r from-transparent to-black/90 sm:hidden"
+                  />
+                  <span className="absolute bottom-4 right-4 inline-flex max-w-[72%] items-center gap-2 rounded-full bg-black/[0.9] px-3 py-2 text-[0.68rem] font-semibold text-white shadow-lg sm:hidden">
+                    <FaEnvelope className="shrink-0 text-cyan-300" aria-hidden="true" />
+                    <span className="truncate">{contactActions.emailDisplay}</span>
+                  </span>
+                  <span
+                    aria-hidden="true"
+                    className="pointer-events-none absolute left-[59.5%] top-[47.2%] hidden h-[10%] w-[23.8%] items-center justify-center rounded-full bg-white px-2 text-center font-semibold uppercase tracking-[0.04em] text-zinc-900 shadow-sm sm:flex sm:text-[clamp(0.5rem,1.25vw,1.05rem)]"
+                  >
+                    Full-stack &amp; AI Engineer
+                  </span>
+                  <span
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-0 bg-gradient-to-tr from-transparent via-white/[0.035] to-transparent opacity-0 transition duration-700 group-hover:opacity-100"
+                  />
                 </div>
-              </div>
-            ))}
+
+                <figcaption className="flex flex-col gap-4 border-t border-white/10 bg-zinc-950 px-5 py-5 text-white sm:flex-row sm:items-center sm:justify-between sm:px-7">
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-[0.2em] text-cyan-300">
+                      Original AmiVerse calling card
+                    </p>
+                    <p className="mt-1 text-sm text-zinc-400">
+                      Coffee, clarity, and a direct line to collaborate.
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-2 text-sm font-semibold">
+                    <a
+                      href={contactActions.emailHref}
+                      className="inline-flex min-h-10 items-center gap-2 rounded-full bg-white px-4 py-2 text-zinc-950 transition hover:-translate-y-0.5 hover:bg-cyan-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300"
+                    >
+                      <FaEnvelope aria-hidden="true" /> Email
+                    </a>
+                    <a
+                      href={contactActions.phoneHref}
+                      className="inline-flex min-h-10 items-center gap-2 rounded-full border border-white/15 bg-white/[0.06] px-4 py-2 text-white transition hover:-translate-y-0.5 hover:border-cyan-300/40 hover:bg-white/[0.1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300"
+                    >
+                      <FaPhoneAlt aria-hidden="true" /> Call
+                    </a>
+                    <a
+                      href="https://www.amiverse.in"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex min-h-10 items-center rounded-full border border-white/15 bg-white/[0.06] px-4 py-2 text-white transition hover:-translate-y-0.5 hover:border-cyan-300/40 hover:bg-white/[0.1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300"
+                    >
+                      amiverse.in <span className="ml-1 inline-block -rotate-45" aria-hidden="true">{"\u2192"}</span>
+                    </a>
+                  </div>
+                </figcaption>
+              </figure>
+            </div>
           </FadeRow>
         </section>
       </div>
@@ -1332,13 +1421,6 @@ export default function PortfolioDetails() {
         </motion.div>
       </div>
 
-      <AchievementsModal
-        isOpen={modal.isOpen}
-        title={modal.title}
-        achievements={modal.achievements}
-        onClose={() => setModal({ isOpen: false })}
-      />
-
       {hasOpenedGallery && (
         <React.Suspense fallback={null}>
           <MemoryLaneGallery
@@ -1347,14 +1429,6 @@ export default function PortfolioDetails() {
           />
         </React.Suspense>
       )}
-
-      <SocialModal
-        isOpen={!!socialModal}
-        platform={socialModal?.name}
-        url={socialModal?.url}
-        icon={socialModal?.icon}
-        onClose={() => setSocialModal(null)}
-      />
     </>
   );
 }

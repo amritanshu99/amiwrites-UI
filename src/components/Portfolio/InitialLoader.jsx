@@ -43,6 +43,10 @@ const floatingDust = [
   { left: "93%", top: "77%", size: 4, delay: "2.1s", duration: "15.5s" },
 ];
 
+const timedFloatingDust = floatingDust.filter(
+  (_dust, index) => index % 2 === 0 || index === floatingDust.length - 1,
+);
+
 const sideMarkerOffsets = ["16%", "28%", "40%", "52%", "64%", "76%"];
 
 const queryMatches = (query) => {
@@ -101,8 +105,10 @@ const getPerformanceProfile = () => {
   };
 };
 
-const InitialLoader = ({ mode = "showcase" }) => {
+const InitialLoader = ({ mode = "showcase", durationMs }) => {
   const isSessionMode = mode === "session";
+  const isTimedShowcase =
+    !isSessionMode && Number.isFinite(durationMs) && durationMs > 0;
   const quotePool = isSessionMode ? sessionQuotes : showcaseQuotes;
   const statusLines = isSessionMode ? sessionStatusLines : showcaseStatusLines;
   const topLeftLabel = isSessionMode ? "Secure Access" : "Feature Presentation";
@@ -129,19 +135,40 @@ const InitialLoader = ({ mode = "showcase" }) => {
   );
 
   const { prefersReducedMotion, shouldOptimize, isTouchViewport } = performanceProfile;
-  const animatedDust = useMemo(() => (shouldOptimize ? [] : floatingDust), [shouldOptimize]);
-  const visiblePills = shouldOptimize ? accentPills.slice(0, 2) : accentPills;
-  const shouldCycleStatus = !shouldOptimize && !prefersReducedMotion;
+  const animatedDust = useMemo(
+    () =>
+      shouldOptimize
+        ? []
+        : isTimedShowcase
+          ? timedFloatingDust
+          : floatingDust,
+    [isTimedShowcase, shouldOptimize],
+  );
+  const visiblePills = isTimedShowcase
+    ? []
+    : shouldOptimize
+      ? accentPills.slice(0, 2)
+      : accentPills;
+  const shouldCycleStatus =
+    !isTimedShowcase && !shouldOptimize && !prefersReducedMotion;
   const currentStatus = shouldCycleStatus
     ? statusLines[activeStatusIndex]
     : statusLines[0];
-  const showAnimatedStatusDots = !shouldOptimize;
+  const showAnimatedStatusDots = !isTimedShowcase && !shouldOptimize;
   const badgeClass = shouldOptimize
     ? "max-w-[calc(50vw-1.25rem)] truncate rounded-full border border-white/[0.08] bg-black/[0.82] px-3 py-2 text-[0.44rem] uppercase tracking-[0.22em] text-white/[0.4] shadow-[0_8px_24px_rgba(0,0,0,0.5)] min-[380px]:tracking-[0.3em] sm:max-w-none sm:px-4 sm:text-[0.52rem] sm:tracking-[0.36em]"
     : "max-w-[calc(50vw-1.25rem)] truncate rounded-full border border-white/[0.08] bg-black/[0.7] px-3 py-2 text-[0.44rem] uppercase tracking-[0.22em] text-white/[0.38] shadow-[0_10px_30px_rgba(0,0,0,0.55)] backdrop-blur-md min-[380px]:tracking-[0.3em] sm:max-w-none sm:px-4 sm:text-[0.52rem] sm:tracking-[0.42em]";
   const shellClass = shouldOptimize
-    ? "loader-shell relative mx-auto w-full max-w-5xl overflow-hidden rounded-[1.55rem] border border-white/[0.06] bg-[linear-gradient(180deg,rgba(10,10,10,0.9),rgba(0,0,0,0.86)_45%,rgba(4,4,4,0.94)_100%)] px-4 py-7 text-center shadow-[0_24px_90px_rgba(0,0,0,0.82)] animate-[openingReveal_700ms_cubic-bezier(.22,1,.36,1)_forwards] min-[380px]:rounded-[2rem] min-[380px]:px-5 min-[380px]:py-8 sm:px-9 sm:py-11 md:px-12 md:py-14"
-    : "loader-shell relative mx-auto w-full max-w-5xl overflow-hidden rounded-[1.65rem] border border-white/[0.06] bg-[linear-gradient(180deg,rgba(10,10,10,0.86),rgba(0,0,0,0.8)_42%,rgba(4,4,4,0.92)_100%)] px-4 py-8 text-center shadow-[0_42px_180px_rgba(0,0,0,0.92)] backdrop-blur-[10px] animate-[openingReveal_1000ms_cubic-bezier(.22,1,.36,1)_forwards] min-[380px]:rounded-[2rem] min-[380px]:px-6 min-[380px]:py-9 sm:rounded-[2.2rem] sm:px-10 sm:py-12 md:px-14 md:py-14";
+    ? `loader-shell relative mx-auto w-full max-w-5xl overflow-hidden rounded-[1.55rem] border border-white/[0.06] bg-[linear-gradient(180deg,rgba(10,10,10,0.9),rgba(0,0,0,0.86)_45%,rgba(4,4,4,0.94)_100%)] px-4 py-7 text-center shadow-[0_24px_90px_rgba(0,0,0,0.82)] min-[380px]:rounded-[2rem] min-[380px]:px-5 min-[380px]:py-8 sm:px-9 sm:py-11 md:px-12 md:py-14 ${
+        isTimedShowcase
+          ? "animate-[openingReveal_600ms_cubic-bezier(.22,1,.36,1)_forwards]"
+          : "animate-[openingReveal_700ms_cubic-bezier(.22,1,.36,1)_forwards]"
+      }`
+    : `loader-shell relative mx-auto w-full max-w-5xl overflow-hidden rounded-[1.65rem] border border-white/[0.06] bg-[linear-gradient(180deg,rgba(10,10,10,0.86),rgba(0,0,0,0.8)_42%,rgba(4,4,4,0.92)_100%)] px-4 py-8 text-center shadow-[0_42px_180px_rgba(0,0,0,0.92)] min-[380px]:rounded-[2rem] min-[380px]:px-6 min-[380px]:py-9 sm:rounded-[2.2rem] sm:px-10 sm:py-12 md:px-14 md:py-14 ${
+        isTimedShowcase
+          ? "backdrop-blur-[6px] animate-[openingReveal_600ms_cubic-bezier(.22,1,.36,1)_forwards]"
+          : "backdrop-blur-[10px] animate-[openingReveal_1000ms_cubic-bezier(.22,1,.36,1)_forwards]"
+      }`;
   const haloClass = shouldOptimize
     ? "absolute left-1/2 top-1/2 h-[84vw] w-[84vw] max-h-[420px] max-w-[420px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/[0.04] bg-[radial-gradient(circle,rgba(255,255,255,0.06)_0%,rgba(255,255,255,0.02)_30%,rgba(0,0,0,0)_74%)] opacity-60"
     : "absolute left-1/2 top-[49%] h-[68vh] w-[68vh] max-w-[88vw] -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/[0.05] bg-[radial-gradient(circle,rgba(255,255,255,0.08)_0%,rgba(255,255,255,0.03)_24%,rgba(0,0,0,0)_68%)] blur-3xl animate-[haloPulse_7.5s_ease-in-out_infinite]";
@@ -200,6 +227,7 @@ const InitialLoader = ({ mode = "showcase" }) => {
     <div
       data-loader-root
       data-loader-mode={shouldOptimize ? "optimized" : "cinematic"}
+      data-loader-timed={isTimedShowcase ? "true" : undefined}
       role="status"
       aria-live="polite"
       aria-busy="true"
@@ -229,14 +257,18 @@ const InitialLoader = ({ mode = "showcase" }) => {
             data-loader-animate
             className="absolute left-1/2 top-[-14%] h-[82vh] w-[52vw] max-w-[720px] -translate-x-1/2 bg-[linear-gradient(180deg,rgba(255,255,255,0.13),rgba(255,255,255,0.045)_22%,rgba(255,255,255,0.012)_44%,rgba(255,255,255,0)_82%)] opacity-50 blur-[120px] animate-[projectorBloom_12s_ease-in-out_infinite]"
           />
-          <div
-            data-loader-animate
-            className="absolute left-[-12%] top-[-18%] h-[78vh] w-[40vw] min-w-[220px] rotate-[16deg] bg-[linear-gradient(90deg,rgba(255,255,255,0),rgba(255,255,255,0.1),rgba(255,255,255,0.016),rgba(255,255,255,0))] opacity-[0.24] blur-3xl animate-[beamSweepLeft_13s_ease-in-out_infinite]"
-          />
-          <div
-            data-loader-animate
-            className="absolute right-[-12%] top-[-10%] h-[70vh] w-[38vw] min-w-[220px] -rotate-[16deg] bg-[linear-gradient(90deg,rgba(255,255,255,0),rgba(255,255,255,0.085),rgba(255,255,255,0.012),rgba(255,255,255,0))] opacity-[0.22] blur-3xl animate-[beamSweepRight_15s_ease-in-out_infinite]"
-          />
+          {!isTimedShowcase && (
+            <>
+              <div
+                data-loader-animate
+                className="absolute left-[-12%] top-[-18%] h-[78vh] w-[40vw] min-w-[220px] rotate-[16deg] bg-[linear-gradient(90deg,rgba(255,255,255,0),rgba(255,255,255,0.1),rgba(255,255,255,0.016),rgba(255,255,255,0))] opacity-[0.24] blur-3xl animate-[beamSweepLeft_13s_ease-in-out_infinite]"
+              />
+              <div
+                data-loader-animate
+                className="absolute right-[-12%] top-[-10%] h-[70vh] w-[38vw] min-w-[220px] -rotate-[16deg] bg-[linear-gradient(90deg,rgba(255,255,255,0),rgba(255,255,255,0.085),rgba(255,255,255,0.012),rgba(255,255,255,0))] opacity-[0.22] blur-3xl animate-[beamSweepRight_15s_ease-in-out_infinite]"
+              />
+            </>
+          )}
         </>
       )}
 
@@ -272,6 +304,7 @@ const InitialLoader = ({ mode = "showcase" }) => {
       )}
 
       {!shouldOptimize &&
+        !isTimedShowcase &&
         sideMarkerOffsets.map((offset, index) => (
           <React.Fragment key={offset}>
             <span
@@ -324,20 +357,22 @@ const InitialLoader = ({ mode = "showcase" }) => {
           )}
 
           <div className="loader-content relative z-10 mx-auto flex max-w-4xl flex-col items-center">
-            <div className="loader-pills flex flex-wrap items-center justify-center gap-2.5 sm:gap-3.5">
-              {visiblePills.map((pill) => (
-                <span
-                  key={pill}
-                  className={`rounded-full border border-white/[0.08] px-3 py-1.5 text-[0.46rem] uppercase text-white/[0.3] sm:px-4 sm:text-[0.5rem] ${
-                    shouldOptimize
-                      ? "bg-white/[0.015] tracking-[0.3em]"
-                      : "bg-white/[0.02] tracking-[0.42em]"
-                  }`}
-                >
-                  {pill}
-                </span>
-              ))}
-            </div>
+            {visiblePills.length > 0 && (
+              <div className="loader-pills flex flex-wrap items-center justify-center gap-2.5 sm:gap-3.5">
+                {visiblePills.map((pill) => (
+                  <span
+                    key={pill}
+                    className={`rounded-full border border-white/[0.08] px-3 py-1.5 text-[0.46rem] uppercase text-white/[0.3] sm:px-4 sm:text-[0.5rem] ${
+                      shouldOptimize
+                        ? "bg-white/[0.015] tracking-[0.3em]"
+                        : "bg-white/[0.02] tracking-[0.42em]"
+                    }`}
+                  >
+                    {pill}
+                  </span>
+                ))}
+              </div>
+            )}
 
             <p className="loader-kicker mt-5 font-cinzel text-[0.56rem] uppercase tracking-[0.38em] text-white/[0.58] min-[380px]:mt-6 min-[380px]:tracking-[0.5em] sm:text-[0.68rem] sm:tracking-[0.64em]">
               {topLeftLabel}
@@ -348,7 +383,11 @@ const InitialLoader = ({ mode = "showcase" }) => {
             <div
               {...(!shouldOptimize ? { "data-loader-animate": true } : {})}
               className={`loader-emblem relative mt-8 h-24 w-24 sm:h-32 sm:w-32 md:h-36 md:w-36 ${
-                shouldOptimize ? "" : "animate-[emblemFloat_5.4s_ease-in-out_infinite]"
+                shouldOptimize
+                  ? ""
+                  : isTimedShowcase
+                    ? "animate-[cinematicEmblemCue_650ms_cubic-bezier(.22,1,.36,1)_80ms_both]"
+                    : "animate-[emblemFloat_5.4s_ease-in-out_infinite]"
               }`}
             >
               <div className="absolute inset-0 rounded-full border border-white/[0.08] bg-[radial-gradient(circle,rgba(255,255,255,0.1)_0%,rgba(255,255,255,0.025)_34%,rgba(0,0,0,0.28)_72%,rgba(0,0,0,0.5)_100%)] shadow-[0_0_55px_rgba(255,255,255,0.06)]" />
@@ -368,18 +407,24 @@ const InitialLoader = ({ mode = "showcase" }) => {
                   className="h-9 w-9 rounded-[0.8rem] object-contain opacity-95 sm:h-12 sm:w-12"
                 />
               </div>
-              {!shouldOptimize && (
-                <>
+              {!shouldOptimize &&
+                (isTimedShowcase ? (
                   <span
                     data-loader-animate
-                    className="absolute inset-[-10px] rounded-full border border-white/[0.06] animate-[ringEcho_3.6s_ease-out_infinite]"
+                    className="absolute inset-[-10px] rounded-full border border-white/[0.06] animate-[cinematicRingCue_780ms_cubic-bezier(.22,1,.36,1)_160ms_both]"
                   />
-                  <span
-                    data-loader-animate
-                    className="absolute inset-[-20px] rounded-full border border-white/[0.04] animate-[ringEcho_3.6s_ease-out_1.1s_infinite]"
-                  />
-                </>
-              )}
+                ) : (
+                  <>
+                    <span
+                      data-loader-animate
+                      className="absolute inset-[-10px] rounded-full border border-white/[0.06] animate-[ringEcho_3.6s_ease-out_infinite]"
+                    />
+                    <span
+                      data-loader-animate
+                      className="absolute inset-[-20px] rounded-full border border-white/[0.04] animate-[ringEcho_3.6s_ease-out_1.1s_infinite]"
+                    />
+                  </>
+                ))}
             </div>
 
             <p className="loader-intro mt-7 max-w-full font-cinzel text-[0.58rem] uppercase tracking-[0.22em] text-white/[0.34] min-[380px]:mt-8 min-[380px]:tracking-[0.32em] sm:text-xs sm:tracking-[0.42em]">
@@ -389,7 +434,11 @@ const InitialLoader = ({ mode = "showcase" }) => {
             <h1
               {...(!shouldOptimize ? { "data-loader-animate": true } : {})}
               className={`loader-title mt-4 max-w-full font-cinzel text-[2rem] uppercase leading-none tracking-[0.08em] text-white drop-shadow-[0_18px_40px_rgba(0,0,0,0.9)] min-[390px]:text-[2.45rem] min-[390px]:tracking-[0.12em] sm:text-5xl sm:tracking-[0.2em] md:text-6xl md:tracking-[0.24em] lg:text-7xl ${
-                shouldOptimize ? "" : "animate-[titleGlow_5s_ease-in-out_infinite]"
+                shouldOptimize
+                  ? ""
+                  : isTimedShowcase
+                    ? "animate-[cinematicTitleCue_700ms_cubic-bezier(.22,1,.36,1)_100ms_both]"
+                    : "animate-[titleGlow_5s_ease-in-out_infinite]"
               }`}
             >
               AmiVerse
@@ -400,7 +449,11 @@ const InitialLoader = ({ mode = "showcase" }) => {
             <p
               {...(!shouldOptimize ? { "data-loader-animate": true } : {})}
               className={`loader-quote mt-6 max-w-2xl font-cinzel text-[0.68rem] italic leading-relaxed tracking-[0.08em] text-zinc-300 min-[380px]:text-[0.72rem] min-[380px]:tracking-[0.12em] sm:text-sm sm:tracking-[0.16em] md:text-base ${
-                shouldOptimize ? "" : "animate-[quoteBreath_5.5s_ease-in-out_infinite]"
+                shouldOptimize
+                  ? ""
+                  : isTimedShowcase
+                    ? "animate-[cinematicQuoteCue_650ms_cubic-bezier(.22,1,.36,1)_180ms_both]"
+                    : "animate-[quoteBreath_5.5s_ease-in-out_infinite]"
               }`}
             >
               {randomQuote}
@@ -413,56 +466,75 @@ const InitialLoader = ({ mode = "showcase" }) => {
               </div>
               <div className="relative mt-3 h-[3px] overflow-hidden rounded-full bg-white/[0.1] shadow-[0_0_20px_rgba(255,255,255,0.05)]">
                 <span className="absolute inset-y-0 left-0 w-full rounded-full bg-[linear-gradient(90deg,rgba(255,255,255,0.03),rgba(255,255,255,0.12),rgba(255,255,255,0.03))]" />
-                <span
-                  data-loader-animate
-                  className={`absolute inset-y-0 left-[-42%] w-[42%] rounded-full bg-gradient-to-r from-transparent via-white to-transparent opacity-95 ${
-                    shouldOptimize
-                      ? "animate-[progressTravel_2.45s_linear_infinite]"
-                      : "animate-[progressTravel_2.15s_cubic-bezier(.22,1,.36,1)_infinite]"
-                  }`}
-                />
+                {isTimedShowcase ? (
+                  <>
+                    <span
+                      data-loader-animate
+                      className={`absolute inset-y-0 left-0 w-full origin-left rounded-full bg-gradient-to-r from-white/45 via-white to-white/70 ${
+                        prefersReducedMotion
+                          ? ""
+                          : "animate-[cinematicProgressFill_1080ms_cubic-bezier(.22,1,.36,1)_both]"
+                      }`}
+                    />
+                    {!prefersReducedMotion && (
+                      <span
+                        data-loader-animate
+                        className="absolute inset-y-0 left-[-18%] w-[18%] rounded-full bg-gradient-to-r from-transparent via-white to-transparent opacity-0 animate-[cinematicProgressGlint_1080ms_ease-out_both]"
+                      />
+                    )}
+                  </>
+                ) : (
+                  <span
+                    data-loader-animate
+                    className={`absolute inset-y-0 left-[-42%] w-[42%] rounded-full bg-gradient-to-r from-transparent via-white to-transparent opacity-95 ${
+                      shouldOptimize
+                        ? "animate-[progressTravel_2.45s_linear_infinite]"
+                        : "animate-[progressTravel_2.15s_cubic-bezier(.22,1,.36,1)_infinite]"
+                    }`}
+                  />
+                )}
               </div>
             </div>
 
-            <div className="loader-status mt-7 grid w-full max-w-2xl items-start gap-4 sm:grid-cols-[1fr_auto] sm:items-center">
-              <div className="text-center sm:text-left">
-                <p className="text-[0.5rem] uppercase tracking-[0.28em] text-white/[0.28] sm:tracking-[0.42em]">
-                  Current cue
-                </p>
-                <p
-                  className="mt-2 min-h-[1.1rem] font-cinzel text-[0.64rem] uppercase tracking-[0.16em] text-white/[0.72] transition-colors duration-300 min-[380px]:text-[0.68rem] min-[380px]:tracking-[0.22em] sm:text-[0.74rem] sm:tracking-[0.28em]"
-                >
-                  {currentStatus}
-                </p>
-              </div>
+            {!isTimedShowcase && (
+              <div className="loader-status mt-7 grid w-full max-w-2xl items-start gap-4 sm:grid-cols-[1fr_auto] sm:items-center">
+                <div className="text-center sm:text-left">
+                  <p className="text-[0.5rem] uppercase tracking-[0.28em] text-white/[0.28] sm:tracking-[0.42em]">
+                    Current cue
+                  </p>
+                  <p className="mt-2 min-h-[1.1rem] font-cinzel text-[0.64rem] uppercase tracking-[0.16em] text-white/[0.72] transition-colors duration-300 min-[380px]:text-[0.68rem] min-[380px]:tracking-[0.22em] sm:text-[0.74rem] sm:tracking-[0.28em]">
+                    {currentStatus}
+                  </p>
+                </div>
 
-              <div className="flex items-center justify-center gap-2.5 sm:justify-end">
-                <span
-                  {...(showAnimatedStatusDots ? { "data-loader-animate": true } : {})}
-                  className={`h-1.5 w-1.5 rounded-full ${
-                    showAnimatedStatusDots
-                      ? "bg-white/[0.68] animate-[dotPulse_1.8s_ease-in-out_infinite]"
-                      : "bg-white/[0.4]"
-                  }`}
-                />
-                <span
-                  {...(showAnimatedStatusDots ? { "data-loader-animate": true } : {})}
-                  className={`h-1.5 w-1.5 rounded-full ${
-                    showAnimatedStatusDots
-                      ? "bg-white/[0.46] animate-[dotPulse_1.8s_ease-in-out_240ms_infinite]"
-                      : "bg-white/[0.28]"
-                  }`}
-                />
-                <span
-                  {...(showAnimatedStatusDots ? { "data-loader-animate": true } : {})}
-                  className={`h-1.5 w-1.5 rounded-full ${
-                    showAnimatedStatusDots
-                      ? "bg-white/[0.28] animate-[dotPulse_1.8s_ease-in-out_480ms_infinite]"
-                      : "bg-white/[0.18]"
-                  }`}
-                />
+                <div className="flex items-center justify-center gap-2.5 sm:justify-end">
+                  <span
+                    {...(showAnimatedStatusDots ? { "data-loader-animate": true } : {})}
+                    className={`h-1.5 w-1.5 rounded-full ${
+                      showAnimatedStatusDots
+                        ? "bg-white/[0.68] animate-[dotPulse_1.8s_ease-in-out_infinite]"
+                        : "bg-white/[0.4]"
+                    }`}
+                  />
+                  <span
+                    {...(showAnimatedStatusDots ? { "data-loader-animate": true } : {})}
+                    className={`h-1.5 w-1.5 rounded-full ${
+                      showAnimatedStatusDots
+                        ? "bg-white/[0.46] animate-[dotPulse_1.8s_ease-in-out_240ms_infinite]"
+                        : "bg-white/[0.28]"
+                    }`}
+                  />
+                  <span
+                    {...(showAnimatedStatusDots ? { "data-loader-animate": true } : {})}
+                    className={`h-1.5 w-1.5 rounded-full ${
+                      showAnimatedStatusDots
+                        ? "bg-white/[0.28] animate-[dotPulse_1.8s_ease-in-out_480ms_infinite]"
+                        : "bg-white/[0.18]"
+                    }`}
+                  />
+                </div>
               </div>
-            </div>
+            )}
 
             <p
               {...(!shouldOptimize ? { "data-loader-animate": true } : {})}
@@ -714,6 +786,78 @@ const InitialLoader = ({ mode = "showcase" }) => {
             50% {
               transform: translate3d(-50%, 0, 0) scaleY(1.02);
               opacity: 0.54;
+            }
+          }
+
+          @keyframes cinematicEmblemCue {
+            0% {
+              opacity: 0;
+              transform: translate3d(0, 6px, 0) scale(0.96);
+            }
+            100% {
+              opacity: 1;
+              transform: translate3d(0, 0, 0) scale(1);
+            }
+          }
+
+          @keyframes cinematicTitleCue {
+            0% {
+              opacity: 0;
+              filter: blur(2px);
+              transform: translate3d(0, 6px, 0);
+            }
+            100% {
+              opacity: 1;
+              filter: blur(0);
+              transform: translate3d(0, 0, 0);
+            }
+          }
+
+          @keyframes cinematicQuoteCue {
+            0% {
+              opacity: 0;
+              transform: translate3d(0, 4px, 0);
+            }
+            100% {
+              opacity: 0.9;
+              transform: translate3d(0, 0, 0);
+            }
+          }
+
+          @keyframes cinematicProgressFill {
+            0% {
+              transform: scaleX(0);
+            }
+            100% {
+              transform: scaleX(1);
+            }
+          }
+
+          @keyframes cinematicProgressGlint {
+            0% {
+              opacity: 0;
+              transform: translate3d(0, 0, 0);
+            }
+            18% {
+              opacity: 0.95;
+            }
+            100% {
+              opacity: 0;
+              transform: translate3d(650%, 0, 0);
+            }
+          }
+
+          @keyframes cinematicRingCue {
+            0% {
+              opacity: 0;
+              transform: scale(0.92);
+            }
+            42% {
+              opacity: 0.45;
+            }
+            100% {
+              opacity: 0;
+              transform: scale(1.16);
             }
           }
 
