@@ -3,7 +3,10 @@
   <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
     <meta name="referrer" content="no-referrer" />
 
     <title>
@@ -29,7 +32,7 @@
     <meta name="author" content="Amritanshu Mishra" />
     <meta name="language" content="en" />
     <meta name="application-name" content="AmiVerse" />
-    <meta name="theme-color" content="#6B21A8" />
+    <meta name="theme-color" content="#010101" />
     <meta
       name="robots"
       content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"
@@ -42,10 +45,31 @@
     <link rel="apple-touch-icon" sizes="192x192" href="/icons/icon-192x192.png" />
     <link rel="icon" type="image/png" sizes="48x48" href="/icons/icon-48x48.png" />
     <link rel="icon" type="image/png" sizes="16x16" href="/icons/icon-16x16.png" />
-<link
-  href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Inter+Tight:wght@300;400;600;800&family=Playfair+Display:wght@600;700&display=swap"
-  rel="stylesheet"
-/>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="preload"
+      as="style"
+      href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Inter+Tight:wght@300;400;600;800&family=Pacifico&family=Patrick+Hand&family=Playfair+Display:wght@600;700&display=swap"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Inter+Tight:wght@300;400;600;800&family=Pacifico&family=Patrick+Hand&family=Playfair+Display:wght@600;700&display=swap"
+      rel="stylesheet"
+      media="print"
+      onload="this.media='all'"
+    />
+    <noscript>
+      <link
+        href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Inter+Tight:wght@300;400;600;800&family=Pacifico&family=Patrick+Hand&family=Playfair+Display:wght@600;700&display=swap"
+        rel="stylesheet"
+      />
+    </noscript>
+    <link
+      rel="preload"
+      href="/icons/icon-96x96.png"
+      as="image"
+      fetchpriority="high"
+    />
 
     <!-- Manifest -->
     <link rel="manifest" href="/manifest.json" />
@@ -94,17 +118,278 @@
     <meta name="twitter:creator" content="@amritanshu_m" />
     <meta name="twitter:site" content="@amritanshu_m" />
 
-    <!-- Fonts -->
-    <link
-      href="https://fonts.googleapis.com/css2?family=Pacifico&family=Patrick+Hand&display=swap"
-      rel="stylesheet"
-    />
-    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-
     <!-- PWA Meta -->
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
+
+    <!--
+      Critical first-paint loader. React replaces this node in its first commit,
+      keeping slow devices on one continuous dark surface while the bundle starts.
+    -->
+    <style>
+      html,
+      body,
+      #root {
+        width: 100%;
+        min-height: 100%;
+        margin: 0;
+        background: #010101;
+      }
+
+      body {
+        min-height: 100vh;
+        min-height: 100svh;
+      }
+
+      #app-bootstrap-loader {
+        position: fixed;
+        inset: 0;
+        z-index: 10000;
+        box-sizing: border-box;
+        display: grid;
+        height: 100vh;
+        height: 100svh;
+        place-items: center;
+        overflow: hidden;
+        padding:
+          max(3.75rem, env(safe-area-inset-top))
+          max(1rem, env(safe-area-inset-right))
+          max(1rem, env(safe-area-inset-bottom))
+          max(1rem, env(safe-area-inset-left));
+        color: #fff;
+        background:
+          radial-gradient(circle at 50% 44%, rgba(255, 255, 255, 0.1), rgba(12, 12, 12, 0.92) 31%, #000 72%),
+          #010101;
+        font-family: Cinzel, "Times New Roman", serif;
+        isolation: isolate;
+      }
+
+      #app-bootstrap-loader::before {
+        position: absolute;
+        inset: 14px;
+        border: 1px solid rgba(255, 255, 255, 0.04);
+        border-radius: 2rem;
+        content: "";
+      }
+
+      .bootstrap-loader__badges {
+        position: absolute;
+        top: max(0.75rem, env(safe-area-inset-top));
+        right: max(0.75rem, env(safe-area-inset-right));
+        left: max(0.75rem, env(safe-area-inset-left));
+        display: flex;
+        justify-content: space-between;
+        gap: 0.5rem;
+      }
+
+      .bootstrap-loader__badge {
+        max-width: calc(50vw - 1.25rem);
+        overflow: hidden;
+        padding: 0.5rem 0.75rem;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 999px;
+        color: rgba(255, 255, 255, 0.42);
+        background: rgba(0, 0, 0, 0.82);
+        font: 500 0.46rem/1 system-ui, sans-serif;
+        letter-spacing: 0.24em;
+        text-overflow: ellipsis;
+        text-transform: uppercase;
+        white-space: nowrap;
+      }
+
+      .bootstrap-loader__stage {
+        position: relative;
+        box-sizing: border-box;
+        width: min(92vw, 64rem);
+        max-height: 100%;
+        padding: clamp(2rem, 7vh, 4rem) clamp(1rem, 5vw, 3.5rem);
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.07);
+        border-radius: clamp(1.55rem, 5vw, 2.2rem);
+        text-align: center;
+        background:
+          radial-gradient(circle at 50% 12%, rgba(255, 255, 255, 0.09), transparent 38%),
+          linear-gradient(180deg, rgba(10, 10, 10, 0.94), rgba(0, 0, 0, 0.9) 48%, rgba(4, 4, 4, 0.96));
+        box-shadow: 0 28px 100px rgba(0, 0, 0, 0.86);
+      }
+
+      .bootstrap-loader__eyebrow,
+      .bootstrap-loader__intro,
+      .bootstrap-loader__quote,
+      .bootstrap-loader__status {
+        margin: 0;
+        color: rgba(255, 255, 255, 0.5);
+        font: 500 clamp(0.5rem, 1.5vw, 0.66rem)/1.4 system-ui, sans-serif;
+        letter-spacing: clamp(0.28em, 1vw, 0.58em);
+        text-transform: uppercase;
+      }
+
+      .bootstrap-loader__emblem {
+        position: relative;
+        display: grid;
+        width: clamp(4.75rem, min(17vh, 24vw), 8rem);
+        height: clamp(4.75rem, min(17vh, 24vw), 8rem);
+        margin: clamp(1rem, 2.6vh, 1.75rem) auto 0;
+        place-items: center;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.09), rgba(0, 0, 0, 0.84) 64%);
+        box-shadow: 0 0 50px rgba(255, 255, 255, 0.05), inset 0 0 28px rgba(255, 255, 255, 0.035);
+      }
+
+      .bootstrap-loader__emblem::before {
+        position: absolute;
+        inset: 11%;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 50%;
+        content: "";
+      }
+
+      .bootstrap-loader__emblem img {
+        position: relative;
+        width: 42%;
+        height: 42%;
+        border-radius: 0.85rem;
+        object-fit: contain;
+      }
+
+      .bootstrap-loader__title {
+        margin: clamp(0.75rem, 2vh, 1.35rem) 0 0;
+        color: #fff;
+        font-size: clamp(1.9rem, min(8vw, 7vh), 4rem);
+        font-weight: 500;
+        line-height: 0.95;
+        letter-spacing: clamp(0.08em, 2vw, 0.2em);
+        text-transform: uppercase;
+        text-shadow: 0 18px 40px rgba(0, 0, 0, 0.9);
+      }
+
+      .bootstrap-loader__divider {
+        width: min(11rem, 58%);
+        height: 1px;
+        margin: clamp(0.85rem, 2vh, 1.25rem) auto 0;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.7), transparent);
+      }
+
+      .bootstrap-loader__divider--top {
+        width: min(8rem, 44%);
+      }
+
+      .bootstrap-loader__intro {
+        margin: clamp(0.8rem, 2vh, 1.25rem) 0 0;
+        color: rgba(255, 255, 255, 0.34);
+        font-size: clamp(0.5rem, 1.35vw, 0.64rem);
+        letter-spacing: clamp(0.18em, 0.8vw, 0.4em);
+      }
+
+      .bootstrap-loader__quote {
+        margin: clamp(0.8rem, 2vh, 1.25rem) 0 0;
+        color: rgba(255, 255, 255, 0.72);
+        font-size: clamp(0.58rem, 1.5vw, 0.76rem);
+        font-style: italic;
+        letter-spacing: clamp(0.08em, 0.7vw, 0.16em);
+      }
+
+      .bootstrap-loader__rail {
+        width: min(30rem, 100%);
+        height: 3px;
+        margin: clamp(1rem, 2.8vh, 1.9rem) auto 0;
+        overflow: hidden;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.1);
+      }
+
+      .bootstrap-loader__rail::after {
+        display: block;
+        width: 42%;
+        height: 100%;
+        border-radius: inherit;
+        background: linear-gradient(90deg, transparent, #fff, transparent);
+        content: "";
+        animation: bootstrapLoaderTravel 1.8s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+      }
+
+      .bootstrap-loader__status {
+        margin-top: clamp(1rem, 2.6vh, 1.6rem);
+        color: rgba(255, 255, 255, 0.4);
+        letter-spacing: clamp(0.2em, 1vw, 0.4em);
+      }
+
+      @keyframes bootstrapLoaderTravel {
+        from {
+          opacity: 0;
+          transform: translate3d(-110%, 0, 0);
+        }
+        18%,
+        78% {
+          opacity: 0.9;
+        }
+        to {
+          opacity: 0;
+          transform: translate3d(340%, 0, 0);
+        }
+      }
+
+      @media (max-height: 600px) {
+        #app-bootstrap-loader {
+          padding-top: max(2.75rem, env(safe-area-inset-top));
+        }
+
+        .bootstrap-loader__eyebrow,
+        .bootstrap-loader__divider--top,
+        .bootstrap-loader__status {
+          display: none;
+        }
+
+        .bootstrap-loader__stage {
+          padding: 0.75rem 1rem;
+        }
+
+        .bootstrap-loader__emblem {
+          width: clamp(3.4rem, 16vh, 4.5rem);
+          height: clamp(3.4rem, 16vh, 4.5rem);
+          margin-top: 0;
+        }
+
+        .bootstrap-loader__intro,
+        .bootstrap-loader__quote {
+          margin-top: 0.55rem;
+          font-size: 0.52rem;
+          letter-spacing: 0.12em;
+        }
+
+        .bootstrap-loader__title,
+        .bootstrap-loader__divider,
+        .bootstrap-loader__rail {
+          margin-top: 0.6rem;
+        }
+      }
+
+      @media (max-height: 500px) {
+        #app-bootstrap-loader {
+          padding-top: max(0.55rem, env(safe-area-inset-top));
+          padding-bottom: max(0.45rem, env(safe-area-inset-bottom));
+        }
+
+        .bootstrap-loader__badges,
+        .bootstrap-loader__intro,
+        .bootstrap-loader__quote {
+          display: none;
+        }
+
+        .bootstrap-loader__stage {
+          padding-block: 1.15rem;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .bootstrap-loader__rail::after {
+          width: 100%;
+          opacity: 0.72;
+          animation: none;
+        }
+      }
+    </style>
 
     <!-- JSON-LD Structured Data -->
     <script type="application/ld+json">
@@ -243,7 +528,49 @@
     </script>
   </head>
   <body>
-    <noscript>You need to enable JavaScript to run this app.</noscript>
-    <div id="root"></div>
+    <noscript>
+      <style>
+        #app-bootstrap-loader {
+          display: none !important;
+        }
+      </style>
+      <div
+        role="alert"
+        style="min-height:100svh;display:grid;place-items:center;padding:2rem;background:#010101;color:#fff;text-align:center;font:500 1rem/1.6 system-ui,sans-serif"
+      >
+        Please enable JavaScript to enter AmiVerse.
+      </div>
+    </noscript>
+    <div id="root">
+      <div
+        id="app-bootstrap-loader"
+        role="status"
+        aria-live="polite"
+        aria-label="Loading AmiVerse"
+      >
+        <div class="bootstrap-loader__badges" aria-hidden="true">
+          <span class="bootstrap-loader__badge">Feature Presentation</span>
+          <span class="bootstrap-loader__badge">Monochrome Intro</span>
+        </div>
+        <div class="bootstrap-loader__stage">
+          <p class="bootstrap-loader__eyebrow">Feature Presentation</p>
+          <div
+            class="bootstrap-loader__divider bootstrap-loader__divider--top"
+            aria-hidden="true"
+          ></div>
+          <div class="bootstrap-loader__emblem" aria-hidden="true">
+            <img src="/icons/icon-96x96.png" alt="" width="96" height="96" />
+          </div>
+          <p class="bootstrap-loader__intro">Lights out. Let the universe arrive.</p>
+          <p class="bootstrap-loader__title">AmiVerse</p>
+          <div class="bootstrap-loader__divider" aria-hidden="true"></div>
+          <p class="bootstrap-loader__quote">
+            A vision in motion by Amritanshu Mishra
+          </p>
+          <div class="bootstrap-loader__rail" aria-hidden="true"></div>
+          <p class="bootstrap-loader__status">Preparing the opening scene</p>
+        </div>
+      </div>
+    </div>
   </body>
 </html>

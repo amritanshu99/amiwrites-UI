@@ -56,6 +56,8 @@ test("shows the complete pulse content after expanding", async () => {
   const pulseAside = screen.getByRole("complementary", { name: "Ami Pulse" });
   expect(pulseAside).toHaveClass("fixed");
   expect(pulseAside).not.toHaveClass("absolute");
+  expect(panel).toHaveClass("bg-white/[0.92]");
+  expect(panel).toHaveClass("dark:bg-zinc-950/[0.92]");
   expect(
     within(panel).getAllByText("Designing a safer, clearer experience"),
   ).toHaveLength(2);

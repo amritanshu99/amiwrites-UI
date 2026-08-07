@@ -22,7 +22,10 @@ import Footer from "./components/Layout/Footer";
 import ContactMeButton from "./components/Floating-buttons/ContactMeButton";
 import Loader from "./components/Loader/Loader";
 import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
-import InitialLoader from "./components/Portfolio/InitialLoader";
+import InitialLoader, {
+  completeInitialLoaderCycle,
+  INITIAL_LOADER_MIN_DURATION_MS,
+} from "./components/Portfolio/InitialLoader";
 import Portfolio from "./pages/Portfolio";
 import { getPublicPagePath, initGA, logPageView } from "./analytics";
 import { isTokenExpired } from "./utils/auth";
@@ -156,6 +159,10 @@ const App = () => {
   const navigate = useNavigate();
   const appShellRef = useRef(null);
   const initialLoaderMode = location.pathname === "/" ? "showcase" : "session";
+  const initialLoaderDuration =
+    initialLoaderMode === "showcase"
+      ? INITIAL_LOADER_MIN_DURATION_MS
+      : undefined;
   const isAmiBotWorkspace = location.pathname === "/amibot";
 
   const logout = () => {
@@ -193,6 +200,10 @@ const App = () => {
   }, [location]);
 
   useEffect(() => {
+    if (location.pathname !== "/") completeInitialLoaderCycle();
+  }, [location.pathname]);
+
+  useEffect(() => {
     const routeSeo = resolveRouteSeo(location.pathname);
     applySEO({
       path: getPublicPagePath(location.pathname),
@@ -213,7 +224,12 @@ const App = () => {
   }, [isAmiBotWorkspace, location.pathname]);
 
   if (!shouldRender) {
-    return <InitialLoader mode={initialLoaderMode} />;
+    return (
+      <InitialLoader
+        mode={initialLoaderMode}
+        durationMs={initialLoaderDuration}
+      />
+    );
   }
 
   return (
@@ -255,7 +271,14 @@ const App = () => {
         }
         tabIndex={-1}
       >
-        <Suspense fallback={<InitialLoader mode={initialLoaderMode} />}>
+        <Suspense
+          fallback={(
+            <InitialLoader
+              mode={initialLoaderMode}
+              durationMs={initialLoaderDuration}
+            />
+          )}
+        >
           <Routes>
             <Route path="/" element={<Portfolio />} />
             <Route path="/blogs" element={<BlogPage />} />

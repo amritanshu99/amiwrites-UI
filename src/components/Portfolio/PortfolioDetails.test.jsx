@@ -1,6 +1,7 @@
 import React from "react";
-import { act, cleanup, render, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import axios from "axios";
+import { completeInitialLoaderCycle } from "./InitialLoader";
 import PortfolioDetails from "./PortfolioDetails";
 
 jest.mock("axios", () => ({
@@ -63,12 +64,30 @@ jest.mock("framer-motion", () => {
 jest.mock("../AmiversePulseWidget", () => () => null);
 jest.mock("./MemoryLaneCta", () => () => null);
 
-const renderPortfolio = () =>
-  render(<PortfolioDetails />);
+const renderPortfolio = () => render(<PortfolioDetails />);
+const originalImageDecode = HTMLImageElement.prototype.decode;
+
+const markInitialHeroReady = () => {
+  const portrait = document.querySelector('img[alt$="portfolio portrait"]');
+  expect(portrait).not.toBeNull();
+  fireEvent.load(portrait);
+};
 
 const finishInitialLoader = async () => {
+  markInitialHeroReady();
+
   await act(async () => {
     jest.advanceTimersByTime(1200);
+    await Promise.resolve();
+  });
+
+  await act(async () => {
+    jest.advanceTimersByTime(50);
+    await Promise.resolve();
+  });
+
+  await act(async () => {
+    jest.advanceTimersByTime(250);
     await Promise.resolve();
   });
 };
@@ -76,6 +95,7 @@ const finishInitialLoader = async () => {
 describe("PortfolioDetails startup experience", () => {
   beforeEach(() => {
     jest.useFakeTimers();
+    completeInitialLoaderCycle();
     axios.get.mockReset();
     axios.isCancel.mockReset();
     axios.isCancel.mockReturnValue(false);
@@ -100,15 +120,161 @@ describe("PortfolioDetails startup experience", () => {
   afterEach(() => {
     cleanup();
     document.documentElement.className = "";
+    if (originalImageDecode) {
+      Object.defineProperty(HTMLImageElement.prototype, "decode", {
+        configurable: true,
+        value: originalImageDecode,
+      });
+    } else {
+      delete HTMLImageElement.prototype.decode;
+    }
     jest.runOnlyPendingTimers();
     jest.useRealTimers();
+  });
+
+  it("keeps the page inert until the rendered hero has decoded", async () => {
+    axios.get.mockImplementationOnce(() => new Promise(() => {}));
+    let resolveDecode;
+    const decode = jest.fn(
+      () => new Promise((resolve) => {
+        resolveDecode = resolve;
+      }),
+    );
+    Object.defineProperty(HTMLImageElement.prototype, "decode", {
+      configurable: true,
+      value: decode,
+    });
+
+    const { container } = renderPortfolio();
+    const page = container.querySelector("article");
+    const portrait = container.querySelector('img[alt$="portfolio portrait"]');
+
+    expect(page).toHaveAttribute("inert");
+    fireEvent.load(portrait);
+
+    await act(async () => {
+      jest.advanceTimersByTime(1200);
+      await Promise.resolve();
+    });
+
+    expect(
+      screen.getByRole("status", { name: /loading amiverse/i }),
+    ).toBeInTheDocument();
+
+    await act(async () => {
+      resolveDecode();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    await act(async () => {
+      jest.advanceTimersByTime(20);
+      await Promise.resolve();
+    });
+
+    await act(async () => {
+      jest.advanceTimersByTime(20);
+      await Promise.resolve();
+    });
+
+    await act(async () => {
+      jest.advanceTimersByTime(1);
+      await Promise.resolve();
+    });
+
+    expect(
+      screen.queryByRole("status", { name: /loading amiverse/i }),
+    ).not.toBeInTheDocument();
+    expect(page).not.toHaveAttribute("inert");
+  });
+
+  it("does not reveal an image whose decode rejects", async () => {
+    axios.get.mockImplementationOnce(() => new Promise(() => {}));
+    Object.defineProperty(HTMLImageElement.prototype, "decode", {
+      configurable: true,
+      value: jest.fn(() => Promise.reject(new Error("Decode failed"))),
+    });
+
+    renderPortfolio();
+    markInitialHeroReady();
+
+    await act(async () => {
+      jest.advanceTimersByTime(1200);
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(
+      screen.getByRole("status", { name: /loading amiverse/i }),
+    ).toBeInTheDocument();
+
+    await act(async () => {
+      jest.advanceTimersByTime(2000);
+      await Promise.resolve();
+    });
+
+    await act(async () => {
+      jest.advanceTimersByTime(50);
+      await Promise.resolve();
+    });
+
+    await act(async () => {
+      jest.advanceTimersByTime(1);
+      await Promise.resolve();
+    });
+
+    expect(
+      screen.queryByRole("status", { name: /loading amiverse/i }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("starts a fresh minimum wait when the portfolio mounts again", async () => {
+    axios.get.mockImplementation(() => new Promise(() => {}));
+
+    const firstVisit = renderPortfolio();
+    await finishInitialLoader();
+    firstVisit.unmount();
+
+    act(() => {
+      jest.advanceTimersByTime(5000);
+    });
+
+    renderPortfolio();
+    markInitialHeroReady();
+
+    act(() => {
+      jest.advanceTimersByTime(1199);
+    });
+
+    expect(
+      screen.getByRole("status", { name: /loading amiverse/i }),
+    ).toBeInTheDocument();
+
+    await act(async () => {
+      jest.advanceTimersByTime(1);
+      await Promise.resolve();
+    });
+
+    await act(async () => {
+      jest.advanceTimersByTime(50);
+      await Promise.resolve();
+    });
+
+    await act(async () => {
+      jest.advanceTimersByTime(250);
+      await Promise.resolve();
+    });
+
+    expect(
+      screen.queryByRole("status", { name: /loading amiverse/i }),
+    ).not.toBeInTheDocument();
   });
 
   it.each([
     ["still pending", () => new Promise(() => {})],
     ["failed", () => Promise.reject(new Error("Portfolio API unavailable"))],
   ])(
-    "keeps the showcase loader for 1200ms and then renders fallback content when the API is %s",
+    "keeps one overlay through the minimum duration and reveals ready fallback content when the API is %s",
     async (_apiState, createRequest) => {
       axios.get.mockImplementationOnce(createRequest);
 
@@ -120,6 +286,15 @@ describe("PortfolioDetails startup experience", () => {
       expect(
         screen.queryByRole("heading", { name: "Amritanshu Mishra", level: 1 }),
       ).not.toBeInTheDocument();
+      expect(
+        screen.getByRole("heading", {
+          name: "Amritanshu Mishra",
+          level: 1,
+          hidden: true,
+        }),
+      ).toBeInTheDocument();
+
+      markInitialHeroReady();
 
       act(() => {
         jest.advanceTimersByTime(1199);
@@ -134,6 +309,16 @@ describe("PortfolioDetails startup experience", () => {
         await Promise.resolve();
       });
 
+      await act(async () => {
+        jest.advanceTimersByTime(50);
+        await Promise.resolve();
+      });
+
+      await act(async () => {
+        jest.advanceTimersByTime(250);
+        await Promise.resolve();
+      });
+
       expect(
         screen.queryByRole("status", { name: /loading amiverse/i }),
       ).not.toBeInTheDocument();
@@ -142,6 +327,42 @@ describe("PortfolioDetails startup experience", () => {
       ).toBeInTheDocument();
     },
   );
+
+  it("uses a bounded wait when the hero asset never settles", async () => {
+    axios.get.mockImplementationOnce(() => new Promise(() => {}));
+
+    renderPortfolio();
+
+    act(() => {
+      jest.advanceTimersByTime(3199);
+    });
+
+    expect(
+      screen.getByRole("status", { name: /loading amiverse/i }),
+    ).toBeInTheDocument();
+
+    await act(async () => {
+      jest.advanceTimersByTime(1);
+      await Promise.resolve();
+    });
+
+    await act(async () => {
+      jest.advanceTimersByTime(50);
+      await Promise.resolve();
+    });
+
+    await act(async () => {
+      jest.advanceTimersByTime(250);
+      await Promise.resolve();
+    });
+
+    expect(
+      screen.queryByRole("status", { name: /loading amiverse/i }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Amritanshu Mishra", level: 1 }),
+    ).toBeInTheDocument();
+  });
 
   it.each([
     ["light", "", "your-photo.png", "ny-bg-optimized.jpg"],
@@ -168,6 +389,32 @@ describe("PortfolioDetails startup experience", () => {
       expect(backgroundLayer).toBeDefined();
     },
   );
+
+  it("limits supporting hero copy on phones while keeping primary content", async () => {
+    axios.get.mockImplementationOnce(() => new Promise(() => {}));
+
+    renderPortfolio();
+    await finishInitialLoader();
+
+    expect(
+      screen.getByText("Building useful products with clarity"),
+    ).toHaveClass("flex", "max-sm:hidden");
+    expect(
+      screen.getByText(/combined to solve real product problems/i),
+    ).toHaveClass("max-sm:hidden");
+    expect(
+      screen.getByRole("heading", { name: "Amritanshu Mishra", level: 1 }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("Full-stack & AI Engineer", { selector: "p" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /selected work/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: /view r.sum./i }),
+    ).toBeInTheDocument();
+  });
 
   it("restores the responsive AmiVerse contact calling card", async () => {
     axios.get.mockImplementationOnce(() => new Promise(() => {}));

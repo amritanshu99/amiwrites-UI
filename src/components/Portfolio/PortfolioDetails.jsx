@@ -29,7 +29,12 @@ import {
   useReducedMotion,
 } from "framer-motion";
 import { Link } from "react-router-dom";
-import InitialLoader from "./InitialLoader";
+import InitialLoader, {
+  beginInitialLoaderCycle,
+  completeInitialLoaderCycle,
+  INITIAL_LOADER_EXIT_DURATION_MS,
+  INITIAL_LOADER_MIN_DURATION_MS,
+} from "./InitialLoader";
 import MemoryLaneCta from "./MemoryLaneCta";
 import AmiversePulseWidget from "../AmiversePulseWidget";
 import { FaCalendarAlt } from "react-icons/fa";
@@ -250,7 +255,7 @@ const sectionMeta = [
   { id: "education", label: "Education" },
   { id: "contact", label: "Contact" },
 ];
-const MIN_LOADER_DURATION_MS = 1200;
+const MAX_LOADER_DURATION_MS = 3200;
 const resumeUrl = assetUrl("/images/Resume.pdf");
 const publicAsset = (path) => `${process.env.PUBLIC_URL || ""}${path}`;
 const contactBannerUrl = publicAsset("/banner-optimized.jpg");
@@ -295,7 +300,14 @@ const featuredProjects = [
 /* ================= MAIN ================= */
 export default function PortfolioDetails() {
   const [data, setData] = useState(portfolioFallback);
-  const [loading, setLoading] = useState(true);
+  const [loaderPhase, setLoaderPhase] = useState("visible");
+  const [initialLoaderElapsedMs] = useState(beginInitialLoaderCycle);
+  const [minimumLoaderElapsed, setMinimumLoaderElapsed] = useState(
+    () => initialLoaderElapsedMs >= INITIAL_LOADER_MIN_DURATION_MS,
+  );
+  const [loaderDeadlineElapsed, setLoaderDeadlineElapsed] = useState(
+    () => initialLoaderElapsedMs >= MAX_LOADER_DURATION_MS,
+  );
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [hasOpenedGallery, setHasOpenedGallery] = useState(false);
   const [isDark, setIsDark] = useState(() => {
@@ -322,12 +334,17 @@ export default function PortfolioDetails() {
   );
   const prefersReducedMotion = useReducedMotion();
   const pageRef = useRef(null);
+  const heroRef = useRef(null);
+  const heroImageRef = useRef(null);
+  const heroLensRef = useRef(null);
   const bottomCtaRef = useRef(null);
   const sectionRefs = useRef({});
   const bottomCtaExpandedRef = useRef(isBottomCtaExpanded);
   const pendingScrollSectionRef = useRef(null);
   const pendingScrollTargetRef = useRef(null);
   const pendingScrollTimerRef = useRef(null);
+  const hasLoadedHeroRef = useRef(false);
+  const loading = loaderPhase !== "hidden";
 
   const portfolioBackgroundImage = publicAsset(
     isDark ? "/ny-dark-optimized.jpg" : "/ny-bg-optimized.jpg",
@@ -341,6 +358,7 @@ export default function PortfolioDetails() {
     setIsGalleryOpen(true);
   }, []);
   const markHeroImageLoaded = useCallback(() => {
+    hasLoadedHeroRef.current = true;
     setImageLoaded((prev) => (prev ? prev : true));
   }, []);
   const updateBottomCtaExpanded = useCallback((nextExpanded) => {
@@ -408,9 +426,6 @@ export default function PortfolioDetails() {
 
   useEffect(() => {
     const controller = new AbortController();
-    const loaderTimeout = window.setTimeout(() => {
-      setLoading(false);
-    }, MIN_LOADER_DURATION_MS);
 
     axios
       .get(apiUrl("/api/portfolio"), {
@@ -434,9 +449,30 @@ export default function PortfolioDetails() {
 
     return () => {
       controller.abort();
-      window.clearTimeout(loaderTimeout);
     };
   }, []);
+
+  useEffect(() => {
+    const minimumDelay = Math.max(
+      0,
+      INITIAL_LOADER_MIN_DURATION_MS - initialLoaderElapsedMs,
+    );
+    const deadlineDelay = Math.max(
+      0,
+      MAX_LOADER_DURATION_MS - initialLoaderElapsedMs,
+    );
+    const minimumTimer = minimumDelay
+      ? window.setTimeout(() => setMinimumLoaderElapsed(true), minimumDelay)
+      : null;
+    const deadlineTimer = deadlineDelay
+      ? window.setTimeout(() => setLoaderDeadlineElapsed(true), deadlineDelay)
+      : null;
+
+    return () => {
+      if (minimumTimer !== null) window.clearTimeout(minimumTimer);
+      if (deadlineTimer !== null) window.clearTimeout(deadlineTimer);
+    };
+  }, [initialLoaderElapsedMs]);
 
   useEffect(() => {
     if (loading) return undefined;
@@ -559,7 +595,7 @@ export default function PortfolioDetails() {
 
 
 
-  const heroImageUrl = useMemo(() => {
+  const requestedHeroImageUrl = useMemo(() => {
     if (!data) return "";
 
     const preferredPhoto = isDark && data.photoUrlDark
@@ -568,6 +604,23 @@ export default function PortfolioDetails() {
 
     return assetUrl(preferredPhoto);
   }, [data, isDark]);
+  const [heroImageUrl, setHeroImageUrl] = useState(requestedHeroImageUrl);
+
+  const handleHeroImageLoad = useCallback(
+    (event) => {
+      const image = event.currentTarget;
+
+      if (typeof image.decode !== "function") {
+        markHeroImageLoaded();
+        return;
+      }
+
+      image.decode().then(markHeroImageLoaded).catch(() => {
+        // A decoded frame (or the bounded deadline) owns the reveal.
+      });
+    },
+    [markHeroImageLoaded],
+  );
 
   const handleHeroImageError = useCallback(
     (event) => {
@@ -579,36 +632,241 @@ export default function PortfolioDetails() {
         image.src !== fallbackUrl
       ) {
         image.dataset.fallbackApplied = "true";
+        setHeroImageUrl(fallbackUrl);
         image.src = fallbackUrl;
         return;
       }
 
-      markHeroImageLoaded();
     },
-    [data.photoUrl, markHeroImageLoaded],
+    [data.photoUrl],
   );
 
   useEffect(() => {
-    if (!heroImageUrl) return undefined;
-
-    setImageLoaded(false);
-
-    const heroImage = new Image();
-    heroImage.decoding = "async";
-    heroImage.fetchPriority = "high";
-    heroImage.src = heroImageUrl;
-
-    if (heroImage.complete) {
+    if (!requestedHeroImageUrl) {
       markHeroImageLoaded();
       return undefined;
     }
 
-    heroImage.addEventListener("load", markHeroImageLoaded);
+    const heroImage = new Image();
+    let cancelled = false;
+    heroImage.decoding = "async";
+    heroImage.fetchPriority = "high";
+    const revealStagedImage = () => {
+      if (cancelled) return;
+      setHeroImageUrl(requestedHeroImageUrl);
+      markHeroImageLoaded();
+    };
+    const handleStagedImageError = () => {
+      // Keep the loader in place until the rendered fallback is decoded or the
+      // bounded loader deadline is reached.
+    };
+    const decodeStagedImage = () => {
+      if (typeof heroImage.decode !== "function") {
+        revealStagedImage();
+        return;
+      }
+
+      heroImage.decode().then(revealStagedImage).catch(handleStagedImageError);
+    };
+
+    heroImage.addEventListener("load", decodeStagedImage);
+    heroImage.addEventListener("error", handleStagedImageError);
+    heroImage.src = requestedHeroImageUrl;
+
+    if (heroImage.complete) {
+      if (heroImage.naturalWidth > 0) {
+        decodeStagedImage();
+      } else {
+        handleStagedImageError();
+      }
+    }
 
     return () => {
-      heroImage.removeEventListener("load", markHeroImageLoaded);
+      cancelled = true;
+      heroImage.removeEventListener("load", decodeStagedImage);
+      heroImage.removeEventListener("error", handleStagedImageError);
     };
-  }, [heroImageUrl, markHeroImageLoaded]);
+  }, [markHeroImageLoaded, requestedHeroImageUrl]);
+
+  useEffect(() => {
+    if (
+      loaderPhase !== "visible" ||
+      !minimumLoaderElapsed ||
+      (!imageLoaded && !loaderDeadlineElapsed)
+    ) {
+      return undefined;
+    }
+
+    const scheduleFrame = window.requestAnimationFrame
+      ? window.requestAnimationFrame.bind(window)
+      : (callback) => window.setTimeout(callback, 16);
+    const cancelFrame = window.cancelAnimationFrame
+      ? window.cancelAnimationFrame.bind(window)
+      : window.clearTimeout.bind(window);
+    let secondFrame = null;
+
+    const firstFrame = scheduleFrame(() => {
+      secondFrame = scheduleFrame(() => setLoaderPhase("exiting"));
+    });
+
+    return () => {
+      cancelFrame(firstFrame);
+      if (secondFrame !== null) cancelFrame(secondFrame);
+    };
+  }, [
+    imageLoaded,
+    loaderDeadlineElapsed,
+    loaderPhase,
+    minimumLoaderElapsed,
+  ]);
+
+  useEffect(() => {
+    if (loaderPhase !== "exiting") return undefined;
+
+    const exitTimer = window.setTimeout(
+      () => setLoaderPhase("hidden"),
+      prefersReducedMotion ? 0 : INITIAL_LOADER_EXIT_DURATION_MS,
+    );
+
+    return () => window.clearTimeout(exitTimer);
+  }, [loaderPhase, prefersReducedMotion]);
+
+  useEffect(() => {
+    if (loaderPhase === "hidden") completeInitialLoaderCycle();
+  }, [loaderPhase]);
+
+  useEffect(() => {
+    const hero = heroRef.current;
+    const portrait = heroImageRef.current;
+    const lens = heroLensRef.current;
+
+    if (
+      loading ||
+      !imageLoaded ||
+      prefersReducedMotion ||
+      !hero ||
+      !portrait ||
+      !lens
+    ) {
+      return undefined;
+    }
+
+    const finePointerQuery = window.matchMedia(
+      "(min-width: 64rem) and (hover: hover) and (pointer: fine)",
+    );
+    let animationFrame = null;
+    let currentPosition = null;
+    let targetPosition = null;
+
+    const setLensActive = (isActive) => {
+      lens.dataset.active = isActive ? "true" : "false";
+    };
+
+    const drawLens = () => {
+      animationFrame = null;
+
+      if (!currentPosition || !targetPosition) return;
+
+      const deltaX = targetPosition.x - currentPosition.x;
+      const deltaY = targetPosition.y - currentPosition.y;
+
+      currentPosition.x += deltaX * 0.2;
+      currentPosition.y += deltaY * 0.2;
+
+      lens.style.setProperty("--hero-lens-x", `${currentPosition.x}px`);
+      lens.style.setProperty("--hero-lens-y", `${currentPosition.y}px`);
+
+      if (Math.abs(deltaX) > 0.12 || Math.abs(deltaY) > 0.12) {
+        animationFrame = window.requestAnimationFrame(drawLens);
+      }
+    };
+
+    const queueLensDraw = () => {
+      if (animationFrame === null) {
+        animationFrame = window.requestAnimationFrame(drawLens);
+      }
+    };
+
+    const hideLens = () => {
+      setLensActive(false);
+      currentPosition = null;
+      targetPosition = null;
+
+      if (animationFrame !== null) {
+        window.cancelAnimationFrame(animationFrame);
+        animationFrame = null;
+      }
+    };
+
+    const handlePointerMove = (event) => {
+      if (!finePointerQuery.matches || event.pointerType === "touch") {
+        hideLens();
+        return;
+      }
+
+      const heroRect = hero.getBoundingClientRect();
+      const portraitRect = portrait.getBoundingClientRect();
+      const portraitFocusStart = Math.max(
+        heroRect.left + heroRect.width * 0.52,
+        portraitRect.left + portraitRect.width * 0.1,
+      );
+      const isOverPortrait =
+        event.clientX >= portraitFocusStart &&
+        event.clientX <= portraitRect.right &&
+        event.clientY >= portraitRect.top &&
+        event.clientY <= portraitRect.bottom;
+
+      if (!isOverPortrait) {
+        hideLens();
+        return;
+      }
+
+      targetPosition = {
+        x: event.clientX - heroRect.left,
+        y: event.clientY - heroRect.top,
+      };
+
+      if (!currentPosition) {
+        currentPosition = { ...targetPosition };
+        lens.style.setProperty("--hero-lens-x", `${currentPosition.x}px`);
+        lens.style.setProperty("--hero-lens-y", `${currentPosition.y}px`);
+      }
+
+      setLensActive(true);
+      queueLensDraw();
+    };
+
+    const handlePointerSupportChange = () => {
+      if (!finePointerQuery.matches) hideLens();
+    };
+
+    hero.addEventListener("pointermove", handlePointerMove, { passive: true });
+    hero.addEventListener("pointerleave", hideLens);
+
+    if (finePointerQuery.addEventListener) {
+      finePointerQuery.addEventListener("change", handlePointerSupportChange);
+    } else {
+      finePointerQuery.addListener(handlePointerSupportChange);
+    }
+
+    return () => {
+      hero.removeEventListener("pointermove", handlePointerMove);
+      hero.removeEventListener("pointerleave", hideLens);
+
+      if (finePointerQuery.removeEventListener) {
+        finePointerQuery.removeEventListener(
+          "change",
+          handlePointerSupportChange,
+        );
+      } else {
+        finePointerQuery.removeListener(handlePointerSupportChange);
+      }
+
+      if (animationFrame !== null) {
+        window.cancelAnimationFrame(animationFrame);
+      }
+    };
+  }, [heroImageUrl, imageLoaded, loading, prefersReducedMotion]);
 
   useEffect(() => {
     setBackgroundImageLoaded(false);
@@ -689,14 +947,19 @@ export default function PortfolioDetails() {
       document.removeEventListener("pointerdown", handlePointerDownOutside);
   }, [isBottomCtaExpanded, isTouchDevice, updateBottomCtaExpanded]);
 
-  if (loading) {
-    return (
-      <InitialLoader
-        mode="showcase"
-        durationMs={MIN_LOADER_DURATION_MS}
-      />
-    );
-  }
+  useEffect(() => {
+    if (!loading || !pageRef.current) return undefined;
+
+    const scrollParent = getPortfolioScrollParent(pageRef.current);
+    const scrollElement = scrollParent === window ? document.body : scrollParent;
+    const previousOverflow = scrollElement.style.overflow;
+
+    scrollElement.style.overflow = "hidden";
+
+    return () => {
+      scrollElement.style.overflow = previousOverflow;
+    };
+  }, [loading]);
 
   const [firstName, ...lastNameParts] = data.name.trim().split(/\s+/);
   const lastName = lastNameParts.join(" ");
@@ -753,9 +1016,19 @@ export default function PortfolioDetails() {
 
   return (
     <>
+      {loaderPhase !== "hidden" && (
+        <InitialLoader
+          mode="showcase"
+          durationMs={INITIAL_LOADER_MIN_DURATION_MS}
+          phase={loaderPhase}
+        />
+      )}
+
       <article
         ref={pageRef}
         aria-labelledby="portfolio-title"
+        aria-hidden={loading ? true : undefined}
+        inert={loading ? true : undefined}
         className="relative isolate w-full max-w-full overflow-hidden bg-white text-zinc-900 dark:bg-black dark:text-zinc-100"
       >
       <div
@@ -773,9 +1046,11 @@ export default function PortfolioDetails() {
 
       <div className="relative z-10">
         {/* ================= HERO ================= */}
-        <section className="portfolio-hero relative isolate overflow-hidden bg-slate-100 text-slate-950 dark:bg-black dark:text-white">
+        <section
+          ref={heroRef}
+          className="portfolio-hero relative isolate overflow-hidden bg-slate-100 text-slate-950 dark:bg-black dark:text-white"
+        >
           <img
-            key={`ambient-${heroImageUrl}`}
             src={heroImageUrl}
             alt=""
             aria-hidden="true"
@@ -790,12 +1065,12 @@ export default function PortfolioDetails() {
             className="portfolio-hero-foundation absolute inset-0"
           />
           <motion.img
-            key={heroImageUrl}
+            ref={heroImageRef}
             src={heroImageUrl}
             alt={`${data.name} portfolio portrait`}
             width={isDark ? 1024 : 1477}
             height={isDark ? 1024 : 1317}
-            onLoad={markHeroImageLoaded}
+            onLoad={handleHeroImageLoad}
             onError={handleHeroImageError}
             initial={
               prefersReducedMotion
@@ -813,6 +1088,23 @@ export default function PortfolioDetails() {
             fetchPriority="high"
             decoding="async"
           />
+          <div
+            ref={heroLensRef}
+            aria-hidden="true"
+            data-active="false"
+            className="portfolio-hero-lens pointer-events-none absolute inset-0"
+          >
+            <img
+              src={heroImageUrl}
+              alt=""
+              width={isDark ? 1024 : 1477}
+              height={isDark ? 1024 : 1317}
+              onError={handleHeroImageError}
+              className="portfolio-hero-lens-image absolute inset-0 h-full w-full max-w-none object-cover object-[38%_17%] sm:object-[46%_18%] lg:object-contain lg:object-right"
+              loading="eager"
+              decoding="async"
+            />
+          </div>
           <div
             aria-hidden="true"
             className="portfolio-hero-scrim portfolio-hero-scrim-light absolute inset-0 dark:hidden"
@@ -839,7 +1131,7 @@ export default function PortfolioDetails() {
             >
               <motion.p
                 variants={heroCopyItemVariants}
-                className="mb-4 flex items-center gap-3 text-xs font-bold uppercase tracking-[0.24em] text-sky-800 [text-shadow:0_1px_8px_rgba(255,255,255,0.92)] before:h-px before:w-8 before:shrink-0 before:bg-sky-700/60 dark:text-cyan-200 dark:[text-shadow:0_2px_12px_rgba(0,0,0,0.72)] dark:before:bg-cyan-200/55 sm:text-sm"
+                className="mb-4 flex items-center gap-3 text-xs font-bold uppercase tracking-[0.24em] text-sky-800 [text-shadow:0_1px_8px_rgba(255,255,255,0.92)] before:h-px before:w-8 before:shrink-0 before:bg-sky-700/60 dark:text-cyan-200 dark:[text-shadow:0_2px_12px_rgba(0,0,0,0.72)] dark:before:bg-cyan-200/55 max-sm:hidden sm:text-sm"
               >
                 Building useful products with clarity
               </motion.p>
@@ -860,7 +1152,7 @@ export default function PortfolioDetails() {
               </motion.p>
               <motion.p
                 variants={heroCopyItemVariants}
-                className="portfolio-hero-summary mt-3 max-w-lg text-sm leading-relaxed text-slate-700 dark:text-slate-200 sm:text-base"
+                className="portfolio-hero-summary mt-3 max-w-lg text-sm leading-relaxed text-slate-700 dark:text-slate-200 max-sm:hidden sm:text-base"
               >
                 React, Node.js, GraphQL, and AI—combined to solve real product problems.
               </motion.p>

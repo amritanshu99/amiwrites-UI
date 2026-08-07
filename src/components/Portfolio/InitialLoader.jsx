@@ -15,6 +15,45 @@ const sessionQuotes = [
   "A silent handoff is shaping the opening scene",
 ];
 
+export const INITIAL_LOADER_MIN_DURATION_MS = 1200;
+export const INITIAL_LOADER_EXIT_DURATION_MS = 220;
+
+const startupQuoteIndexes = {
+  showcase: 2,
+  session: Math.floor(Math.random() * sessionQuotes.length),
+};
+
+const getPerformanceNow = () => {
+  if (
+    typeof performance === "undefined" ||
+    typeof performance.now !== "function"
+  ) {
+    return 0;
+  }
+
+  const now = performance.now();
+  return Number.isFinite(now) ? Math.max(0, now) : 0;
+};
+
+let initialLoaderStartedAtMs =
+  typeof window !== "undefined" && window.location?.pathname === "/" ? 0 : null;
+
+export const beginInitialLoaderCycle = () => {
+  const now = getPerformanceNow();
+
+  if (initialLoaderStartedAtMs === null) {
+    initialLoaderStartedAtMs = now;
+  }
+
+  return Math.max(0, now - initialLoaderStartedAtMs);
+};
+
+export const getInitialLoaderElapsedMs = () => beginInitialLoaderCycle();
+
+export const completeInitialLoaderCycle = () => {
+  initialLoaderStartedAtMs = null;
+};
+
 const showcaseStatusLines = [
   "Threading the projector",
   "Balancing the shadows",
@@ -83,9 +122,9 @@ const getPerformanceProfile = () => {
   }
 
   const prefersReducedMotion = queryMatches("(prefers-reduced-motion: reduce)");
-  const isCompactViewport = queryMatches("(max-width: 768px), (max-height: 740px)");
+  const isCompactViewport = queryMatches("(max-width: 1024px), (max-height: 740px)");
   const isCoarsePointer = queryMatches("(hover: none), (pointer: coarse)");
-  const isTouchViewport = isCompactViewport && isCoarsePointer;
+  const isTouchViewport = isCoarsePointer;
   const nav = typeof navigator === "undefined" ? {} : navigator;
   const connection =
     nav.connection || nav.mozConnection || nav.webkitConnection;
@@ -101,11 +140,12 @@ const getPerformanceProfile = () => {
       prefersReducedMotion ||
       saveData ||
       isLowPowerDevice ||
+      isCompactViewport ||
       isTouchViewport,
   };
 };
 
-const InitialLoader = ({ mode = "showcase", durationMs }) => {
+const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => {
   const isSessionMode = mode === "session";
   const isTimedShowcase =
     !isSessionMode && Number.isFinite(durationMs) && durationMs > 0;
@@ -125,10 +165,9 @@ const InitialLoader = ({ mode = "showcase", durationMs }) => {
     ? ["Encrypted handoff", "Private route", "Noir startup"]
     : ["Cinema grade", "Black frame", "Studio hush"];
 
-  const randomQuote = useMemo(
-    () => quotePool[Math.floor(Math.random() * quotePool.length)],
-    [quotePool],
-  );
+  const quoteMode = isSessionMode ? "session" : "showcase";
+  const randomQuote =
+    quotePool[startupQuoteIndexes[quoteMode] % quotePool.length];
   const [activeStatusIndex, setActiveStatusIndex] = useState(0);
   const [performanceProfile, setPerformanceProfile] = useState(
     getPerformanceProfile,
@@ -155,18 +194,22 @@ const InitialLoader = ({ mode = "showcase", durationMs }) => {
     ? statusLines[activeStatusIndex]
     : statusLines[0];
   const showAnimatedStatusDots = !isTimedShowcase && !shouldOptimize;
+  const progressDurationMs = isTimedShowcase ? 1800 : 1080;
+  const [initialProgressElapsedMs] = useState(() =>
+    isTimedShowcase ? getInitialLoaderElapsedMs() : 0,
+  );
   const badgeClass = shouldOptimize
     ? "max-w-[calc(50vw-1.25rem)] truncate rounded-full border border-white/[0.08] bg-black/[0.82] px-3 py-2 text-[0.44rem] uppercase tracking-[0.22em] text-white/[0.4] shadow-[0_8px_24px_rgba(0,0,0,0.5)] min-[380px]:tracking-[0.3em] sm:max-w-none sm:px-4 sm:text-[0.52rem] sm:tracking-[0.36em]"
     : "max-w-[calc(50vw-1.25rem)] truncate rounded-full border border-white/[0.08] bg-black/[0.7] px-3 py-2 text-[0.44rem] uppercase tracking-[0.22em] text-white/[0.38] shadow-[0_10px_30px_rgba(0,0,0,0.55)] backdrop-blur-md min-[380px]:tracking-[0.3em] sm:max-w-none sm:px-4 sm:text-[0.52rem] sm:tracking-[0.42em]";
   const shellClass = shouldOptimize
     ? `loader-shell relative mx-auto w-full max-w-5xl overflow-hidden rounded-[1.55rem] border border-white/[0.06] bg-[linear-gradient(180deg,rgba(10,10,10,0.9),rgba(0,0,0,0.86)_45%,rgba(4,4,4,0.94)_100%)] px-4 py-7 text-center shadow-[0_24px_90px_rgba(0,0,0,0.82)] min-[380px]:rounded-[2rem] min-[380px]:px-5 min-[380px]:py-8 sm:px-9 sm:py-11 md:px-12 md:py-14 ${
         isTimedShowcase
-          ? "animate-[openingReveal_600ms_cubic-bezier(.22,1,.36,1)_forwards]"
+          ? ""
           : "animate-[openingReveal_700ms_cubic-bezier(.22,1,.36,1)_forwards]"
       }`
     : `loader-shell relative mx-auto w-full max-w-5xl overflow-hidden rounded-[1.65rem] border border-white/[0.06] bg-[linear-gradient(180deg,rgba(10,10,10,0.86),rgba(0,0,0,0.8)_42%,rgba(4,4,4,0.92)_100%)] px-4 py-8 text-center shadow-[0_42px_180px_rgba(0,0,0,0.92)] min-[380px]:rounded-[2rem] min-[380px]:px-6 min-[380px]:py-9 sm:rounded-[2.2rem] sm:px-10 sm:py-12 md:px-14 md:py-14 ${
         isTimedShowcase
-          ? "backdrop-blur-[6px] animate-[openingReveal_600ms_cubic-bezier(.22,1,.36,1)_forwards]"
+          ? "backdrop-blur-[6px]"
           : "backdrop-blur-[10px] animate-[openingReveal_1000ms_cubic-bezier(.22,1,.36,1)_forwards]"
       }`;
   const haloClass = shouldOptimize
@@ -184,7 +227,7 @@ const InitialLoader = ({ mode = "showcase", durationMs }) => {
 
     const queries = [
       getMediaQueryList("(prefers-reduced-motion: reduce)"),
-      getMediaQueryList("(max-width: 768px), (max-height: 740px)"),
+      getMediaQueryList("(max-width: 1024px), (max-height: 740px)"),
       getMediaQueryList("(hover: none), (pointer: coarse)"),
     ].filter(Boolean);
     const updateProfile = () => setPerformanceProfile(getPerformanceProfile());
@@ -228,11 +271,16 @@ const InitialLoader = ({ mode = "showcase", durationMs }) => {
       data-loader-root
       data-loader-mode={shouldOptimize ? "optimized" : "cinematic"}
       data-loader-timed={isTimedShowcase ? "true" : undefined}
+      data-loader-state={phase}
       role="status"
       aria-live="polite"
       aria-busy="true"
       aria-label={isSessionMode ? "Verifying secure access" : "Loading AmiVerse"}
       className="fixed inset-0 z-[9999] overflow-hidden bg-[#010101] text-white antialiased"
+      style={{
+        "--loader-progress-delay": `-${initialProgressElapsedMs}ms`,
+        "--loader-progress-duration": `${progressDurationMs}ms`,
+      }}
     >
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_44%,rgba(255,255,255,0.13),rgba(12,12,12,0.91)_31%,rgba(0,0,0,1)_72%)]" />
       <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,1)_0%,rgba(4,4,4,0.94)_22%,rgba(0,0,0,0.8)_47%,rgba(0,0,0,0.96)_77%,rgba(0,0,0,1)_100%)]" />
@@ -386,7 +434,7 @@ const InitialLoader = ({ mode = "showcase", durationMs }) => {
                 shouldOptimize
                   ? ""
                   : isTimedShowcase
-                    ? "animate-[cinematicEmblemCue_650ms_cubic-bezier(.22,1,.36,1)_80ms_both]"
+                    ? ""
                     : "animate-[emblemFloat_5.4s_ease-in-out_infinite]"
               }`}
             >
@@ -437,7 +485,7 @@ const InitialLoader = ({ mode = "showcase", durationMs }) => {
                 shouldOptimize
                   ? ""
                   : isTimedShowcase
-                    ? "animate-[cinematicTitleCue_700ms_cubic-bezier(.22,1,.36,1)_100ms_both]"
+                    ? ""
                     : "animate-[titleGlow_5s_ease-in-out_infinite]"
               }`}
             >
@@ -452,7 +500,7 @@ const InitialLoader = ({ mode = "showcase", durationMs }) => {
                 shouldOptimize
                   ? ""
                   : isTimedShowcase
-                    ? "animate-[cinematicQuoteCue_650ms_cubic-bezier(.22,1,.36,1)_180ms_both]"
+                    ? ""
                     : "animate-[quoteBreath_5.5s_ease-in-out_infinite]"
               }`}
             >
@@ -467,22 +515,14 @@ const InitialLoader = ({ mode = "showcase", durationMs }) => {
               <div className="relative mt-3 h-[3px] overflow-hidden rounded-full bg-white/[0.1] shadow-[0_0_20px_rgba(255,255,255,0.05)]">
                 <span className="absolute inset-y-0 left-0 w-full rounded-full bg-[linear-gradient(90deg,rgba(255,255,255,0.03),rgba(255,255,255,0.12),rgba(255,255,255,0.03))]" />
                 {isTimedShowcase ? (
-                  <>
-                    <span
-                      data-loader-animate
-                      className={`absolute inset-y-0 left-0 w-full origin-left rounded-full bg-gradient-to-r from-white/45 via-white to-white/70 ${
-                        prefersReducedMotion
-                          ? ""
-                          : "animate-[cinematicProgressFill_1080ms_cubic-bezier(.22,1,.36,1)_both]"
-                      }`}
-                    />
-                    {!prefersReducedMotion && (
-                      <span
-                        data-loader-animate
-                        className="absolute inset-y-0 left-[-18%] w-[18%] rounded-full bg-gradient-to-r from-transparent via-white to-transparent opacity-0 animate-[cinematicProgressGlint_1080ms_ease-out_both]"
-                      />
-                    )}
-                  </>
+                  <span
+                    data-loader-animate
+                    className={`absolute inset-y-0 rounded-full bg-gradient-to-r from-transparent via-white to-transparent ${
+                      prefersReducedMotion
+                        ? "left-0 w-full opacity-70"
+                        : "loader-progress-travel left-[-42%] w-[42%] opacity-95"
+                    }`}
+                  />
                 ) : (
                   <span
                     data-loader-animate
@@ -560,9 +600,15 @@ const InitialLoader = ({ mode = "showcase", durationMs }) => {
             --loader-shell-y: clamp(1rem, 4vh, 3.5rem);
             --loader-stack-gap: clamp(0.5rem, 1.9vh, 1.5rem);
             --loader-stack-gap-lg: clamp(0.7rem, 2.7vh, 2.75rem);
-            transform: translateZ(0);
-            backface-visibility: hidden;
+            opacity: 1;
             overscroll-behavior: none;
+            touch-action: none;
+            transition: opacity ${INITIAL_LOADER_EXIT_DURATION_MS}ms cubic-bezier(.22, 1, .36, 1);
+          }
+
+          [data-loader-root][data-loader-state="exiting"] {
+            opacity: 0;
+            pointer-events: none;
           }
 
           .loader-frame {
@@ -748,10 +794,18 @@ const InitialLoader = ({ mode = "showcase", durationMs }) => {
             }
           }
 
-          [data-loader-animate] {
-            will-change: transform, opacity;
-            transform: translateZ(0);
+          .loader-shell,
+          .loader-emblem,
+          .loader-rail [data-loader-animate] {
             backface-visibility: hidden;
+          }
+
+          @media (hover: hover) and (pointer: fine) {
+            .loader-shell,
+            .loader-emblem,
+            .loader-rail [data-loader-animate] {
+              will-change: transform, opacity;
+            }
           }
 
           @keyframes openingReveal {
@@ -821,29 +875,6 @@ const InitialLoader = ({ mode = "showcase", durationMs }) => {
             100% {
               opacity: 0.9;
               transform: translate3d(0, 0, 0);
-            }
-          }
-
-          @keyframes cinematicProgressFill {
-            0% {
-              transform: scaleX(0);
-            }
-            100% {
-              transform: scaleX(1);
-            }
-          }
-
-          @keyframes cinematicProgressGlint {
-            0% {
-              opacity: 0;
-              transform: translate3d(0, 0, 0);
-            }
-            18% {
-              opacity: 0.95;
-            }
-            100% {
-              opacity: 0;
-              transform: translate3d(650%, 0, 0);
             }
           }
 
@@ -1025,6 +1056,10 @@ const InitialLoader = ({ mode = "showcase", durationMs }) => {
             }
           }
 
+          .loader-progress-travel {
+            animation: progressTravel var(--loader-progress-duration) cubic-bezier(.22, 1, .36, 1) var(--loader-progress-delay) infinite;
+          }
+
           @keyframes statusSwap {
             0% {
               opacity: 0;
@@ -1061,6 +1096,10 @@ const InitialLoader = ({ mode = "showcase", durationMs }) => {
           }
 
           @media (prefers-reduced-motion: reduce) {
+            [data-loader-root] {
+              transition-duration: 0.01ms;
+            }
+
             [data-loader-root] *,
             [data-loader-root] *::before,
             [data-loader-root] *::after {
