@@ -22,7 +22,7 @@ export default function KanbanColumn({
     <section
       ref={setNodeRef}
       aria-label={`${status.label} column`}
-      className={`${isMobileActive ? "flex" : "hidden"} w-full min-w-0 flex-col rounded-[1.35rem] border p-2.5 transition-colors sm:flex sm:w-[320px] sm:min-w-[320px] xl:w-auto xl:min-w-0 ${
+      className={`${isMobileActive ? "flex" : "hidden"} w-full min-w-0 flex-col rounded-[1.35rem] border p-2.5 transition-colors sm:flex sm:w-[320px] sm:min-w-[320px] sm:snap-start xl:w-auto xl:min-w-0 ${
         isOver
           ? "border-indigo-300 bg-indigo-50/80 ring-2 ring-indigo-500/10 dark:border-indigo-700 dark:bg-indigo-950/25"
           : "border-slate-200/80 bg-slate-100/75 dark:border-zinc-800/90 dark:bg-zinc-900/65"

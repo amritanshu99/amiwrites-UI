@@ -40,7 +40,7 @@ export function TaskCardSurface({ task, overlay = false, onEdit, dragHandleProps
 
   return (
     <article
-      className={`group relative overflow-hidden rounded-2xl border bg-white p-4 shadow-[0_12px_35px_-28px_rgba(15,23,42,0.65)] transition-all duration-200 dark:bg-zinc-950 ${
+      className={`group relative overflow-hidden rounded-2xl border bg-white p-3.5 shadow-[0_12px_35px_-28px_rgba(15,23,42,0.65)] transition-all duration-200 sm:p-4 dark:bg-zinc-950 ${
         overlay
           ? "rotate-2 scale-[1.02] border-indigo-400 shadow-2xl shadow-indigo-500/20 dark:border-indigo-500"
           : "border-slate-200/80 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-[0_18px_45px_-28px_rgba(15,23,42,0.72)] dark:border-zinc-800 dark:hover:border-zinc-700"
@@ -61,7 +61,7 @@ export function TaskCardSurface({ task, overlay = false, onEdit, dragHandleProps
             <button
               type="button"
               onClick={() => onEdit(task)}
-              className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 opacity-100 transition hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 sm:opacity-0 sm:group-hover:opacity-100 sm:focus:opacity-100 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
+              className="inline-flex h-11 w-11 items-center justify-center rounded-xl text-slate-400 opacity-100 transition hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 sm:h-8 sm:w-8 sm:rounded-lg sm:opacity-0 sm:group-hover:opacity-100 sm:focus:opacity-100 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
               aria-label={`Edit ${task.title}`}
               title="Edit task"
             >
@@ -72,9 +72,10 @@ export function TaskCardSurface({ task, overlay = false, onEdit, dragHandleProps
             <button
               type="button"
               {...dragHandleProps}
-              className="inline-flex h-8 w-8 touch-none items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 active:cursor-grabbing dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
+              onContextMenu={(event) => event.preventDefault()}
+              className="inline-flex h-11 w-11 touch-none select-none items-center justify-center rounded-xl text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 active:cursor-grabbing sm:h-8 sm:w-8 sm:rounded-lg dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
               aria-label={`Move ${task.title}`}
-              title="Drag to move"
+              title="Drag to move; press and hold on touch screens"
             >
               <GripVertical size={17} />
             </button>
@@ -166,7 +167,7 @@ export default function TaskCard({ task, onEdit, disabled = false }) {
     <div
       ref={setNodeRef}
       style={style}
-      className={isDragging ? "opacity-25" : "opacity-100"}
+      className={`transition-opacity ${isDragging ? "opacity-25" : "opacity-100"}`}
     >
       <TaskCardSurface
         task={task}

@@ -6,9 +6,12 @@ import {
   DndContext,
   DragOverlay,
   KeyboardSensor,
-  PointerSensor,
+  MeasuringStrategy,
+  MouseSensor,
   TouchSensor,
   closestCorners,
+  pointerWithin,
+  useDroppable,
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
@@ -38,6 +41,7 @@ import {
   getPriority,
   normalizeTask,
 } from "./taskManagerConfig";
+import { moveTaskOnBoard } from "./kanbanDnd";
 import { apiUrl } from "../../config/api";
 
 const API_BASE = apiUrl("/api/tasks");
@@ -148,11 +152,96 @@ function buildStats(tasks) {
   };
 }
 
-function assignBoardPositions(tasks) {
-  return TASK_STATUSES.flatMap((status) =>
-    tasks
-      .filter((task) => task.status === status.id)
-      .map((task, index) => ({ ...task, position: (index + 1) * 1000 }))
+function boardCollisionDetection(args) {
+  const pointerCollisions = pointerWithin(args);
+  const mobileDropTargets = pointerCollisions.filter(
+    ({ id }) =>
+      args.droppableContainers.find((container) => container.id === id)?.data
+        .current?.type === "mobile-column"
+  );
+
+  if (mobileDropTargets.length > 0) return mobileDropTargets;
+  if (pointerCollisions.length > 0) return pointerCollisions;
+  return closestCorners(args);
+}
+
+function MobileStatusTab({
+  status,
+  count,
+  isActive,
+  isDragging,
+  dragDisabled,
+  onSelect,
+}) {
+  const { setNodeRef, isOver } = useDroppable({
+    id: `mobile-column:${status.id}`,
+    data: { type: "mobile-column", status: status.id },
+    disabled: dragDisabled,
+  });
+
+  return (
+    <button
+      ref={setNodeRef}
+      type="button"
+      onClick={() => onSelect(status.id)}
+      className={`min-w-0 rounded-lg px-1.5 py-2 text-[11px] font-extrabold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${
+        isOver
+          ? "scale-[1.03] bg-indigo-600 text-white shadow-lg ring-2 ring-indigo-300"
+          : isActive && !isDragging
+            ? "bg-slate-950 text-white shadow dark:bg-white dark:text-zinc-950"
+            : "text-slate-500 hover:bg-slate-100 dark:text-zinc-500 dark:hover:bg-zinc-900"
+      }`}
+      aria-label={
+        isDragging
+          ? `Drop task in ${status.label}`
+          : `Show ${status.label} tasks`
+      }
+    >
+      <span className="block truncate">{status.label}</span>
+      <span
+        className={`mt-0.5 block text-[10px] ${
+          isOver || (isActive && !isDragging)
+            ? "opacity-70"
+            : "text-slate-400 dark:text-zinc-600"
+        }`}
+      >
+        {count}
+      </span>
+    </button>
+  );
+}
+
+function MobileBoardNavigation({
+  tasks,
+  mobileStatus,
+  onStatusChange,
+  dragDisabled,
+  isDragging,
+}) {
+  return (
+    <nav
+      className={`grid grid-cols-4 gap-1 rounded-xl border border-slate-200 bg-white/95 p-1 backdrop-blur transition-[box-shadow,transform] sm:hidden dark:border-zinc-800 dark:bg-zinc-950/95 ${
+        isDragging
+          ? "fixed bottom-[calc(env(safe-area-inset-bottom)+0.75rem)] left-3 right-3 z-40 shadow-2xl shadow-slate-950/30 ring-1 ring-indigo-500/20"
+          : "mb-3"
+      }`}
+      aria-label={isDragging ? "Drop task into a column" : "Board columns"}
+    >
+      <span className="sr-only" aria-live="polite">
+        {isDragging ? "Choose a column and release to move the task" : ""}
+      </span>
+      {TASK_STATUSES.map((status) => (
+        <MobileStatusTab
+          key={status.id}
+          status={status}
+          count={tasks.filter((task) => task.status === status.id).length}
+          isActive={mobileStatus === status.id}
+          isDragging={isDragging}
+          dragDisabled={dragDisabled}
+          onSelect={onStatusChange}
+        />
+      ))}
+    </nav>
   );
 }
 
@@ -163,6 +252,7 @@ export default function TaskManager() {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(Boolean(initialToken));
   const [saving, setSaving] = useState(false);
+  const [isReordering, setIsReordering] = useState(false);
   const [activeTaskId, setActiveTaskId] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [priorityFilter, setPriorityFilter] = useState("all");
@@ -183,7 +273,7 @@ export default function TaskManager() {
   );
 
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(MouseSensor, { activationConstraint: { distance: 6 } }),
     useSensor(TouchSensor, { activationConstraint: { delay: 180, tolerance: 8 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
@@ -264,7 +354,7 @@ export default function TaskManager() {
     labelFilter !== "all",
     sortMode !== "board",
   ].filter(Boolean).length;
-  const dragDisabled = activeFilters > 0 || saving;
+  const dragDisabled = activeFilters > 0 || saving || isReordering;
   const activeTask = tasks.find((task) => task._id === activeTaskId);
 
   const closeTaskModal = useCallback(() => {
@@ -349,42 +439,30 @@ export default function TaskManager() {
     setActiveTaskId(null);
     if (!over || active.id === over.id) return;
 
-    const currentTask = tasks.find((task) => task._id === active.id);
-    if (!currentTask) return;
-
-    const targetTask = tasks.find((task) => task._id === over.id);
-    const targetStatus = String(over.id).startsWith("column:")
-      ? String(over.id).replace("column:", "")
-      : targetTask?.status;
-    if (!targetStatus) return;
-
     const previousTasks = tasks;
-    const withoutActive = tasks.filter((task) => task._id !== active.id);
-    const targetColumn = withoutActive
-      .filter((task) => task.status === targetStatus)
-      .sort((a, b) => a.position - b.position);
-    const targetIndex = targetTask
-      ? Math.max(0, targetColumn.findIndex((task) => task._id === targetTask._id))
-      : targetColumn.length;
-    const movedIntoDone = currentTask.status !== "done" && targetStatus === "done";
-    const movedTask = {
-      ...currentTask,
-      status: targetStatus,
-      completed: targetStatus === "done",
-      completedAt: targetStatus === "done"
-        ? movedIntoDone
-          ? new Date().toISOString()
-          : currentTask.completedAt
-        : null,
-    };
-    targetColumn.splice(targetIndex, 0, movedTask);
+    const activeRect = active.rect.current.translated;
+    const insertAfter = Boolean(
+      activeRect &&
+        over.rect &&
+        activeRect.top + activeRect.height / 2 >
+          over.rect.top + over.rect.height / 2
+    );
+    const nextTasks = moveTaskOnBoard(tasks, {
+      activeId: active.id,
+      overId: over.id,
+      insertAfter,
+    });
 
-    const nextTasks = assignBoardPositions([
-      ...withoutActive.filter((task) => task.status !== targetStatus),
-      ...targetColumn,
-    ]);
+    if (nextTasks === tasks) return;
+
+    const movedTask = nextTasks.find(
+      (task) => String(task._id) === String(active.id)
+    );
+    if (!movedTask) return;
+
     setTasks(nextTasks);
-    setMobileStatus(targetStatus);
+    setMobileStatus(movedTask.status);
+    setIsReordering(true);
 
     try {
       await persistBoardOrder(nextTasks);
@@ -398,7 +476,7 @@ export default function TaskManager() {
               setTasks(previousTasks);
               closeToast?.();
               try {
-                await persistBoardOrder(assignBoardPositions(previousTasks));
+                await persistBoardOrder(previousTasks);
               } catch {
                 setTasks(nextTasks);
                 toast.error("The move could not be undone.");
@@ -412,6 +490,8 @@ export default function TaskManager() {
     } catch (error) {
       setTasks(previousTasks);
       toast.error(error.response?.data?.error || "The task could not be moved.");
+    } finally {
+      setIsReordering(false);
     }
   };
 
@@ -600,39 +680,26 @@ export default function TaskManager() {
               </span>
             </div>
 
-            <nav className="mb-3 grid grid-cols-4 gap-1 rounded-xl border border-slate-200 bg-white/80 p-1 sm:hidden dark:border-zinc-800 dark:bg-zinc-950/80" aria-label="Board columns">
-              {TASK_STATUSES.map((status) => {
-                const count = filteredTasks.filter((task) => task.status === status.id).length;
-                const isActive = mobileStatus === status.id;
-                return (
-                  <button
-                    key={status.id}
-                    type="button"
-                    onClick={() => setMobileStatus(status.id)}
-                    className={`rounded-lg px-1.5 py-2 text-[11px] font-extrabold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${
-                      isActive
-                        ? "bg-slate-950 text-white shadow dark:bg-white dark:text-zinc-950"
-                        : "text-slate-500 hover:bg-slate-100 dark:text-zinc-500 dark:hover:bg-zinc-900"
-                    }`}
-                  >
-                    <span className="block truncate">{status.label}</span>
-                    <span className={`mt-0.5 block text-[10px] ${isActive ? "opacity-70" : "text-slate-400 dark:text-zinc-600"}`}>{count}</span>
-                  </button>
-                );
-              })}
-            </nav>
+            <DndContext
+              sensors={sensors}
+              collisionDetection={boardCollisionDetection}
+              measuring={{ droppable: { strategy: MeasuringStrategy.Always } }}
+              onDragStart={handleDragStart}
+              onDragEnd={handleDragEnd}
+              onDragCancel={() => setActiveTaskId(null)}
+            >
+              <MobileBoardNavigation
+                tasks={filteredTasks}
+                mobileStatus={mobileStatus}
+                onStatusChange={setMobileStatus}
+                dragDisabled={dragDisabled}
+                isDragging={Boolean(activeTaskId)}
+              />
 
-            {loading ? (
-              <BoardSkeleton />
-            ) : (
-              <DndContext
-                sensors={sensors}
-                collisionDetection={closestCorners}
-                onDragStart={handleDragStart}
-                onDragEnd={handleDragEnd}
-                onDragCancel={() => setActiveTaskId(null)}
-              >
-                <div className="flex gap-4 overflow-x-auto pb-4 sm:snap-x xl:grid xl:grid-cols-4 xl:overflow-visible">
+              {loading ? (
+                <BoardSkeleton />
+              ) : (
+                <div className="flex gap-4 overflow-x-auto overscroll-x-contain pb-4 sm:snap-x sm:snap-mandatory xl:grid xl:grid-cols-4 xl:overflow-visible xl:snap-none">
                   {TASK_STATUSES.map((status) => (
                     <KanbanColumn
                       key={status.id}
@@ -645,16 +712,19 @@ export default function TaskManager() {
                     />
                   ))}
                 </div>
+              )}
 
-                <DragOverlay dropAnimation={{ duration: 180, easing: "ease" }}>
-                  {activeTask ? (
-                    <div className="w-[300px]">
-                      <TaskCardSurface task={activeTask} overlay />
-                    </div>
-                  ) : null}
-                </DragOverlay>
-              </DndContext>
-            )}
+              <DragOverlay
+                adjustScale={false}
+                dropAnimation={{ duration: 180, easing: "ease" }}
+              >
+                {activeTask ? (
+                  <div className="w-[min(300px,calc(100vw-1.5rem))]">
+                    <TaskCardSurface task={activeTask} overlay />
+                  </div>
+                ) : null}
+              </DragOverlay>
+            </DndContext>
 
             {!loading && tasks.length > 0 && filteredTasks.length === 0 && (
               <div className="mt-4 rounded-2xl border border-dashed border-slate-300 bg-white/60 p-8 text-center dark:border-zinc-700 dark:bg-zinc-950/60">
