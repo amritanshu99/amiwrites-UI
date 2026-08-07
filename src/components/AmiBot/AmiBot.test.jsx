@@ -38,6 +38,15 @@ afterEach(() => {
 test("renders the AmiBot chat workspace and fills a prompt starter", async () => {
   renderAmiBot();
 
+  const workspaceOverview = screen.getByRole("complementary", {
+    name: /amibot workspace overview/i,
+  });
+  expect(workspaceOverview).toHaveAttribute("tabindex", "0");
+  expect(workspaceOverview).toHaveClass(
+    "lg:h-[calc(100svh-8.5rem)]",
+    "lg:overflow-y-auto"
+  );
+
   expect(
     screen.getByRole("heading", { level: 1, name: "Knowledge chat" })
   ).toBeInTheDocument();
@@ -87,7 +96,36 @@ test("sends a message and renders a sourced markdown answer", async () => {
     "/api/amibot",
     expect.objectContaining({
       method: "POST",
-      body: JSON.stringify({ query: "What skills are in the uploaded files?" }),
+      signal: expect.any(AbortSignal),
     })
   );
+
+  const requestBody = JSON.parse(global.fetch.mock.calls[0][1].body);
+  expect(requestBody.query).toBe("What skills are in the uploaded files?");
+  expect(requestBody.history).toEqual([]);
+});
+
+test("lets the user stop a slow response", async () => {
+  global.fetch.mockImplementationOnce((url, options) =>
+    new Promise((resolve, reject) => {
+      options.signal.addEventListener("abort", () => {
+        const error = new Error("Request aborted");
+        error.name = "AbortError";
+        reject(error);
+      });
+    })
+  );
+
+  renderAmiBot();
+
+  fireEvent.change(screen.getByRole("textbox", { name: /type your message/i }), {
+    target: { value: "Tell me about the projects" },
+  });
+  fireEvent.click(screen.getByRole("button", { name: /send message/i }));
+
+  const stopButton = await screen.findByRole("button", { name: /stop response/i });
+  fireEvent.click(stopButton);
+
+  expect(await screen.findByText("Response stopped")).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: /send message/i })).toBeDisabled();
 });

@@ -13,6 +13,7 @@ import {
   SendHorizontal,
   ShieldCheck,
   Sparkles,
+  Square,
   Trash2,
   Wifi,
 } from "lucide-react";
@@ -41,6 +42,8 @@ const PROMPT_SUGGESTIONS = [
   "Which projects are mentioned in the data?",
   "What skills are listed in the uploaded files?",
 ];
+
+const MAX_REQUEST_HISTORY = 8;
 
 const thinkingTexts = [
   "Thinking…",
@@ -98,7 +101,10 @@ function getAuthToken() {
 }
 
 function randomGreeting() {
-  return GREETINGS[Math.floor(Math.random() * GREETINGS.length)];
+  return {
+    ...GREETINGS[Math.floor(Math.random() * GREETINGS.length)],
+    metadata: { isGreeting: true },
+  };
 }
 
 function getBotResponsePayload(data = {}) {
@@ -343,11 +349,13 @@ const AmiBot = () => {
   const [loading, setLoading] = useState(false);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [historyError, setHistoryError] = useState("");
+  const [requestStatus, setRequestStatus] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState(() => Boolean(getAuthToken()));
   const messagesContainerRef = useRef(null);
   const inputRef = useRef(null);
   const formRef = useRef(null);
   const scrollFrameRef = useRef(null);
+  const activeRequestRef = useRef(null);
   const shouldAutoScrollRef = useRef(true);
   const forceScrollRef = useRef(true);
 
@@ -419,6 +427,7 @@ const AmiBot = () => {
 
   useEffect(() => {
     return () => {
+      activeRequestRef.current?.abort();
       if (scrollFrameRef.current) {
         window.cancelAnimationFrame(scrollFrameRef.current);
       }
@@ -514,6 +523,10 @@ const AmiBot = () => {
     }
   }, [loading]);
 
+  const handleStopResponse = useCallback(() => {
+    activeRequestRef.current?.abort();
+  }, []);
+
   const handleSubmit = useCallback(async (event) => {
     event.preventDefault();
 
@@ -522,12 +535,24 @@ const AmiBot = () => {
 
     const token = getAuthToken();
     const userMessage = { sender: "user", text: query, metadata: {} };
+    const conversationHistory = messages
+      .filter(
+        (message) =>
+          message?.text &&
+          !message.metadata?.isGreeting &&
+          ["user", "bot"].includes(message.sender)
+      )
+      .slice(-MAX_REQUEST_HISTORY)
+      .map(({ sender, text }) => ({ sender, text }));
+    const controller = new AbortController();
+    activeRequestRef.current = controller;
     forceScrollRef.current = true;
     shouldAutoScrollRef.current = true;
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
     setLoading(true);
     setHistoryError("");
+    setRequestStatus("");
 
     try {
       const response = await fetch(
@@ -538,7 +563,8 @@ const AmiBot = () => {
             "Content-Type": "application/json",
             ...(token ? { Authorization: `Bearer ${token}` } : {}),
           },
-          body: JSON.stringify({ query }),
+          body: JSON.stringify({ query, history: conversationHistory }),
+          signal: controller.signal,
         }
       );
 
@@ -566,6 +592,11 @@ const AmiBot = () => {
         },
       ]);
     } catch (error) {
+      if (error.name === "AbortError") {
+        setRequestStatus("Response stopped");
+        return;
+      }
+
       console.error("AmiBot API Error:", error);
       forceScrollRef.current = true;
       shouldAutoScrollRef.current = true;
@@ -578,12 +609,15 @@ const AmiBot = () => {
         },
       ]);
     } finally {
-      setLoading(false);
-      if (!isCoarseInputDevice()) {
-        inputRef.current?.focus();
+      if (activeRequestRef.current === controller) {
+        activeRequestRef.current = null;
+        setLoading(false);
+        if (!isCoarseInputDevice()) {
+          inputRef.current?.focus();
+        }
       }
     }
-  }, [input, loading]);
+  }, [input, loading, messages]);
 
   const handleInputKeyDown = useCallback((event) => {
     if (isCoarseInputDevice()) return;
@@ -626,7 +660,11 @@ const AmiBot = () => {
   return (
     <section className="h-full min-h-0 w-screen max-w-full overflow-hidden bg-[linear-gradient(180deg,#f8fafc_0%,#e0f2fe_46%,#ecfdf5_100%)] p-2 text-slate-900 dark:bg-[linear-gradient(180deg,#050505_0%,#0b1115_58%,#000000_100%)] dark:text-zinc-100 sm:px-5 sm:py-6 lg:px-8">
       <div className="mx-auto grid h-full w-full min-w-0 max-w-7xl gap-0 overflow-hidden lg:grid-cols-[20rem_minmax(0,1fr)] lg:gap-5">
-        <aside className={`relative hidden w-full min-w-0 max-w-full overflow-hidden p-4 sm:p-5 lg:sticky lg:top-24 lg:block lg:self-start ${surfaceClassName}`}>
+        <aside
+          aria-label="AmiBot workspace overview"
+          className={`relative hidden w-full min-w-0 max-w-full overflow-hidden p-4 outline-none sm:p-5 lg:sticky lg:top-24 lg:block lg:h-[calc(100svh-8.5rem)] lg:self-start lg:overflow-x-hidden lg:overflow-y-auto lg:overscroll-contain lg:[scrollbar-gutter:stable] lg:[scrollbar-width:thin] lg:focus-visible:ring-2 lg:focus-visible:ring-cyan-400/50 ${surfaceClassName}`}
+          tabIndex={0}
+        >
           <div className="absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,#0891b2,#10b981,#f59e0b)]" />
 
           <div className="flex items-start gap-3">
@@ -786,25 +824,28 @@ const AmiBot = () => {
               />
 
               <button
-                aria-label="Send message"
+                aria-label={loading ? "Stop response" : "Send message"}
                 className="inline-flex h-12 w-12 shrink-0 items-center justify-center gap-2 rounded-lg bg-slate-950 px-0 text-white shadow-[0_16px_28px_-20px_rgba(15,23,42,0.95)] transition-colors hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-cyan-100 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-cyan-300 dark:text-slate-950 dark:hover:bg-cyan-200 dark:focus-visible:ring-cyan-300/10"
-                disabled={!canSend}
-                title="Send message"
-                type="submit"
+                disabled={!loading && !canSend}
+                onClick={loading ? handleStopResponse : undefined}
+                title={loading ? "Stop response" : "Send message"}
+                type={loading ? "button" : "submit"}
               >
                 {loading ? (
-                  <LoaderCircle className="h-5 w-5 animate-spin" />
+                  <Square className="h-4 w-4 fill-current" />
                 ) : (
                   <SendHorizontal className="h-5 w-5" />
                 )}
                 <span className="sr-only">
-                  {loading ? "Sending..." : "Send"}
+                  {loading ? "Stop" : "Send"}
                 </span>
               </button>
             </form>
 
             <div className="mt-1.5 flex items-center justify-between gap-3 px-1 text-[11px] font-semibold text-slate-500 dark:text-zinc-400 sm:mt-2 sm:text-xs">
-              <span>{isAuthenticated ? "History active" : "Guest mode"}</span>
+              <span aria-live="polite">
+                {requestStatus || (isAuthenticated ? "History active" : "Guest mode")}
+              </span>
               <span>{input.length}/2000</span>
             </div>
           </div>
