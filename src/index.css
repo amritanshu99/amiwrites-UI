@@ -340,6 +340,15 @@ body {
   overscroll-behavior-y: none;
 }
 
+/*
+ * Keep the content box stable while full-screen loaders temporarily lock the
+ * app shell. Without a reserved gutter, restoring the custom scrollbar moves
+ * the header and profile content sideways on the first revealed frame.
+ */
+.amiverse-app-shell {
+  scrollbar-gutter: stable;
+}
+
 .amiverse-contact-trigger,
 .amiverse-portfolio-section-switcher {
   transition:

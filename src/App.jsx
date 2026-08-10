@@ -235,7 +235,7 @@ const App = () => {
   return (
     <div
       ref={appShellRef}
-      className={`h-screen relative ${isAmiBotWorkspace ? "overflow-hidden" : "overflow-y-scroll"}`}
+      className={`amiverse-app-shell h-screen relative ${isAmiBotWorkspace ? "overflow-hidden" : "overflow-y-scroll"}`}
     >
       <Header setLoading={setIsLoading} />
       <ToastContainer
