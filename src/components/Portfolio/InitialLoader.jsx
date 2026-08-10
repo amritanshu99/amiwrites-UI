@@ -1,13 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 
-const showcaseQuotes = [
-  "Written, designed, and directed by Amritanshu Mishra",
-  "Crafted in silence by Amritanshu Mishra",
-  "A vision in motion by Amritanshu Mishra",
-  "From darkness into detail - Amritanshu Mishra",
-  "One universe. One signature. Amritanshu Mishra",
-  "A digital noir by Amritanshu Mishra",
-];
+const showcaseQuote = "Written & Directed by Amritanshu Mishra";
 
 const sessionQuotes = [
   "Calibrating a private entrance before the first frame arrives",
@@ -19,7 +12,6 @@ export const INITIAL_LOADER_MIN_DURATION_MS = 1200;
 export const INITIAL_LOADER_EXIT_DURATION_MS = 220;
 
 const startupQuoteIndexes = {
-  showcase: 2,
   session: Math.floor(Math.random() * sessionQuotes.length),
 };
 
@@ -149,7 +141,6 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
   const isSessionMode = mode === "session";
   const isTimedShowcase =
     !isSessionMode && Number.isFinite(durationMs) && durationMs > 0;
-  const quotePool = isSessionMode ? sessionQuotes : showcaseQuotes;
   const statusLines = isSessionMode ? sessionStatusLines : showcaseStatusLines;
   const topLeftLabel = isSessionMode ? "Secure Access" : "Feature Presentation";
   const topRightLabel = isSessionMode ? "Monochrome Boot" : "Monochrome Intro";
@@ -165,9 +156,9 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
     ? ["Encrypted handoff", "Private route", "Noir startup"]
     : ["Cinema grade", "Black frame", "Studio hush"];
 
-  const quoteMode = isSessionMode ? "session" : "showcase";
-  const randomQuote =
-    quotePool[startupQuoteIndexes[quoteMode] % quotePool.length];
+  const randomQuote = isSessionMode
+    ? sessionQuotes[startupQuoteIndexes.session % sessionQuotes.length]
+    : showcaseQuote;
   const [activeStatusIndex, setActiveStatusIndex] = useState(0);
   const [performanceProfile, setPerformanceProfile] = useState(
     getPerformanceProfile,
