@@ -393,33 +393,36 @@ export default function Header({ setLoading }) {
                         </div>
                         {isAdmin && (
                           <>
-                            <Link
-                              to="/add-blog"
+                            {/* Admin tools intentionally start a fresh document so a
+                                long-lived tab picks up the latest deployed bundle and
+                                the route-aware bootstrap loader. */}
+                            <a
+                              href="/add-blog"
                               onClick={() => setUserMenuOpen(false)}
                               role="menuitem"
                               className="w-full px-4 py-3 text-sm text-[#111827] dark:text-gray-200 hover:bg-[#475569]/[0.08] dark:hover:bg-white/[0.06] flex items-center gap-2 transition-colors focus-visible:outline-none focus-visible:bg-[#475569]/[0.08] dark:focus-visible:bg-white/[0.06]"
                             >
                               <FilePenLine className="h-4 w-4" />
                               Create Blog
-                            </Link>
-                            <Link
-                              to="/ami-pulse-settings"
+                            </a>
+                            <a
+                              href="/ami-pulse-settings"
                               onClick={() => setUserMenuOpen(false)}
                               role="menuitem"
                               className="w-full px-4 py-3 text-sm text-[#111827] dark:text-gray-200 hover:bg-[#475569]/[0.08] dark:hover:bg-white/[0.06] flex items-center gap-2 transition-colors focus-visible:outline-none focus-visible:bg-[#475569]/[0.08] dark:focus-visible:bg-white/[0.06]"
                             >
                               <Activity className="h-4 w-4" />
                               Ami Pulse Settings
-                            </Link>
-                            <Link
-                              to="/amibot-admin"
+                            </a>
+                            <a
+                              href="/amibot-admin"
                               onClick={() => setUserMenuOpen(false)}
                               role="menuitem"
                               className="w-full px-4 py-3 text-sm text-[#111827] dark:text-gray-200 hover:bg-[#475569]/[0.08] dark:hover:bg-white/[0.06] flex items-center gap-2 transition-colors focus-visible:outline-none focus-visible:bg-[#475569]/[0.08] dark:focus-visible:bg-white/[0.06]"
                             >
                               <Bot className="h-4 w-4" />
                               AmiBot Admin
-                            </Link>
+                            </a>
                           </>
                         )}
                         <button

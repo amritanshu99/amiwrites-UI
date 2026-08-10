@@ -26,8 +26,6 @@ import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
 import { completeInitialLoaderCycle } from "./components/Portfolio/InitialLoader";
 import Portfolio from "./pages/Portfolio";
 import { getPublicPagePath, initGA, logPageView } from "./analytics";
-import { isTokenExpired } from "./utils/auth";
-import { verifyToken } from "./utils/authApi";
 import { applySEO, seoByRoute } from "./utils/seo";
 import { apiUrl } from "./config/api";
 
@@ -143,46 +141,11 @@ const ValidateResetToken = () => {
   return <ResetPasswordPage token={normalizedToken} />;
 };
 
-const hasTokenPendingVerification = () => {
-  const token = localStorage.getItem("token");
-  return Boolean(token && !isTokenExpired(token));
-};
-
 const App = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const [shouldRender, setShouldRender] = useState(
-    () => !hasTokenPendingVerification(),
-  );
   const location = useLocation();
-  const navigate = useNavigate();
   const appShellRef = useRef(null);
   const isAmiBotWorkspace = location.pathname === "/amibot";
-
-  const logout = () => {
-    localStorage.removeItem("token");
-    setShouldRender(true);
-  };
-
-  useEffect(() => {
-    const checkAuth = async () => {
-      const token = localStorage.getItem("token");
-
-      if (!token || isTokenExpired(token)) {
-        logout();
-        return;
-      }
-
-      const isValid = await verifyToken(token);
-      if (!isValid) {
-        logout();
-        return;
-      }
-
-      setShouldRender(true);
-    };
-
-    checkAuth();
-  }, [navigate]);
 
   useEffect(() => {
     initGA();
@@ -215,15 +178,6 @@ const App = () => {
 
     window.scrollTo({ top: 0, behavior: isAmiBotWorkspace ? "auto" : "smooth" });
   }, [isAmiBotWorkspace, location.pathname]);
-
-  if (!shouldRender) {
-    return (
-      <AppLoadingFallback
-        pathname={location.pathname}
-        isSessionCheck
-      />
-    );
-  }
 
   return (
     <div

@@ -27,16 +27,11 @@ test.each([
   expect(screen.queryByText("Feature Presentation")).not.toBeInTheDocument();
 });
 
-test("uses the standard loader while verifying a non-home session", () => {
-  render(
-    <AppLoadingFallback
-      pathname="/ami-pulse-settings"
-      isSessionCheck
-    />,
-  );
+test("never uses the cinematic loader as an app-level fallback", () => {
+  render(<AppLoadingFallback pathname="/" />);
 
   expect(
-    screen.getByRole("status", { name: "Verifying your session" }),
+    screen.getByRole("status", { name: "Loading page" }),
   ).toBeInTheDocument();
   expect(screen.queryByText("Feature Presentation")).not.toBeInTheDocument();
 });
