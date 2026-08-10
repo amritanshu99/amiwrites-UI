@@ -421,6 +421,28 @@ describe("PortfolioDetails startup experience", () => {
     ).toBeInTheDocument();
   });
 
+  it("opens the career journey at the experience section", async () => {
+    axios.get.mockImplementationOnce(() => new Promise(() => {}));
+    const scrollToSpy = jest
+      .spyOn(window, "scrollTo")
+      .mockImplementation(() => {});
+
+    renderPortfolio();
+    await finishInitialLoader();
+
+    fireEvent.click(
+      screen.getByRole("button", { name: /career journey/i }),
+    );
+
+    expect(
+      screen.getByRole("button", {
+        name: /current section is experience/i,
+      }),
+    ).toBeInTheDocument();
+
+    scrollToSpy.mockRestore();
+  });
+
   it("keeps Ami Pulse available on compact viewports", async () => {
     axios.get.mockImplementationOnce(() => new Promise(() => {}));
     window.matchMedia.mockImplementation((query) => ({

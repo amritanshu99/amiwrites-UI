@@ -1162,7 +1162,7 @@ export default function PortfolioDetails() {
               >
                 <button
                   type="button"
-                  onClick={() => scrollToSection("work")}
+                  onClick={() => scrollToSection("experience")}
                   className="inline-flex min-h-12 min-w-0 flex-1 items-center justify-center whitespace-nowrap rounded-full bg-gradient-to-r from-slate-950 to-sky-950 px-2 py-3 text-xs font-bold text-white shadow-[0_16px_38px_rgba(15,23,42,0.2)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_44px_rgba(14,116,144,0.24)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300 dark:from-white dark:to-cyan-50 dark:text-slate-950 dark:shadow-[0_16px_38px_rgba(0,0,0,0.28)] dark:hover:shadow-[0_18px_46px_rgba(34,211,238,0.16)] dark:focus-visible:ring-cyan-200 min-[360px]:px-4 min-[360px]:text-sm sm:px-6"
                 >
                   Career Journey <span className="ml-2" aria-hidden="true">&rarr;</span>
