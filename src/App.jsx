@@ -21,11 +21,9 @@ import Header from "./components/Layout/Header";
 import Footer from "./components/Layout/Footer";
 import ContactMeButton from "./components/Floating-buttons/ContactMeButton";
 import Loader from "./components/Loader/Loader";
+import AppLoadingFallback from "./components/Loader/AppLoadingFallback";
 import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
-import InitialLoader, {
-  completeInitialLoaderCycle,
-  INITIAL_LOADER_MIN_DURATION_MS,
-} from "./components/Portfolio/InitialLoader";
+import { completeInitialLoaderCycle } from "./components/Portfolio/InitialLoader";
 import Portfolio from "./pages/Portfolio";
 import { getPublicPagePath, initGA, logPageView } from "./analytics";
 import { isTokenExpired } from "./utils/auth";
@@ -158,11 +156,6 @@ const App = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const appShellRef = useRef(null);
-  const initialLoaderMode = location.pathname === "/" ? "showcase" : "session";
-  const initialLoaderDuration =
-    initialLoaderMode === "showcase"
-      ? INITIAL_LOADER_MIN_DURATION_MS
-      : undefined;
   const isAmiBotWorkspace = location.pathname === "/amibot";
 
   const logout = () => {
@@ -225,9 +218,9 @@ const App = () => {
 
   if (!shouldRender) {
     return (
-      <InitialLoader
-        mode={initialLoaderMode}
-        durationMs={initialLoaderDuration}
+      <AppLoadingFallback
+        pathname={location.pathname}
+        isSessionCheck
       />
     );
   }
@@ -272,12 +265,7 @@ const App = () => {
         tabIndex={-1}
       >
         <Suspense
-          fallback={(
-            <InitialLoader
-              mode={initialLoaderMode}
-              durationMs={initialLoaderDuration}
-            />
-          )}
+          fallback={<AppLoadingFallback pathname={location.pathname} />}
         >
           <Routes>
             <Route path="/" element={<Portfolio />} />
