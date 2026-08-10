@@ -61,7 +61,9 @@ jest.mock("framer-motion", () => {
   };
 });
 
-jest.mock("../AmiversePulseWidget", () => () => null);
+jest.mock("../AmiversePulseWidget", () => () => (
+  <button type="button" aria-label="Open Ami Pulse" />
+));
 jest.mock("./MemoryLaneCta", () => () => null);
 
 const renderPortfolio = () => render(<PortfolioDetails />);
@@ -413,6 +415,29 @@ describe("PortfolioDetails startup experience", () => {
     ).toBeInTheDocument();
     expect(
       screen.getByRole("link", { name: /view r.sum./i }),
+    ).toBeInTheDocument();
+  });
+
+  it("keeps Ami Pulse available on compact viewports", async () => {
+    axios.get.mockImplementationOnce(() => new Promise(() => {}));
+    window.matchMedia.mockImplementation((query) => ({
+      matches:
+        query.includes("max-width: 1023px") ||
+        query.includes("prefers-reduced-motion: reduce"),
+      media: query,
+      onchange: null,
+      addEventListener: jest.fn(),
+      removeEventListener: jest.fn(),
+      addListener: jest.fn(),
+      removeListener: jest.fn(),
+      dispatchEvent: jest.fn(),
+    }));
+
+    renderPortfolio();
+    await finishInitialLoader();
+
+    expect(
+      screen.getByRole("button", { name: "Open Ami Pulse" }),
     ).toBeInTheDocument();
   });
 

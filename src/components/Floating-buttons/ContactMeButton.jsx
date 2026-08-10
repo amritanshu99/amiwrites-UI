@@ -98,8 +98,8 @@ export default function ContactMeButton() {
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         className={`
-          amiverse-contact-trigger group fixed bottom-[calc(4.9rem+env(safe-area-inset-bottom))] right-4 z-[90]
-          hidden min-h-14 items-center overflow-hidden rounded-full md:inline-flex
+          amiverse-contact-trigger group fixed bottom-[calc(7rem+env(safe-area-inset-bottom))] right-4 z-[90]
+          inline-flex min-h-14 items-center overflow-hidden rounded-full
           border border-white/25 bg-slate-950/95 font-semibold text-white
           shadow-[0_18px_42px_rgba(2,6,23,0.28),0_0_0_1px_rgba(255,255,255,0.08)]
           outline-none ring-1 ring-sky-200/25 backdrop-blur-2xl
@@ -108,7 +108,7 @@ export default function ContactMeButton() {
           focus-visible:ring-2 focus-visible:ring-cyan-300 active:translate-y-0
           dark:border-cyan-100/10 dark:bg-slate-950/95 dark:ring-cyan-100/10
           md:bottom-[calc(1.5rem+env(safe-area-inset-bottom))] md:right-6
-          ${isExpanded ? "w-40 justify-start px-4 py-2.5" : "w-14 justify-center px-0 py-0"}
+          ${isExpanded ? "w-14 justify-center px-0 py-0 md:w-40 md:justify-start md:px-4 md:py-2.5" : "w-14 justify-center px-0 py-0"}
         `}
         style={{
           transitionProperty: "width, padding, background-color, box-shadow",
@@ -123,7 +123,7 @@ export default function ContactMeButton() {
 
         {isExpanded && (
           <span
-            className="relative z-10 ml-2 whitespace-nowrap text-sm tracking-wide text-white opacity-100 transition-opacity duration-300"
+            className="amiverse-contact-label relative z-10 ml-2 hidden whitespace-nowrap text-sm tracking-wide text-white opacity-100 transition-opacity duration-300 md:inline"
             style={{ transitionDelay: "100ms" }}
           >
             Contact Me

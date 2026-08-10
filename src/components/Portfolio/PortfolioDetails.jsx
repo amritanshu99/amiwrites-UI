@@ -1179,7 +1179,7 @@ export default function PortfolioDetails() {
             </motion.div>
           </div>
 
-          {!isCompactViewport && <AmiversePulseWidget />}
+          <AmiversePulseWidget />
         </section>
 
         {/* ================= INTRO ================= */}

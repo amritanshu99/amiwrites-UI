@@ -415,18 +415,18 @@ export default function AmiversePulseWidget() {
             onClick={() => setIsExpanded(true)}
             aria-expanded="false"
             aria-label={`Open ${pulseTitle}`}
-            className="group relative isolate inline-flex min-h-14 w-[12.5rem] max-w-[calc(100vw-1.5rem)] items-center gap-2.5 overflow-hidden rounded-full border border-white/80 bg-white/90 py-2 pl-2 pr-3 text-left text-slate-950 shadow-[0_22px_58px_-32px_rgba(15,23,42,0.58),0_1px_0_rgba(255,255,255,0.96)_inset] ring-1 ring-sky-100/80 backdrop-blur-2xl transition duration-300 hover:-translate-y-0.5 hover:border-cyan-200 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/80 dark:border-white/[0.11] dark:bg-zinc-950/90 dark:text-white dark:shadow-[0_26px_68px_-34px_rgba(0,0,0,0.98),0_0_0_1px_rgba(255,255,255,0.04)_inset] dark:ring-cyan-100/10 dark:hover:border-cyan-100/25 dark:hover:bg-zinc-950 sm:min-h-[4.5rem] sm:w-[23rem] sm:rounded-2xl sm:px-3.5 sm:py-3"
+            className="amiverse-pulse-trigger group relative isolate inline-flex min-h-14 w-14 max-w-[calc(100vw-1.5rem)] items-center justify-center overflow-hidden rounded-full border border-white/80 bg-white/90 p-0 text-left text-slate-950 shadow-[0_22px_58px_-32px_rgba(15,23,42,0.58),0_1px_0_rgba(255,255,255,0.96)_inset] ring-1 ring-sky-100/80 backdrop-blur-2xl transition duration-300 hover:-translate-y-0.5 hover:border-cyan-200 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/80 dark:border-white/[0.11] dark:bg-zinc-950/90 dark:text-white dark:shadow-[0_26px_68px_-34px_rgba(0,0,0,0.98),0_0_0_1px_rgba(255,255,255,0.04)_inset] dark:ring-cyan-100/10 dark:hover:border-cyan-100/25 dark:hover:bg-zinc-950 sm:min-h-[4.5rem] sm:w-[23rem] sm:justify-start sm:gap-2.5 sm:rounded-2xl sm:px-3.5 sm:py-3"
           >
             <span className="pointer-events-none absolute inset-0 -z-10 bg-[linear-gradient(135deg,rgba(255,255,255,0.96),rgba(240,249,255,0.82)_48%,rgba(236,253,245,0.7))] dark:bg-[linear-gradient(135deg,rgba(24,24,27,0.98),rgba(9,9,11,0.94)_52%,rgba(12,74,110,0.52))]" />
             <span className="pointer-events-none absolute inset-x-4 top-0 h-px bg-gradient-to-r from-transparent via-cyan-200/90 to-transparent dark:via-cyan-100/25" />
 
-            <span className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-950 text-white shadow-[0_16px_34px_-18px_rgba(15,23,42,0.9)] ring-1 ring-slate-800/80 sm:h-12 sm:w-12 sm:rounded-xl dark:bg-white dark:text-slate-950 dark:ring-white/70">
+            <span className="amiverse-pulse-trigger-icon relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-950 text-white shadow-[0_16px_34px_-18px_rgba(15,23,42,0.9)] ring-1 ring-slate-800/80 sm:h-12 sm:w-12 sm:rounded-xl dark:bg-white dark:text-slate-950 dark:ring-white/70">
               <span className="absolute inset-0 rounded-[inherit] bg-gradient-to-br from-white/16 to-transparent" aria-hidden="true" />
               <span className="absolute -right-1 -top-1 h-3.5 w-3.5 rounded-full border-2 border-white bg-emerald-400 shadow-[0_0_16px_rgba(52,211,153,0.8)] motion-safe:animate-pulse dark:border-zinc-950" aria-hidden="true" />
               <HeartPulse className="relative h-5 w-5 text-rose-400 motion-safe:animate-ami-pulse-heartbeat" aria-hidden="true" />
             </span>
 
-            <span className="min-w-0 flex-1">
+            <span className="amiverse-pulse-trigger-details hidden min-w-0 flex-1 sm:block">
               <span className="flex min-w-0 items-center gap-1.5 sm:gap-2">
                 <span className="truncate text-xs font-extrabold leading-tight sm:text-sm">
                   {pulseTitle}
@@ -447,7 +447,7 @@ export default function AmiversePulseWidget() {
               </span>
             </span>
 
-            <span className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-200/80 bg-white/80 text-slate-600 shadow-sm transition-transform group-hover:translate-y-0.5 dark:border-white/[0.08] dark:bg-white/[0.07] dark:text-zinc-100 sm:flex">
+            <span className="amiverse-pulse-trigger-chevron hidden h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-200/80 bg-white/80 text-slate-600 shadow-sm transition-transform group-hover:translate-y-0.5 dark:border-white/[0.08] dark:bg-white/[0.07] dark:text-zinc-100 sm:flex">
               <ChevronDown className="h-4 w-4" aria-hidden="true" />
             </span>
           </button>
