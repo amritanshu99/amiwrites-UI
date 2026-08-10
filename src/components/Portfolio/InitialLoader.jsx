@@ -199,15 +199,15 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
     isTimedShowcase ? getInitialLoaderElapsedMs() : 0,
   );
   const badgeClass = shouldOptimize
-    ? "max-w-[calc(50vw-1.25rem)] truncate rounded-full border border-white/[0.08] bg-black/[0.82] px-3 py-2 text-[0.44rem] uppercase tracking-[0.22em] text-white/[0.4] shadow-[0_8px_24px_rgba(0,0,0,0.5)] min-[380px]:tracking-[0.3em] sm:max-w-none sm:px-4 sm:text-[0.52rem] sm:tracking-[0.36em]"
-    : "max-w-[calc(50vw-1.25rem)] truncate rounded-full border border-white/[0.08] bg-black/[0.7] px-3 py-2 text-[0.44rem] uppercase tracking-[0.22em] text-white/[0.38] shadow-[0_10px_30px_rgba(0,0,0,0.55)] backdrop-blur-md min-[380px]:tracking-[0.3em] sm:max-w-none sm:px-4 sm:text-[0.52rem] sm:tracking-[0.42em]";
+    ? "max-w-[calc(50vw-1.25rem)] truncate rounded-full border border-white/[0.1] bg-black/[0.82] px-3 py-2 text-[0.44rem] uppercase tracking-[0.22em] text-white/[0.5] shadow-[0_8px_24px_rgba(0,0,0,0.5)] min-[380px]:tracking-[0.3em] sm:max-w-none sm:px-4 sm:text-[0.52rem] sm:tracking-[0.36em]"
+    : "max-w-[calc(50vw-1.25rem)] truncate rounded-full border border-white/[0.1] bg-black/[0.7] px-3 py-2 text-[0.44rem] uppercase tracking-[0.22em] text-white/[0.48] shadow-[0_10px_30px_rgba(0,0,0,0.55)] backdrop-blur-md min-[380px]:tracking-[0.3em] sm:max-w-none sm:px-4 sm:text-[0.52rem] sm:tracking-[0.42em]";
   const shellClass = shouldOptimize
-    ? `loader-shell relative mx-auto w-full max-w-5xl overflow-hidden rounded-[1.55rem] border border-white/[0.06] bg-[linear-gradient(180deg,rgba(10,10,10,0.9),rgba(0,0,0,0.86)_45%,rgba(4,4,4,0.94)_100%)] px-4 py-7 text-center shadow-[0_24px_90px_rgba(0,0,0,0.82)] min-[380px]:rounded-[2rem] min-[380px]:px-5 min-[380px]:py-8 sm:px-9 sm:py-11 md:px-12 md:py-14 ${
+    ? `loader-shell relative mx-auto w-full max-w-5xl overflow-hidden rounded-[1.55rem] border border-white/[0.09] bg-[linear-gradient(180deg,rgba(10,10,10,0.9),rgba(0,0,0,0.86)_45%,rgba(4,4,4,0.94)_100%)] px-4 py-7 text-center shadow-[0_24px_90px_rgba(0,0,0,0.82)] min-[380px]:rounded-[2rem] min-[380px]:px-5 min-[380px]:py-8 sm:px-9 sm:py-11 md:px-12 md:py-14 ${
         isTimedShowcase
           ? ""
           : "animate-[openingReveal_700ms_cubic-bezier(.22,1,.36,1)_forwards]"
       }`
-    : `loader-shell relative mx-auto w-full max-w-5xl overflow-hidden rounded-[1.65rem] border border-white/[0.06] bg-[linear-gradient(180deg,rgba(10,10,10,0.86),rgba(0,0,0,0.8)_42%,rgba(4,4,4,0.92)_100%)] px-4 py-8 text-center shadow-[0_42px_180px_rgba(0,0,0,0.92)] min-[380px]:rounded-[2rem] min-[380px]:px-6 min-[380px]:py-9 sm:rounded-[2.2rem] sm:px-10 sm:py-12 md:px-14 md:py-14 ${
+    : `loader-shell relative mx-auto w-full max-w-5xl overflow-hidden rounded-[1.65rem] border border-white/[0.09] bg-[linear-gradient(180deg,rgba(10,10,10,0.86),rgba(0,0,0,0.8)_42%,rgba(4,4,4,0.92)_100%)] px-4 py-8 text-center shadow-[0_42px_180px_rgba(0,0,0,0.92)] min-[380px]:rounded-[2rem] min-[380px]:px-6 min-[380px]:py-9 sm:rounded-[2.2rem] sm:px-10 sm:py-12 md:px-14 md:py-14 ${
         isTimedShowcase
           ? "backdrop-blur-[6px]"
           : "backdrop-blur-[10px] animate-[openingReveal_1000ms_cubic-bezier(.22,1,.36,1)_forwards]"
@@ -422,7 +422,7 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
               </div>
             )}
 
-            <p className="loader-kicker mt-5 font-cinzel text-[0.56rem] uppercase tracking-[0.38em] text-white/[0.58] min-[380px]:mt-6 min-[380px]:tracking-[0.5em] sm:text-[0.68rem] sm:tracking-[0.64em]">
+            <p className="loader-kicker mt-5 font-cinzel text-[0.56rem] uppercase tracking-[0.38em] text-white/[0.68] min-[380px]:mt-6 min-[380px]:tracking-[0.5em] sm:text-[0.68rem] sm:tracking-[0.64em]">
               {topLeftLabel}
             </p>
 
@@ -438,15 +438,15 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
                     : "animate-[emblemFloat_5.4s_ease-in-out_infinite]"
               }`}
             >
-              <div className="absolute inset-0 rounded-full border border-white/[0.08] bg-[radial-gradient(circle,rgba(255,255,255,0.1)_0%,rgba(255,255,255,0.025)_34%,rgba(0,0,0,0.28)_72%,rgba(0,0,0,0.5)_100%)] shadow-[0_0_55px_rgba(255,255,255,0.06)]" />
+              <div className="loader-emblem-plate absolute inset-0 rounded-full border border-white/[0.08] bg-[radial-gradient(circle,rgba(255,255,255,0.1)_0%,rgba(255,255,255,0.025)_34%,rgba(0,0,0,0.28)_72%,rgba(0,0,0,0.5)_100%)] shadow-[0_0_55px_rgba(255,255,255,0.06)]" />
               {!shouldOptimize && (
                 <div
                   data-loader-animate
-                  className="absolute inset-[10px] rounded-full border border-white/[0.08] bg-[conic-gradient(from_0deg,rgba(255,255,255,0.18)_0deg,rgba(255,255,255,0.03)_26deg,rgba(0,0,0,0)_58deg,rgba(255,255,255,0.14)_132deg,rgba(0,0,0,0)_202deg,rgba(255,255,255,0.1)_260deg,rgba(0,0,0,0)_320deg,rgba(255,255,255,0.18)_360deg)] animate-[shutterSpin_18s_linear_infinite]"
+                  className="loader-emblem-shutter absolute inset-[10px] rounded-full border border-white/[0.08] bg-[conic-gradient(from_0deg,rgba(255,255,255,0.18)_0deg,rgba(255,255,255,0.03)_26deg,rgba(0,0,0,0)_58deg,rgba(255,255,255,0.14)_132deg,rgba(0,0,0,0)_202deg,rgba(255,255,255,0.1)_260deg,rgba(0,0,0,0)_320deg,rgba(255,255,255,0.18)_360deg)] animate-[shutterSpin_18s_linear_infinite]"
                 />
               )}
-              <div className="absolute inset-[18px] rounded-full border border-white/[0.1] bg-black/90 shadow-[inset_0_0_30px_rgba(255,255,255,0.04)] sm:inset-[20px]" />
-              <div className="absolute inset-[28px] flex items-center justify-center rounded-[1rem] border border-white/[0.1] bg-black/90 shadow-[0_16px_36px_rgba(0,0,0,0.62)] sm:inset-[32px] sm:rounded-[1.2rem]">
+              <div className="loader-emblem-core absolute inset-[18px] rounded-full border border-white/[0.1] bg-black/90 shadow-[inset_0_0_30px_rgba(255,255,255,0.04)] sm:inset-[20px]" />
+              <div className="loader-emblem-icon absolute inset-[28px] flex items-center justify-center rounded-[1rem] border border-white/[0.1] bg-black/90 shadow-[0_16px_36px_rgba(0,0,0,0.62)] sm:inset-[32px] sm:rounded-[1.2rem]">
                 <img
                   src="/icons/icon-96x96.png"
                   alt=""
@@ -475,7 +475,7 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
                 ))}
             </div>
 
-            <p className="loader-intro mt-7 max-w-full font-cinzel text-[0.58rem] uppercase tracking-[0.22em] text-white/[0.34] min-[380px]:mt-8 min-[380px]:tracking-[0.32em] sm:text-xs sm:tracking-[0.42em]">
+            <p className="loader-intro mt-7 max-w-full font-cinzel text-[0.58rem] uppercase tracking-[0.22em] text-white/[0.46] min-[380px]:mt-8 min-[380px]:tracking-[0.32em] sm:text-xs sm:tracking-[0.42em]">
               {introLine}
             </p>
 
@@ -508,7 +508,7 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
             </p>
 
             <div className="loader-rail mt-10 w-full max-w-xl sm:mt-11">
-              <div className="flex items-center justify-between gap-3 text-[0.48rem] uppercase tracking-[0.18em] text-white/[0.32] min-[380px]:tracking-[0.26em] sm:text-[0.56rem] sm:tracking-[0.34em]">
+              <div className="flex items-center justify-between gap-3 text-[0.48rem] uppercase tracking-[0.18em] text-white/[0.44] min-[380px]:tracking-[0.26em] sm:text-[0.56rem] sm:tracking-[0.34em]">
                 <span>{railStart}</span>
                 <span>{railEnd}</span>
               </div>
@@ -578,7 +578,7 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
 
             <p
               {...(!shouldOptimize ? { "data-loader-animate": true } : {})}
-              className="loader-footer mt-7 max-w-full text-[0.54rem] uppercase tracking-[0.28em] text-white/[0.42] min-[380px]:tracking-[0.38em] sm:text-[0.62rem] sm:tracking-[0.48em]"
+              className="loader-footer mt-7 max-w-full text-[0.54rem] uppercase tracking-[0.28em] text-white/[0.5] min-[380px]:tracking-[0.38em] sm:text-[0.62rem] sm:tracking-[0.48em]"
             >
               {footerLabel}
             </p>
@@ -594,14 +594,15 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
             width: 100%;
             height: 100vh;
             height: 100svh;
-            --loader-frame-top: max(clamp(2.7rem, 7.5vh, 5.75rem), env(safe-area-inset-top));
-            --loader-frame-bottom: max(clamp(0.7rem, 2.4vh, 2rem), env(safe-area-inset-bottom));
+            --loader-frame-top: max(clamp(3.25rem, 6vh, 4.5rem), env(safe-area-inset-top));
+            --loader-frame-bottom: max(clamp(3.25rem, 6vh, 4.5rem), env(safe-area-inset-bottom));
             --loader-shell-x: clamp(1rem, 4vw, 3.5rem);
             --loader-shell-y: clamp(1rem, 4vh, 3.5rem);
             --loader-stack-gap: clamp(0.5rem, 1.9vh, 1.5rem);
             --loader-stack-gap-lg: clamp(0.7rem, 2.7vh, 2.75rem);
             opacity: 1;
             overscroll-behavior: none;
+            text-rendering: geometricPrecision;
             touch-action: none;
             transition: opacity ${INITIAL_LOADER_EXIT_DURATION_MS}ms cubic-bezier(.22, 1, .36, 1);
           }
@@ -632,7 +633,37 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
             max-height: 100%;
             min-height: 0;
             padding: var(--loader-shell-y) var(--loader-shell-x) !important;
+            box-shadow:
+              0 32px 110px rgba(0, 0, 0, 0.88),
+              inset 0 1px 0 rgba(255, 255, 255, 0.045),
+              inset 0 -1px 0 rgba(255, 255, 255, 0.018) !important;
             transform-origin: center;
+          }
+
+          .loader-shell::before {
+            position: absolute;
+            inset: clamp(0.85rem, 2.4vw, 1.4rem);
+            z-index: 1;
+            border-radius: calc(1.55rem - 0.5rem);
+            background:
+              linear-gradient(90deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0)) left top / 2.25rem 1px no-repeat,
+              linear-gradient(180deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0)) left top / 1px 2.25rem no-repeat,
+              linear-gradient(270deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0)) right bottom / 2.25rem 1px no-repeat,
+              linear-gradient(0deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0)) right bottom / 1px 2.25rem no-repeat;
+            content: "";
+            opacity: 0.42;
+            pointer-events: none;
+          }
+
+          .loader-shell::after {
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+            border-radius: inherit;
+            background: linear-gradient(112deg, transparent 18%, rgba(255, 255, 255, 0.028) 43%, transparent 63%);
+            content: "";
+            opacity: 0.7;
+            pointer-events: none;
           }
 
           .loader-content {
@@ -654,11 +685,13 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
             width: clamp(4.35rem, min(17vh, 24vw), 9rem) !important;
             height: clamp(4.35rem, min(17vh, 24vw), 9rem) !important;
             flex: 0 0 auto;
+            filter: drop-shadow(0 18px 26px rgba(0, 0, 0, 0.62));
           }
 
           .loader-title {
-            font-size: clamp(1.8rem, min(7.5vw, 7.6vh), 4.5rem) !important;
-            line-height: 0.9 !important;
+            font-size: clamp(2rem, min(8.4vw, 7.6vh), 4.5rem) !important;
+            line-height: 0.92 !important;
+            text-wrap: balance;
           }
 
           .loader-quote {
@@ -677,6 +710,37 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
             margin-top: var(--loader-stack-gap) !important;
           }
 
+          [data-loader-root][data-loader-timed="true"] .loader-shell {
+            animation: cinematicShellCue 720ms cubic-bezier(.22, 1, .36, 1) var(--loader-progress-delay) both;
+          }
+
+          [data-loader-root][data-loader-timed="true"] .loader-kicker,
+          [data-loader-root][data-loader-timed="true"] .loader-divider-top {
+            animation: cinematicTextCue 560ms cubic-bezier(.22, 1, .36, 1) calc(var(--loader-progress-delay) + 40ms) both;
+          }
+
+          [data-loader-root][data-loader-timed="true"] .loader-emblem {
+            animation: cinematicEmblemCue 620ms cubic-bezier(.22, 1, .36, 1) calc(var(--loader-progress-delay) + 80ms) both;
+          }
+
+          [data-loader-root][data-loader-timed="true"] .loader-intro {
+            animation: cinematicTextCue 560ms cubic-bezier(.22, 1, .36, 1) calc(var(--loader-progress-delay) + 130ms) both;
+          }
+
+          [data-loader-root][data-loader-timed="true"] .loader-title {
+            animation: cinematicTitleCue 620ms cubic-bezier(.22, 1, .36, 1) calc(var(--loader-progress-delay) + 170ms) both;
+          }
+
+          [data-loader-root][data-loader-timed="true"] .loader-divider-main,
+          [data-loader-root][data-loader-timed="true"] .loader-quote {
+            animation: cinematicQuoteCue 580ms cubic-bezier(.22, 1, .36, 1) calc(var(--loader-progress-delay) + 230ms) both;
+          }
+
+          [data-loader-root][data-loader-timed="true"] .loader-rail,
+          [data-loader-root][data-loader-timed="true"] .loader-footer {
+            animation: cinematicTextCue 520ms cubic-bezier(.22, 1, .36, 1) calc(var(--loader-progress-delay) + 300ms) both;
+          }
+
           @media (min-width: 768px) and (min-height: 760px) {
             [data-loader-root] {
               --loader-frame-top: max(clamp(1.5rem, 3.2vh, 2rem), env(safe-area-inset-top));
@@ -686,8 +750,8 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
 
           @media (max-height: 720px) {
             [data-loader-root] {
-              --loader-frame-top: max(clamp(2.35rem, 6vh, 4rem), env(safe-area-inset-top));
-              --loader-frame-bottom: max(0.45rem, env(safe-area-inset-bottom));
+              --loader-frame-top: max(clamp(1.75rem, 4.5vh, 2.25rem), env(safe-area-inset-top));
+              --loader-frame-bottom: max(clamp(1.75rem, 4.5vh, 2.25rem), env(safe-area-inset-bottom));
               --loader-shell-y: clamp(0.75rem, 2.2vh, 1.35rem);
               --loader-stack-gap: clamp(0.35rem, 1.35vh, 0.8rem);
               --loader-stack-gap-lg: clamp(0.45rem, 1.8vh, 1rem);
@@ -709,13 +773,26 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
 
           @media (max-width: 359px) {
             .loader-shell {
-              box-shadow: 0 22px 70px rgba(0, 0, 0, 0.86);
+              box-shadow:
+                0 22px 70px rgba(0, 0, 0, 0.86),
+                inset 0 1px 0 rgba(255, 255, 255, 0.04) !important;
+            }
+
+            .loader-title {
+              font-size: clamp(1.82rem, 9.2vw, 2.1rem) !important;
+              letter-spacing: 0.08em !important;
+            }
+
+            .loader-intro,
+            .loader-quote {
+              letter-spacing: 0.08em !important;
             }
           }
 
           @media (max-height: 600px) {
             [data-loader-root] {
-              --loader-frame-top: max(2.75rem, env(safe-area-inset-top));
+              --loader-frame-top: max(1rem, env(safe-area-inset-top));
+              --loader-frame-bottom: max(1rem, env(safe-area-inset-bottom));
               --loader-shell-x: clamp(0.85rem, 3vw, 1.5rem);
               --loader-shell-y: clamp(0.6rem, 1.7vh, 0.95rem);
               --loader-stack-gap: clamp(0.28rem, 1vh, 0.58rem);
@@ -733,8 +810,27 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
               height: clamp(3.4rem, min(18vh, 18vw), 5.5rem) !important;
             }
 
+            .loader-emblem-shutter {
+              inset: 6px !important;
+            }
+
+            .loader-emblem-core {
+              inset: 8px !important;
+            }
+
+            .loader-emblem-icon {
+              inset: 14px !important;
+              border-radius: 0.72rem !important;
+            }
+
+            .loader-emblem-icon img {
+              width: clamp(1.25rem, 7vw, 1.7rem) !important;
+              height: clamp(1.25rem, 7vw, 1.7rem) !important;
+              border-radius: 0.55rem !important;
+            }
+
             .loader-title {
-              font-size: clamp(1.65rem, min(7vw, 8vh), 3rem) !important;
+              font-size: clamp(1.75rem, min(8.5vw, 8vh), 3rem) !important;
             }
 
             .loader-intro,
@@ -748,7 +844,7 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
           @media (max-height: 500px) {
             [data-loader-root] {
               --loader-frame-top: max(0.55rem, env(safe-area-inset-top));
-              --loader-frame-bottom: max(0.45rem, env(safe-area-inset-bottom));
+              --loader-frame-bottom: max(0.55rem, env(safe-area-inset-bottom));
             }
 
             .loader-badges,
@@ -779,6 +875,19 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
               height: clamp(2.85rem, 18vh, 4rem) !important;
             }
 
+            .loader-emblem-core {
+              inset: 7px !important;
+            }
+
+            .loader-emblem-icon {
+              inset: 12px !important;
+            }
+
+            .loader-emblem-icon img {
+              width: 1.15rem !important;
+              height: 1.15rem !important;
+            }
+
             .loader-rail {
               max-width: min(26rem, 100%);
             }
@@ -805,6 +914,28 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
             .loader-emblem,
             .loader-rail [data-loader-animate] {
               will-change: transform, opacity;
+            }
+          }
+
+          @keyframes cinematicShellCue {
+            0% {
+              opacity: 0.86;
+              transform: translate3d(0, 7px, 0) scale(0.994);
+            }
+            100% {
+              opacity: 1;
+              transform: translate3d(0, 0, 0) scale(1);
+            }
+          }
+
+          @keyframes cinematicTextCue {
+            0% {
+              opacity: 0;
+              transform: translate3d(0, 4px, 0);
+            }
+            100% {
+              opacity: 1;
+              transform: translate3d(0, 0, 0);
             }
           }
 
@@ -857,12 +988,12 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
           @keyframes cinematicTitleCue {
             0% {
               opacity: 0;
-              filter: blur(2px);
+              filter: blur(2px) drop-shadow(0 18px 40px rgba(0, 0, 0, 0.9));
               transform: translate3d(0, 6px, 0);
             }
             100% {
               opacity: 1;
-              filter: blur(0);
+              filter: blur(0) drop-shadow(0 18px 40px rgba(0, 0, 0, 0.9));
               transform: translate3d(0, 0, 0);
             }
           }

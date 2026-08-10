@@ -152,9 +152,9 @@
         place-items: center;
         overflow: hidden;
         padding:
-          max(3.75rem, env(safe-area-inset-top))
+          max(clamp(3.25rem, 6vh, 4.5rem), env(safe-area-inset-top))
           max(1rem, env(safe-area-inset-right))
-          max(1rem, env(safe-area-inset-bottom))
+          max(clamp(3.25rem, 6vh, 4.5rem), env(safe-area-inset-bottom))
           max(1rem, env(safe-area-inset-left));
         color: #fff;
         background:
@@ -186,9 +186,9 @@
         max-width: calc(50vw - 1.25rem);
         overflow: hidden;
         padding: 0.5rem 0.75rem;
-        border: 1px solid rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.1);
         border-radius: 999px;
-        color: rgba(255, 255, 255, 0.42);
+        color: rgba(255, 255, 255, 0.5);
         background: rgba(0, 0, 0, 0.82);
         font: 500 0.46rem/1 system-ui, sans-serif;
         letter-spacing: 0.24em;
@@ -202,15 +202,48 @@
         box-sizing: border-box;
         width: min(92vw, 64rem);
         max-height: 100%;
-        padding: clamp(2rem, 7vh, 4rem) clamp(1rem, 5vw, 3.5rem);
+        padding: clamp(1rem, 4vh, 3.5rem) clamp(1rem, 4vw, 3.5rem);
         overflow: hidden;
-        border: 1px solid rgba(255, 255, 255, 0.07);
+        border: 1px solid rgba(255, 255, 255, 0.09);
         border-radius: clamp(1.55rem, 5vw, 2.2rem);
         text-align: center;
         background:
           radial-gradient(circle at 50% 12%, rgba(255, 255, 255, 0.09), transparent 38%),
           linear-gradient(180deg, rgba(10, 10, 10, 0.94), rgba(0, 0, 0, 0.9) 48%, rgba(4, 4, 4, 0.96));
-        box-shadow: 0 28px 100px rgba(0, 0, 0, 0.86);
+        box-shadow:
+          0 32px 110px rgba(0, 0, 0, 0.88),
+          inset 0 1px 0 rgba(255, 255, 255, 0.045),
+          inset 0 -1px 0 rgba(255, 255, 255, 0.018);
+        animation: bootstrapStageCue 720ms cubic-bezier(0.22, 1, 0.36, 1) both;
+      }
+
+      .bootstrap-loader__stage::before {
+        position: absolute;
+        inset: clamp(0.85rem, 2.4vw, 1.4rem);
+        border-radius: calc(1.55rem - 0.5rem);
+        background:
+          linear-gradient(90deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0)) left top / 2.25rem 1px no-repeat,
+          linear-gradient(180deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0)) left top / 1px 2.25rem no-repeat,
+          linear-gradient(270deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0)) right bottom / 2.25rem 1px no-repeat,
+          linear-gradient(0deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0)) right bottom / 1px 2.25rem no-repeat;
+        content: "";
+        opacity: 0.42;
+        pointer-events: none;
+      }
+
+      .bootstrap-loader__stage::after {
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        background: linear-gradient(112deg, transparent 18%, rgba(255, 255, 255, 0.028) 43%, transparent 63%);
+        content: "";
+        opacity: 0.7;
+        pointer-events: none;
+      }
+
+      .bootstrap-loader__stage > * {
+        position: relative;
+        z-index: 1;
       }
 
       .bootstrap-loader__eyebrow,
@@ -218,7 +251,7 @@
       .bootstrap-loader__quote,
       .bootstrap-loader__status {
         margin: 0;
-        color: rgba(255, 255, 255, 0.5);
+        color: rgba(255, 255, 255, 0.6);
         font: 500 clamp(0.5rem, 1.5vw, 0.66rem)/1.4 system-ui, sans-serif;
         letter-spacing: clamp(0.28em, 1vw, 0.58em);
         text-transform: uppercase;
@@ -229,12 +262,12 @@
         display: grid;
         width: clamp(4.75rem, min(17vh, 24vw), 8rem);
         height: clamp(4.75rem, min(17vh, 24vw), 8rem);
-        margin: clamp(1rem, 2.6vh, 1.75rem) auto 0;
+        margin: clamp(0.5rem, 1.9vh, 1.5rem) auto 0;
         place-items: center;
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.12);
         border-radius: 50%;
         background: radial-gradient(circle, rgba(255, 255, 255, 0.09), rgba(0, 0, 0, 0.84) 64%);
-        box-shadow: 0 0 50px rgba(255, 255, 255, 0.05), inset 0 0 28px rgba(255, 255, 255, 0.035);
+        box-shadow: 0 18px 50px rgba(0, 0, 0, 0.62), 0 0 50px rgba(255, 255, 255, 0.05), inset 0 0 28px rgba(255, 255, 255, 0.035);
       }
 
       .bootstrap-loader__emblem::before {
@@ -256,7 +289,7 @@
       .bootstrap-loader__title {
         margin: clamp(0.75rem, 2vh, 1.35rem) 0 0;
         color: #fff;
-        font-size: clamp(1.9rem, min(8vw, 7vh), 4rem);
+        font-size: clamp(2rem, min(8.4vw, 7.6vh), 4.5rem);
         font-weight: 500;
         line-height: 0.95;
         letter-spacing: clamp(0.08em, 2vw, 0.2em);
@@ -277,7 +310,7 @@
 
       .bootstrap-loader__intro {
         margin: clamp(0.8rem, 2vh, 1.25rem) 0 0;
-        color: rgba(255, 255, 255, 0.34);
+        color: rgba(255, 255, 255, 0.46);
         font-size: clamp(0.5rem, 1.35vw, 0.64rem);
         letter-spacing: clamp(0.18em, 0.8vw, 0.4em);
       }
@@ -310,9 +343,93 @@
       }
 
       .bootstrap-loader__status {
-        margin-top: clamp(1rem, 2.6vh, 1.6rem);
-        color: rgba(255, 255, 255, 0.4);
+        margin-top: clamp(0.5rem, 1.9vh, 1.5rem);
+        color: rgba(255, 255, 255, 0.5);
         letter-spacing: clamp(0.2em, 1vw, 0.4em);
+      }
+
+      .bootstrap-loader__eyebrow,
+      .bootstrap-loader__divider--top {
+        animation: bootstrapTextCue 560ms cubic-bezier(0.22, 1, 0.36, 1) 40ms both;
+      }
+
+      .bootstrap-loader__emblem {
+        animation: bootstrapEmblemCue 620ms cubic-bezier(0.22, 1, 0.36, 1) 80ms both;
+      }
+
+      .bootstrap-loader__intro {
+        animation: bootstrapTextCue 560ms cubic-bezier(0.22, 1, 0.36, 1) 130ms both;
+      }
+
+      .bootstrap-loader__title {
+        animation: bootstrapTitleCue 620ms cubic-bezier(0.22, 1, 0.36, 1) 170ms both;
+      }
+
+      .bootstrap-loader__divider:not(.bootstrap-loader__divider--top),
+      .bootstrap-loader__quote {
+        animation: bootstrapQuoteCue 580ms cubic-bezier(0.22, 1, 0.36, 1) 230ms both;
+      }
+
+      .bootstrap-loader__rail,
+      .bootstrap-loader__status {
+        animation: bootstrapTextCue 520ms cubic-bezier(0.22, 1, 0.36, 1) 300ms both;
+      }
+
+      @keyframes bootstrapStageCue {
+        from {
+          opacity: 0.86;
+          transform: translate3d(0, 7px, 0) scale(0.994);
+        }
+        to {
+          opacity: 1;
+          transform: translate3d(0, 0, 0) scale(1);
+        }
+      }
+
+      @keyframes bootstrapTextCue {
+        from {
+          opacity: 0;
+          transform: translate3d(0, 4px, 0);
+        }
+        to {
+          opacity: 1;
+          transform: translate3d(0, 0, 0);
+        }
+      }
+
+      @keyframes bootstrapEmblemCue {
+        from {
+          opacity: 0;
+          transform: translate3d(0, 6px, 0) scale(0.96);
+        }
+        to {
+          opacity: 1;
+          transform: translate3d(0, 0, 0) scale(1);
+        }
+      }
+
+      @keyframes bootstrapTitleCue {
+        from {
+          opacity: 0;
+          filter: blur(2px);
+          transform: translate3d(0, 6px, 0);
+        }
+        to {
+          opacity: 1;
+          filter: blur(0);
+          transform: translate3d(0, 0, 0);
+        }
+      }
+
+      @keyframes bootstrapQuoteCue {
+        from {
+          opacity: 0;
+          transform: translate3d(0, 4px, 0);
+        }
+        to {
+          opacity: 0.9;
+          transform: translate3d(0, 0, 0);
+        }
       }
 
       @keyframes bootstrapLoaderTravel {
@@ -332,7 +449,8 @@
 
       @media (max-height: 600px) {
         #app-bootstrap-loader {
-          padding-top: max(2.75rem, env(safe-area-inset-top));
+          padding-top: max(1rem, env(safe-area-inset-top));
+          padding-bottom: max(1rem, env(safe-area-inset-bottom));
         }
 
         .bootstrap-loader__eyebrow,
@@ -346,8 +464,8 @@
         }
 
         .bootstrap-loader__emblem {
-          width: clamp(3.4rem, 16vh, 4.5rem);
-          height: clamp(3.4rem, 16vh, 4.5rem);
+          width: clamp(3.4rem, min(18vh, 18vw), 5.5rem);
+          height: clamp(3.4rem, min(18vh, 18vw), 5.5rem);
           margin-top: 0;
         }
 
@@ -368,7 +486,7 @@
       @media (max-height: 500px) {
         #app-bootstrap-loader {
           padding-top: max(0.55rem, env(safe-area-inset-top));
-          padding-bottom: max(0.45rem, env(safe-area-inset-bottom));
+          padding-bottom: max(0.55rem, env(safe-area-inset-bottom));
         }
 
         .bootstrap-loader__badges,
@@ -383,6 +501,18 @@
       }
 
       @media (prefers-reduced-motion: reduce) {
+        .bootstrap-loader__stage,
+        .bootstrap-loader__eyebrow,
+        .bootstrap-loader__divider,
+        .bootstrap-loader__emblem,
+        .bootstrap-loader__intro,
+        .bootstrap-loader__title,
+        .bootstrap-loader__quote,
+        .bootstrap-loader__rail,
+        .bootstrap-loader__status {
+          animation: none;
+        }
+
         .bootstrap-loader__rail::after {
           width: 100%;
           opacity: 0.72;

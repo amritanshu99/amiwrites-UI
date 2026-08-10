@@ -259,6 +259,7 @@ const MAX_LOADER_DURATION_MS = 3200;
 const resumeUrl = assetUrl("/images/Resume.pdf");
 const publicAsset = (path) => `${process.env.PUBLIC_URL || ""}${path}`;
 const contactBannerUrl = publicAsset("/banner-optimized.jpg");
+const signatureUrl = publicAsset("/images/signature.png");
 const cx = (...classes) => classes.filter(Boolean).join(" ");
 
 const proofPoints = [
@@ -961,8 +962,6 @@ export default function PortfolioDetails() {
     };
   }, [loading]);
 
-  const [firstName, ...lastNameParts] = data.name.trim().split(/\s+/);
-  const lastName = lastNameParts.join(" ");
   const useMobileBottomCta = isCompactViewport;
   const bottomCtaWrapperClassName = cx(
     "amiverse-portfolio-section-switcher pointer-events-none fixed left-0 right-0 z-[80] lg:right-[var(--scrollbar-size)]",
@@ -1139,10 +1138,31 @@ export default function PortfolioDetails() {
                 variants={heroCopyItemVariants}
                 id="portfolio-title"
                 aria-label={data.name}
-                className="hero-name font-extrabold tracking-tight text-slate-950 antialiased drop-shadow-[0_2px_14px_rgba(255,255,255,0.55)] dark:text-white dark:drop-shadow-[0_10px_36px_rgba(0,0,0,0.48)]"
+                className="hero-name hero-name-signature"
               >
-                <span className="block">{firstName}</span>
-                {lastName ? <span className="block">{lastName}</span> : null}
+                <span className="sr-only">{data.name}</span>
+                <span
+                  aria-hidden="true"
+                  className="hero-signature-stage"
+                  data-state={
+                    loading
+                      ? "waiting"
+                      : prefersReducedMotion
+                        ? "complete"
+                        : "writing"
+                  }
+                >
+                  <img
+                    src={signatureUrl}
+                    alt=""
+                    width="820"
+                    height="200"
+                    className="hero-signature-image"
+                    draggable="false"
+                    decoding="async"
+                  />
+                  <span className="hero-signature-ink-edge" />
+                </span>
               </motion.h1>
               <motion.p
                 variants={heroCopyItemVariants}

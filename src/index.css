@@ -406,6 +406,149 @@ html:not(.dark) .amiverse-premium-light-overlay {
   word-break: keep-all;
 }
 
+.hero-name.hero-name-signature {
+  width: min(100%, 32rem);
+  max-width: 100%;
+  line-height: 1;
+}
+
+.hero-signature-stage {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 820 / 200;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.hero-signature-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: left center;
+  filter: drop-shadow(0 2px 12px rgba(255, 255, 255, 0.48));
+  -webkit-user-select: none;
+  user-select: none;
+  will-change: clip-path, opacity;
+}
+
+.dark .hero-signature-image {
+  filter: invert(1) drop-shadow(0 8px 24px rgba(0, 0, 0, 0.48));
+}
+
+.hero-signature-stage[data-state="waiting"] .hero-signature-image {
+  clip-path: inset(0 100% 0 0);
+  opacity: 0;
+}
+
+.hero-signature-stage[data-state="writing"] .hero-signature-image {
+  animation: portfolioSignatureWrite 1.9s 0.18s both;
+}
+
+.hero-signature-stage[data-state="complete"] .hero-signature-image {
+  clip-path: inset(0 0 0 0);
+  opacity: 1;
+}
+
+.hero-signature-ink-edge {
+  position: absolute;
+  top: 48%;
+  left: 0;
+  width: 0.34rem;
+  height: 0.34rem;
+  border-radius: 999px;
+  background: #020617;
+  box-shadow: 0 0 0.55rem rgba(2, 132, 199, 0.28);
+  opacity: 0;
+  transform: translate(-50%, -50%);
+  will-change: left, top, opacity, transform;
+}
+
+.dark .hero-signature-ink-edge {
+  background: #f8fafc;
+  box-shadow: 0 0 0.65rem rgba(103, 232, 249, 0.38);
+}
+
+.hero-signature-stage[data-state="writing"] .hero-signature-ink-edge {
+  animation: portfolioSignaturePen 1.9s 0.18s both;
+}
+
+@keyframes portfolioSignatureWrite {
+  0% {
+    clip-path: inset(0 100% 0 0);
+    opacity: 0;
+  }
+  9% {
+    clip-path: inset(0 93% 0 0);
+    opacity: 1;
+  }
+  22% {
+    clip-path: inset(0 78% 0 0);
+  }
+  35% {
+    clip-path: inset(0 66% 0 0);
+  }
+  48% {
+    clip-path: inset(0 48% 0 0);
+  }
+  63% {
+    clip-path: inset(0 37% 0 0);
+  }
+  79% {
+    clip-path: inset(0 17% 0 0);
+  }
+  100% {
+    clip-path: inset(0 0 0 0);
+    opacity: 1;
+  }
+}
+
+@keyframes portfolioSignaturePen {
+  0% {
+    top: 56%;
+    left: 0;
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.6);
+  }
+  7% {
+    opacity: 0.82;
+  }
+  9% {
+    top: 46%;
+    left: 7%;
+  }
+  22% {
+    top: 55%;
+    left: 22%;
+  }
+  35% {
+    top: 43%;
+    left: 34%;
+  }
+  48% {
+    top: 56%;
+    left: 52%;
+  }
+  63% {
+    top: 47%;
+    left: 63%;
+  }
+  79% {
+    top: 54%;
+    left: 83%;
+  }
+  94% {
+    opacity: 0.72;
+  }
+  100% {
+    top: 50%;
+    left: 100%;
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.72);
+  }
+}
+
 .portfolio-ny-background {
   background-position: 72% center;
 }
