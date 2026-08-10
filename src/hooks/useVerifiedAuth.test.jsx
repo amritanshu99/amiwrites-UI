@@ -13,11 +13,13 @@ const encodeJwtPart = (value) =>
     .replace(/\+/g, "-")
     .replace(/\//g, "_");
 
+let tokenSequence = 0;
+
 const createToken = (username) =>
   `${encodeJwtPart({ alg: "none", typ: "JWT" })}.${encodeJwtPart({
     username,
     exp: Math.floor(Date.now() / 1000) + 3600,
-  })}.test-signature`;
+  })}.test-signature-${++tokenSequence}`;
 
 function AuthProbe({ label = "auth" }) {
   const auth = useVerifiedAuth();
@@ -145,4 +147,32 @@ test("revokes verified admin UI on cross-tab token storage changes", async () =>
   expect(screen.getByTestId("auth-authenticated")).toHaveTextContent("no");
   expect(screen.getByTestId("auth-admin")).toHaveTextContent("no");
   expect(screen.getByTestId("auth-username")).toHaveTextContent("anonymous");
+});
+
+test("revalidates a cached admin session after its short handoff window", async () => {
+  const baseTime = 1_800_000_000_000;
+  const dateNow = jest.spyOn(Date, "now").mockReturnValue(baseTime);
+
+  try {
+    const token = createToken("amritanshu99");
+    localStorage.setItem("token", token);
+    verifyToken.mockResolvedValue(true);
+
+    render(<AuthProbe label="header" />);
+    await waitFor(() =>
+      expect(screen.getByTestId("header-admin")).toHaveTextContent("yes"),
+    );
+    expect(verifyToken).toHaveBeenCalledTimes(1);
+
+    dateNow.mockReturnValue(baseTime + 30_001);
+    render(<AuthProbe label="route" />);
+
+    expect(screen.getByTestId("route-checking")).toHaveTextContent("yes");
+    await waitFor(() => expect(verifyToken).toHaveBeenCalledTimes(2));
+    await waitFor(() =>
+      expect(screen.getByTestId("route-admin")).toHaveTextContent("yes"),
+    );
+  } finally {
+    dateNow.mockRestore();
+  }
 });

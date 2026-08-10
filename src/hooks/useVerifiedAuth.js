@@ -4,11 +4,48 @@ import { verifyToken } from "../utils/authApi";
 import { ADMIN_USERNAME } from "../config/auth";
 
 const MAX_TIMEOUT_MS = 2_147_483_647;
+const ADMIN_VERIFICATION_MAX_AGE_MS = 30_000;
 
 let inFlightVerification = null;
+let verifiedAdminToken = null;
+let verifiedAdminAtMs = 0;
+let verificationGeneration = 0;
+const invalidatedEvents = new WeakSet();
 
 const getStoredToken = () =>
   typeof window === "undefined" ? null : window.localStorage.getItem("token");
+
+const hasVerifiedAdminToken = (token) => {
+  if (!token || verifiedAdminToken !== token) return false;
+
+  if (
+    getStoredToken() !== token ||
+    isTokenExpired(token) ||
+    Date.now() - verifiedAdminAtMs > ADMIN_VERIFICATION_MAX_AGE_MS
+  ) {
+    verifiedAdminToken = null;
+    verifiedAdminAtMs = 0;
+    return false;
+  }
+
+  return true;
+};
+
+const invalidateAdminVerification = (event) => {
+  // Every mounted auth consumer receives the same browser event. Invalidate it
+  // once so their subsequent refreshes can still share one verification call.
+  if (event && invalidatedEvents.has(event)) return;
+
+  if (event) {
+    invalidatedEvents.add(event);
+    Promise.resolve().then(() => invalidatedEvents.delete(event));
+  }
+
+  verifiedAdminToken = null;
+  verifiedAdminAtMs = 0;
+  inFlightVerification = null;
+  verificationGeneration += 1;
+};
 
 const getLocalAuth = () => {
   const token = getStoredToken();
@@ -24,23 +61,44 @@ const getLocalAuth = () => {
 
 const getInitialState = () => {
   const localAuth = getLocalAuth();
+  const isAdminCandidate =
+    localAuth.isAuthenticated && localAuth.username === ADMIN_USERNAME;
+  const isAdmin =
+    isAdminCandidate && hasVerifiedAdminToken(localAuth.token);
 
   return {
     isAuthenticated: localAuth.isAuthenticated,
     username: localAuth.username,
-    isAdmin: false,
-    isVerifyingAdmin: false,
-    verifiedAdminToken: null,
+    isAdmin,
+    isVerifyingAdmin: isAdminCandidate && !isAdmin,
+    verifiedAdminToken: isAdmin ? localAuth.token : null,
   };
 };
 
 const verifyAdminCandidate = (token) => {
+  if (hasVerifiedAdminToken(token)) return Promise.resolve(true);
+
   if (inFlightVerification?.token === token) {
     return inFlightVerification.promise;
   }
 
+  const currentGeneration = verificationGeneration;
   const promise = Promise.resolve(verifyToken(token))
-    .then((result) => result === true)
+    .then((result) => {
+      const isVerified = result === true;
+
+      if (
+        isVerified &&
+        currentGeneration === verificationGeneration &&
+        getStoredToken() === token &&
+        !isTokenExpired(token)
+      ) {
+        verifiedAdminToken = token;
+        verifiedAdminAtMs = Date.now();
+      }
+
+      return isVerified;
+    })
     .catch(() => false)
     .finally(() => {
       if (inFlightVerification?.promise === promise) {
@@ -89,13 +147,18 @@ export function useVerifiedAuth() {
       const isAdminCandidate =
         localAuth.isAuthenticated &&
         localAuth.username === ADMIN_USERNAME;
+      const hasCachedAdminVerification =
+        isAdminCandidate && hasVerifiedAdminToken(localAuth.token);
 
       publish({
         isAuthenticated: localAuth.isAuthenticated,
         username: localAuth.username,
-        isAdmin: false,
-        isVerifyingAdmin: isAdminCandidate,
-        verifiedAdminToken: null,
+        isAdmin: hasCachedAdminVerification,
+        isVerifyingAdmin:
+          isAdminCandidate && !hasCachedAdminVerification,
+        verifiedAdminToken: hasCachedAdminVerification
+          ? localAuth.token
+          : null,
       });
 
       if (!localAuth.isAuthenticated) return;
@@ -109,7 +172,7 @@ export function useVerifiedAuth() {
         );
       }
 
-      if (!isAdminCandidate) return;
+      if (!isAdminCandidate || hasCachedAdminVerification) return;
 
       const isVerified = await verifyAdminCandidate(localAuth.token);
       const tokenIsCurrent = getStoredToken() === localAuth.token;
@@ -142,11 +205,15 @@ export function useVerifiedAuth() {
       );
     };
 
-    const handleTokenChanged = () => {
+    const handleTokenChanged = (event) => {
+      invalidateAdminVerification(event);
       refresh();
     };
     const handleStorage = (event) => {
-      if (event.key === null || event.key === "token") refresh();
+      if (event.key === null || event.key === "token") {
+        invalidateAdminVerification(event);
+        refresh();
+      }
     };
 
     refresh();

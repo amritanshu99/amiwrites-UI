@@ -1,4 +1,7 @@
-import { toForm, validateForm } from "./PulseSettings";
+import React from "react";
+import { render, screen } from "@testing-library/react";
+import axios from "axios";
+import PulseSettings, { toForm, validateForm } from "./PulseSettings";
 
 jest.mock("axios", () => ({
   get: jest.fn(),
@@ -6,6 +9,12 @@ jest.mock("axios", () => ({
 }));
 
 jest.mock("react-router-dom", () => ({ Link: () => null }), { virtual: true });
+
+beforeEach(() => {
+  localStorage.clear();
+  axios.get.mockReset();
+  axios.put.mockReset();
+});
 
 const validForm = {
   widgetTitle: "Ami Pulse",
@@ -63,4 +72,19 @@ test("rejects blank and overlapping schedule hours", () => {
       ],
     }),
   ).toBe("");
+});
+
+test("keeps the settings layout stable while initial data loads", () => {
+  localStorage.setItem("token", "admin-token");
+  axios.get.mockImplementation(() => new Promise(() => {}));
+
+  render(<PulseSettings />);
+
+  expect(
+    screen.getByRole("status", { name: "Loading Ami Pulse settings" }),
+  ).toBeInTheDocument();
+  expect(
+    screen.getByRole("heading", { name: "Ami Pulse Settings" }),
+  ).toBeInTheDocument();
+  expect(screen.getByText("Loading your saved configuration…")).toBeInTheDocument();
 });

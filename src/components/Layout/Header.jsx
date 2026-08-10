@@ -18,6 +18,7 @@ import SignupModal from "../Auth/SignupModal";
 import LoginModal from "../Auth/LoginModal";
 import { toast } from "react-toastify";
 import { useVerifiedAuth } from "../../hooks/useVerifiedAuth";
+import { preloadAdminRoutes } from "../../utils/adminRoutePreload";
 
 // a11y-friendly animated pill
 const ActivePill = motion.create("span");
@@ -49,6 +50,10 @@ export default function Header({ setLoading }) {
   const mobileMenuButtonRef = useRef(null);
 
   useEffect(() => setMounted(true), []);
+
+  useEffect(() => {
+    if (isAdmin) preloadAdminRoutes();
+  }, [isAdmin]);
 
   // Apply theme class to <html>
   useEffect(() => {
@@ -393,36 +398,33 @@ export default function Header({ setLoading }) {
                         </div>
                         {isAdmin && (
                           <>
-                            {/* Admin tools intentionally start a fresh document so a
-                                long-lived tab picks up the latest deployed bundle and
-                                the route-aware bootstrap loader. */}
-                            <a
-                              href="/add-blog"
+                            <Link
+                              to="/add-blog"
                               onClick={() => setUserMenuOpen(false)}
                               role="menuitem"
                               className="w-full px-4 py-3 text-sm text-[#111827] dark:text-gray-200 hover:bg-[#475569]/[0.08] dark:hover:bg-white/[0.06] flex items-center gap-2 transition-colors focus-visible:outline-none focus-visible:bg-[#475569]/[0.08] dark:focus-visible:bg-white/[0.06]"
                             >
                               <FilePenLine className="h-4 w-4" />
                               Create Blog
-                            </a>
-                            <a
-                              href="/ami-pulse-settings"
+                            </Link>
+                            <Link
+                              to="/ami-pulse-settings"
                               onClick={() => setUserMenuOpen(false)}
                               role="menuitem"
                               className="w-full px-4 py-3 text-sm text-[#111827] dark:text-gray-200 hover:bg-[#475569]/[0.08] dark:hover:bg-white/[0.06] flex items-center gap-2 transition-colors focus-visible:outline-none focus-visible:bg-[#475569]/[0.08] dark:focus-visible:bg-white/[0.06]"
                             >
                               <Activity className="h-4 w-4" />
                               Ami Pulse Settings
-                            </a>
-                            <a
-                              href="/amibot-admin"
+                            </Link>
+                            <Link
+                              to="/amibot-admin"
                               onClick={() => setUserMenuOpen(false)}
                               role="menuitem"
                               className="w-full px-4 py-3 text-sm text-[#111827] dark:text-gray-200 hover:bg-[#475569]/[0.08] dark:hover:bg-white/[0.06] flex items-center gap-2 transition-colors focus-visible:outline-none focus-visible:bg-[#475569]/[0.08] dark:focus-visible:bg-white/[0.06]"
                             >
                               <Bot className="h-4 w-4" />
                               AmiBot Admin
-                            </a>
+                            </Link>
                           </>
                         )}
                         <button

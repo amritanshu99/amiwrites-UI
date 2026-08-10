@@ -12,6 +12,7 @@ const AppLoadingFallback = ({ pathname }) => {
   return (
     <Loader
       label={routeLoadingLabels[pathname] || "Loading page"}
+      opaque
     />
   );
 };

@@ -74,6 +74,51 @@ const insetPanelClassName =
 const secondaryButtonClassName =
   "inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-full border border-slate-200 bg-white/80 px-4 py-2 text-sm font-semibold text-slate-800 transition hover:-translate-y-0.5 hover:bg-white disabled:cursor-not-allowed disabled:opacity-65 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100 dark:hover:border-zinc-700 dark:hover:bg-zinc-900 sm:w-auto";
 
+function PulseSettingsSkeleton() {
+  return (
+    <div
+      className="min-h-screen bg-[linear-gradient(135deg,#f8fafc,#ecfdf5_42%,#fff7ed_78%,#f1f5f9)] px-4 py-8 text-slate-950 dark:bg-[radial-gradient(circle_at_12%_0%,rgba(6,182,212,0.14),transparent_30%),radial-gradient(circle_at_88%_10%,rgba(244,63,94,0.1),transparent_28%),linear-gradient(180deg,#050505_0%,#09090b_52%,#000000_100%)] dark:text-zinc-50 sm:px-6 lg:px-8"
+      role="status"
+      aria-busy="true"
+      aria-label="Loading Ami Pulse settings"
+    >
+      <div className="mx-auto max-w-6xl">
+        <div className="mb-6 rounded-2xl border border-white/75 bg-white/82 p-5 shadow-[0_18px_46px_rgba(15,23,42,0.12)] ring-1 ring-white/70 backdrop-blur-2xl dark:border-zinc-800 dark:bg-black/90 dark:ring-white/[0.06]">
+          <div className="flex items-center gap-3">
+            <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-teal-100 text-teal-700 ring-1 ring-teal-200/70 dark:bg-cyan-300/10 dark:text-cyan-100 dark:ring-cyan-300/20">
+              <Settings2 className="h-5 w-5" aria-hidden="true" />
+            </span>
+            <div>
+              <h1 className="text-2xl font-bold tracking-normal sm:text-3xl">
+                Ami Pulse Settings
+              </h1>
+              <p className="mt-1 text-sm text-slate-500 dark:text-zinc-400">
+                Loading your saved configuration…
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-6" aria-hidden="true">
+          {[0, 1, 2].map((panel) => (
+            <section key={panel} className={panelClassName}>
+              <div className="h-5 w-32 animate-pulse rounded bg-slate-200 motion-reduce:animate-none dark:bg-white/[0.09]" />
+              <div className="mt-5 grid gap-4 md:grid-cols-2">
+                {[0, 1, 2, 3].map((field) => (
+                  <div key={field}>
+                    <div className="h-3 w-24 animate-pulse rounded bg-slate-200 motion-reduce:animate-none dark:bg-white/[0.08]" />
+                    <div className="mt-2 h-11 animate-pulse rounded-xl bg-white/80 ring-1 ring-slate-200 motion-reduce:animate-none dark:bg-zinc-950 dark:ring-zinc-800" />
+                  </div>
+                ))}
+              </div>
+            </section>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function normalizePulseTitle(title) {
   const normalizedTitle = String(title || "").trim();
   if (!normalizedTitle) return DEFAULT_FORM.widgetTitle;
@@ -462,16 +507,7 @@ export default function PulseSettings() {
   };
 
   if (loading) {
-    return (
-      <div
-        className="flex min-h-screen items-center justify-center bg-slate-50 text-slate-950 dark:bg-black dark:text-white"
-        role="status"
-        aria-label="Loading Ami Pulse settings"
-      >
-        <LoaderCircle className="h-8 w-8 animate-spin text-teal-600 dark:text-cyan-200" aria-hidden="true" />
-        <span className="sr-only">Loading Ami Pulse settings…</span>
-      </div>
-    );
+    return <PulseSettingsSkeleton />;
   }
 
   return (

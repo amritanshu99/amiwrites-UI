@@ -28,12 +28,18 @@ import Portfolio from "./pages/Portfolio";
 import { getPublicPagePath, initGA, logPageView } from "./analytics";
 import { applySEO, seoByRoute } from "./utils/seo";
 import { apiUrl } from "./config/api";
+import {
+  addBlogRoute,
+  amiBotAdminRoute,
+  amiPulseSettingsRoute,
+  createPreloadedRouteComponent,
+} from "./utils/adminRoutePreload";
 
 const BlogPage = lazy(() => import("./pages/BlogPage"));
 const AIChatPage = lazy(() => import("./pages/AIChat"));
-const AddBlogDetails = lazy(() => import("./pages/AddBlogDetails"));
-const AmiBotAdmin = lazy(() => import("./pages/AmiBotAdmin"));
-const AmiPulseSettings = lazy(() => import("./pages/PulseSettings"));
+const AddBlogDetails = createPreloadedRouteComponent(addBlogRoute);
+const AmiBotAdmin = createPreloadedRouteComponent(amiBotAdminRoute);
+const AmiPulseSettings = createPreloadedRouteComponent(amiPulseSettingsRoute);
 const BlogsDetails = lazy(() => import("./pages/BlogsDetails"));
 const TechByte = lazy(() => import("./pages/TechByte"));
 const ResetPasswordPage = lazy(() => import("./pages/ResetPasswordPage"));
@@ -49,6 +55,13 @@ const ReinforcementLearningDetails = lazy(() =>
   import("./pages/ReinforcementLearning"),
 );
 const LegalPage = lazy(() => import("./pages/LegalPage"));
+
+const instantScrollPaths = new Set([
+  "/add-blog",
+  "/ami-pulse-settings",
+  "/amibot-admin",
+  "/amibot",
+]);
 
 const toastIconByType = {
   success: CheckCircle2,
@@ -146,6 +159,7 @@ const App = () => {
   const location = useLocation();
   const appShellRef = useRef(null);
   const isAmiBotWorkspace = location.pathname === "/amibot";
+  const usesInstantRouteScroll = instantScrollPaths.has(location.pathname);
 
   useEffect(() => {
     initGA();
@@ -171,13 +185,16 @@ const App = () => {
     if (appShellRef.current) {
       appShellRef.current.scrollTo({
         top: 0,
-        behavior: isAmiBotWorkspace ? "auto" : "smooth",
+        behavior: usesInstantRouteScroll ? "auto" : "smooth",
       });
       return;
     }
 
-    window.scrollTo({ top: 0, behavior: isAmiBotWorkspace ? "auto" : "smooth" });
-  }, [isAmiBotWorkspace, location.pathname]);
+    window.scrollTo({
+      top: 0,
+      behavior: usesInstantRouteScroll ? "auto" : "smooth",
+    });
+  }, [location.pathname, usesInstantRouteScroll]);
 
   return (
     <div
@@ -229,7 +246,7 @@ const App = () => {
             <Route
               path="/add-blog"
               element={
-                <ProtectedAdminRoute>
+                <ProtectedAdminRoute loadingLabel="Loading Create Blog">
                   <AddBlogDetails />
                 </ProtectedAdminRoute>
               }
@@ -237,7 +254,7 @@ const App = () => {
             <Route
               path="/ami-pulse-settings"
               element={
-                <ProtectedAdminRoute>
+                <ProtectedAdminRoute loadingLabel="Loading Ami Pulse settings">
                   <AmiPulseSettings />
                 </ProtectedAdminRoute>
               }
@@ -260,7 +277,7 @@ const App = () => {
             <Route
               path="/amibot-admin"
               element={
-                <ProtectedAdminRoute>
+                <ProtectedAdminRoute loadingLabel="Loading AmiBot settings">
                   <AmiBotAdmin />
                 </ProtectedAdminRoute>
               }

@@ -24,6 +24,7 @@ test.each([
   render(<AppLoadingFallback pathname={pathname} />);
 
   expect(screen.getByRole("status", { name: label })).toBeInTheDocument();
+  expect(screen.getByRole("status", { name: label })).toHaveClass("bg-black");
   expect(screen.queryByText("Feature Presentation")).not.toBeInTheDocument();
 });
 
@@ -33,5 +34,8 @@ test("never uses the cinematic loader as an app-level fallback", () => {
   expect(
     screen.getByRole("status", { name: "Loading page" }),
   ).toBeInTheDocument();
+  expect(screen.getByRole("status", { name: "Loading page" })).toHaveClass(
+    "bg-black",
+  );
   expect(screen.queryByText("Feature Presentation")).not.toBeInTheDocument();
 });

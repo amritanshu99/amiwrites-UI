@@ -2,6 +2,7 @@ const Loader = ({
   size = "default",
   label = "Loading AmiVerse",
   fullscreen,
+  opaque = false,
   isExiting = false,
   className = "",
 }) => {
@@ -37,10 +38,12 @@ const Loader = ({
       aria-atomic="true"
       aria-busy="true"
       aria-label={label}
-      className={`fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden bg-black/[0.65] px-4 py-6 text-white backdrop-blur-md transition-[opacity,transform] duration-300 ease-out motion-reduce:transition-none ${
+      className={`fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden px-4 py-6 text-white transition-[opacity,transform] duration-300 ease-out motion-reduce:transition-none ${
+        opaque ? "bg-black" : "bg-black/[0.65] backdrop-blur-md"
+      } ${
         isExiting
           ? "pointer-events-none scale-[0.98] opacity-0"
-          : "scale-100 opacity-100 motion-safe:animate-fade-in"
+          : `scale-100 opacity-100 ${opaque ? "" : "motion-safe:animate-fade-in"}`
       } ${className}`}
     >
       <div
