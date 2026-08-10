@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
-import { LoaderCircle } from "lucide-react";
+import Loader from "./Loader/Loader";
 import { isTokenExpired, parseJwt } from "../utils/auth";
 import { verifyToken } from "../utils/authApi";
 import { ADMIN_USERNAME } from "../config/auth";
@@ -45,16 +45,7 @@ const ProtectedAdminRoute = ({ children }) => {
   }, []);
 
   if (accessState === "checking") {
-    return (
-      <div
-        className="flex min-h-[50svh] items-center justify-center text-slate-600 dark:text-zinc-300"
-        role="status"
-        aria-label="Verifying admin access"
-      >
-        <LoaderCircle className="h-7 w-7 animate-spin" aria-hidden="true" />
-        <span className="sr-only">Verifying admin access…</span>
-      </div>
-    );
+    return <Loader label="Verifying admin access" />;
   }
 
   return accessState === "allowed" ? children : <Navigate to="/blogs" replace />;

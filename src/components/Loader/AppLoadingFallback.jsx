@@ -4,7 +4,10 @@ import InitialLoader, {
 } from "../Portfolio/InitialLoader";
 
 const routeLoadingLabels = {
+  "/add-blog": "Loading Create Blog",
   "/ami-pulse-settings": "Loading Ami Pulse settings",
+  "/pulse-settings": "Loading Ami Pulse settings",
+  "/beacon-settings": "Loading Ami Pulse settings",
   "/amibot-admin": "Loading AmiBot settings",
 };
 

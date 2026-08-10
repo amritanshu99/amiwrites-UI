@@ -17,6 +17,7 @@ test("returns the owner hour in the configured timezone", () => {
 });
 
 test.each([
+  ["/add-blog", "Loading Create Blog"],
   ["/ami-pulse-settings", "Loading Ami Pulse settings"],
   ["/amibot-admin", "Loading AmiBot settings"],
 ])("uses the standard loader for the %s route", (pathname, label) => {
