@@ -1131,7 +1131,7 @@ export default function PortfolioDetails() {
             >
               <motion.p
                 variants={heroCopyItemVariants}
-                className="mb-4 flex items-center gap-3 text-xs font-bold uppercase tracking-[0.24em] text-sky-800 [text-shadow:0_1px_8px_rgba(255,255,255,0.92)] before:h-px before:w-8 before:shrink-0 before:bg-sky-700/60 dark:text-cyan-200 dark:[text-shadow:0_2px_12px_rgba(0,0,0,0.72)] dark:before:bg-cyan-200/55 max-sm:hidden sm:text-sm"
+                className="mb-3 flex max-w-[20rem] items-start gap-2 text-[0.62rem] font-bold uppercase leading-[1.4] tracking-[0.17em] text-sky-800 [text-shadow:0_1px_8px_rgba(255,255,255,0.92)] before:mt-[0.42rem] before:h-px before:w-5 before:shrink-0 before:bg-sky-700/60 dark:text-cyan-200 dark:[text-shadow:0_2px_12px_rgba(0,0,0,0.72)] dark:before:bg-cyan-200/55 min-[360px]:text-[0.68rem] sm:mb-4 sm:max-w-none sm:items-center sm:gap-3 sm:text-sm sm:leading-normal sm:tracking-[0.24em] sm:before:mt-0 sm:before:w-8"
               >
                 Building useful products with clarity
               </motion.p>
@@ -1165,7 +1165,7 @@ export default function PortfolioDetails() {
                   onClick={() => scrollToSection("work")}
                   className="inline-flex min-h-12 min-w-0 flex-1 items-center justify-center whitespace-nowrap rounded-full bg-gradient-to-r from-slate-950 to-sky-950 px-2 py-3 text-xs font-bold text-white shadow-[0_16px_38px_rgba(15,23,42,0.2)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_44px_rgba(14,116,144,0.24)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300 dark:from-white dark:to-cyan-50 dark:text-slate-950 dark:shadow-[0_16px_38px_rgba(0,0,0,0.28)] dark:hover:shadow-[0_18px_46px_rgba(34,211,238,0.16)] dark:focus-visible:ring-cyan-200 min-[360px]:px-4 min-[360px]:text-sm sm:px-6"
                 >
-                  Selected work <span className="ml-2" aria-hidden="true">&rarr;</span>
+                  Career Journey <span className="ml-2" aria-hidden="true">&rarr;</span>
                 </button>
                 <a
                   href={resumeUrl}

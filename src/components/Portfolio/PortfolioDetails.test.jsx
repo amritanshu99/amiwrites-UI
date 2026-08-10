@@ -392,7 +392,7 @@ describe("PortfolioDetails startup experience", () => {
     },
   );
 
-  it("limits supporting hero copy on phones while keeping primary content", async () => {
+  it("keeps the responsive hero kicker and primary actions available on phones", async () => {
     axios.get.mockImplementationOnce(() => new Promise(() => {}));
 
     renderPortfolio();
@@ -400,7 +400,10 @@ describe("PortfolioDetails startup experience", () => {
 
     expect(
       screen.getByText("Building useful products with clarity"),
-    ).toHaveClass("flex", "max-sm:hidden");
+    ).toHaveClass("flex", "text-[0.62rem]", "sm:text-sm");
+    expect(
+      screen.getByText("Building useful products with clarity"),
+    ).not.toHaveClass("max-sm:hidden");
     expect(
       screen.getByText(/combined to solve real product problems/i),
     ).toHaveClass("max-sm:hidden");
@@ -411,7 +414,7 @@ describe("PortfolioDetails startup experience", () => {
       screen.getByText("Full-stack & AI Engineer", { selector: "p" }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: /selected work/i }),
+      screen.getByRole("button", { name: /career journey/i }),
     ).toBeInTheDocument();
     expect(
       screen.getByRole("link", { name: /view r.sum./i }),
