@@ -199,7 +199,7 @@ const App = () => {
   return (
     <div
       ref={appShellRef}
-      className={`amiverse-app-shell h-screen relative ${isAmiBotWorkspace ? "overflow-hidden" : "overflow-y-scroll"}`}
+      className="amiverse-app-shell h-screen overflow-y-scroll relative"
     >
       <Header setLoading={setIsLoading} />
       <ToastContainer
@@ -292,7 +292,7 @@ const App = () => {
       </main>
 
       <ContactMeButton />
-      {!isAmiBotWorkspace && <Footer />}
+      <Footer />
     </div>
   );
 };
