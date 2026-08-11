@@ -1,0 +1,157 @@
+{
+  "/": {
+    "title": "Amritanshu Mishra – Full-Stack & AI Engineer | AmiVerse",
+    "description": "Official portfolio of Amritanshu Mishra, a full-stack and AI engineer with 7+ years of experience. Explore his work, skills, projects, blogs, and AI tools.",
+    "keywords": "Amritanshu Mishra, Ami Mishra, full-stack engineer, AI engineer, React developer, Node.js developer, GraphQL developer, GlobalLogic, ConQsys",
+    "schemaType": "ProfilePage",
+    "changefreq": "monthly",
+    "priority": 1
+  },
+  "/blogs": {
+    "title": "Software Engineering & AI Blog by Amritanshu Mishra",
+    "description": "Read practical software engineering, AI, React, Node.js, and reinforcement learning articles written by Amritanshu Mishra on AmiVerse.",
+    "keywords": "Amritanshu Mishra blog, software engineering blog, AI blog, React articles, Node.js articles, reinforcement learning",
+    "schemaType": "Blog",
+    "changefreq": "daily",
+    "priority": 0.9
+  },
+  "/ai-chat": {
+    "title": "Ami AI Wellness Chat | AmiVerse",
+    "description": "Use Ami AI for guided wellness conversations, calming prompts, reflection, and everyday emotional support in a focused member workspace.",
+    "keywords": "AI wellness chat, reflection prompts, calming prompts, Ami AI",
+    "schemaType": "WebApplication",
+    "changefreq": "monthly",
+    "priority": 0.6
+  },
+  "/tech-byte": {
+    "title": "Daily Tech News & Top Stories | Tech Byte | AmiVerse",
+    "description": "Browse concise daily technology news and top stories from third-party publishers, organized by AmiVerse for quick reading.",
+    "keywords": "daily tech news, technology headlines, tech stories, Tech Byte",
+    "schemaType": "CollectionPage",
+    "changefreq": "daily",
+    "priority": 0.7
+  },
+  "/ai-tools": {
+    "title": "AI & Machine Learning Tools by Amritanshu Mishra | AmiVerse",
+    "description": "Explore AI and machine-learning projects by Amritanshu Mishra: a spam detector, emotion analyzer, movie recommender, AmiBot, and an interactive RL demo.",
+    "keywords": "AI tools by Amritanshu Mishra, machine learning projects, spam detector, emotion analyzer, movie recommender, reinforcement learning demo",
+    "schemaType": "CollectionPage",
+    "changefreq": "monthly",
+    "priority": 0.8
+  },
+  "/task-manager": {
+    "title": "Online Task Manager & Productivity Insights | AmiVerse",
+    "description": "Plan priorities, manage a visual task board, track deadlines, and review personal productivity insights with the AmiVerse Task Manager.",
+    "keywords": "online task manager, personal task board, productivity insights, kanban task manager",
+    "schemaType": "WebApplication",
+    "changefreq": "monthly",
+    "priority": 0.6
+  },
+  "/spam-check": {
+    "title": "Free Spam Email Detector – Machine Learning Tool | AmiVerse",
+    "description": "Check English email subjects and messages for spam using Amritanshu Mishra's TF-IDF and logistic-regression machine-learning tool.",
+    "keywords": "spam email detector, spam checker, TF-IDF, logistic regression, machine learning tool",
+    "schemaType": "WebApplication",
+    "changefreq": "monthly",
+    "priority": 0.7
+  },
+  "/movie-recommender": {
+    "title": "Hollywood Movie Recommender – Find Similar Movies | AmiVerse",
+    "description": "Find Hollywood movies similar to your favorites with a content-based recommendation tool using cosine similarity across thousands of titles.",
+    "keywords": "Hollywood movie recommender, find similar movies, content-based filtering, cosine similarity",
+    "schemaType": "WebApplication",
+    "changefreq": "monthly",
+    "priority": 0.7
+  },
+  "/emotion-analyzer": {
+    "title": "English Text Emotion Analyzer – RNN & LSTM Tool | AmiVerse",
+    "description": "Analyze emotions in short English text with an interactive deep-learning tool built using recurrent neural networks and LSTM.",
+    "keywords": "text emotion analyzer, emotion detection, RNN, LSTM, deep learning tool",
+    "schemaType": "WebApplication",
+    "changefreq": "monthly",
+    "priority": 0.7
+  },
+  "/amibot": {
+    "title": "AmiBot Knowledge Chat | Ask About Amritanshu Mishra",
+    "description": "Ask AmiBot questions grounded in AmiVerse knowledge sources, including information about Amritanshu Mishra's career, skills, work, and projects.",
+    "keywords": "Amritanshu Mishra career, Amritanshu Mishra projects, Amritanshu Mishra skills, AmiBot",
+    "schemaType": "WebApplication",
+    "changefreq": "weekly",
+    "priority": 0.8
+  },
+  "/reinforcement-learning": {
+    "title": "Interactive Reinforcement Learning GridWorld Demo | AmiVerse",
+    "description": "Learn Q-Learning, DQN, and policy gradients in an editable GridWorld with live rewards, paths, policies, and training progress.",
+    "keywords": "reinforcement learning demo, GridWorld, Q-Learning, DQN, policy gradient, interactive machine learning",
+    "schemaType": "LearningResource",
+    "changefreq": "monthly",
+    "priority": 0.8
+  },
+  "/legal/privacy-policy": {
+    "title": "Privacy Policy | AmiVerse",
+    "description": "Learn what information AmiVerse collects, how it is used and protected, and what privacy choices and rights are available to you.",
+    "schemaType": "WebPage",
+    "changefreq": "yearly",
+    "priority": 0.2
+  },
+  "/legal/terms-of-service": {
+    "title": "Terms of Service | AmiVerse",
+    "description": "Read the terms that govern access to and use of AmiVerse websites, applications, APIs, content, and related services.",
+    "schemaType": "WebPage",
+    "changefreq": "yearly",
+    "priority": 0.2
+  },
+  "/legal/cookie-policy": {
+    "title": "Cookie Policy | AmiVerse",
+    "description": "Learn how AmiVerse uses cookies and similar technologies and how you can manage cookie preferences in your browser.",
+    "schemaType": "WebPage",
+    "changefreq": "yearly",
+    "priority": 0.2
+  },
+  "/legal/acceptable-use": {
+    "title": "Acceptable Use Policy | AmiVerse",
+    "description": "Review the rules that keep AmiVerse secure, lawful, and respectful, including prohibited activity and platform-abuse policies.",
+    "schemaType": "WebPage",
+    "changefreq": "yearly",
+    "priority": 0.2
+  },
+  "/legal/security": {
+    "title": "Security Overview | AmiVerse",
+    "description": "Review the practical controls AmiVerse uses to protect systems, user data, accounts, and service reliability.",
+    "schemaType": "WebPage",
+    "changefreq": "yearly",
+    "priority": 0.2
+  },
+  "/legal/accessibility": {
+    "title": "Accessibility Statement | AmiVerse",
+    "description": "Read AmiVerse's commitment to an inclusive experience, ongoing accessibility improvements, and ways to report barriers.",
+    "schemaType": "WebPage",
+    "changefreq": "yearly",
+    "priority": 0.2
+  },
+  "/add-blog": {
+    "title": "Create Blog | AmiVerse Admin",
+    "description": "Private AmiVerse blog publishing workspace.",
+    "noindex": true
+  },
+  "/ami-pulse-settings": {
+    "title": "Ami Pulse Settings | AmiVerse Admin",
+    "description": "Private AmiVerse settings workspace.",
+    "noindex": true
+  },
+  "/amibot-admin": {
+    "title": "AmiBot Settings | AmiVerse Admin",
+    "description": "Private AmiBot administration workspace.",
+    "noindex": true
+  },
+  "/reset-password": {
+    "title": "Reset Password | AmiVerse",
+    "description": "Secure AmiVerse password reset page.",
+    "noindex": true
+  },
+  "/not-found": {
+    "title": "Page Not Found | AmiVerse",
+    "description": "The requested AmiVerse page could not be found.",
+    "noindex": true
+  }
+}

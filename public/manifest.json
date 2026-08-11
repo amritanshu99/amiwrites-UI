@@ -1,8 +1,12 @@
 {
   "name": "AmiVerse",
   "short_name": "AmiVerse",
-  "description": "AI Chat – Mental Wellness by Amritanshu Mishra",
+  "description": "The portfolio, engineering blog, projects, and AI tools of Amritanshu Mishra.",
+  "id": "/",
   "start_url": "/",
+  "scope": "/",
+  "lang": "en-IN",
+  "categories": ["productivity", "developer tools", "education"],
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#000000",

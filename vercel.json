@@ -1,5 +1,35 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "redirects": [
+    {
+      "source": "/blog",
+      "destination": "/blogs",
+      "permanent": true
+    },
+    {
+      "source": "/Reinforcement-Learning",
+      "destination": "/reinforcement-learning",
+      "permanent": true
+    },
+    {
+      "source": "/pulse-settings",
+      "destination": "/ami-pulse-settings",
+      "permanent": true
+    },
+    {
+      "source": "/beacon-settings",
+      "destination": "/ami-pulse-settings",
+      "permanent": true
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/"
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",
@@ -15,6 +45,55 @@
         {
           "key": "Permissions-Policy",
           "value": "geolocation=(self), microphone=(), camera=()"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        }
+      ]
+    },
+    {
+      "source": "/add-blog",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        }
+      ]
+    },
+    {
+      "source": "/ami-pulse-settings",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        }
+      ]
+    },
+    {
+      "source": "/amibot-admin",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        }
+      ]
+    },
+    {
+      "source": "/reset-password/:path*",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        }
+      ]
+    },
+    {
+      "source": "/static/:path*",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
         }
       ]
     }

@@ -1,14 +1,16 @@
-const SITE_NAME = "AmiVerse";
-export const SITE_URL = "https://www.amiverse.in";
-const DEFAULT_OG_IMAGE = `${SITE_URL}/og-image.jpg`;
-const DEFAULT_LOGO_IMAGE = `${SITE_URL}/icons/icon-512x512.png`;
-const DEFAULT_IMAGE_ALT = "AmiVerse portfolio preview for Amritanshu Mishra";
+import seoRoutes from "../config/seoRoutes.json";
 
+const SITE_NAME = "AmiVerse";
+const OWNER_NAME = "Amritanshu Mishra";
+export const SITE_URL = "https://www.amiverse.in";
+
+const DEFAULT_OG_IMAGE = `${SITE_URL}/og-image.jpg`;
+const DEFAULT_IMAGE_ALT =
+  "Amritanshu Mishra – full-stack and AI engineer, creator of AmiVerse";
 const PERSON_ID = `${SITE_URL}/#person`;
-const ORGANIZATION_ID = `${SITE_URL}/#organization`;
 const WEBSITE_ID = `${SITE_URL}/#website`;
 const PRIMARY_SEO_KEYWORDS =
-  "Amritanshu Mishra, Amritanshu, AmiVerse, Amiverse.in, website, software engineer, associate consultant, consultant, AI engineer, developer, React developer, Node.js developer, MERN stack, innovator, engineer, Mathura, Shivasha Estate, Migsun Ultimo, Noida, Greater Noida, Ghaziabad, RKGIT, Rajkumar Goel Institute of Technology, Raj Kumar Goel Institute of Technology, RSPS, Ramanlal Shorawala Public School, ECE, Electronics and Communication Engineering, GlobalLogic, Hitachi";
+  "Amritanshu Mishra, Ami Mishra, AmiVerse, full-stack engineer, AI engineer";
 
 const SOCIAL_LINKS = [
   "https://www.linkedin.com/in/amritanshu-mishra-568598306/",
@@ -17,21 +19,27 @@ const SOCIAL_LINKS = [
   "https://www.facebook.com/Ami.Mishra99",
 ];
 
-const removeTrailingSlash = (url) => url.replace(/\/$/, "");
+const normalizeToPath = (value) => {
+  if (!value) return "/";
 
-const normalizeToPath = (path) => {
-  if (!path) return "/";
+  let pathname = String(value).split(/[?#]/, 1)[0] || "/";
 
-  if (/^https?:\/\//i.test(path)) {
+  if (/^https?:\/\//i.test(value)) {
     try {
-      const parsed = new URL(path);
-      return `${parsed.pathname || "/"}${parsed.search || ""}${parsed.hash || ""}`;
+      pathname = new URL(value).pathname || "/";
     } catch {
-      return "/";
+      pathname = "/";
     }
   }
 
-  return path.startsWith("/") ? path : `/${path}`;
+  const withLeadingSlash = pathname.startsWith("/") ? pathname : `/${pathname}`;
+  const withoutTrailingSlash = withLeadingSlash.replace(/\/+$/, "");
+  return withoutTrailingSlash || "/";
+};
+
+export const getCanonicalUrl = (path = "/") => {
+  const pathname = normalizeToPath(path);
+  return pathname === "/" ? `${SITE_URL}/` : `${SITE_URL}${pathname}`;
 };
 
 const upsertMeta = (selector, attrs) => {
@@ -42,161 +50,236 @@ const upsertMeta = (selector, attrs) => {
   }
 
   Object.entries(attrs).forEach(([key, value]) => {
-    meta.setAttribute(key, value);
+    meta.setAttribute(key, String(value));
   });
 };
 
-const upsertLink = (rel, href) => {
-  let link = document.head.querySelector(`link[rel='${rel}']`);
+const removeMeta = (selector) => {
+  document.head.querySelector(selector)?.remove();
+};
+
+const upsertLink = (selector, attrs) => {
+  let link = document.head.querySelector(selector);
   if (!link) {
     link = document.createElement("link");
-    link.setAttribute("rel", rel);
     document.head.appendChild(link);
   }
-  link.setAttribute("href", href);
+
+  Object.entries(attrs).forEach(([key, value]) => {
+    link.setAttribute(key, String(value));
+  });
 };
 
 const upsertJsonLd = (id, data) => {
-  let script = document.head.querySelector(`script[data-seo-id='${id}']`);
+  let script =
+    document.head.querySelector(`script[data-seo-id='${id}']`) ||
+    document.head.querySelector("#seo-structured-data");
   if (!script) {
     script = document.createElement("script");
     script.type = "application/ld+json";
-    script.dataset.seoId = id;
     document.head.appendChild(script);
   }
 
+  script.dataset.seoId = id;
   script.textContent = JSON.stringify(data);
 };
 
-const defaultStructuredData = (title, description, canonical) => ({
-  "@context": "https://schema.org",
-  "@graph": [
+const personEntity = () => ({
+  "@type": "Person",
+  "@id": PERSON_ID,
+  name: OWNER_NAME,
+  alternateName: ["Amritanshu", "Ami Mishra"],
+  url: `${SITE_URL}/`,
+  image: {
+    "@type": "ImageObject",
+    url: DEFAULT_OG_IMAGE,
+  },
+  jobTitle: "Full-stack & AI Engineer",
+  description:
+    "Full-stack and AI engineer with 7+ years of experience building web products with React, Node.js, GraphQL, and machine-learning tools.",
+  sameAs: SOCIAL_LINKS,
+  worksFor: {
+    "@type": "Organization",
+    name: "GlobalLogic",
+  },
+  alumniOf: [
     {
-      "@type": "Person",
-      "@id": PERSON_ID,
-      name: "Amritanshu Mishra",
-      alternateName: ["Amritanshu", "Ami Mishra"],
-      url: SITE_URL,
-      image: DEFAULT_OG_IMAGE,
-      jobTitle: "Software Engineer",
-      description:
-        "Associate Consultant, software engineer, AI engineer, consultant, MERN stack developer and innovator from Mathura, Noida and Greater Noida, India.",
-      sameAs: SOCIAL_LINKS,
-      worksFor: {
-        "@type": "Organization",
-        name: "GlobalLogic",
-        parentOrganization: {
-          "@type": "Organization",
-          name: "Hitachi",
-        },
-      },
-      address: {
-        "@type": "PostalAddress",
-        addressLocality: "Noida",
-        addressRegion: "Uttar Pradesh",
-        addressCountry: "IN",
-      },
-      homeLocation: {
-        "@type": "Place",
-        name: "Mathura",
-      },
-      hasOccupation: [
-        {
-          "@type": "Occupation",
-          name: "Associate Consultant",
-          occupationLocation: {
-            "@type": "City",
-            name: "Noida",
-          },
-          skills: "React, Node.js, GraphQL, AI Engineering",
-        },
-      ],
-      alumniOf: [
-        {
-          "@type": "EducationalOrganization",
-          name: "Rajkumar Goel Institute of Technology",
-          alternateName: ["RKGIT", "Raj Kumar Goel Institute of Technology"],
-          address: {
-            "@type": "PostalAddress",
-            addressLocality: "Ghaziabad",
-            addressCountry: "IN",
-          },
-        },
-        {
-          "@type": "EducationalOrganization",
-          name: "Ramanlal Shorawala Public School",
-          alternateName: ["RSPS"],
-          address: {
-            "@type": "PostalAddress",
-            addressLocality: "Mathura",
-            addressCountry: "IN",
-          },
-        },
-      ],
-      knowsAbout: [
-        "Software Engineering",
-        "AI Engineering",
-        "Consulting",
-        "React",
-        "Node.js",
-        "MERN Stack Development",
-        "Electronics and Communication Engineering",
-        "Innovation",
-      ],
+      "@type": "CollegeOrUniversity",
+      name: "Rajkumar Goel Institute of Technology",
+      alternateName: "RKGIT",
     },
     {
-      "@type": "Organization",
-      "@id": ORGANIZATION_ID,
-      name: SITE_NAME,
-      url: SITE_URL,
-      logo: {
-        "@type": "ImageObject",
-        url: DEFAULT_LOGO_IMAGE,
-        width: 512,
-        height: 512,
-      },
-      founder: {
-        "@id": PERSON_ID,
-      },
-      sameAs: SOCIAL_LINKS,
-    },
-    {
-      "@type": "WebSite",
-      "@id": WEBSITE_ID,
-      url: SITE_URL,
-      name: SITE_NAME,
-      description: "Portfolio, blogs, and AI tools by Amritanshu Mishra.",
-      publisher: {
-        "@id": ORGANIZATION_ID,
-      },
-      potentialAction: {
-        "@type": "SearchAction",
-        target: `${SITE_URL}/blogs?search={search_term_string}`,
-        "query-input": "required name=search_term_string",
-      },
-    },
-    {
-      "@type": "WebPage",
-      "@id": `${canonical}#webpage`,
-      name: title,
-      description,
-      url: canonical,
-      inLanguage: "en-IN",
-      isPartOf: {
-        "@id": WEBSITE_ID,
-      },
-      about: {
-        "@id": PERSON_ID,
-      },
-      primaryImageOfPage: {
-        "@type": "ImageObject",
-        url: DEFAULT_OG_IMAGE,
-        width: 1200,
-        height: 630,
-      },
+      "@type": "EducationalOrganization",
+      name: "Ramanlal Shorawala Public School",
     },
   ],
+  knowsAbout: [
+    "JavaScript",
+    "React",
+    "Node.js",
+    "Express",
+    "MongoDB",
+    "GraphQL",
+    "Artificial Intelligence",
+    "Machine Learning",
+    "Full-stack Development",
+  ],
 });
+
+const websiteEntity = () => ({
+  "@type": "WebSite",
+  "@id": WEBSITE_ID,
+  url: `${SITE_URL}/`,
+  name: SITE_NAME,
+  alternateName: "Amritanshu Mishra Portfolio",
+  description:
+    "The official portfolio, engineering blog, projects, and AI tools of Amritanshu Mishra.",
+  inLanguage: "en-IN",
+  creator: { "@id": PERSON_ID },
+  publisher: { "@id": PERSON_ID },
+});
+
+const createPageEntity = ({ title, description, canonical, schemaType }) => {
+  const pageType = ["ProfilePage", "Blog", "CollectionPage", "WebPage"].includes(
+    schemaType,
+  )
+    ? schemaType
+    : "WebPage";
+
+  const page = {
+    "@type": pageType,
+    "@id": `${canonical}#webpage`,
+    url: canonical,
+    name: title,
+    description,
+    inLanguage: "en-IN",
+    isPartOf: { "@id": WEBSITE_ID },
+    about: { "@id": PERSON_ID },
+    primaryImageOfPage: {
+      "@type": "ImageObject",
+      url: DEFAULT_OG_IMAGE,
+    },
+  };
+
+  if (schemaType === "ProfilePage") {
+    page.mainEntity = { "@id": PERSON_ID };
+  }
+
+  return page;
+};
+
+const createMainEntity = ({ title, description, canonical, schemaType }) => {
+  if (schemaType === "WebApplication") {
+    return {
+      "@type": "WebApplication",
+      "@id": `${canonical}#application`,
+      name: title.split(" | ")[0],
+      url: canonical,
+      description,
+      applicationCategory: "UtilitiesApplication",
+      operatingSystem: "Any",
+      browserRequirements: "Requires a modern web browser with JavaScript enabled",
+      author: { "@id": PERSON_ID },
+      isPartOf: { "@id": WEBSITE_ID },
+    };
+  }
+
+  if (schemaType === "LearningResource") {
+    return {
+      "@type": "LearningResource",
+      "@id": `${canonical}#learning-resource`,
+      name: title.split(" | ")[0],
+      url: canonical,
+      description,
+      learningResourceType: "Interactive simulation",
+      educationalLevel: "Beginner",
+      teaches: ["Q-Learning", "Deep Q-Networks", "Policy Gradients"],
+      inLanguage: "en-IN",
+      author: { "@id": PERSON_ID },
+      isPartOf: { "@id": WEBSITE_ID },
+    };
+  }
+
+  return null;
+};
+
+const createBreadcrumbEntity = (title, canonical) => {
+  if (canonical === `${SITE_URL}/`) return null;
+
+  return {
+    "@type": "BreadcrumbList",
+    "@id": `${canonical}#breadcrumb`,
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Amritanshu Mishra",
+        item: `${SITE_URL}/`,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: title.split(" | ")[0],
+        item: canonical,
+      },
+    ],
+  };
+};
+
+const structuredDataNodes = (structuredData) => {
+  if (!structuredData) return [];
+  if (Array.isArray(structuredData)) return structuredData;
+  if (Array.isArray(structuredData["@graph"])) return structuredData["@graph"];
+
+  const { "@context": _context, ...entity } = structuredData;
+  return [entity];
+};
+
+const buildStructuredData = ({
+  title,
+  description,
+  canonical,
+  schemaType,
+  structuredData,
+}) => {
+  const pageEntity = createPageEntity({ title, description, canonical, schemaType });
+  const mainEntity = createMainEntity({ title, description, canonical, schemaType });
+
+  if (mainEntity) {
+    pageEntity.mainEntity = { "@id": mainEntity["@id"] };
+  }
+
+  const suppliedNodes = structuredDataNodes(structuredData).map((node, index) => ({
+    ...node,
+    "@id": node["@id"] || `${canonical}#primary-${index + 1}`,
+    isPartOf: node.isPartOf || { "@id": WEBSITE_ID },
+  }));
+
+  if (suppliedNodes[0]) {
+    pageEntity.mainEntity = { "@id": suppliedNodes[0]["@id"] };
+  }
+
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      personEntity(),
+      websiteEntity(),
+      pageEntity,
+      ...(mainEntity ? [mainEntity] : []),
+      ...suppliedNodes,
+      createBreadcrumbEntity(title, canonical),
+    ].filter(Boolean),
+  };
+};
+
+const setOptionalArticleMeta = (selector, property, value) => {
+  if (!value) {
+    removeMeta(selector);
+    return;
+  }
+
+  upsertMeta(selector, { property, content: value });
+};
 
 export const applySEO = ({
   title,
@@ -207,34 +290,36 @@ export const applySEO = ({
   noindex = false,
   type = "website",
   keywords,
+  schemaType = "WebPage",
   structuredData,
+  publishedTime,
+  modifiedTime,
+  section,
+  tags = [],
 }) => {
-  const canonical = `${removeTrailingSlash(SITE_URL)}${normalizeToPath(path)}`;
+  const canonical = getCanonicalUrl(path);
   const imageUrl = /^https?:\/\//i.test(image)
     ? image
-    : `${removeTrailingSlash(SITE_URL)}${normalizeToPath(image)}`;
+    : `${SITE_URL}${normalizeToPath(image)}`;
+  const robots = noindex
+    ? "noindex, nofollow, noarchive"
+    : "index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1";
 
   document.title = title;
 
   upsertMeta("meta[name='description']", { name: "description", content: description });
   upsertMeta("meta[name='title']", { name: "title", content: title });
-  upsertMeta("meta[name='author']", { name: "author", content: "Amritanshu Mishra" });
-  upsertMeta("meta[name='application-name']", { name: "application-name", content: SITE_NAME });
-  upsertMeta("meta[name='robots']", {
-    name: "robots",
-    content: noindex
-      ? "noindex, nofollow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"
-      : "index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1",
+  upsertMeta("meta[name='author']", { name: "author", content: OWNER_NAME });
+  upsertMeta("meta[name='application-name']", {
+    name: "application-name",
+    content: SITE_NAME,
   });
-
-  if (keywords) {
-    upsertMeta("meta[name='keywords']", {
-      name: "keywords",
-      content: `${keywords}, ${PRIMARY_SEO_KEYWORDS}`,
-    });
-  } else {
-    upsertMeta("meta[name='keywords']", { name: "keywords", content: PRIMARY_SEO_KEYWORDS });
-  }
+  upsertMeta("meta[name='robots']", { name: "robots", content: robots });
+  upsertMeta("meta[name='googlebot']", { name: "googlebot", content: robots });
+  upsertMeta("meta[name='keywords']", {
+    name: "keywords",
+    content: keywords ? `${keywords}, ${PRIMARY_SEO_KEYWORDS}` : PRIMARY_SEO_KEYWORDS,
+  });
 
   upsertMeta("meta[property='og:title']", { property: "og:title", content: title });
   upsertMeta("meta[property='og:description']", {
@@ -243,109 +328,87 @@ export const applySEO = ({
   });
   upsertMeta("meta[property='og:url']", { property: "og:url", content: canonical });
   upsertMeta("meta[property='og:type']", { property: "og:type", content: type });
-  upsertMeta("meta[property='og:site_name']", { property: "og:site_name", content: SITE_NAME });
+  upsertMeta("meta[property='og:site_name']", {
+    property: "og:site_name",
+    content: SITE_NAME,
+  });
   upsertMeta("meta[property='og:locale']", { property: "og:locale", content: "en_IN" });
   upsertMeta("meta[property='og:image']", { property: "og:image", content: imageUrl });
-  upsertMeta("meta[property='og:image:width']", { property: "og:image:width", content: "1200" });
-  upsertMeta("meta[property='og:image:height']", { property: "og:image:height", content: "630" });
+  upsertMeta("meta[property='og:image:secure_url']", {
+    property: "og:image:secure_url",
+    content: imageUrl,
+  });
   upsertMeta("meta[property='og:image:alt']", {
     property: "og:image:alt",
     content: imageAlt,
   });
 
-  upsertMeta("meta[name='twitter:card']", { name: "twitter:card", content: "summary_large_image" });
+  upsertMeta("meta[name='twitter:card']", {
+    name: "twitter:card",
+    content: "summary",
+  });
   upsertMeta("meta[name='twitter:title']", { name: "twitter:title", content: title });
   upsertMeta("meta[name='twitter:description']", {
     name: "twitter:description",
     content: description,
   });
   upsertMeta("meta[name='twitter:image']", { name: "twitter:image", content: imageUrl });
-  upsertMeta("meta[name='twitter:image:alt']", { name: "twitter:image:alt", content: imageAlt });
+  upsertMeta("meta[name='twitter:image:alt']", {
+    name: "twitter:image:alt",
+    content: imageAlt,
+  });
   upsertMeta("meta[name='twitter:url']", { name: "twitter:url", content: canonical });
-  upsertMeta("meta[name='twitter:creator']", { name: "twitter:creator", content: "@amritanshu_m" });
-  upsertMeta("meta[name='twitter:site']", { name: "twitter:site", content: "@amritanshu_m" });
 
-  upsertLink("canonical", canonical);
+  upsertLink("link[rel='canonical']", { rel: "canonical", href: canonical });
+  upsertLink("link[rel='alternate'][hreflang='en-IN']", {
+    rel: "alternate",
+    hreflang: "en-IN",
+    href: canonical,
+  });
+  upsertLink("link[rel='alternate'][hreflang='x-default']", {
+    rel: "alternate",
+    hreflang: "x-default",
+    href: canonical,
+  });
+
+  setOptionalArticleMeta(
+    "meta[property='article:published_time']",
+    "article:published_time",
+    type === "article" ? publishedTime : null,
+  );
+  setOptionalArticleMeta(
+    "meta[property='article:modified_time']",
+    "article:modified_time",
+    type === "article" ? modifiedTime : null,
+  );
+  setOptionalArticleMeta(
+    "meta[property='article:section']",
+    "article:section",
+    type === "article" ? section : null,
+  );
+
+  document.head
+    .querySelectorAll("meta[property='article:tag']")
+    .forEach((element) => element.remove());
+  if (type === "article") {
+    tags.filter(Boolean).forEach((tag) => {
+      const meta = document.createElement("meta");
+      meta.setAttribute("property", "article:tag");
+      meta.setAttribute("content", String(tag));
+      document.head.appendChild(meta);
+    });
+  }
 
   upsertJsonLd(
-    "route-webpage",
-    structuredData || defaultStructuredData(title, description, canonical)
+    "route-graph",
+    buildStructuredData({
+      title,
+      description,
+      canonical,
+      schemaType,
+      structuredData,
+    }),
   );
 };
 
-export const seoByRoute = {
-  "/": {
-    title: "Amritanshu Mishra | AmiVerse Portfolio, Blogs & AI Tools",
-    description:
-      "Explore AmiVerse by Amritanshu Mishra (Amritanshu): software engineer, associate consultant, AI engineer, and MERN stack developer from Mathura/Noida.",
-    keywords:
-      "Amritanshu Mishra portfolio, Amiverse.in website, software engineer, associate consultant, consultant, AI engineer, innovator, GlobalLogic, Hitachi, RKGIT, Rajkumar Goel Institute of Technology, Ramanlal Shorawala Public School, Mathura, Shivasha Estate, Migsun Ultimo, Noida, Greater Noida, Ghaziabad",
-  },
-  "/blogs": {
-    title: "Developer Blogs on React, AI & Productivity | AmiVerse",
-    description:
-      "Read practical developer blogs by Amritanshu Mishra on React, AI workflows, engineering growth, and productivity.",
-    keywords:
-      "Amritanshu Mishra blogs, React blogs, AI blogs, developer writing, software engineering notes",
-  },
-  "/ai-chat": {
-    title: "AI Chat Assistant | AmiVerse",
-    description:
-      "Use AmiVerse AI Chat to brainstorm, summarize, and accelerate day-to-day writing and development tasks.",
-  },
-  "/tech-byte": {
-    title: "Tech Byte | Quick Technical Insights by AmiVerse",
-    description:
-      "Discover short, actionable tech bytes on web development, AI features, and engineering best practices.",
-  },
-  "/ai-tools": {
-    title: "AI Tools Suite | Spam, Emotion, Movies & More | AmiVerse",
-    description:
-      "Try AI-powered tools from AmiVerse, including spam detection, emotion analysis, movie recommendations, and productivity helpers.",
-  },
-  "/task-manager": {
-    title: "Task Manager & Productivity Analytics | AmiVerse",
-    description:
-      "Plan, track, and optimize daily tasks with AmiVerse Task Manager and built-in productivity analytics.",
-  },
-  "/spam-check": {
-    title: "Spam Detector Tool | AmiVerse AI Utilities",
-    description:
-      "Detect spam-like messages instantly using AmiVerse Spam Detector powered by machine learning.",
-  },
-  "/movie-recommender": {
-    title: "Movie Recommender | AmiVerse AI Tools",
-    description:
-      "Get personalized movie suggestions using AmiVerse Movie Recommender and discover what to watch next.",
-  },
-  "/emotion-analyzer": {
-    title: "Emotion Analyzer | Sentiment Intelligence by AmiVerse",
-    description:
-      "Analyze emotions in text with AmiVerse Emotion Analyzer to better understand tone, sentiment, and intent.",
-  },
-  "/amibot": {
-    title: "AmiBot AI Assistant | AmiVerse",
-    description:
-      "Chat with AmiBot for faster answers, idea generation, and writing assistance across your workflow.",
-  },
-  "/Reinforcement-Learning": {
-    title: "Reinforcement Learning Projects & Notes | AmiVerse",
-    description:
-      "Explore reinforcement learning demos, concepts, and project notes published on AmiVerse.",
-  },
-  "/legal": {
-    title: "Legal Information | Terms, Privacy & Policies | AmiVerse",
-    description:
-      "Review AmiVerse legal documents including Terms of Service, Privacy Policy, Cookie Policy, security practices, and acceptable use requirements.",
-  },
-  "/add-blog": {
-    title: "Add Blog | AmiVerse Admin",
-    description: "Admin area for creating and publishing AmiVerse blog posts.",
-    noindex: true,
-  },
-  "/reset-password": {
-    title: "Reset Password | AmiVerse",
-    description: "Securely reset your AmiVerse account password.",
-    noindex: true,
-  },
-};
+export const seoByRoute = seoRoutes;

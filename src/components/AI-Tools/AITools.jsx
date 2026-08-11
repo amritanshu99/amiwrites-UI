@@ -32,7 +32,7 @@ const toolLinks = [
     color: "from-purple-500 via-purple-600 to-purple-700",
   },
     {
-    path: "/Reinforcement-Learning",
+    path: "/reinforcement-learning",
     label: "Reinforcement-Learning",
     color: "from-purple-500 via-purple-600 to-purple-700",
   },

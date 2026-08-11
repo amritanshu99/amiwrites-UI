@@ -1,44 +1,35 @@
-const { SitemapStream, streamToPromise } = require("sitemap");
 const { writeFile } = require("fs/promises");
 const path = require("path");
+const {
+  buildRssXml,
+  buildSitemapXml,
+  fetchAllBlogs,
+} = require("../server/seoContent");
 
-const SITE_URL = "https://www.amiverse.in";
 const SITEMAP_PATH = path.resolve(__dirname, "../public/sitemap.xml");
+const FEED_PATH = path.resolve(__dirname, "../public/feed.xml");
 
-async function generateSitemap() {
-  const hostname = SITE_URL;
-  const today = new Date().toISOString();
+async function generateSeoDiscoveryFiles() {
+  let blogs = [];
 
-  const urls = [
-    { url: "/", changefreq: "daily", priority: 1.0 },
-    { url: "/blogs", changefreq: "daily", priority: 0.9 },
-    { url: "/ai-chat", changefreq: "weekly", priority: 0.8 },
-    { url: "/tech-byte", changefreq: "daily", priority: 0.8 },
-    { url: "/ai-tools", changefreq: "weekly", priority: 0.8 },
-    { url: "/task-manager", changefreq: "weekly", priority: 0.8 },
-    { url: "/spam-check", changefreq: "weekly", priority: 0.7 },
-    { url: "/movie-recommender", changefreq: "weekly", priority: 0.7 },
-    { url: "/emotion-analyzer", changefreq: "weekly", priority: 0.7 },
-    { url: "/amibot", changefreq: "weekly", priority: 0.7 },
-    { url: "/Reinforcement-Learning", changefreq: "monthly", priority: 0.6 },
-  ];
+  try {
+    blogs = await fetchAllBlogs();
+    console.log(`Fetched ${blogs.length} blog post(s) for SEO discovery files.`);
+  } catch (error) {
+    console.warn(
+      `Blog lookup failed; generating static-route fallbacks: ${error?.message || error}`,
+    );
+  }
 
-  const sitemapStream = new SitemapStream({ hostname });
+  await Promise.all([
+    writeFile(SITEMAP_PATH, buildSitemapXml(blogs), "utf8"),
+    writeFile(FEED_PATH, buildRssXml(blogs), "utf8"),
+  ]);
 
-  urls.forEach(({ url, changefreq, priority }) => {
-    sitemapStream.write({ url, changefreq, priority, lastmodISO: today });
-  });
-
-  sitemapStream.end();
-  const xml = (await streamToPromise(sitemapStream)).toString();
-  const stylesheet = '<?xml-stylesheet type="text/xsl" href="/sitemap.xsl"?>';
-  const withStylesheet = xml.includes("sitemap.xsl")
-    ? xml
-    : xml.replace("?>", `?>\n${stylesheet}`);
-
-  await writeFile(SITEMAP_PATH, withStylesheet, "utf8");
-
-  console.log("Sitemap generated at public/sitemap.xml");
+  console.log("Generated public/sitemap.xml and public/feed.xml");
 }
 
-generateSitemap().catch(console.error);
+generateSeoDiscoveryFiles().catch((error) => {
+  console.error("SEO discovery generation failed:", error);
+  process.exitCode = 1;
+});

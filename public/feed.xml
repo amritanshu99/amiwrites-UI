@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>AmiVerse Blog by Amritanshu Mishra</title>
+    <link>https://www.amiverse.in/blogs</link>
+    <description>Software engineering, AI, React, Node.js, and reinforcement learning articles by Amritanshu Mishra.</description>
+    <language>en-IN</language>
+    <lastBuildDate>Fri, 26 Sep 2025 11:31:39 GMT</lastBuildDate>
+    <atom:link href="https://www.amiverse.in/feed.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>When Observation Changes Reality: The Quantum Enigma of the Double-Slit Experiment</title>
+      <link>https://www.amiverse.in/blogs/68d6799bf1b4aaab895a29d2</link>
+      <guid isPermaLink="true">https://www.amiverse.in/blogs/68d6799bf1b4aaab895a29d2</guid>
+      <pubDate>Fri, 26 Sep 2025 11:31:39 GMT</pubDate>
+      <description>In the early 1800s, Thomas Young conducted a simple experiment with light that changed physics forever. Known as the double-slit experiment, it revealed strange truths about the nature of light, matter, and even observation itself—mysteries that continue to puzzle scientists today. The Double-Slit Experiment Young shone light through two narrow slits onto a screen. If light were made of particles, we’d expect two bright bands behind the slits. Instead, what appeared was an interference pattern —</description>
+    </item>
+    <item>
+      <title>Reinforcement Learning (RL): Teaching Machines Through Experience</title>
+      <link>https://www.amiverse.in/blogs/68d66b913209cb1a1b940d6e</link>
+      <guid isPermaLink="true">https://www.amiverse.in/blogs/68d66b913209cb1a1b940d6e</guid>
+      <pubDate>Fri, 26 Sep 2025 10:31:45 GMT</pubDate>
+      <description>Artificial Intelligence (AI) has many branches, but one of the most fascinating is Reinforcement Learning (RL) — a method inspired by how humans and animals learn from trial and error. Unlike supervised learning (which relies on labeled data) or unsupervised learning (which finds patterns in raw data), RL is about learning by doing. What is RL? In RL, an agent interacts with an environment. The agent takes actions, observes results, and receives rewards or penalties. Over time, the agent aims to</description>
+    </item>
+    <item>
+      <title>Tesla and the Road to Autonomous Driving</title>
+      <link>https://www.amiverse.in/blogs/68d66b4d3209cb1a1b940d3a</link>
+      <guid isPermaLink="true">https://www.amiverse.in/blogs/68d66b4d3209cb1a1b940d3a</guid>
+      <pubDate>Fri, 26 Sep 2025 10:30:37 GMT</pubDate>
+      <description>Tesla has become a pioneer in the race toward self-driving cars. With its Autopilot and Full Self-Driving (FSD) features, the company is pushing the boundaries of how much a vehicle can think and act on its own. At the heart of Tesla’s system is a network of cameras, ultrasonic sensors, and radar (in earlier models), combined with advanced neural networks. These work together to detect objects, read road signs, understand traffic conditions, and make split-second decisions—much like a human driv</description>
+    </item>
+    <item>
+      <title>Large Language Models: The Brains Behind Modern AI</title>
+      <link>https://www.amiverse.in/blogs/68d66af83209cb1a1b940cee</link>
+      <guid isPermaLink="true">https://www.amiverse.in/blogs/68d66af83209cb1a1b940cee</guid>
+      <pubDate>Fri, 26 Sep 2025 10:29:12 GMT</pubDate>
+      <description>Large Language Models (LLMs) like GPT, Claude, and LLaMA are at the core of today’s AI revolution. They power chatbots, code assistants, translators, and even creative tools that can write stories, generate music, or design software. But what makes them special? At their foundation, LLMs are built on transformer architecture, a deep learning model introduced in 2017. Transformers excel at handling sequences of text, allowing models to understand context, relationships between words, and even sub</description>
+    </item>
+    <item>
+      <title>Brain-Machine Interfaces: Connecting Minds to Machines</title>
+      <link>https://www.amiverse.in/blogs/68d66ad63209cb1a1b940cd4</link>
+      <guid isPermaLink="true">https://www.amiverse.in/blogs/68d66ad63209cb1a1b940cd4</guid>
+      <pubDate>Fri, 26 Sep 2025 10:28:38 GMT</pubDate>
+      <description>Imagine controlling a computer, a robotic arm, or even typing text—using only your thoughts. This is the promise of Brain-Machine Interfaces (BMIs), also known as Brain-Computer Interfaces (BCIs). A BMI is a direct communication pathway between the human brain and an external device. It works by detecting brain signals, interpreting them, and translating them into commands that machines can understand. These signals are usually captured using sensors like EEG (electroencephalography) or implante</description>
+    </item>
+    <item>
+      <title>CPU vs GPU: The Powerhouses of Modern Computing</title>
+      <link>https://www.amiverse.in/blogs/68d66aaf3209cb1a1b940cb5</link>
+      <guid isPermaLink="true">https://www.amiverse.in/blogs/68d66aaf3209cb1a1b940cb5</guid>
+      <pubDate>Fri, 26 Sep 2025 10:27:59 GMT</pubDate>
+      <description>When it comes to computing, two key players drive performance: the CPU (Central Processing Unit) and the GPU (Graphics Processing Unit). While they share some similarities, their design and purpose make them suited for very different tasks. CPU: The Generalist The CPU is often called the brain of the computer. It excels at handling complex, sequential tasks—those that require logic, decision-making, and flexibility. With just a few cores (modern CPUs typically have 4–16), each core is extremely </description>
+    </item>
+    <item>
+      <title>The Technological Singularity: When AI Surpasses Us</title>
+      <link>https://www.amiverse.in/blogs/68d66a833209cb1a1b940c9d</link>
+      <guid isPermaLink="true">https://www.amiverse.in/blogs/68d66a833209cb1a1b940c9d</guid>
+      <pubDate>Fri, 26 Sep 2025 10:27:15 GMT</pubDate>
+      <description>The singularity is a concept that sparks both excitement and fear in the world of technology. It refers to a future point where artificial intelligence (AI) surpasses human intelligence, triggering rapid, unpredictable changes in society. The idea was popularized by thinkers like Ray Kurzweil, who predict that once machines can improve themselves without human help, progress will accelerate beyond our control. Imagine an AI that designs a smarter AI, which then designs an even smarter one—an exp</description>
+    </item>
+    <item>
+      <title>Artificial General Intelligence: The Next Frontier of AI</title>
+      <link>https://www.amiverse.in/blogs/68d66a4f3209cb1a1b940c7d</link>
+      <guid isPermaLink="true">https://www.amiverse.in/blogs/68d66a4f3209cb1a1b940c7d</guid>
+      <pubDate>Fri, 26 Sep 2025 10:26:23 GMT</pubDate>
+      <description>Artificial Intelligence (AI) has made huge leaps in recent years—chatbots can converse naturally, algorithms can diagnose diseases, and machines can generate art. But these systems are still narrow AI —they excel in specific tasks but fail outside their training. The bigger dream is Artificial General Intelligence (AGI). AGI refers to a form of AI that can understand, learn, and apply knowledge across a wide range of tasks, much like a human. Unlike today’s AI, which needs specialized training f</description>
+    </item>
+    <item>
+      <title>Faster-Than-Light Travel: Could We Reach the Stars in the Next 50 Years?</title>
+      <link>https://www.amiverse.in/blogs/68d66a2a3209cb1a1b940c63</link>
+      <guid isPermaLink="true">https://www.amiverse.in/blogs/68d66a2a3209cb1a1b940c63</guid>
+      <pubDate>Fri, 26 Sep 2025 10:25:46 GMT</pubDate>
+      <description>For centuries, humanity has dreamed of traveling beyond Earth—not just to nearby planets, but to distant stars and galaxies. With recent advances in space exploration, the question has grown louder: Could faster-than-light (FTL) travel or interstellar journeys be possible within the next 50 years? The Challenge of Physics According to Einstein’s theory of relativity, nothing can travel faster than the speed of light (299,792 km/s). At this limit, time itself behaves strangely—stretching and slow</description>
+    </item>
+    <item>
+      <title>Antimatter, Dark Matter, and Dark Energy: The Universe’s Greatest Mysteries</title>
+      <link>https://www.amiverse.in/blogs/68d66a063209cb1a1b940c4d</link>
+      <guid isPermaLink="true">https://www.amiverse.in/blogs/68d66a063209cb1a1b940c4d</guid>
+      <pubDate>Fri, 26 Sep 2025 10:25:10 GMT</pubDate>
+      <description>The universe is vast and full of secrets. Among its biggest puzzles are antimatter, dark matter, and dark energy —concepts that challenge our understanding of reality itself. Antimatter: The Mirror of Matter Antimatter is like a cosmic twin of normal matter. For every particle, such as an electron or proton, there exists an opposite partner—an antiparticle—with the same mass but opposite charge. When matter and antimatter meet, they annihilate in a burst of pure energy. Why it’s mysterious: The </description>
+    </item>
+    <item>
+      <title>The Multiverse: Are We Living in Just One of Many Universes?</title>
+      <link>https://www.amiverse.in/blogs/68d669ed3209cb1a1b940c3b</link>
+      <guid isPermaLink="true">https://www.amiverse.in/blogs/68d669ed3209cb1a1b940c3b</guid>
+      <pubDate>Fri, 26 Sep 2025 10:24:45 GMT</pubDate>
+      <description>When we look up at the night sky, we see billions of stars, galaxies, and clusters stretching across unimaginable distances. It feels endless. But what if our entire universe —with all its galaxies, black holes, and cosmic wonders—is just one among countless others? This is the mind-bending idea of the multiverse. What Is the Multiverse? The multiverse is the hypothesis that reality is much larger than what we can observe, and that our universe is just one “bubble” in a far greater cosmic foam. </description>
+    </item>
+  </channel>
+</rss>

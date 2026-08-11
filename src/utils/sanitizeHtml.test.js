@@ -25,3 +25,14 @@ test("bounds malformed and non-string input", () => {
     1_000_007,
   );
 });
+
+test("keeps article headings below the page h1 and validates image dimensions", () => {
+  const cleanHtml = sanitizeBlogHtml(
+    '<h1>Article section</h1><img src="/image.jpg" alt="Diagram" width="800" height="bad">',
+  );
+
+  expect(cleanHtml).toContain("<h2>Article section</h2>");
+  expect(cleanHtml).not.toContain("<h1>");
+  expect(cleanHtml).toContain('width="800"');
+  expect(cleanHtml).not.toContain("height=");
+});

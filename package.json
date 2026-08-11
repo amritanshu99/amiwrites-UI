@@ -32,9 +32,11 @@
   },
   "scripts": {
     "generate-sitemap": "node scripts/generate-sitemap.js",
+    "generate-seo-pages": "node scripts/generate-seo-pages.js",
     "start": "react-scripts start",
-    "build": "npm run generate-sitemap && react-scripts build",
+    "build": "npm run generate-sitemap && react-scripts build && npm run generate-seo-pages",
     "test": "react-scripts test",
+    "test:seo": "node --test server/seoContent.test.js scripts/generate-seo-pages.test.js",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {

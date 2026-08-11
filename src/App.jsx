@@ -55,6 +55,7 @@ const ReinforcementLearningDetails = lazy(() =>
   import("./pages/ReinforcementLearning"),
 );
 const LegalPage = lazy(() => import("./pages/LegalPage"));
+const NotFound = lazy(() => import("./pages/NotFound"));
 
 const instantScrollPaths = new Set([
   "/add-blog",
@@ -62,6 +63,13 @@ const instantScrollPaths = new Set([
   "/amibot-admin",
   "/amibot",
 ]);
+
+const seoRouteAliases = {
+  "/blog": "/blogs",
+  "/Reinforcement-Learning": "/reinforcement-learning",
+  "/beacon-settings": "/ami-pulse-settings",
+  "/pulse-settings": "/ami-pulse-settings",
+};
 
 const toastIconByType = {
   success: CheckCircle2,
@@ -93,11 +101,11 @@ const AmiToastCloseButton = ({ closeToast }) => (
 );
 
 const resolveRouteSeo = (pathname) => {
-  if (seoByRoute[pathname]) return seoByRoute[pathname];
-  if (pathname.startsWith("/blogs/")) return seoByRoute["/blogs"];
-  if (pathname.startsWith("/reset-password/")) return seoByRoute["/reset-password"];
-  if (pathname.startsWith("/legal/")) return seoByRoute["/legal"];
-  return seoByRoute["/"];
+  const seoPath = seoRouteAliases[pathname] || pathname;
+  if (seoByRoute[seoPath]) return seoByRoute[seoPath];
+  if (seoPath.startsWith("/blogs/")) return seoByRoute["/blogs"];
+  if (seoPath.startsWith("/reset-password/")) return seoByRoute["/reset-password"];
+  return seoByRoute["/not-found"];
 };
 
 const ValidateResetToken = () => {
@@ -174,9 +182,10 @@ const App = () => {
   }, [location.pathname]);
 
   useEffect(() => {
-    const routeSeo = resolveRouteSeo(location.pathname);
+    const seoPath = seoRouteAliases[location.pathname] || location.pathname;
+    const routeSeo = resolveRouteSeo(seoPath);
     applySEO({
-      path: getPublicPagePath(location.pathname),
+      path: getPublicPagePath(seoPath),
       ...routeSeo,
     });
   }, [location.pathname]);
@@ -241,7 +250,7 @@ const App = () => {
           <Routes>
             <Route path="/" element={<Portfolio />} />
             <Route path="/blogs" element={<BlogPage />} />
-            <Route path="/blog" element={<BlogPage />} />
+            <Route path="/blog" element={<Navigate to="/blogs" replace />} />
             <Route path="/ai-chat" element={<AIChatPage />} />
             <Route
               path="/add-blog"
@@ -283,10 +292,16 @@ const App = () => {
               }
             />
             <Route
-              path="/Reinforcement-Learning"
+              caseSensitive
+              path="/reinforcement-learning"
               element={<ReinforcementLearningDetails />}
             />
-            <Route path="*" element={<Navigate to="/" replace />} />
+            <Route
+              caseSensitive
+              path="/Reinforcement-Learning"
+              element={<Navigate to="/reinforcement-learning" replace />}
+            />
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
       </main>

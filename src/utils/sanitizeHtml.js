@@ -43,12 +43,14 @@ const ALLOWED_ATTR = [
   "alt",
   "colspan",
   "href",
+  "height",
   "loading",
   "rel",
   "rowspan",
   "src",
   "target",
   "title",
+  "width",
 ];
 const SAFE_URI_PATTERN = /^(?:(?:https?|mailto|tel):|(?:[^a-z]|[a-z+.-]+(?:[^a-z+.-:]|$)))/i;
 
@@ -71,6 +73,15 @@ function hardenSanitizedLinks(html) {
     }
   });
 
+  template.content.querySelectorAll("h1").forEach((heading) => {
+    const replacement = document.createElement("h2");
+    Array.from(heading.attributes).forEach((attribute) => {
+      replacement.setAttribute(attribute.name, attribute.value);
+    });
+    replacement.innerHTML = heading.innerHTML;
+    heading.replaceWith(replacement);
+  });
+
   template.content.querySelectorAll("img").forEach((image) => {
     if (!image.hasAttribute("src")) {
       image.remove();
@@ -79,6 +90,13 @@ function hardenSanitizedLinks(html) {
 
     image.setAttribute("loading", "lazy");
     image.setAttribute("decoding", "async");
+
+    ["width", "height"].forEach((attribute) => {
+      const value = Number.parseInt(image.getAttribute(attribute), 10);
+      if (!Number.isInteger(value) || value < 1 || value > 4096) {
+        image.removeAttribute(attribute);
+      }
+    });
   });
 
   return template.innerHTML;
