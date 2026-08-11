@@ -8,11 +8,16 @@ import {
   useRef,
   useState,
 } from "react";
-import { useParams, useLocation } from "react-router-dom";
+import { Link, useParams, useLocation } from "react-router-dom";
 import axios from "../../utils/api";
 import Loader from "../Loader/Loader";
 import { applySEO, SITE_URL } from "../../utils/seo";
 import { sanitizeBlogHtml, sanitizedHtmlToText } from "../../utils/sanitizeHtml";
+import {
+  createTrendingEventId,
+  sendTrendingEvent,
+  trendingRequestPath,
+} from "../../utils/trendingAnalytics";
 import {
   CalendarDays,
   CheckCircle2,
@@ -24,6 +29,10 @@ import {
 } from "lucide-react";
 
 const SummaryMarkdown = lazy(() => import("./SummaryMarkdown"));
+const MAX_DWELL_MS = 6 * 60 * 60 * 1000;
+const MAX_TRACKING_WORDS = 120000;
+const MAX_NONTERMINAL_ATTEMPTS = 3;
+const RETRY_BASE_DELAY_MS = 1000;
 
 const SummaryMarkdownFallback = () => (
   <div className="space-y-3 animate-pulse">
@@ -37,6 +46,7 @@ const BlogDetails = () => {
   const { id } = useParams();
   const [blog, setBlog] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
   const { pathname } = useLocation();
 
   // Summary states
@@ -50,34 +60,13 @@ const BlogDetails = () => {
   // Ref to the summary section for smooth scrolling
   const summaryRef = useRef(null);
 
-  // --- RL Tracking refs ---
-  const readStartRef = useRef(null);
-  const maxScrollRef = useRef(0);
-  const sentReadEndRef = useRef(false);
-  const lastPostIdRef = useRef(null);
-  const startedRef = useRef(false); // TRUE only after we started real session
-
-  // NEW: impression dedupe (in-memory only)
-  const impressionGuardRef = useRef(new Set());
-
-  // ref for the article content so we can inspect images / measure after render
   const articleRef = useRef(null);
-
-  // Memoized fetch function
-  const fetchBlog = useCallback(async () => {
-    setLoading(true);
-    try {
-      const res = await axios.get(
-        `/api/blogs/${id}`
-      );
-      setBlog(res.data);
-    } catch (error) {
-      console.error("Failed to fetch blog:", error);
-      setBlog(null);
-    } finally {
-      setLoading(false);
-    }
-  }, [id]);
+  const fetchGenerationRef = useRef(0);
+  const badgeGenerationRef = useRef(0);
+  const summaryGenerationRef = useRef(0);
+  const summaryControllerRef = useRef(null);
+  const sharedRef = useRef(false);
+  const flushReadEndRef = useRef(null);
 
   const sanitizedBlogContent = useMemo(
     () => sanitizeBlogHtml(blog?.content),
@@ -95,6 +84,18 @@ const BlogDetails = () => {
     return Math.max(1, Math.ceil(words / 220));
   }, [plainTextContent]);
 
+  const trackingWords = useMemo(() => {
+    const serverWords = Number(blog?.words);
+    if (Number.isFinite(serverWords) && serverWords > 0) {
+      return Math.min(MAX_TRACKING_WORDS, Math.max(50, serverWords));
+    }
+
+    const fallbackWords = plainTextContent
+      ? plainTextContent.split(/\s+/).filter(Boolean).length
+      : 0;
+    return Math.min(MAX_TRACKING_WORDS, Math.max(50, fallbackWords));
+  }, [blog?.words, plainTextContent]);
+
   const publishedLabel = useMemo(() => {
     const rawDate = blog?.date || blog?.createdAt;
     if (!rawDate) return "Date unavailable";
@@ -110,42 +111,68 @@ const BlogDetails = () => {
   }, [blog?.createdAt, blog?.date]);
 
   useEffect(() => {
+    if (loading) return;
+
+    if (!blog) {
+      applySEO({
+        title:
+          loadError === "not-found"
+            ? "Blog Post Not Found | AmiVerse"
+            : "Blog Temporarily Unavailable | AmiVerse",
+        description:
+          loadError === "not-found"
+            ? "The requested AmiVerse blog post could not be found."
+            : "This AmiVerse blog post is temporarily unavailable. Please try again shortly.",
+        path: `/blogs/${id}`,
+        noindex: loadError === "not-found",
+      });
+      return;
+    }
+
     const fallbackDescription =
       "Read this AmiVerse blog for actionable engineering insights and practical learning takeaways.";
     const description = plainTextContent
       ? `${plainTextContent.slice(0, 155).trim()}${plainTextContent.length > 155 ? "..." : ""}`
       : fallbackDescription;
 
+    const publishedTime = blog.publishedAt || blog.date || blog.createdAt;
+    const modifiedTime = blog.updatedAt || publishedTime;
+    const articleUrl = `${SITE_URL}/blogs/${id}`;
+    const articleImage =
+      blog.image || blog.imageUrl || blog.coverImage || `${SITE_URL}/og-image.jpg`;
+
     applySEO({
-      title: blog?.title ? `${blog.title} | AmiVerse Blog` : "Blog Details | AmiVerse",
+      title: `${blog.title} | AmiVerse Blog`,
       description,
       path: `/blogs/${id}`,
+      image: articleImage,
+      imageAlt: `${blog.title} – AmiVerse blog by Amritanshu Mishra`,
       type: "article",
       keywords: blog?.tags?.join(", "),
+      publishedTime,
+      modifiedTime,
+      section: blog.category || "Software Engineering",
+      tags: blog.tags || [],
       structuredData: {
         "@context": "https://schema.org",
         "@type": "BlogPosting",
-        headline: blog?.title || "AmiVerse Blog",
+        "@id": `${articleUrl}#article`,
+        headline: blog.title,
         description,
-        mainEntityOfPage: `${SITE_URL}/blogs/${id}`,
-        url: `${SITE_URL}/blogs/${id}`,
-        author: {
-          "@type": "Person",
-          name: blog?.author || "Amritanshu Mishra",
-        },
-        datePublished: blog?.createdAt,
-        dateModified: blog?.updatedAt || blog?.createdAt,
-        publisher: {
-          "@type": "Organization",
-          name: "AmiVerse",
-          logo: {
-            "@type": "ImageObject",
-            url: `${SITE_URL}/og-image.jpg`,
-          },
-        },
+        mainEntityOfPage: { "@id": `${articleUrl}#webpage` },
+        url: articleUrl,
+        image: articleImage,
+        author: { "@id": `${SITE_URL}/#person` },
+        publisher: { "@id": `${SITE_URL}/#person` },
+        datePublished: publishedTime,
+        dateModified: modifiedTime,
+        inLanguage: "en-IN",
+        articleSection: blog.category || "Software Engineering",
+        keywords: Array.isArray(blog.tags) ? blog.tags.join(", ") : undefined,
+        wordCount: blog.words || plainTextContent.split(/\s+/).filter(Boolean).length,
       },
     });
-  }, [blog, id, plainTextContent]);
+  }, [blog, id, loadError, loading, plainTextContent]);
 
   useEffect(() => {
     const scrollContainer = document.querySelector(
@@ -154,17 +181,59 @@ const BlogDetails = () => {
     if (scrollContainer) {
       scrollContainer.scrollTo({
         top: 0,
-        behavior: "smooth",
+        behavior: "auto",
       });
     } else {
-      // fallback: scroll the window
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      window.scrollTo({ top: 0, behavior: "auto" });
     }
   }, [pathname]);
 
   useEffect(() => {
-    fetchBlog();
-  }, [fetchBlog]);
+    const controller = new AbortController();
+    const generation = fetchGenerationRef.current + 1;
+    fetchGenerationRef.current = generation;
+
+    setLoading(true);
+    setBlog(null);
+    setLoadError("");
+    setIsTrending(false);
+    summaryGenerationRef.current += 1;
+    summaryControllerRef.current?.abort();
+    summaryControllerRef.current = null;
+    setSummary("");
+    setSummarizing(false);
+    setSummaryError("");
+
+    (async () => {
+      try {
+        const response = await axios.get(`/api/blogs/${id}`, {
+          signal: controller.signal,
+        });
+        if (!controller.signal.aborted && fetchGenerationRef.current === generation) {
+          setBlog(response.data);
+        }
+      } catch (error) {
+        const cancelled = controller.signal.aborted || error?.code === "ERR_CANCELED";
+        if (!cancelled && fetchGenerationRef.current === generation) {
+          setBlog(null);
+          setLoadError(
+            [400, 404].includes(error?.response?.status)
+              ? "not-found"
+              : "unavailable",
+          );
+        }
+      } finally {
+        if (!controller.signal.aborted && fetchGenerationRef.current === generation) {
+          setLoading(false);
+        }
+      }
+    })();
+
+    return () => {
+      controller.abort();
+      summaryControllerRef.current?.abort();
+    };
+  }, [id]);
 
   useEffect(() => {
     if (!sanitizedBlogContent || !articleRef.current) return;
@@ -184,7 +253,13 @@ const BlogDetails = () => {
 
   // Summarize handler
   const handleSummarize = useCallback(async () => {
-    if (!plainTextContent) return;
+    if (!plainTextContent || !blog?._id) return;
+
+    summaryControllerRef.current?.abort();
+    const controller = new AbortController();
+    const generation = summaryGenerationRef.current + 1;
+    summaryGenerationRef.current = generation;
+    summaryControllerRef.current = controller;
 
     setSummarizing(true);
     setSummaryError("");
@@ -196,19 +271,25 @@ const BlogDetails = () => {
         {
           // Backend returns { response: string }
           prompt: `Summarize this blog titled "${blog.title}" in clear, helpful language:\n\n${plainTextContent}`,
-        }
+        },
+        { signal: controller.signal },
       );
 
+      if (controller.signal.aborted || summaryGenerationRef.current !== generation) return;
       const aiText = res?.data?.response || "";
       setSummary(aiText);
     } catch (err) {
-      console.error("Summary error:", err);
+      const cancelled = controller.signal.aborted || err?.code === "ERR_CANCELED";
+      if (cancelled || summaryGenerationRef.current !== generation) return;
       const apiMessage = err?.response?.data?.error || err?.response?.data?.message;
       setSummaryError(apiMessage || "Failed to generate summary. Please try again.");
     } finally {
-      setSummarizing(false);
+      if (!controller.signal.aborted && summaryGenerationRef.current === generation) {
+        setSummarizing(false);
+        if (summaryControllerRef.current === controller) summaryControllerRef.current = null;
+      }
     }
-  }, [blog?.title, plainTextContent]);
+  }, [blog?._id, blog?.title, plainTextContent]);
 
   // Scroll ONLY when summary is ready (no scroll on loading or error)
   useEffect(() => {
@@ -226,350 +307,293 @@ const BlogDetails = () => {
     }
   }, [summary]);
 
-  // --- RL: Impression on page view (DEDUPED & POST-CONTENT via double rAF) ---
+  const handleShare = useCallback(() => {
+    sharedRef.current = true;
+    const request = flushReadEndRef.current?.();
+    if (request && typeof request.catch === "function") request.catch(() => {});
+  }, []);
+
   useEffect(() => {
-    const postId = blog?._id || id;
+    const postId = blog?._id;
+    const article = articleRef.current;
+    if (!postId || !blog?.content || !article) {
+      flushReadEndRef.current = null;
+      return undefined;
+    }
 
-    // require a valid id and content in DOM to consider it a view
-    if (!postId || !blog?.content) return;
+    const explicitContainer = document.querySelector(
+      ".h-screen.overflow-y-scroll.relative",
+    );
+    const container = explicitContainer || window;
+    const thresholdMs = Math.min(
+      MAX_DWELL_MS,
+      Math.round((trackingWords / 200) * 60 * 1000 * 0.6),
+    );
+    const eventId = createTrendingEventId();
+    const now = () => performance.now();
+    const clamp = (value) => Math.min(1, Math.max(0, Number(value) || 0));
 
-    // Already sent during this component lifecycle?
-    if (impressionGuardRef.current.has(postId)) return;
+    let visibleDwellMs = 0;
+    let visibleStartedAt = document.visibilityState === "hidden" ? null : now();
+    let maxScrollDepth = 0;
+    let thresholdTimer = null;
+    let retryTimer = null;
+    let retryPending = false;
+    let completed = false;
+    let terminalStarted = false;
+    let disposed = false;
+    let inFlight = null;
+    let nonterminalAttempts = 0;
+    let retryDelayMs = RETRY_BASE_DELAY_MS;
 
-    let cancelled = false;
-    let raf1 = 0;
-    let raf2 = 0;
+    sharedRef.current = false;
 
-    // Wait for layout/paint to settle without long debounces (Strict Mode safe)
-    raf1 = requestAnimationFrame(() => {
-      raf2 = requestAnimationFrame(async () => {
-        if (cancelled) return;
-        try {
-          await axios.post("/api/trending-rl/events/impression", { postId });
-          impressionGuardRef.current.add(postId);
-          // eslint-disable-next-line no-console
-          console.log("TrendingRL: impression sent (double rAF)", { postId });
-        } catch (e) {
-          // silent
-        }
-      });
+    const currentDwellMs = () =>
+      visibleDwellMs +
+      (visibleStartedAt === null ? 0 : Math.max(0, now() - visibleStartedAt));
+
+    const computeArticleScrollDepth = () => {
+      const currentArticle = articleRef.current;
+      if (!currentArticle) return 0;
+
+      const articleRect = currentArticle.getBoundingClientRect();
+      const articleHeight = Math.max(
+        0,
+        articleRect.height || currentArticle.scrollHeight || currentArticle.offsetHeight || 0,
+      );
+      if (!articleHeight) return 0;
+
+      let viewportBottom;
+      if (container === window) {
+        viewportBottom = window.innerHeight || document.documentElement.clientHeight || 0;
+      } else {
+        const containerRect = container.getBoundingClientRect();
+        viewportBottom =
+          containerRect.bottom > containerRect.top
+            ? containerRect.bottom
+            : containerRect.top + (container.clientHeight || 0);
+      }
+
+      return clamp((viewportBottom - articleRect.top) / articleHeight);
+    };
+
+    const sampleScrollDepth = () => {
+      maxScrollDepth = Math.max(maxScrollDepth, computeArticleScrollDepth());
+      return maxScrollDepth;
+    };
+
+    const clearThresholdTimer = () => {
+      if (thresholdTimer !== null) clearTimeout(thresholdTimer);
+      thresholdTimer = null;
+    };
+
+    const clearRetryTimer = () => {
+      if (retryTimer !== null) clearTimeout(retryTimer);
+      retryTimer = null;
+    };
+
+    const pauseVisibleTime = () => {
+      if (visibleStartedAt !== null) {
+        visibleDwellMs += Math.max(0, now() - visibleStartedAt);
+        visibleStartedAt = null;
+      }
+      clearThresholdTimer();
+    };
+
+    const buildPayload = () => ({
+      postId,
+      dwell_ms: Math.min(MAX_DWELL_MS, Math.max(0, Math.round(currentDwellMs()))),
+      scroll_depth: clamp(maxScrollDepth),
+      shared: Boolean(sharedRef.current),
     });
 
-    return () => {
-      cancelled = true;
-      if (raf1) cancelAnimationFrame(raf1);
-      if (raf2) cancelAnimationFrame(raf2);
-    };
-  }, [blog?.content, blog?._id, id]);
-
-  // --- RL: Read-end analytics (start only AFTER blog.content is present & layout measurable) ---
-  useEffect(() => {
-    if (!blog?.content) {
-      startedRef.current = false;
-      lastPostIdRef.current = null;
-      return;
-    }
-
-    const postId = blog?._id || id;
-
-    const findScrollContainer = () => {
-      const selectors = [
-        ".h-screen.overflow-y-scroll.relative",
-        "[data-scroll-container]",
-        ".app-scroll-container",
-        "main",
-      ];
-      for (const sel of selectors) {
-        const el = document.querySelector(sel);
-        if (el) return el;
-      }
-      return window;
-    };
-    const container = findScrollContainer();
-
-    const computeScrollDepth = () => {
-      try {
-        if (container === window) {
-          const doc = document.documentElement;
-          const body = document.body;
-          const total = Math.max(
-            doc.scrollHeight || 0,
-            body.scrollHeight || 0,
-            doc.offsetHeight || 0,
-            body.offsetHeight || 0
-          );
-          const visible = window.innerHeight || doc.clientHeight || 0;
-          const scrollTop = window.scrollY || window.pageYOffset || doc.scrollTop || 0;
-          if (!total) return 0;
-          if (total <= visible) return 1;
-          const reached = (scrollTop + visible) / total;
-          return Math.min(1, Math.max(0, reached));
-        } else {
-          const total = container.scrollHeight || 0;
-          const visible = container.clientHeight || 0;
-          const scrollTop = container.scrollTop || 0;
-          if (!total) return 0;
-          if (total <= visible) return 1;
-          const reached = (scrollTop + visible) / total;
-          return Math.min(1, Math.max(0, reached));
-        }
-      } catch {
-        return 0;
-      }
+    const isRetryableDeliveryError = (error) => {
+      const status = Number(error?.status ?? error?.response?.status);
+      if (!Number.isFinite(status) || status <= 0) return true;
+      return status === 408 || status === 429 || status >= 500;
     };
 
-    let aborted = false;
-    const waitForContentReady = async (timeoutMs = 1500) => {
-      if (aborted) return false;
+    const armRetryTimer = () => {
+      if (disposed || completed || terminalStarted) return;
+      clearRetryTimer();
+      if (document.visibilityState === "hidden") return;
 
-      if (!articleRef.current) {
-        await new Promise((r) => setTimeout(r, 50));
-      }
-
-      const layoutMeasurable = () => {
-        const { total, visible } =
-          container === window
-            ? {
-                total: Math.max(
-                  document.documentElement.scrollHeight || 0,
-                  document.body.scrollHeight || 0
-                ),
-                visible: window.innerHeight || 0,
-              }
-            : {
-                total: container && container.scrollHeight ? container.scrollHeight : 0,
-                visible: container && container.clientHeight ? container.clientHeight : 0,
-              };
-        return total > 0 && visible > 0;
-      };
-
-      if (layoutMeasurable()) return true;
-
-      const imgs = articleRef.current ? Array.from(articleRef.current.querySelectorAll("img")) : [];
-      if (imgs.length === 0) {
-        let elapsed = 0;
-        const step = 50;
-        while (!aborted && elapsed < timeoutMs) {
-          if (layoutMeasurable()) return true;
-          await new Promise((r) => setTimeout(r, step));
-          elapsed += step;
-        }
-        return layoutMeasurable();
-      }
-
-      await new Promise((resolve) => {
-        let settled = false;
-        const to = setTimeout(() => {
-          if (!settled) {
-            settled = true;
-            removeListeners();
-            resolve();
-          }
-        }, timeoutMs);
-
-        const onLoadOrError = () => {
-          if (imgs.every((i) => i.complete)) {
-            if (!settled) {
-              settled = true;
-              clearTimeout(to);
-              removeListeners();
-              resolve();
-            }
-          }
-        };
-        const removeListeners = () => {
-          imgs.forEach((img) => {
-            img.removeEventListener("load", onLoadOrError);
-            img.removeEventListener("error", onLoadOrError);
-          });
-        };
-
-        imgs.forEach((img) => {
-          img.addEventListener("load", onLoadOrError);
-          img.addEventListener("error", onLoadOrError);
-        });
-
-        onLoadOrError();
-      });
-
-      return layoutMeasurable();
+      retryPending = false;
+      retryTimer = setTimeout(() => {
+        retryTimer = null;
+        void deliver(false).catch(() => {});
+      }, retryDelayMs);
     };
 
-    const wordsForTimer = plainTextContent
-      ? Math.max(50, plainTextContent.trim().split(/\s+/).length)
-      : blog?.words
-      ? Math.max(50, Number(blog.words) || 50)
-      : 200;
-    const expectedMs = (Math.max(50, wordsForTimer) / 200) * 60 * 1000;
-
-    const TIMER_MIN_MS = 10000;
-    const TIMER_MAX_MS = 120000;
-    const timerDelay = Math.min(TIMER_MAX_MS, Math.max(TIMER_MIN_MS, Math.round(expectedMs * 0.6)));
-
-    let timer = null;
-
-    async function sendReadEnd(reason = "manual") {
-      if (sentReadEndRef.current) {
-        console.log("TrendingRL: sendReadEnd skipped (already sent)", { reason, postId });
+    const scheduleRetry = (error) => {
+      if (
+        !isRetryableDeliveryError(error) ||
+        nonterminalAttempts >= MAX_NONTERMINAL_ATTEMPTS ||
+        disposed ||
+        completed ||
+        terminalStarted
+      ) {
+        retryPending = false;
         return;
       }
-      sentReadEndRef.current = true;
 
-      const start = readStartRef.current || performance.now();
-      const dwell_ms = Math.max(0, Math.round(performance.now() - start));
+      retryDelayMs = RETRY_BASE_DELAY_MS * 2 ** Math.max(0, nonterminalAttempts - 1);
+      retryPending = true;
+      armRetryTimer();
+    };
 
-      let scroll_depth =
-        typeof maxScrollRef.current === "number" ? maxScrollRef.current : computeScrollDepth();
+    const deliver = (terminal, payloadOverride) => {
+      if (completed) return Promise.resolve();
+      if (inFlight) return inFlight;
 
-      const total =
-        container === window
-          ? Math.max(document.documentElement.scrollHeight || 0, document.body.scrollHeight || 0)
-          : (container && container.scrollHeight) || 0;
-      const visible =
-        container === window ? window.innerHeight || 0 : (container && container.clientHeight) || 0;
+      clearThresholdTimer();
+      if (!terminal) nonterminalAttempts += 1;
+      const request = sendTrendingEvent("read-end", payloadOverride || buildPayload(), {
+        eventId,
+        attempts: terminal ? 2 : 1,
+      });
+      inFlight = request;
 
-      if (total <= visible) {
-        scroll_depth = dwell_ms < 5000 ? 0 : 1;
-      } else {
-        scroll_depth = Math.min(1, Math.max(0, Number(scroll_depth) || 0));
-      }
-
-      console.log("TrendingRL: sendReadEnd -> payload", {
-        reason,
-        postId,
-        dwell_ms,
-        scroll_depth,
-        wordsForTimer,
-        expectedMs,
-        timerDelay,
-        maxScrollSeen: maxScrollRef.current,
+      request.then(
+        () => {
+          completed = true;
+          retryPending = false;
+          clearRetryTimer();
+          clearThresholdTimer();
+        },
+        (error) => {
+          if (!terminal) scheduleRetry(error);
+        },
+      ).finally(() => {
+        if (inFlight === request) inFlight = null;
       });
 
-      try {
-        await axios.post("/api/trending-rl/events/read-end", {
-          postId,
-          dwell_ms,
-          scroll_depth,
-        });
-        console.log("TrendingRL: read-end POST success", { postId });
-      } catch (err) {
-        console.warn("TrendingRL: read-end POST failed", err?.message || err);
-      }
-    }
-
-    const onScroll = () => {
-      const sc = computeScrollDepth();
-      if (sc > maxScrollRef.current) {
-        maxScrollRef.current = sc;
-        console.log("TrendingRL: scroll update", { sc, maxSeen: maxScrollRef.current });
-      }
+      return request;
     };
 
+    const scheduleThresholdTimer = () => {
+      clearThresholdTimer();
+      if (
+        completed ||
+        terminalStarted ||
+        inFlight ||
+        document.visibilityState === "hidden" ||
+        visibleStartedAt === null
+      ) {
+        return;
+      }
+
+      const remainingMs = Math.max(0, thresholdMs - currentDwellMs());
+      thresholdTimer = setTimeout(() => {
+        thresholdTimer = null;
+        void deliver(false).catch(() => {});
+      }, remainingMs);
+    };
+
+    const finalize = () => {
+      if (completed || terminalStarted) return;
+      terminalStarted = true;
+      pauseVisibleTime();
+      clearRetryTimer();
+      retryPending = false;
+
+      const terminalPayload = buildPayload();
+      if (
+        terminalPayload.dwell_ms < 1000 &&
+        terminalPayload.scroll_depth < 0.05 &&
+        !terminalPayload.shared
+      ) {
+        completed = true;
+        return;
+      }
+
+      if (inFlight) {
+        const pendingRequest = inFlight;
+        pendingRequest.then(
+          () => {},
+          () => {
+            if (inFlight === pendingRequest) inFlight = null;
+            if (!completed) void deliver(true, terminalPayload).catch(() => {});
+          },
+        );
+        return;
+      }
+
+      void deliver(true, terminalPayload).catch(() => {});
+    };
+
+    const onScroll = () => sampleScrollDepth();
     const onVisibilityChange = () => {
-      if (document.visibilityState === "hidden") sendReadEnd("visibility");
+      if (document.visibilityState === "hidden") {
+        pauseVisibleTime();
+        if (retryTimer !== null) {
+          clearRetryTimer();
+          retryPending = true;
+        }
+        return;
+      }
+
+      if (visibleStartedAt === null) visibleStartedAt = now();
+      if (retryPending) armRetryTimer();
+      else scheduleThresholdTimer();
     };
-    const onBeforeUnload = () => sendReadEnd("beforeunload");
+    const onTerminalPageEvent = () => finalize();
+    const flushReadEnd = () => deliver(false);
 
-    let attached = false;
-    let localAborted = false;
+    flushReadEndRef.current = flushReadEnd;
+    scheduleThresholdTimer();
 
-    (async () => {
-      const ready = await waitForContentReady();
-      if (localAborted) return;
-
-      const isNewPost = lastPostIdRef.current !== postId;
-      if (isNewPost) {
-        lastPostIdRef.current = postId;
-        readStartRef.current = performance.now();
-        maxScrollRef.current = 0;
-        sentReadEndRef.current = false;
-        console.log("TrendingRL: starting session after content ready", { postId, ready });
-      } else {
-        console.log("TrendingRL: session already started for post (no restart)", { postId });
-      }
-
-      if (container === window) {
-        window.addEventListener("scroll", onScroll, { passive: true });
-      } else {
-        container.addEventListener("scroll", onScroll, { passive: true });
-      }
-      document.addEventListener("visibilitychange", onVisibilityChange);
-      // FIX: use the correctly cased handler name
-      window.addEventListener("beforeunload", onBeforeUnload);
-
-      attached = true;
-
-      try {
-        const immediate = computeScrollDepth();
-        if (immediate > maxScrollRef.current) maxScrollRef.current = immediate;
-        console.log("TrendingRL: initial scroll sample (post-layout)", {
-          immediate,
-          maxNow: maxScrollRef.current,
-          postId,
-        });
-      } catch {
-        // noop
-      }
-
-      startedRef.current = true;
-
-      if (!sentReadEndRef.current) {
-        console.log("TrendingRL: timer set", { timerDelay, wordsForTimer, expectedMs, postId });
-        timer = setTimeout(() => sendReadEnd("timer"), timerDelay);
-      }
-    })();
+    const scrollTarget = container === window ? window : container;
+    scrollTarget.addEventListener("scroll", onScroll, { passive: true });
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    window.addEventListener("pagehide", onTerminalPageEvent);
+    window.addEventListener("beforeunload", onTerminalPageEvent);
 
     return () => {
-      localAborted = true;
-      aborted = true;
-      if (timer) clearTimeout(timer);
-
-      try {
-        if (attached) {
-          if (container === window) {
-            window.removeEventListener("scroll", onScroll);
-          } else {
-            container.removeEventListener("scroll", onScroll);
-          }
-          document.removeEventListener("visibilitychange", onVisibilityChange);
-          window.removeEventListener("beforeunload", onBeforeUnload);
-        }
-      } catch {
-        // ignore
-      }
-
-      if (startedRef.current && !sentReadEndRef.current) {
-        sendReadEnd("unmount");
-      } else {
-        console.log(
-          "TrendingRL: cleanup - session not started or already sent; skipping unmount send",
-          {
-            postId,
-            started: startedRef.current,
-            alreadySent: sentReadEndRef.current,
-          }
-        );
-      }
+      disposed = true;
+      scrollTarget.removeEventListener("scroll", onScroll);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+      window.removeEventListener("pagehide", onTerminalPageEvent);
+      window.removeEventListener("beforeunload", onTerminalPageEvent);
+      clearThresholdTimer();
+      clearRetryTimer();
+      finalize();
+      if (flushReadEndRef.current === flushReadEnd) flushReadEndRef.current = null;
     };
-  }, [blog?.content, id, plainTextContent]);
+  }, [blog?._id, blog?.content, trackingWords]);
 
-  // --- Trending badge: check if this blog is currently in the rail ---
   useEffect(() => {
-    if (!blog?._id) return;
-    const url = "/api/trending-rl/trending?limit=2&all=1";
+    const generation = badgeGenerationRef.current + 1;
+    badgeGenerationRef.current = generation;
+    setIsTrending(false);
+    if (!blog?._id) return undefined;
+
+    const controller = new AbortController();
+    const postId = String(blog._id);
+    const slug = blog.slug;
 
     (async () => {
       try {
-        const { data } = await axios.get(url);
+        const { data } = await axios.get(trendingRequestPath(), {
+          signal: controller.signal,
+        });
+        if (controller.signal.aborted || badgeGenerationRef.current !== generation) {
+          return;
+        }
         const items = Array.isArray(data?.items) ? data.items : [];
         const found = items.some(
-          (p) => String(p?._id) === String(blog._id) || (blog.slug && p?.slug === blog.slug)
+          (item) => String(item?._id) === postId || (slug && item?.slug === slug),
         );
         setIsTrending(found);
-      } catch {
-        setIsTrending(false);
+      } catch (error) {
+        const cancelled = controller.signal.aborted || error?.code === "ERR_CANCELED";
+        if (!cancelled && badgeGenerationRef.current === generation) {
+          setIsTrending(false);
+        }
       }
     })();
+
+    return () => controller.abort();
   }, [blog?._id, blog?.slug]);
 
   if (loading)
@@ -582,18 +606,37 @@ const BlogDetails = () => {
   if (!blog)
     return (
       <div className="amiverse-premium-light-page flex min-h-screen items-center justify-center p-6 dark:bg-none dark:bg-black">
-        <p className="rounded-2xl border border-red-200 bg-white/90 px-5 py-4 text-xl font-semibold text-red-600 shadow-sm dark:border-red-900/60 dark:bg-black dark:text-red-300">
-          Blog not found.
-        </p>
+        <div className="rounded-2xl border border-red-200 bg-white/90 px-5 py-4 text-center shadow-sm dark:border-red-900/60 dark:bg-black">
+          <h1 className="text-xl font-semibold text-red-600 dark:text-red-300">
+            {loadError === "not-found"
+              ? "Blog not found."
+              : "Blog temporarily unavailable."}
+          </h1>
+          <Link
+            className="mt-3 inline-block font-semibold text-sky-700 underline dark:text-cyan-300"
+            to="/blogs"
+          >
+            Browse all blog posts
+          </Link>
+        </div>
       </div>
     );
 
   return (
-    <main className="amiverse-premium-light-page flex min-h-screen justify-center px-3 pb-28 pt-8 dark:bg-none dark:bg-black sm:px-6 sm:pb-16 sm:pt-12 lg:px-8 lg:pb-20 lg:pt-16">
+    <div className="amiverse-premium-light-page flex min-h-screen justify-center px-3 pb-28 pt-8 dark:bg-none dark:bg-black sm:px-6 sm:pb-16 sm:pt-12 lg:px-8 lg:pb-20 lg:pt-16">
       <article
         ref={articleRef}
         className="animate-fadeIn w-full max-w-4xl overflow-hidden rounded-[1.35rem] border border-white/90 bg-white/95 p-5 text-black shadow-[0_34px_90px_-54px_rgba(15,23,42,0.38)] ring-1 ring-sky-100/80 backdrop-blur dark:border-zinc-900 dark:bg-black dark:text-zinc-50 dark:ring-white/5 dark:shadow-[0_34px_90px_-54px_rgba(0,0,0,0.98)] sm:rounded-[1.7rem] sm:p-8 md:p-12"
       >
+        <nav aria-label="Breadcrumb" className="mb-5 text-sm text-slate-500 dark:text-zinc-400">
+          <Link className="font-medium hover:text-sky-700 hover:underline dark:hover:text-cyan-300" to="/">
+            Amritanshu Mishra
+          </Link>
+          <span aria-hidden="true"> / </span>
+          <Link className="font-medium hover:text-sky-700 hover:underline dark:hover:text-cyan-300" to="/blogs">
+            Blog
+          </Link>
+        </nav>
         <div className="mb-5 flex flex-wrap items-center gap-2">
           <span className="inline-flex items-center rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-700 dark:border-cyan-300/20 dark:bg-cyan-300/10 dark:text-cyan-100">
             AmiVerse Blog
@@ -627,9 +670,12 @@ const BlogDetails = () => {
               <UserRound className="h-4 w-4 text-sky-600 dark:text-cyan-300" />
               <span>
                 By{" "}
-                <span className="font-semibold text-sky-700 dark:text-cyan-200">
-                  Amritanshu
-                </span>
+                <Link
+                  to="/"
+                  className="font-semibold text-sky-700 hover:underline dark:text-cyan-200"
+                >
+                  Amritanshu Mishra
+                </Link>
               </span>
             </span>
             <span className="inline-flex items-center gap-2">
@@ -772,6 +818,7 @@ const BlogDetails = () => {
             href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(
               currentURL
             )}&text=${encodeURIComponent(blog.title)}`}
+            onClick={handleShare}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex min-h-[42px] items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-blue-600 transition duration-200 hover:-translate-y-0.5 hover:border-blue-200 hover:bg-blue-50 dark:border-zinc-800 dark:bg-black dark:text-cyan-200 dark:hover:border-zinc-700 dark:hover:bg-zinc-950 motion-reduce:transform-none"
@@ -788,6 +835,7 @@ const BlogDetails = () => {
             href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
               currentURL
             )}`}
+            onClick={handleShare}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex min-h-[42px] items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-blue-700 transition duration-200 hover:-translate-y-0.5 hover:border-blue-200 hover:bg-blue-50 dark:border-zinc-800 dark:bg-black dark:text-cyan-200 dark:hover:border-zinc-700 dark:hover:bg-zinc-950 motion-reduce:transform-none"
@@ -925,7 +973,7 @@ const BlogDetails = () => {
           }
         }
       `}</style>
-    </main>
+    </div>
   );
 };
 

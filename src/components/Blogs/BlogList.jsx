@@ -1,5 +1,13 @@
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import {
+  forwardRef,
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { ArrowRight, Filter, Plus, Search, Trash2 } from "lucide-react";
 import { toast } from "react-toastify";
 import axios from "../../utils/api";
@@ -7,11 +15,41 @@ import Loader from "../Loader/Loader";
 import PushNotificationButton from "../Floating-buttons/PushNotificationButton";
 import { useDebounce } from "../../hooks/useDebounce";
 import { useVerifiedAuth } from "../../hooks/useVerifiedAuth";
-import { apiUrl } from "../../config/api";
-
-const CLICK_API = apiUrl("/api/trending-rl/events/click");
+import {
+  createTrendingEventId,
+  sendTrendingEvent,
+  trendingRequestPath,
+} from "../../utils/trendingAnalytics";
 const INITIAL_SKELETON_KEYS = ["init-0", "init-1", "init-2"];
 const PAGINATION_SKELETON_KEYS = ["pag-0", "pag-1", "pag-2"];
+const IMPRESSION_RETRY_DELAY_MS = 250;
+const IMPRESSION_MAX_DELIVERY_ROUNDS = 3;
+const TRENDING_REFRESH_FALLBACK_MS = 5 * 60 * 1000;
+const TRENDING_REFRESH_MAX_MS = 60 * 60 * 1000;
+const TRENDING_REFRESH_MIN_MS = 1000;
+
+function getTrendingRefreshDelay(epochEndsAt, now = Date.now()) {
+  const endTime = Date.parse(epochEndsAt);
+  if (!Number.isFinite(endTime) || endTime <= now) {
+    return TRENDING_REFRESH_FALLBACK_MS;
+  }
+
+  return Math.min(
+    TRENDING_REFRESH_MAX_MS,
+    Math.max(TRENDING_REFRESH_MIN_MS, endTime - now + 100),
+  );
+}
+
+function isRetryableTrendingDeliveryError(error) {
+  const status = Number(error?.status);
+  return (
+    !Number.isFinite(status) ||
+    status <= 0 ||
+    status === 408 ||
+    status === 429 ||
+    status >= 500
+  );
+}
 
 function getPlainTextPreview(content, maxLength = 170) {
   if (!content) return "No preview available.";
@@ -47,15 +85,14 @@ const BlogSkeleton = memo(function BlogSkeleton() {
   );
 });
 
-const BlogCard = memo(function BlogCard({
+const BlogCard = memo(forwardRef(function BlogCard({
   blog,
   isAdmin,
   isDeleting,
   isTrending,
   onDeleteBlog,
-  onOpenBlog,
   onTrackClick,
-}) {
+}, forwardedRef) {
   const publishedDate = useMemo(() => {
     if (!blog.date) return "Date unavailable";
 
@@ -68,20 +105,9 @@ const BlogCard = memo(function BlogCard({
 
   const previewText = useMemo(() => getPlainTextPreview(blog.content), [blog.content]);
 
-  const openBlog = useCallback(() => {
+  const handleBlogLinkClick = useCallback(() => {
     onTrackClick(blog._id);
-    onOpenBlog(blog._id);
-  }, [blog._id, onOpenBlog, onTrackClick]);
-
-  const handleKeyDown = useCallback(
-    (e) => {
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        openBlog();
-      }
-    },
-    [openBlog]
-  );
+  }, [blog._id, onTrackClick]);
 
   const handleDeleteClick = useCallback(
     (e) => {
@@ -93,11 +119,9 @@ const BlogCard = memo(function BlogCard({
 
   return (
     <article
+      ref={forwardedRef}
+      data-blog-id={blog._id}
       className="group relative isolate flex min-h-[244px] w-full cursor-pointer flex-col overflow-hidden rounded-[1.35rem] border border-white/90 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(248,252,255,0.96),rgba(240,248,255,0.94))] p-4 shadow-[0_24px_60px_-40px_rgba(15,23,42,0.2)] ring-1 ring-sky-100/70 backdrop-blur-sm transform-gpu transition-[transform,box-shadow,border-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1.5 hover:scale-[1.01] hover:border-sky-200/90 hover:shadow-[0_32px_78px_-42px_rgba(14,165,233,0.28)] focus:outline-none focus-visible:-translate-y-1 focus-visible:scale-[1.005] focus-visible:ring-4 focus-visible:ring-sky-100 dark:border-zinc-800 dark:bg-[linear-gradient(180deg,rgba(0,0,0,1)_0%,rgba(0,0,0,1)_100%)] dark:ring-white/5 dark:hover:border-zinc-700 dark:shadow-[0_24px_64px_-40px_rgba(0,0,0,0.92)] dark:hover:shadow-[0_30px_72px_-40px_rgba(0,0,0,0.98)] dark:focus-visible:ring-white/10 sm:min-h-[270px] sm:rounded-[1.5rem] sm:p-5 motion-reduce:transform-none motion-reduce:transition-none"
-      onClick={openBlog}
-      role="button"
-      tabIndex={0}
-      onKeyDown={handleKeyDown}
     >
       <div className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100 dark:opacity-100">
         <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
@@ -128,7 +152,9 @@ const BlogCard = memo(function BlogCard({
             aria-label={`Delete blog titled ${blog.title}`}
             className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-zinc-200 bg-white/90 text-red-500 transition hover:border-red-200 hover:bg-red-50 hover:text-red-700 focus:outline-none focus-visible:ring-4 focus-visible:ring-red-100 dark:border-zinc-800 dark:bg-black dark:text-red-300 dark:hover:border-zinc-700 dark:hover:bg-zinc-950 dark:hover:text-red-200 dark:focus-visible:ring-red-950/60"
             onClick={handleDeleteClick}
+            onKeyDown={(e) => e.stopPropagation()}
             disabled={isDeleting}
+            type="button"
             title={isDeleting ? "Deleting..." : "Delete blog"}
           >
             {isDeleting ? <Loader size="small" /> : <Trash2 size={16} />}
@@ -136,14 +162,22 @@ const BlogCard = memo(function BlogCard({
         )}
       </div>
 
-      <div className="flex h-full flex-col">
-        <p className="text-xs font-medium uppercase tracking-[0.12em] text-zinc-500 dark:text-zinc-400 sm:text-sm sm:normal-case sm:tracking-normal">
+      <Link
+        to={`/blogs/${blog._id}?src=list`}
+        onClick={handleBlogLinkClick}
+        className="flex h-full flex-col rounded-xl focus:outline-none focus-visible:ring-4 focus-visible:ring-sky-100 dark:focus-visible:ring-white/10"
+        aria-label={`Read ${blog.title}`}
+      >
+        <time
+          dateTime={blog.date}
+          className="text-xs font-medium uppercase tracking-[0.12em] text-zinc-500 dark:text-zinc-400 sm:text-sm sm:normal-case sm:tracking-normal"
+        >
           {publishedDate}
-        </p>
+        </time>
 
-        <h3 className="mt-2 line-clamp-2 text-[15px] font-semibold leading-5 text-zinc-950 transition group-hover:text-sky-700 dark:text-zinc-50 dark:group-hover:text-zinc-200 sm:mt-2.5 sm:text-[1.05rem] sm:leading-6">
+        <h2 className="mt-2 line-clamp-2 text-[15px] font-semibold leading-5 text-zinc-950 transition group-hover:text-sky-700 dark:text-zinc-50 dark:group-hover:text-zinc-200 sm:mt-2.5 sm:text-[1.05rem] sm:leading-6">
           {blog.title}
-        </h3>
+        </h2>
 
         <p className="mt-2.5 line-clamp-4 text-sm leading-5 text-zinc-600 dark:text-zinc-300 sm:mt-3 sm:line-clamp-5 sm:leading-6">
           {previewText}
@@ -153,70 +187,57 @@ const BlogCard = memo(function BlogCard({
           Read article
           <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5" />
         </span>
-      </div>
+      </Link>
     </article>
   );
-});
+}));
 
 const BlogList = () => {
   const { isAdmin, verifiedAdminToken } = useVerifiedAuth();
   const [blogs, setBlogs] = useState([]);
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
+  const [rankedBlogs, setRankedBlogs] = useState([]);
+  const [trendingStatus, setTrendingStatus] = useState("loading");
   const [loading, setLoading] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
-  const [filter, setFilter] = useState("latest");
+  const [filter, setFilter] = useState("trending");
   const [search, setSearch] = useState("");
+  const [refreshVersion, setRefreshVersion] = useState(0);
   const loaderRef = useRef(null);
   const navigate = useNavigate();
   const { pathname } = useLocation();
-  const resetRef = useRef(false);
   const fetchedPagesRef = useRef(new Set());
+  const requestGenerationRef = useRef(0);
+  const activeRequestRef = useRef(null);
   const debouncedSearch = useDebounce(search, 500);
 
-  const [trendingIds, setTrendingIds] = useState(() => new Set());
+  const trendingIds = useMemo(
+    () => new Set(rankedBlogs.map((post) => String(post?._id)).filter(Boolean)),
+    [rankedBlogs],
+  );
+
   const trackClick = useCallback((postId) => {
     if (!postId) return;
-
-    if (process.env.NODE_ENV !== "production") {
-      // eslint-disable-next-line no-console
-      console.debug("trackClick ->", CLICK_API, postId);
-    }
-
-    try {
-      fetch(CLICK_API, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ postId }),
-        mode: "cors",
-        keepalive: true,
-        credentials: "omit",
-      }).catch(() => {});
-      return;
-    } catch (_) {}
-
-    axios.post(CLICK_API, { postId }).catch(() => {});
+    const eventId = createTrendingEventId();
+    void sendTrendingEvent("click", { postId }, { eventId, attempts: 2 }).catch(
+      () => {},
+    );
   }, []);
 
-  const loadingRef = useRef(loading);
-  const hasMoreRef = useRef(hasMore);
-  const pageRef = useRef(page);
+  const loadingRef = useRef(false);
+  const hasMoreRef = useRef(true);
+  const pageRef = useRef(1);
   const observerRef = useRef(null);
   const scrollContainerRef = useRef(null);
-  const lastRequestedPageRef = useRef(0);
   const throttleTimeoutRef = useRef(null);
-
-  useEffect(() => {
-    loadingRef.current = loading;
-  }, [loading]);
-
-  useEffect(() => {
-    hasMoreRef.current = hasMore;
-  }, [hasMore]);
-
-  useEffect(() => {
-    pageRef.current = page;
-  }, [page]);
+  const impressionObserverRef = useRef(null);
+  const cardNodesRef = useRef(new Map());
+  const seenImpressionsRef = useRef(new Set());
+  const impressionEventIdsRef = useRef(new Map());
+  const impressionInFlightRef = useRef(new Set());
+  const impressionDeliveryRoundsRef = useRef(new Map());
+  const impressionRetryTimersRef = useRef(new Map());
+  const terminalImpressionsRef = useRef(new Set());
+  const deletedBlogIdsRef = useRef(new Set());
 
   const resetObserver = useCallback(() => {
     if (observerRef.current && loaderRef.current) {
@@ -229,67 +250,123 @@ const BlogList = () => {
     }
   }, []);
 
-  const fetchBlogs = useCallback(async (pageNumber, currentSearch, currentFilter) => {
+  const fetchBlogs = useCallback(async (
+    pageNumber,
+    currentSearch,
+    currentFilter,
+    generation = requestGenerationRef.current,
+  ) => {
     const searchQuery = currentSearch ?? "";
-    const sortOrder = currentFilter ?? "latest";
+    const sortOrder = currentFilter === "oldest" ? "oldest" : "latest";
     const cacheKey = `${pageNumber}-${searchQuery}-${sortOrder}`;
 
-    if (fetchedPagesRef.current.has(cacheKey)) return;
-    if (loadingRef.current) return;
+    if (fetchedPagesRef.current.has(cacheKey)) return true;
+    if (loadingRef.current) return false;
 
+    const controller = new AbortController();
+    activeRequestRef.current = controller;
     setLoading(true);
     loadingRef.current = true;
     try {
       const res = await axios.get(
         `/api/blogs?page=${pageNumber}&limit=10&search=${encodeURIComponent(
           searchQuery
-        )}&sort=${sortOrder}`
+        )}&sort=${sortOrder}`,
+        { signal: controller.signal },
       );
 
-      const nextBlogs = Array.isArray(res.data?.blogs) ? res.data.blogs : [];
-
-      if (nextBlogs.length > 0) {
-        setBlogs((prev) => {
-          if (pageNumber === 1) return nextBlogs;
-
-          const existingIds = new Set(prev.map((post) => post._id));
-          return [
-            ...prev,
-            ...nextBlogs.filter((post) => !existingIds.has(post._id)),
-          ];
-        });
-        fetchedPagesRef.current.add(cacheKey);
-        setHasMore(Boolean(res.data.hasMore));
-        hasMoreRef.current = Boolean(res.data.hasMore);
-      } else {
-        setHasMore(false);
-        hasMoreRef.current = false;
+      if (controller.signal.aborted || generation !== requestGenerationRef.current) {
+        return false;
       }
+
+      const nextBlogs = (Array.isArray(res.data?.blogs) ? res.data.blogs : []).filter(
+        (post) => !deletedBlogIdsRef.current.has(String(post?._id)),
+      );
+      setBlogs((prev) => {
+        if (pageNumber === 1) return nextBlogs;
+
+        const existingIds = new Set(prev.map((post) => String(post._id)));
+        return [
+          ...prev,
+          ...nextBlogs.filter((post) => !existingIds.has(String(post._id))),
+        ];
+      });
+      fetchedPagesRef.current.add(cacheKey);
+      pageRef.current = pageNumber;
+      hasMoreRef.current = Boolean(res.data?.hasMore);
+      return true;
     } catch (err) {
-      toast.error("Failed to fetch blogs");
+      const cancelled = controller.signal.aborted || err?.code === "ERR_CANCELED";
+      if (!cancelled && generation === requestGenerationRef.current) {
+        toast.error("Failed to fetch blogs");
+      }
+      return false;
     } finally {
-      setLoading(false);
-      loadingRef.current = false;
-      resetObserver();
+      if (activeRequestRef.current === controller) {
+        activeRequestRef.current = null;
+        setLoading(false);
+        loadingRef.current = false;
+        resetObserver();
+      }
     }
   }, [resetObserver]);
 
   useEffect(() => {
-    let mounted = true;
-    (async () => {
+    let active = true;
+    let controller = null;
+    let refreshTimer = null;
+    let requestGeneration = 0;
+
+    const scheduleRefresh = (epochEndsAt) => {
+      if (!active) return;
+      if (refreshTimer) clearTimeout(refreshTimer);
+      refreshTimer = setTimeout(() => {
+        refreshTimer = null;
+        void loadTrending(false);
+      }, getTrendingRefreshDelay(epochEndsAt));
+    };
+
+    const loadTrending = async (isInitialRequest) => {
+      const generation = requestGeneration + 1;
+      requestGeneration = generation;
+      const nextController = new AbortController();
+      controller?.abort();
+      controller = nextController;
+
       try {
-        const { data } = await axios.get(
-          "/api/trending-rl/trending?limit=2&all=1"
-        );
+        const { data } = await axios.get(trendingRequestPath(), {
+          signal: nextController.signal,
+        });
+        if (!active || generation !== requestGeneration) return;
+
         const items = Array.isArray(data?.items) ? data.items : [];
-        const set = new Set(items.map((x) => String(x?._id)));
-        if (mounted) setTrendingIds(set);
-      } catch {
-        if (mounted) setTrendingIds(new Set());
+        setRankedBlogs(
+          items.filter(
+            (item) =>
+              item?._id &&
+              !deletedBlogIdsRef.current.has(String(item._id)),
+          ),
+        );
+        setTrendingStatus("ready");
+        scheduleRefresh(data?.meta?.epochEndsAt);
+      } catch (error) {
+        const cancelled = nextController.signal.aborted || error?.code === "ERR_CANCELED";
+        if (!active || generation !== requestGeneration || cancelled) return;
+
+        if (isInitialRequest) {
+          setRankedBlogs([]);
+          setTrendingStatus("failed");
+        }
+        scheduleRefresh(null);
       }
-    })();
+    };
+
+    void loadTrending(true);
     return () => {
-      mounted = false;
+      active = false;
+      requestGeneration += 1;
+      controller?.abort();
+      if (refreshTimer) clearTimeout(refreshTimer);
     };
   }, []);
 
@@ -325,6 +402,130 @@ const BlogList = () => {
     return null;
   }, []);
 
+  const registerBlogCard = useCallback((postId, node) => {
+    const key = String(postId || "");
+    if (!key) return;
+
+    const previousNode = cardNodesRef.current.get(key);
+    if (previousNode && previousNode !== node) {
+      impressionObserverRef.current?.unobserve(previousNode);
+    }
+
+    if (!node) {
+      cardNodesRef.current.delete(key);
+      return;
+    }
+
+    cardNodesRef.current.set(key, node);
+    impressionObserverRef.current?.observe(node);
+  }, []);
+
+  useEffect(() => {
+    if (typeof IntersectionObserver !== "function") return undefined;
+    let active = true;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          const ratio = Number(entry.intersectionRatio ?? 0);
+          if (!entry.isIntersecting || ratio < 0.5) return;
+
+          const postId = entry.target?.dataset?.blogId;
+          if (
+            !postId ||
+            seenImpressionsRef.current.has(postId) ||
+            terminalImpressionsRef.current.has(postId) ||
+            impressionInFlightRef.current.has(postId)
+          ) {
+            return;
+          }
+
+          observer.unobserve(entry.target);
+          const eventId =
+            impressionEventIdsRef.current.get(postId) || createTrendingEventId();
+          impressionEventIdsRef.current.set(postId, eventId);
+          const deliveryRound =
+            (impressionDeliveryRoundsRef.current.get(postId) || 0) + 1;
+          impressionDeliveryRoundsRef.current.set(postId, deliveryRound);
+          impressionInFlightRef.current.add(postId);
+          void sendTrendingEvent(
+            "impression",
+            { postId },
+            { eventId, attempts: 2 },
+          )
+            .then(() => {
+              if (!active) return;
+              seenImpressionsRef.current.add(postId);
+              impressionEventIdsRef.current.delete(postId);
+              impressionDeliveryRoundsRef.current.delete(postId);
+              const retryTimer = impressionRetryTimersRef.current.get(postId);
+              if (retryTimer) clearTimeout(retryTimer);
+              impressionRetryTimersRef.current.delete(postId);
+            })
+            .catch((error) => {
+              if (!active || seenImpressionsRef.current.has(postId)) return;
+              if (
+                !isRetryableTrendingDeliveryError(error) ||
+                deliveryRound >= IMPRESSION_MAX_DELIVERY_ROUNDS
+              ) {
+                terminalImpressionsRef.current.add(postId);
+                impressionEventIdsRef.current.delete(postId);
+                impressionDeliveryRoundsRef.current.delete(postId);
+                return;
+              }
+              const previousTimer = impressionRetryTimersRef.current.get(postId);
+              if (previousTimer) clearTimeout(previousTimer);
+              const retryTimer = setTimeout(() => {
+                impressionRetryTimersRef.current.delete(postId);
+                if (!active || seenImpressionsRef.current.has(postId)) return;
+                const currentNode = cardNodesRef.current.get(postId);
+                if (currentNode) observer.observe(currentNode);
+              }, IMPRESSION_RETRY_DELAY_MS * deliveryRound);
+              impressionRetryTimersRef.current.set(postId, retryTimer);
+            })
+            .finally(() => {
+              impressionInFlightRef.current.delete(postId);
+            });
+        });
+      },
+      { threshold: 0.5 },
+    );
+
+    impressionObserverRef.current = observer;
+    cardNodesRef.current.forEach((node) => observer.observe(node));
+
+    return () => {
+      active = false;
+      observer.disconnect();
+      impressionRetryTimersRef.current.forEach((timer) => clearTimeout(timer));
+      impressionRetryTimersRef.current.clear();
+      impressionInFlightRef.current.clear();
+      impressionDeliveryRoundsRef.current.clear();
+      terminalImpressionsRef.current.clear();
+      if (impressionObserverRef.current === observer) {
+        impressionObserverRef.current = null;
+      }
+    };
+  }, []);
+
+  const loadNextPage = useCallback(() => {
+    if (loadingRef.current || !hasMoreRef.current) return;
+
+    const currentPage = Math.max(1, pageRef.current);
+    const sortOrder = filter === "oldest" ? "oldest" : "latest";
+    const currentKey = `${currentPage}-${debouncedSearch}-${sortOrder}`;
+    const nextPage = fetchedPagesRef.current.has(currentKey)
+      ? currentPage + 1
+      : currentPage;
+
+    void fetchBlogs(
+      nextPage,
+      debouncedSearch,
+      filter,
+      requestGenerationRef.current,
+    );
+  }, [debouncedSearch, fetchBlogs, filter]);
+
   const checkAndLoadByScroll = useCallback((scroller) => {
     if (loadingRef.current || !hasMoreRef.current) return;
 
@@ -350,19 +551,9 @@ const BlogList = () => {
 
     const thresholdPx = 350;
     if (distanceToBottom <= thresholdPx) {
-      const next = Math.max(1, pageRef.current + 1);
-      const cacheKey = `${next}-${debouncedSearch}-${filter}`;
-      if (
-        fetchedPagesRef.current.has(cacheKey) ||
-        lastRequestedPageRef.current >= next
-      ) {
-        return;
-      }
-      lastRequestedPageRef.current = next;
-      setPage(next);
-      pageRef.current = next;
+      loadNextPage();
     }
-  }, [debouncedSearch, filter]);
+  }, [loadNextPage]);
 
   useEffect(() => {
     let mounted = true;
@@ -392,17 +583,7 @@ const BlogList = () => {
         const entry = entries[0];
         if (!entry) return;
         if (entry.isIntersecting && hasMoreRef.current && !loadingRef.current) {
-          const next = Math.max(1, pageRef.current + 1);
-          const cacheKey = `${next}-${debouncedSearch}-${filter}`;
-          if (
-            fetchedPagesRef.current.has(cacheKey) ||
-            lastRequestedPageRef.current >= next
-          ) {
-            return;
-          }
-          lastRequestedPageRef.current = next;
-          setPage(next);
-          pageRef.current = next;
+          loadNextPage();
         }
       }, options);
 
@@ -467,7 +648,7 @@ const BlogList = () => {
         throttleTimeoutRef.current = null;
       }
     };
-  }, [checkAndLoadByScroll, debouncedSearch, filter, findScrollContainer]);
+  }, [checkAndLoadByScroll, findScrollContainer, loadNextPage]);
 
 
   useEffect(() => {
@@ -477,11 +658,6 @@ const BlogList = () => {
     if (scrollContainer)
       scrollContainer.scrollTo({ top: 0, behavior: "smooth" });
   }, [pathname]);
-
-  const handleBlogClick = useCallback(
-    (id) => navigate(`/blogs/${id}?src=list`),
-    [navigate]
-  );
 
   const handleDelete = useCallback(async (id) => {
     const tokenIsCurrent = localStorage.getItem("token") === verifiedAdminToken;
@@ -496,53 +672,68 @@ const BlogList = () => {
       });
 
       toast.success("Blog deleted");
-
-      fetchedPagesRef.current = new Set();
-      setBlogs([]);
-      setPage(1);
-      pageRef.current = 1;
-      setHasMore(true);
-      hasMoreRef.current = true;
-      lastRequestedPageRef.current = 0;
-
-      fetchBlogs(1, debouncedSearch, filter);
+      deletedBlogIdsRef.current.add(String(id));
+      setBlogs((current) =>
+        current.filter((post) => String(post?._id) !== String(id)),
+      );
+      setRankedBlogs((current) =>
+        current.filter((post) => String(post?._id) !== String(id)),
+      );
+      setRefreshVersion((current) => current + 1);
     } catch {
       toast.error("Failed to delete blog");
     } finally {
       setDeletingId(null);
     }
-  }, [debouncedSearch, fetchBlogs, filter, isAdmin, verifiedAdminToken]);
+  }, [isAdmin, verifiedAdminToken]);
 
   useEffect(() => {
-    resetRef.current = true;
+    const previousRequest = activeRequestRef.current;
+    activeRequestRef.current = null;
+    if (previousRequest) previousRequest.abort();
+
+    const generation = requestGenerationRef.current + 1;
+    requestGenerationRef.current = generation;
+    loadingRef.current = false;
     setBlogs([]);
-    setHasMore(true);
     hasMoreRef.current = true;
     fetchedPagesRef.current = new Set();
-    setPage(1);
     pageRef.current = 1;
-    lastRequestedPageRef.current = 0;
-  }, [debouncedSearch, filter]);
+    setLoading(false);
 
-  useEffect(() => {
-    if (resetRef.current) {
-      fetchBlogs(1, debouncedSearch, filter);
-      resetRef.current = false;
-      lastRequestedPageRef.current = 1;
-      pageRef.current = 1;
-    } else {
-      if (page <= 0) return;
-      const cacheKey = `${page}-${debouncedSearch}-${filter}`;
-      if (fetchedPagesRef.current.has(cacheKey)) return;
-      fetchBlogs(page, debouncedSearch, filter);
-      lastRequestedPageRef.current = Math.max(lastRequestedPageRef.current, page);
-      pageRef.current = page;
-    }
-  }, [page, debouncedSearch, filter, fetchBlogs]);
+    void fetchBlogs(1, debouncedSearch, filter, generation);
+
+    return () => {
+      if (requestGenerationRef.current !== generation) return;
+      const activeRequest = activeRequestRef.current;
+      activeRequestRef.current = null;
+      loadingRef.current = false;
+      if (activeRequest) activeRequest.abort();
+    };
+  }, [debouncedSearch, fetchBlogs, filter, refreshVersion]);
 
   const handleAddBlog = useCallback(() => navigate("/add-blog"), [navigate]);
 
-  const filteredBlogs = blogs;
+  const filteredBlogs = useMemo(() => {
+    if (filter !== "trending") return blogs;
+    if (trendingStatus === "loading") return [];
+    if (trendingStatus === "failed") return blogs;
+
+    const normalizedSearch = debouncedSearch.trim().toLocaleLowerCase();
+    const matchingRanked = normalizedSearch
+      ? rankedBlogs.filter((post) =>
+          String(post?.title || "").toLocaleLowerCase().includes(normalizedSearch),
+        )
+      : rankedBlogs;
+    const rankedIds = new Set(matchingRanked.map((post) => String(post._id)));
+
+    return [
+      ...matchingRanked,
+      ...blogs.filter((post) => !rankedIds.has(String(post?._id))),
+    ];
+  }, [blogs, debouncedSearch, filter, rankedBlogs, trendingStatus]);
+
+  const waitingForTrending = filter === "trending" && trendingStatus === "loading";
 
   return (
     <div className="amiverse-premium-light-page relative isolate min-h-screen overflow-hidden px-3 pb-24 pt-3 dark:bg-none dark:bg-black sm:px-5 sm:pb-6 sm:pt-4 lg:px-8 lg:pb-8 lg:pt-6">
@@ -617,6 +808,7 @@ const BlogList = () => {
                     aria-label="Sort blogs"
                     className="min-h-[46px] w-full appearance-none rounded-xl border border-zinc-300/90 bg-white/95 px-4 py-2.5 pr-11 text-sm font-medium text-zinc-800 outline-none transition duration-200 hover:border-sky-300 focus:border-sky-600 focus:ring-4 focus:ring-sky-100 dark:border-zinc-800 dark:bg-black dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:hover:border-zinc-700 dark:focus:border-zinc-700 dark:focus:ring-white/10"
                   >
+                    <option value="trending">Trending</option>
                     <option value="latest">Latest</option>
                     <option value="oldest">Oldest</option>
                   </select>
@@ -635,7 +827,7 @@ const BlogList = () => {
           </div>
         </section>
 
-        {filteredBlogs.length === 0 && !loading ? (
+        {filteredBlogs.length === 0 && !loading && !waitingForTrending ? (
           <div className="rounded-[1.75rem] border border-dashed border-sky-200/80 bg-[linear-gradient(135deg,rgba(255,255,255,0.9),rgba(245,250,255,0.92))] px-6 py-16 text-center shadow-[0_20px_50px_-40px_rgba(15,23,42,0.2)] ring-1 ring-sky-100/70 backdrop-blur-sm dark:border-zinc-800 dark:bg-black dark:ring-white/5">
             <p className="text-lg font-semibold text-zinc-700 dark:text-zinc-100">
               No blogs available.
@@ -649,12 +841,12 @@ const BlogList = () => {
             {filteredBlogs.map((blog) => (
               <BlogCard
                 key={blog._id}
+                ref={(node) => registerBlogCard(blog._id, node)}
                 blog={blog}
                 isAdmin={isAdmin}
                 isDeleting={deletingId === blog._id}
                 isTrending={trendingIds.has(String(blog._id))}
                 onDeleteBlog={handleDelete}
-                onOpenBlog={handleBlogClick}
                 onTrackClick={trackClick}
               />
             ))}
@@ -667,7 +859,7 @@ const BlogList = () => {
           </div>
         )}
 
-        {loading && filteredBlogs.length === 0 && (
+        {(loading || waitingForTrending) && filteredBlogs.length === 0 && (
           <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
             {INITIAL_SKELETON_KEYS.map((key) => (
               <BlogSkeleton key={key} />
