@@ -35,6 +35,7 @@ import InitialLoader, {
   INITIAL_LOADER_EXIT_DURATION_MS,
   INITIAL_LOADER_MIN_DURATION_MS,
 } from "./InitialLoader";
+import HeroPixelDistortion from "./HeroPixelDistortion";
 import MemoryLaneCta from "./MemoryLaneCta";
 import AmiversePulseWidget from "../AmiversePulseWidget";
 import { FaCalendarAlt } from "react-icons/fa";
@@ -337,7 +338,6 @@ export default function PortfolioDetails() {
   const pageRef = useRef(null);
   const heroRef = useRef(null);
   const heroImageRef = useRef(null);
-  const heroLensRef = useRef(null);
   const bottomCtaRef = useRef(null);
   const sectionRefs = useRef({});
   const bottomCtaExpandedRef = useRef(isBottomCtaExpanded);
@@ -737,139 +737,6 @@ export default function PortfolioDetails() {
   }, [loaderPhase]);
 
   useEffect(() => {
-    const hero = heroRef.current;
-    const portrait = heroImageRef.current;
-    const lens = heroLensRef.current;
-
-    if (
-      loading ||
-      !imageLoaded ||
-      prefersReducedMotion ||
-      !hero ||
-      !portrait ||
-      !lens
-    ) {
-      return undefined;
-    }
-
-    const finePointerQuery = window.matchMedia(
-      "(min-width: 64rem) and (hover: hover) and (pointer: fine)",
-    );
-    let animationFrame = null;
-    let currentPosition = null;
-    let targetPosition = null;
-
-    const setLensActive = (isActive) => {
-      lens.dataset.active = isActive ? "true" : "false";
-    };
-
-    const drawLens = () => {
-      animationFrame = null;
-
-      if (!currentPosition || !targetPosition) return;
-
-      const deltaX = targetPosition.x - currentPosition.x;
-      const deltaY = targetPosition.y - currentPosition.y;
-
-      currentPosition.x += deltaX * 0.2;
-      currentPosition.y += deltaY * 0.2;
-
-      lens.style.setProperty("--hero-lens-x", `${currentPosition.x}px`);
-      lens.style.setProperty("--hero-lens-y", `${currentPosition.y}px`);
-
-      if (Math.abs(deltaX) > 0.12 || Math.abs(deltaY) > 0.12) {
-        animationFrame = window.requestAnimationFrame(drawLens);
-      }
-    };
-
-    const queueLensDraw = () => {
-      if (animationFrame === null) {
-        animationFrame = window.requestAnimationFrame(drawLens);
-      }
-    };
-
-    const hideLens = () => {
-      setLensActive(false);
-      currentPosition = null;
-      targetPosition = null;
-
-      if (animationFrame !== null) {
-        window.cancelAnimationFrame(animationFrame);
-        animationFrame = null;
-      }
-    };
-
-    const handlePointerMove = (event) => {
-      if (!finePointerQuery.matches || event.pointerType === "touch") {
-        hideLens();
-        return;
-      }
-
-      const heroRect = hero.getBoundingClientRect();
-      const portraitRect = portrait.getBoundingClientRect();
-      const portraitFocusStart = Math.max(
-        heroRect.left + heroRect.width * 0.52,
-        portraitRect.left + portraitRect.width * 0.1,
-      );
-      const isOverPortrait =
-        event.clientX >= portraitFocusStart &&
-        event.clientX <= portraitRect.right &&
-        event.clientY >= portraitRect.top &&
-        event.clientY <= portraitRect.bottom;
-
-      if (!isOverPortrait) {
-        hideLens();
-        return;
-      }
-
-      targetPosition = {
-        x: event.clientX - heroRect.left,
-        y: event.clientY - heroRect.top,
-      };
-
-      if (!currentPosition) {
-        currentPosition = { ...targetPosition };
-        lens.style.setProperty("--hero-lens-x", `${currentPosition.x}px`);
-        lens.style.setProperty("--hero-lens-y", `${currentPosition.y}px`);
-      }
-
-      setLensActive(true);
-      queueLensDraw();
-    };
-
-    const handlePointerSupportChange = () => {
-      if (!finePointerQuery.matches) hideLens();
-    };
-
-    hero.addEventListener("pointermove", handlePointerMove, { passive: true });
-    hero.addEventListener("pointerleave", hideLens);
-
-    if (finePointerQuery.addEventListener) {
-      finePointerQuery.addEventListener("change", handlePointerSupportChange);
-    } else {
-      finePointerQuery.addListener(handlePointerSupportChange);
-    }
-
-    return () => {
-      hero.removeEventListener("pointermove", handlePointerMove);
-      hero.removeEventListener("pointerleave", hideLens);
-
-      if (finePointerQuery.removeEventListener) {
-        finePointerQuery.removeEventListener(
-          "change",
-          handlePointerSupportChange,
-        );
-      } else {
-        finePointerQuery.removeListener(handlePointerSupportChange);
-      }
-
-      if (animationFrame !== null) {
-        window.cancelAnimationFrame(animationFrame);
-      }
-    };
-  }, [heroImageUrl, imageLoaded, loading, prefersReducedMotion]);
-
-  useEffect(() => {
     setBackgroundImageLoaded(false);
 
     const backgroundImage = new Image();
@@ -1087,23 +954,12 @@ export default function PortfolioDetails() {
             fetchPriority="high"
             decoding="async"
           />
-          <div
-            ref={heroLensRef}
-            aria-hidden="true"
-            data-active="false"
-            className="portfolio-hero-lens pointer-events-none absolute inset-0"
-          >
-            <img
-              src={heroImageUrl}
-              alt=""
-              width={isDark ? 1024 : 1477}
-              height={isDark ? 1024 : 1317}
-              onError={handleHeroImageError}
-              className="portfolio-hero-lens-image absolute inset-0 h-full w-full max-w-none object-cover object-[38%_17%] sm:object-[46%_18%] lg:object-contain lg:object-right"
-              loading="eager"
-              decoding="async"
-            />
-          </div>
+          <HeroPixelDistortion
+            containerRef={heroRef}
+            enabled={imageLoaded && !loading && !prefersReducedMotion}
+            imageRef={heroImageRef}
+            imageUrl={heroImageUrl}
+          />
           <div
             aria-hidden="true"
             className="portfolio-hero-scrim portfolio-hero-scrim-light absolute inset-0 dark:hidden"

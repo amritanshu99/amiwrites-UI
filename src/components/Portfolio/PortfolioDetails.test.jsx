@@ -398,6 +398,8 @@ describe("PortfolioDetails startup experience", () => {
     renderPortfolio();
     await finishInitialLoader();
 
+    const pixelEffect = screen.getByTestId("hero-pixel-distortion");
+
     expect(
       screen.getByText("Building useful products with clarity"),
     ).toHaveClass("flex", "text-[0.62rem]", "sm:text-sm");
@@ -419,6 +421,9 @@ describe("PortfolioDetails startup experience", () => {
     expect(
       screen.getByRole("link", { name: /view r.sum./i }),
     ).toBeInTheDocument();
+    expect(pixelEffect).toHaveAttribute("aria-hidden", "true");
+    expect(pixelEffect).toHaveAttribute("data-ready", "false");
+    expect(pixelEffect).toHaveClass("pointer-events-none");
   });
 
   it("opens the career journey at the experience section", async () => {
