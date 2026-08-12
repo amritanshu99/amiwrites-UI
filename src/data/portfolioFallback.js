@@ -16,26 +16,41 @@ const portfolioFallback = {
   experience: [
     {
       company: "GlobalLogic",
-      role: "Associate Consultant",
-      duration: "2022 - Present",
-      description:
-        "Building scalable product experiences with React, Node.js, Apollo GraphQL, and AI.",
-      achievements: [
-        "Designed and delivered scalable solutions for complex product requirements.",
-        "Led the team with practical, high-impact approaches praised by clients and leadership.",
-        "Received multiple awards and appreciations across engineering initiatives.",
+      employmentType: "Full-time",
+      location: "Noida, Uttar Pradesh, India",
+      roles: [
+        {
+          title: "Associate Consultant",
+          startDate: "2024-07",
+          endDate: null,
+        },
+        {
+          title: "Senior Software Engineer",
+          startDate: "2022-02",
+          endDate: "2024-06",
+        },
       ],
     },
     {
-      company: "ConQsys",
-      role: "Senior Software Engineer",
-      duration: "2019 - 2022",
-      description:
-        "Delivered full-stack products using React, Node.js, Apollo GraphQL, and supporting services.",
-      achievements: [
-        "Helped double revenue for a client-side project within one year.",
-        "Received multiple client appreciations for high-value delivery.",
-        "Won recognition for original problem-solving and product thinking.",
+      company: "ConQsys IT (P) Ltd.",
+      employmentType: "Full-time",
+      location: "Noida, Uttar Pradesh, India",
+      roles: [
+        {
+          title: "Senior Software Engineer",
+          startDate: "2021-09",
+          endDate: "2022-01",
+        },
+        {
+          title: "Software Engineer",
+          startDate: "2019-10",
+          endDate: "2021-08",
+        },
+        {
+          title: "Software Engineering Trainee",
+          startDate: "2019-04",
+          endDate: "2019-09",
+        },
       ],
     },
   ],

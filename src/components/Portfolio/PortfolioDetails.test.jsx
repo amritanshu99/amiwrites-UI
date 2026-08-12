@@ -448,6 +448,49 @@ describe("PortfolioDetails startup experience", () => {
     scrollToSpy.mockRestore();
   });
 
+  it("shows a company-level career timeline with automatic current tenure", async () => {
+    jest.setSystemTime(new Date(2026, 7, 31, 23, 59, 58));
+    axios.get.mockImplementationOnce(() => new Promise(() => {}));
+
+    renderPortfolio();
+    await finishInitialLoader();
+
+    expect(
+      screen.getByRole("heading", { name: "GlobalLogic", level: 3 }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("img", { name: "GlobalLogic logo" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", {
+        name: "ConQsys IT (P) Ltd.",
+        level: 3,
+      }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("img", { name: "ConQsys IT (P) Ltd. logo" }),
+    ).toBeInTheDocument();
+    expect(screen.getAllByText("Noida, Uttar Pradesh, India")).toHaveLength(2);
+    expect(screen.getByText("Jul 2024 – Present")).toBeInTheDocument();
+    expect(screen.getByText("2 yrs 2 mos")).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", {
+        name: "Software Engineering Trainee",
+        level: 4,
+      }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText(/Building scalable product experiences/i),
+    ).not.toBeInTheDocument();
+
+    await act(async () => {
+      jest.advanceTimersByTime(1500);
+      await Promise.resolve();
+    });
+
+    expect(screen.getByText("2 yrs 3 mos")).toBeInTheDocument();
+  });
+
   it("keeps Ami Pulse available on compact viewports", async () => {
     axios.get.mockImplementationOnce(() => new Promise(() => {}));
     window.matchMedia.mockImplementation((query) => ({
