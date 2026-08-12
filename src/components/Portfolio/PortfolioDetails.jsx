@@ -37,6 +37,7 @@ import InitialLoader, {
 } from "./InitialLoader";
 import HeroPixelDistortion from "./HeroPixelDistortion";
 import MemoryLaneCta from "./MemoryLaneCta";
+import CareerJourney from "./CareerJourney";
 import AmiversePulseWidget from "../AmiversePulseWidget";
 import { FaCalendarAlt } from "react-icons/fa";
 import { apiUrl, assetUrl } from "../../config/api";
@@ -54,11 +55,6 @@ const skillIconMap = {
   GraphQL: <SiGraphql />,
   AI: <SiOpenai />,
   ML: <SiTensorflow />,
-};
-
-const companyLogoMap = {
-  ConQsys: "/ConQsysLogo-Red.png",
-  GlobalLogic: "/GL.png",
 };
 
 const socialColors = {
@@ -1259,54 +1255,10 @@ export default function PortfolioDetails() {
                 <FaBriefcase className="text-2xl text-sky-700 dark:text-cyan-300" aria-hidden="true" /> Career journey
               </h2>
 
-              <motion.div
-                variants={staggerCardContainerVariants}
-                initial={prefersReducedMotion ? false : "hidden"}
-                whileInView={prefersReducedMotion ? undefined : "visible"}
-                viewport={{ once: true, amount: 0.12 }}
-                className="mt-9 space-y-5"
-              >
-                {data.experience.map((exp, i) => (
-                  <motion.article
-                    key={`${exp.company}-${exp.duration}`}
-                    variants={revealCardVariants}
-                    className="group grid min-w-0 gap-5 rounded-3xl border border-white/85 bg-slate-50/[0.92] p-5 shadow-[0_18px_46px_rgba(15,23,42,0.075)] ring-1 ring-slate-900/[0.025] transition duration-300 hover:-translate-y-0.5 hover:border-sky-200 hover:shadow-[0_24px_52px_rgba(14,116,144,0.11)] dark:border-white/10 dark:bg-zinc-950/[0.94] dark:ring-white/[0.035] dark:hover:border-cyan-300/25 sm:grid-cols-[180px_1fr] sm:p-7 md:grid-cols-[220px_1fr]"
-                  >
-                    <div className="flex items-start gap-2 text-sm font-semibold text-slate-500 dark:text-zinc-400 sm:pt-1">
-                      <FaCalendarAlt className="mt-0.5 shrink-0 text-sky-600 dark:text-cyan-300" aria-hidden="true" />
-                      <span>{exp.duration}</span>
-                    </div>
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-3">
-                        {companyLogoMap[exp.company] && (
-                          <img
-                            src={companyLogoMap[exp.company]}
-                            alt={`${exp.company} logo`}
-                            decoding="async"
-                            loading="lazy"
-                            className="h-12 w-12 rounded-2xl border border-slate-200 bg-white p-2 object-contain shadow-sm dark:border-white/10 dark:bg-white/[0.06]"
-                          />
-                        )}
-                        <div className="min-w-0">
-                          <h3 className="break-words text-xl font-bold tracking-tight text-slate-950 dark:text-white">{exp.role}</h3>
-                          <p className="mt-0.5 break-words text-sm font-semibold text-sky-700 dark:text-cyan-300">{exp.company}</p>
-                        </div>
-                      </div>
-                      <p className="mt-4 break-words text-base leading-7 text-slate-600 dark:text-zinc-300">{exp.description}</p>
-                      {exp.achievements?.length > 0 && (
-                        <ul className="mt-4 grid gap-2 text-sm leading-6 text-slate-700 dark:text-zinc-200">
-                          {exp.achievements.slice(0, 3).map((achievement) => (
-                            <li key={achievement} className="flex gap-3">
-                              <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-sky-500 dark:bg-cyan-300" aria-hidden="true" />
-                              <span>{achievement}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </div>
-                  </motion.article>
-                ))}
-              </motion.div>
+              <CareerJourney
+                companies={data.experience}
+                reduceMotion={prefersReducedMotion}
+              />
             </div>
           </FadeRow>
         </section>
