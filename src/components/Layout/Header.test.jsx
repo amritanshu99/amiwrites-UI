@@ -3,6 +3,7 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import Header from "./Header";
 
 const mockSpaNavigate = jest.fn();
+let mockAuthState;
 
 jest.mock(
   "react-router-dom",
@@ -48,11 +49,7 @@ jest.mock(
 );
 
 jest.mock("../../hooks/useVerifiedAuth", () => ({
-  useVerifiedAuth: () => ({
-    isAuthenticated: true,
-    username: "amritanshu99",
-    isAdmin: true,
-  }),
+  useVerifiedAuth: () => mockAuthState,
 }));
 
 jest.mock("../../utils/adminRoutePreload", () => ({
@@ -62,7 +59,16 @@ jest.mock("../../utils/adminRoutePreload", () => ({
 jest.mock("../Auth/SignupModal", () => () => null);
 jest.mock("../Auth/LoginModal", () => () => null);
 
-beforeEach(() => mockSpaNavigate.mockClear());
+beforeEach(() => {
+  mockSpaNavigate.mockClear();
+  mockAuthState = {
+    isAuthenticated: true,
+    username: "amritanshu99",
+    displayName: null,
+    avatarUrl: null,
+    isAdmin: true,
+  };
+});
 
 test.each([
   ["Create Blog", "/add-blog"],
@@ -75,4 +81,34 @@ test.each([
   fireEvent.click(screen.getByRole("menuitem", { name: label }));
 
   expect(mockSpaNavigate).toHaveBeenCalledWith(destination);
+});
+
+test("renders a responsive Google profile avatar and display name without changing the user menu", () => {
+  mockAuthState = {
+    isAuthenticated: true,
+    username: "alice",
+    displayName: "Alice Reader",
+    avatarUrl: "https://lh3.googleusercontent.com/a/alice=s96-c",
+    isAdmin: false,
+  };
+
+  render(<Header setLoading={jest.fn()} />);
+
+  const image = screen.getByRole("img", {
+    name: "Alice Reader's profile picture",
+  });
+  expect(image).toHaveAttribute(
+    "src",
+    "https://lh3.googleusercontent.com/a/alice=s256-c",
+  );
+  expect(screen.getByRole("button", { name: "User menu" })).toBeInTheDocument();
+
+  fireEvent.click(screen.getByRole("button", { name: "User menu" }));
+  expect(screen.getByText("Alice Reader")).toBeInTheDocument();
+
+  fireEvent.error(image);
+  expect(
+    screen.queryByRole("img", { name: "Alice Reader's profile picture" }),
+  ).not.toBeInTheDocument();
+  expect(screen.getByTestId("user-avatar-fallback")).toHaveTextContent("A");
 });

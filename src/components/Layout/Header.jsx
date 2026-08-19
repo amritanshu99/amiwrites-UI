@@ -7,7 +7,6 @@ import {
   Menu,
   X,
   LogOut,
-  UserCircle,
   MoonStar,
   Sun,
   ChevronLeft,
@@ -19,6 +18,7 @@ import LoginModal from "../Auth/LoginModal";
 import { toast } from "react-toastify";
 import { useVerifiedAuth } from "../../hooks/useVerifiedAuth";
 import { preloadAdminRoutes } from "../../utils/adminRoutePreload";
+import UserAvatar from "./UserAvatar";
 
 // a11y-friendly animated pill
 const ActivePill = motion.create("span");
@@ -29,7 +29,8 @@ export default function Header({ setLoading }) {
   const [loginOpen, setLoginOpen] = useState(false);
   const [signupOpen, setSignupOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const { isAuthenticated, username, isAdmin } = useVerifiedAuth();
+  const { isAuthenticated, username, displayName, avatarUrl, isAdmin } =
+    useVerifiedAuth();
 
   // For sm/md screen tab scrolling
   const navScrollRef = useRef(null);
@@ -377,7 +378,11 @@ export default function Header({ setLoading }) {
                     aria-controls="user-menu"
                     type="button"
                   >
-                    <UserCircle className="h-6 w-6" />
+                    <UserAvatar
+                      avatarUrl={avatarUrl}
+                      displayName={displayName}
+                      username={username}
+                    />
                   </button>
 
                   <AnimatePresence>
@@ -394,7 +399,11 @@ export default function Header({ setLoading }) {
                         className="absolute right-0 mt-3 w-56 max-w-[88vw] overflow-hidden rounded-2xl bg-white/95 shadow-[0_18px_42px_rgba(71,85,105,0.18)] ring-1 ring-[#475569]/[0.12] backdrop-blur-xl dark:bg-zinc-950/95 dark:shadow-[0_18px_42px_rgba(0,0,0,0.48)] dark:ring-white/10"
                       >
                         <div className="px-4 py-3 text-sm text-[#111827] dark:text-gray-200 border-b border-[#475569]/[0.10] dark:border-white/10">
-                          Hi, <span className="font-medium">{username}</span>!
+                          Hi,{" "}
+                          <span className="font-medium">
+                            {displayName || username}
+                          </span>
+                          !
                         </div>
                         {isAdmin && (
                           <>

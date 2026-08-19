@@ -15,6 +15,14 @@ const invalidatedEvents = new WeakSet();
 const getStoredToken = () =>
   typeof window === "undefined" ? null : window.localStorage.getItem("token");
 
+const getOptionalStringClaim = (value, maxLength) => {
+  if (typeof value !== "string") return null;
+  const normalizedValue = value.trim();
+  return normalizedValue && normalizedValue.length <= maxLength
+    ? normalizedValue
+    : null;
+};
+
 const hasVerifiedAdminToken = (token) => {
   if (!token || verifiedAdminToken !== token) return false;
 
@@ -55,8 +63,21 @@ const getLocalAuth = () => {
     isAuthenticated && typeof decoded?.username === "string"
       ? decoded.username
       : null;
+  const displayName = isAuthenticated
+    ? getOptionalStringClaim(decoded?.displayName, 160)
+    : null;
+  const avatarUrl = isAuthenticated
+    ? getOptionalStringClaim(decoded?.avatarUrl, 2_048)
+    : null;
 
-  return { token, decoded, isAuthenticated, username };
+  return {
+    token,
+    decoded,
+    isAuthenticated,
+    username,
+    displayName,
+    avatarUrl,
+  };
 };
 
 const getInitialState = () => {
@@ -69,6 +90,8 @@ const getInitialState = () => {
   return {
     isAuthenticated: localAuth.isAuthenticated,
     username: localAuth.username,
+    displayName: localAuth.displayName,
+    avatarUrl: localAuth.avatarUrl,
     isAdmin,
     isVerifyingAdmin: isAdminCandidate && !isAdmin,
     verifiedAdminToken: isAdmin ? localAuth.token : null,
@@ -113,6 +136,8 @@ const verifyAdminCandidate = (token) => {
 const statesMatch = (left, right) =>
   left.isAuthenticated === right.isAuthenticated &&
   left.username === right.username &&
+  left.displayName === right.displayName &&
+  left.avatarUrl === right.avatarUrl &&
   left.isAdmin === right.isAdmin &&
   left.isVerifyingAdmin === right.isVerifyingAdmin &&
   left.verifiedAdminToken === right.verifiedAdminToken;
@@ -153,6 +178,8 @@ export function useVerifiedAuth() {
       publish({
         isAuthenticated: localAuth.isAuthenticated,
         username: localAuth.username,
+        displayName: localAuth.displayName,
+        avatarUrl: localAuth.avatarUrl,
         isAdmin: hasCachedAdminVerification,
         isVerifyingAdmin:
           isAdminCandidate && !hasCachedAdminVerification,
@@ -191,6 +218,8 @@ export function useVerifiedAuth() {
           ? {
               isAuthenticated: true,
               username: localAuth.username,
+              displayName: localAuth.displayName,
+              avatarUrl: localAuth.avatarUrl,
               isAdmin: true,
               isVerifyingAdmin: false,
               verifiedAdminToken: localAuth.token,
@@ -198,6 +227,8 @@ export function useVerifiedAuth() {
           : {
               isAuthenticated: false,
               username: null,
+              displayName: null,
+              avatarUrl: null,
               isAdmin: false,
               isVerifyingAdmin: false,
               verifiedAdminToken: null,

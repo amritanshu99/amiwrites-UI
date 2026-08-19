@@ -15,9 +15,10 @@ const encodeJwtPart = (value) =>
 
 let tokenSequence = 0;
 
-const createToken = (username) =>
+const createToken = (username, claims = {}) =>
   `${encodeJwtPart({ alg: "none", typ: "JWT" })}.${encodeJwtPart({
     username,
+    ...claims,
     exp: Math.floor(Date.now() / 1000) + 3600,
   })}.test-signature-${++tokenSequence}`;
 
@@ -34,6 +35,10 @@ function AuthProbe({ label = "auth" }) {
         {auth.isVerifyingAdmin ? "yes" : "no"}
       </span>
       <span data-testid={`${label}-username`}>{auth.username || "anonymous"}</span>
+      <span data-testid={`${label}-display-name`}>
+        {auth.displayName || "none"}
+      </span>
+      <span data-testid={`${label}-avatar-url`}>{auth.avatarUrl || "none"}</span>
       <span data-testid={`${label}-verified-token`}>
         {auth.verifiedAdminToken || "none"}
       </span>
@@ -44,6 +49,32 @@ function AuthProbe({ label = "auth" }) {
 beforeEach(() => {
   localStorage.clear();
   verifyToken.mockReset();
+});
+
+test("exposes optional Google profile claims while old password sessions fall back cleanly", () => {
+  const displayName = "A".repeat(160);
+  const avatarUrl = "https://lh3.googleusercontent.com/a/profile-photo=s96-c";
+  const googleToken = createToken("alice", {
+    displayName: ` ${displayName} `,
+    avatarUrl: ` ${avatarUrl} `,
+  });
+  localStorage.setItem("token", googleToken);
+
+  const { rerender } = render(<AuthProbe />);
+
+  expect(screen.getByTestId("auth-display-name")).toHaveTextContent(displayName);
+  expect(screen.getByTestId("auth-avatar-url")).toHaveTextContent(avatarUrl);
+  expect(verifyToken).not.toHaveBeenCalled();
+
+  const passwordToken = createToken("reader");
+  act(() => {
+    localStorage.setItem("token", passwordToken);
+    window.dispatchEvent(new Event("tokenChanged"));
+  });
+  rerender(<AuthProbe />);
+
+  expect(screen.getByTestId("auth-display-name")).toHaveTextContent("none");
+  expect(screen.getByTestId("auth-avatar-url")).toHaveTextContent("none");
 });
 
 test("keeps forged admin claims fail-closed unless verification returns boolean true", async () => {
