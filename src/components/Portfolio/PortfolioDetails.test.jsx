@@ -532,6 +532,10 @@ describe("PortfolioDetails startup experience", () => {
     ).toBeInTheDocument();
     expect(contactBanner).toHaveAttribute("width", "1584");
     expect(contactBanner).toHaveAttribute("height", "396");
+    expect(screen.getByRole("link", { name: "Email" })).toHaveAttribute(
+      "href",
+      "mailto:amritanshu99@gmail.com",
+    );
     expect(
       screen.getByRole("link", { name: /amiverse\.in/i }),
     ).toHaveAttribute("href", "https://www.amiverse.in");
