@@ -1,33 +1,78 @@
 import { useEffect, useId, useRef } from "react";
 import { X } from "lucide-react";
 
+const FOCUSABLE_SELECTOR = [
+  "a[href]",
+  "button:not([disabled])",
+  "input:not([disabled])",
+  "select:not([disabled])",
+  "textarea:not([disabled])",
+  "[tabindex]:not([tabindex='-1'])",
+].join(",");
+
 export default function Modal({
   isOpen,
   onClose,
   title,
+  description,
   children,
   closeDisabled = false,
 }) {
   const modalRef = useRef(null);
   const titleId = useId();
+  const descriptionId = useId();
 
   useEffect(() => {
     if (!isOpen) return undefined;
 
-    const handleEsc = (e) => {
-      if (e.key === "Escape" && !closeDisabled) onClose();
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape" && !closeDisabled) {
+        event.preventDefault();
+        onClose();
+        return;
+      }
+
+      if (event.key !== "Tab" || !modalRef.current) return;
+
+      const focusableElements = Array.from(
+        modalRef.current.querySelectorAll(FOCUSABLE_SELECTOR),
+      );
+      if (!focusableElements.length) {
+        event.preventDefault();
+        modalRef.current.focus();
+        return;
+      }
+
+      const firstElement = focusableElements[0];
+      const lastElement = focusableElements[focusableElements.length - 1];
+      const activeElement = document.activeElement;
+
+      if (event.shiftKey && (activeElement === firstElement || activeElement === modalRef.current)) {
+        event.preventDefault();
+        lastElement.focus();
+      } else if (!event.shiftKey && activeElement === lastElement) {
+        event.preventDefault();
+        firstElement.focus();
+      }
     };
 
-    document.addEventListener("keydown", handleEsc);
-    return () => document.removeEventListener("keydown", handleEsc);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
   }, [closeDisabled, isOpen, onClose]);
 
   useEffect(() => {
     if (!isOpen) return undefined;
 
     const previousOverflow = document.body.style.overflow;
+    const previouslyFocusedElement = document.activeElement;
     const focusFrame = window.requestAnimationFrame(() => {
-      modalRef.current?.focus();
+      const preferredFocusableElement = modalRef.current?.querySelector(
+        "[data-autofocus]",
+      );
+      const firstFocusableElement =
+        preferredFocusableElement ||
+        modalRef.current?.querySelector(FOCUSABLE_SELECTOR);
+      (firstFocusableElement || modalRef.current)?.focus();
     });
 
     document.body.style.overflow = "hidden";
@@ -35,6 +80,12 @@ export default function Modal({
     return () => {
       window.cancelAnimationFrame(focusFrame);
       document.body.style.overflow = previousOverflow;
+      if (
+        previouslyFocusedElement instanceof HTMLElement &&
+        document.contains(previouslyFocusedElement)
+      ) {
+        previouslyFocusedElement.focus();
+      }
     };
   }, [isOpen]);
 
@@ -61,9 +112,10 @@ export default function Modal({
       />
       <div
         ref={modalRef}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby={titleId}
+      aria-describedby={description ? descriptionId : undefined}
         tabIndex={-1}
         className="relative my-auto max-h-[calc(100svh-2rem)] w-full max-w-md overflow-y-auto rounded-2xl border border-white/70 bg-white/95 p-5 text-slate-950 shadow-[0_28px_80px_rgba(15,23,42,0.28)] outline-none ring-1 ring-slate-900/5 backdrop-blur-2xl animate-fade-in dark:border-white/10 dark:bg-zinc-950/95 dark:text-white dark:shadow-[0_30px_90px_rgba(0,0,0,0.68)] dark:ring-white/10 sm:p-7"
         onMouseDown={(e) => e.stopPropagation()}
@@ -88,6 +140,14 @@ export default function Modal({
           >
             {title}
           </h2>
+          {description && (
+            <p
+              id={descriptionId}
+              className="mt-2 pr-8 text-sm leading-6 text-slate-600 dark:text-zinc-300"
+            >
+              {description}
+            </p>
+          )}
           <div className="mt-5">{children}</div>
         </div>
       </div>

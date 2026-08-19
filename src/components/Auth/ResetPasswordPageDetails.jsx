@@ -4,6 +4,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import Loader from "../Loader/Loader";
 import { apiUrl } from "../../config/api";
+import { passwordMeetsLengthPolicy } from "../../utils/passwordPolicy";
 
 export default function ResetPasswordPageDetails({ token }) {
   const navigate = useNavigate();
@@ -15,9 +16,9 @@ export default function ResetPasswordPageDetails({ token }) {
 
   const validatePassword = (pwd) => {
     return (
-      pwd.length >= 10 &&
-      /[A-Z]/.test(pwd) &&
-      /[^A-Za-z0-9]/.test(pwd)
+      passwordMeetsLengthPolicy(pwd) &&
+      /[0-9]/.test(pwd) &&
+      /[!@#$%^&*]/.test(pwd)
     );
   };
 
@@ -31,7 +32,7 @@ export default function ResetPasswordPageDetails({ token }) {
     }
 
     if (!validatePassword(password)) {
-      toast.error("Password must be 10+ characters, include an uppercase & special character.");
+      toast.error("Password must have at least 10 characters, stay within 72 bytes, and include a number and special character (!@#$%^&*).");
       return;
     }
 
@@ -52,6 +53,8 @@ export default function ResetPasswordPageDetails({ token }) {
       );
 
       toast.success("Password reset successful! Please login.");
+      localStorage.removeItem("token");
+      window.dispatchEvent(new Event("tokenChanged"));
       setPassword("");
       setConfirmPassword("");
 
@@ -82,7 +85,7 @@ export default function ResetPasswordPageDetails({ token }) {
                   id="reset-new-password"
                   type="password"
                   autoComplete="new-password"
-                  maxLength={128}
+                  maxLength={72}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter new password"
@@ -98,7 +101,7 @@ export default function ResetPasswordPageDetails({ token }) {
                   id="reset-confirm-password"
                   type="password"
                   autoComplete="new-password"
-                  maxLength={128}
+                  maxLength={72}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="Confirm new password"
@@ -119,7 +122,7 @@ export default function ResetPasswordPageDetails({ token }) {
               </div>
             </form>
             <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-2">
-              Password must be at least 10 characters with 1 uppercase and 1 special character.
+              Use at least 10 characters (72-byte limit), a number, and a special character (!@#$%^&amp;*).
             </p>
           </div>
         </div>

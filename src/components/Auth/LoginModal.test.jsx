@@ -1,11 +1,22 @@
 import React from "react";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import axios from "axios";
 import { toast } from "react-toastify";
 import LoginModal from "./LoginModal";
+import { loginWithPassword } from "../../utils/authApi";
 import { updatePulseLocationFromBrowser } from "../../utils/pulseLocation";
 
-jest.mock("axios", () => ({ post: jest.fn() }));
+jest.mock(
+  "react-router-dom",
+  () => ({
+    Link: ({ children, to, ...props }) => (
+      <a href={to} {...props}>
+        {children}
+      </a>
+    ),
+  }),
+  { virtual: true },
+);
+
 jest.mock("react-toastify", () => ({
   toast: {
     success: jest.fn(),
@@ -14,13 +25,23 @@ jest.mock("react-toastify", () => ({
     error: jest.fn(),
   },
 }));
+jest.mock("../../utils/authApi", () => ({
+  continueWithGoogle: jest.fn(),
+  loginWithPassword: jest.fn(),
+  requestPasswordReset: jest.fn(),
+  signupWithPassword: jest.fn(),
+}));
 jest.mock("../../utils/pulseLocation", () => ({
   getGeolocationErrorMessage: jest.fn(() => "Location update failed."),
   updatePulseLocationFromBrowser: jest.fn(),
 }));
-jest.mock("./Modal", () => ({ isOpen, children, title }) =>
+jest.mock("./GoogleSignInButton", () => () => (
+  <button type="button">Continue with Google</button>
+));
+jest.mock("./Modal", () => ({ isOpen, children, title, description }) =>
   isOpen ? (
     <div role="dialog" aria-label={title}>
+      <p>{description}</p>
       {children}
     </div>
   ) : null,
@@ -32,21 +53,34 @@ const encodeJwtPart = (value) =>
     .replace(/\+/g, "-")
     .replace(/\//g, "_");
 
-const createToken = (username) =>
-  `${encodeJwtPart({ alg: "HS256", typ: "JWT" })}.${encodeJwtPart({
+const createSession = (username) => {
+  const payload = {
     username,
     exp: Math.floor(Date.now() / 1000) + 3600,
-  })}.signature`;
+  };
+  return {
+    token: `${encodeJwtPart({ alg: "HS256", typ: "JWT" })}.${encodeJwtPart(
+      payload,
+    )}.signature`,
+    payload,
+    user: null,
+  };
+};
 
-function submitLogin(username) {
-  fireEvent.change(screen.getByLabelText("Username"), {
-    target: { value: username },
+const renderLogin = (onClose = jest.fn()) => {
+  render(<LoginModal isOpen onClose={onClose} />);
+  return onClose;
+};
+
+const submitLogin = (identifier) => {
+  fireEvent.change(screen.getByLabelText("Email or username"), {
+    target: { value: identifier },
   });
   fireEvent.change(screen.getByLabelText("Password"), {
     target: { value: "password" },
   });
-  fireEvent.click(screen.getByRole("button", { name: "Login" }));
-}
+  fireEvent.click(screen.getByRole("button", { name: "Sign in" }));
+};
 
 beforeEach(() => {
   localStorage.clear();
@@ -56,37 +90,40 @@ beforeEach(() => {
   });
 });
 
-test("requests and updates Ami Pulse location after an admin login", async () => {
-  const token = createToken("amritanshu99");
-  const onClose = jest.fn();
-  axios.post.mockResolvedValue({ data: { token } });
+test("signs in with an email-or-username identifier and commits the app session", async () => {
+  const session = createSession("reader");
+  const onClose = renderLogin();
+  loginWithPassword.mockResolvedValue(session);
 
-  render(<LoginModal isOpen onClose={onClose} />);
+  submitLogin(" Reader@example.com ");
+
+  await waitFor(() =>
+    expect(loginWithPassword).toHaveBeenCalledWith({
+      identifier: "Reader@example.com",
+      password: "password",
+    }),
+  );
+  expect(localStorage.getItem("token")).toBe(session.token);
+  expect(onClose).toHaveBeenCalledTimes(1);
+  expect(updatePulseLocationFromBrowser).not.toHaveBeenCalled();
+});
+
+test("preserves the Ami Pulse location refresh after an admin password sign-in", async () => {
+  const session = createSession("amritanshu99");
+  loginWithPassword.mockResolvedValue(session);
+  renderLogin();
+
   submitLogin("amritanshu99");
 
   await waitFor(() =>
-    expect(updatePulseLocationFromBrowser).toHaveBeenCalledWith(token),
+    expect(updatePulseLocationFromBrowser).toHaveBeenCalledWith(session.token),
   );
   await waitFor(() =>
     expect(toast.success).toHaveBeenCalledWith(
       "Ami Pulse location updated to Greater Noida, India.",
     ),
   );
-  expect(localStorage.getItem("token")).toBe(token);
   expect(toast.info).toHaveBeenCalledWith(
     "Allow location access to refresh your Ami Pulse location.",
   );
-  expect(onClose).toHaveBeenCalledTimes(1);
-});
-
-test("does not request location after a regular user login", async () => {
-  const onClose = jest.fn();
-  axios.post.mockResolvedValue({ data: { token: createToken("reader") } });
-
-  render(<LoginModal isOpen onClose={onClose} />);
-  submitLogin("reader");
-
-  await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
-  expect(updatePulseLocationFromBrowser).not.toHaveBeenCalled();
-  expect(toast.info).not.toHaveBeenCalled();
 });
