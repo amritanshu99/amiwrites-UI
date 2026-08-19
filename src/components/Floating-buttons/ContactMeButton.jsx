@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import axios from "axios";
 import Loader from "../Loader/Loader";
 import { toast } from "react-toastify";
@@ -25,6 +25,15 @@ export default function ContactMeButton() {
   const isExpanded = !collapsed || hovered;
   const isAmiBotRoute = pathname === "/amibot" || pathname === "/amibot-admin";
 
+  const playSound = useCallback(() => {
+    if (audioRef.current) {
+      audioRef.current.currentTime = 0;
+      audioRef.current
+        .play()
+        .catch((err) => console.error("Audio play failed:", err));
+    }
+  }, []);
+
   useEffect(() => {
     audioRef.current = new Audio("/sounds/message.mp3");
     audioRef.current.load();
@@ -38,16 +47,7 @@ export default function ContactMeButton() {
 
     window.addEventListener("open-contact-modal", openFromFooter);
     return () => window.removeEventListener("open-contact-modal", openFromFooter);
-  }, []);
-
-  const playSound = () => {
-    if (audioRef.current) {
-      audioRef.current.currentTime = 0;
-      audioRef.current
-        .play()
-        .catch((err) => console.error("Audio play failed:", err));
-    }
-  };
+  }, [playSound]);
 
   const handleOpen = () => {
     playSound();
@@ -88,16 +88,15 @@ export default function ContactMeButton() {
     }
   };
 
-  if (isAmiBotRoute) return null;
-
   return (
     <>
-      <button
-        onClick={handleOpen}
-        aria-label="Contact Me"
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
-        className={`
+      {!isAmiBotRoute && (
+        <button
+          onClick={handleOpen}
+          aria-label="Contact Me"
+          onMouseEnter={() => setHovered(true)}
+          onMouseLeave={() => setHovered(false)}
+          className={`
           amiverse-contact-trigger group fixed bottom-[calc(7rem+env(safe-area-inset-bottom))] right-4 z-[90]
           inline-flex min-h-14 items-center overflow-hidden rounded-full
           border border-white/25 bg-slate-950/95 font-semibold text-white
@@ -110,26 +109,27 @@ export default function ContactMeButton() {
           md:bottom-[calc(1.5rem+env(safe-area-inset-bottom))] md:right-6
           ${isExpanded ? "w-14 justify-center px-0 py-0 md:w-40 md:justify-start md:px-4 md:py-2.5" : "w-14 justify-center px-0 py-0"}
         `}
-        style={{
-          transitionProperty: "width, padding, background-color, box-shadow",
-        }}
-      >
-        <span className="absolute inset-0 bg-[linear-gradient(135deg,rgba(14,165,233,0.95),rgba(20,184,166,0.76)_48%,rgba(15,23,42,0.92))] opacity-95 transition-opacity duration-300 group-hover:opacity-100 dark:bg-[linear-gradient(135deg,rgba(7,89,133,0.96),rgba(13,148,136,0.68)_50%,rgba(2,6,23,0.98))] dark:opacity-100" />
-        <span className="absolute inset-x-3 top-0 h-px bg-white/[0.55] dark:bg-cyan-100/24" />
-        <span className="absolute -inset-1 rounded-full bg-cyan-300/20 opacity-0 blur-xl transition-opacity duration-300 group-hover:opacity-100 dark:bg-cyan-500/10 dark:group-hover:opacity-80" />
-        <span className="relative z-10 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/[0.16] ring-1 ring-white/25 transition-transform duration-300 group-hover:scale-105 dark:bg-black/20 dark:ring-cyan-100/20">
-          <MessageCircle size={19} strokeWidth={2.2} />
-        </span>
-
-        {isExpanded && (
-          <span
-            className="amiverse-contact-label relative z-10 ml-2 hidden whitespace-nowrap text-sm tracking-wide text-white opacity-100 transition-opacity duration-300 md:inline"
-            style={{ transitionDelay: "100ms" }}
-          >
-            Contact Me
+          style={{
+            transitionProperty: "width, padding, background-color, box-shadow",
+          }}
+        >
+          <span className="absolute inset-0 bg-[linear-gradient(135deg,rgba(14,165,233,0.95),rgba(20,184,166,0.76)_48%,rgba(15,23,42,0.92))] opacity-95 transition-opacity duration-300 group-hover:opacity-100 dark:bg-[linear-gradient(135deg,rgba(7,89,133,0.96),rgba(13,148,136,0.68)_50%,rgba(2,6,23,0.98))] dark:opacity-100" />
+          <span className="absolute inset-x-3 top-0 h-px bg-white/[0.55] dark:bg-cyan-100/24" />
+          <span className="absolute -inset-1 rounded-full bg-cyan-300/20 opacity-0 blur-xl transition-opacity duration-300 group-hover:opacity-100 dark:bg-cyan-500/10 dark:group-hover:opacity-80" />
+          <span className="relative z-10 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/[0.16] ring-1 ring-white/25 transition-transform duration-300 group-hover:scale-105 dark:bg-black/20 dark:ring-cyan-100/20">
+            <MessageCircle size={19} strokeWidth={2.2} />
           </span>
-        )}
-      </button>
+
+          {isExpanded && (
+            <span
+              className="amiverse-contact-label relative z-10 ml-2 hidden whitespace-nowrap text-sm tracking-wide text-white opacity-100 transition-opacity duration-300 md:inline"
+              style={{ transitionDelay: "100ms" }}
+            >
+              Contact Me
+            </span>
+          )}
+        </button>
+      )}
 
       {open && (
         <div
