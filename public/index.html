@@ -7,6 +7,17 @@
       name="viewport"
       content="width=device-width, initial-scale=1, viewport-fit=cover"
     />
+    <script>
+      (() => {
+        try {
+          if (window.localStorage.getItem("theme") === "dark") {
+            document.documentElement.classList.add("dark");
+          }
+        } catch {
+          // Storage can be unavailable in privacy-restricted browser contexts.
+        }
+      })();
+    </script>
     <meta name="referrer" content="strict-origin-when-cross-origin" />
 
     <title>Amritanshu Mishra – Full-Stack &amp; AI Engineer | AmiVerse</title>
@@ -27,7 +38,7 @@
     <meta name="author" content="Amritanshu Mishra" />
     <meta name="language" content="en" />
     <meta name="application-name" content="AmiVerse" />
-    <meta name="theme-color" content="#010101" />
+    <meta name="theme-color" content="#eef7ff" />
     <meta
       name="robots"
       content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"

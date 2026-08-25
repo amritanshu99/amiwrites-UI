@@ -3,6 +3,7 @@
 @tailwind utilities;
 
 :root {
+  color-scheme: light;
   --scrollbar-size: 0.82rem;
   --scrollbar-thumb: rgba(56, 189, 248, 0.72);
   --scrollbar-thumb-hover: rgba(14, 165, 233, 0.92);
@@ -16,6 +17,87 @@
     linear-gradient(115deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0) 38%),
     radial-gradient(circle at 20% 18%, rgba(14, 116, 144, 0.08), transparent 30%),
     radial-gradient(circle at 82% 12%, rgba(79, 70, 229, 0.08), transparent 32%);
+  --amiverse-chrome-bg:
+    radial-gradient(circle at 9% -55%, rgba(14, 165, 233, 0.28), transparent 46%),
+    radial-gradient(circle at 91% -45%, rgba(20, 184, 166, 0.2), transparent 44%),
+    linear-gradient(118deg, #fbfdff 0%, #eef7ff 48%, #edf9f5 100%);
+  --amiverse-chrome-glow:
+    linear-gradient(112deg, rgba(255, 255, 255, 0.78), transparent 42%, rgba(14, 116, 144, 0.075)),
+    radial-gradient(circle at 52% 0%, rgba(255, 255, 255, 0.9), transparent 38%);
+  --amiverse-chrome-panel: rgba(255, 255, 255, 0.68);
+  --amiverse-chrome-panel-strong: rgba(255, 255, 255, 0.86);
+  --amiverse-chrome-border: rgba(14, 116, 144, 0.14);
+  --amiverse-chrome-border-strong: rgba(14, 116, 144, 0.22);
+  --amiverse-chrome-text: #0f172a;
+  --amiverse-chrome-muted: #52647a;
+  --amiverse-chrome-accent: #0369a1;
+  --amiverse-chrome-shadow: 0 18px 48px -34px rgba(15, 91, 126, 0.42);
+  --amiverse-chrome-root-shadow: 0 12px 38px rgba(15, 91, 126, 0.11);
+}
+
+html.dark {
+  color-scheme: dark;
+  --amiverse-chrome-bg:
+    radial-gradient(circle at 10% -45%, rgba(14, 165, 233, 0.2), transparent 44%),
+    radial-gradient(circle at 90% -42%, rgba(20, 184, 166, 0.15), transparent 42%),
+    linear-gradient(118deg, #020617 0%, #071827 48%, #06211f 100%);
+  --amiverse-chrome-glow:
+    linear-gradient(112deg, rgba(125, 211, 252, 0.055), transparent 42%, rgba(45, 212, 191, 0.045)),
+    radial-gradient(circle at 52% 0%, rgba(255, 255, 255, 0.055), transparent 38%);
+  --amiverse-chrome-panel: rgba(7, 24, 39, 0.72);
+  --amiverse-chrome-panel-strong: rgba(5, 19, 32, 0.9);
+  --amiverse-chrome-border: rgba(125, 211, 252, 0.13);
+  --amiverse-chrome-border-strong: rgba(94, 234, 212, 0.2);
+  --amiverse-chrome-text: #f8fafc;
+  --amiverse-chrome-muted: #b6c5d4;
+  --amiverse-chrome-accent: #67e8f9;
+  --amiverse-chrome-shadow: 0 22px 54px -36px rgba(0, 0, 0, 0.92);
+  --amiverse-chrome-root-shadow: 0 14px 42px rgba(0, 0, 0, 0.42);
+}
+
+.amiverse-site-chrome {
+  background-color: #eef7ff;
+  background-image: var(--amiverse-chrome-bg);
+  color: var(--amiverse-chrome-text);
+  box-shadow: var(--amiverse-chrome-root-shadow);
+}
+
+.dark .amiverse-site-chrome {
+  background-color: #071827;
+}
+
+.amiverse-site-chrome-glow {
+  background-image: var(--amiverse-chrome-glow);
+}
+
+.amiverse-chrome-panel {
+  border: 1px solid var(--amiverse-chrome-border);
+  background: var(--amiverse-chrome-panel);
+  box-shadow: var(--amiverse-chrome-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.38);
+}
+
+.dark .amiverse-chrome-panel {
+  box-shadow: var(--amiverse-chrome-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.055);
+}
+
+.amiverse-chrome-panel--strong {
+  background: var(--amiverse-chrome-panel-strong);
+  border-color: var(--amiverse-chrome-border-strong);
+}
+
+@supports ((-webkit-backdrop-filter: blur(1rem)) or (backdrop-filter: blur(1rem))) {
+  .amiverse-chrome-panel {
+    -webkit-backdrop-filter: blur(1rem) saturate(1.12);
+    backdrop-filter: blur(1rem) saturate(1.12);
+  }
+}
+
+/* A theme flip should feel immediate instead of animating every card on the page. */
+html[data-theme-transition="true"] *,
+html[data-theme-transition="true"] *::before,
+html[data-theme-transition="true"] *::after {
+  transition-delay: 0s !important;
+  transition-duration: 0s !important;
 }
 
 /* Keep the viewport background consistent so reserved scrollbar space never flashes white. */
@@ -23,7 +105,12 @@ html,
 body {
   height: 100%;
   overflow-x: hidden;
-  background-color: #020202;
+  background-color: #eef7ff;
+}
+
+html.dark,
+html.dark body {
+  background-color: #020617;
 }
 
 /* Professional, consistent global scrollbar (Chrome, Edge, Safari). */
@@ -349,6 +436,39 @@ body {
   scrollbar-gutter: stable;
 }
 
+.amiverse-app-shell.amiverse-shell-menu-open {
+  overflow-y: hidden;
+}
+
+@keyframes footerHeartBeat {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  14% {
+    transform: scale(1.24);
+  }
+  28% {
+    transform: scale(1);
+  }
+  42% {
+    transform: scale(1.16);
+  }
+  70% {
+    transform: scale(1);
+  }
+}
+
+.amiverse-footer-heart {
+  animation: footerHeartBeat 1.15s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .amiverse-footer-heart {
+    animation: none;
+  }
+}
+
 .amiverse-contact-trigger,
 .amiverse-portfolio-section-switcher {
   transition:
@@ -562,7 +682,6 @@ html:not(.dark) .amiverse-premium-light-overlay {
 }
 
 .portfolio-hero-ambient {
-  animation: portfolioHeroAmbient 14s ease-in-out infinite;
   transform: translate3d(0, 0, 0) scale(1.035);
 }
 
@@ -676,17 +795,6 @@ html:not(.dark) .amiverse-premium-light-overlay {
     rgba(103, 232, 249, 0.12),
     transparent
   );
-}
-
-@keyframes portfolioHeroAmbient {
-  0%,
-  100% {
-    transform: translate3d(0, 0, 0) scale(1.035);
-  }
-
-  50% {
-    transform: translate3d(-0.35%, 0.25%, 0) scale(1.045);
-  }
 }
 
 @keyframes portfolioHeroColorSweep {

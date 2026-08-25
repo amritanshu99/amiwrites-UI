@@ -367,8 +367,8 @@ describe("PortfolioDetails startup experience", () => {
   });
 
   it.each([
-    ["light", "", "your-photo.png", "ny-bg-optimized.jpg"],
-    ["dark", "dark", "your-photo-dark.png", "ny-dark-optimized.jpg"],
+    ["light", "", "your-photo-optimized.jpg", "ny-bg-optimized.jpg"],
+    ["dark", "dark", "your-photo-dark-optimized.jpg", "ny-dark-optimized.jpg"],
   ])(
     "uses the %s-mode portrait and New York background",
     async (_theme, rootClassName, portraitAsset, backgroundAsset) => {
@@ -387,7 +387,7 @@ describe("PortfolioDetails startup experience", () => {
         element.style.backgroundImage.includes(backgroundAsset),
       );
 
-      expect(portrait.getAttribute("src")).toContain(portraitAsset);
+      expect(portrait).toHaveAttribute("src", `/images/${portraitAsset}`);
       expect(backgroundLayer).toBeDefined();
     },
   );

@@ -1,4 +1,11 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  startTransition,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import axios from "axios";
 import {
   FaLinkedin,
@@ -253,11 +260,74 @@ const sectionMeta = [
   { id: "contact", label: "Contact" },
 ];
 const MAX_LOADER_DURATION_MS = 3200;
+const THEME_CHANGE_EVENT = "amiverse-theme-change";
 const resumeUrl = assetUrl("/images/Resume.pdf");
 const publicAsset = (path) => `${process.env.PUBLIC_URL || ""}${path}`;
 const contactBannerUrl = publicAsset("/banner-optimized.jpg");
 const signatureUrl = publicAsset("/images/signature.png");
+const lightBackgroundUrl = publicAsset("/ny-bg-optimized.jpg");
+const darkBackgroundUrl = publicAsset("/ny-dark-optimized.jpg");
+const heroAssetUrl = (path = "") => {
+  if (/your-photo-dark(?:-optimized)?\.(?:png|jpe?g)(?=([?#]|$))/i.test(path)) {
+    return publicAsset("/images/your-photo-dark-optimized.jpg");
+  }
+
+  if (/your-photo(?:-optimized)?\.(?:png|jpe?g)(?=([?#]|$))/i.test(path)) {
+    return publicAsset("/images/your-photo-optimized.jpg");
+  }
+
+  return assetUrl(path);
+};
 const cx = (...classes) => classes.filter(Boolean).join(" ");
+const decodedImageCache = new Map();
+
+const preloadDecodedImage = (
+  url,
+  { acceptDecodeFailure = false, fetchPriority = "auto" } = {},
+) => {
+  if (!url || typeof Image === "undefined") return Promise.resolve();
+
+  const cacheKey = `${url}:${acceptDecodeFailure ? "soft" : "strict"}`;
+  if (decodedImageCache.has(cacheKey)) return decodedImageCache.get(cacheKey);
+
+  const pendingImage = new Promise((resolve, reject) => {
+    const image = new Image();
+    let decodeStarted = false;
+    image.decoding = "async";
+    image.fetchPriority = fetchPriority;
+
+    const settleDecodedImage = () => {
+      if (decodeStarted) return;
+      decodeStarted = true;
+
+      if (typeof image.decode !== "function") {
+        resolve();
+        return;
+      }
+
+      image.decode().then(resolve).catch((error) => {
+        if (acceptDecodeFailure && image.naturalWidth > 0) {
+          resolve();
+          return;
+        }
+        reject(error);
+      });
+    };
+
+    image.addEventListener("load", settleDecodedImage, { once: true });
+    image.addEventListener("error", reject, { once: true });
+    image.src = url;
+
+    if (image.complete) {
+      if (image.naturalWidth > 0) settleDecodedImage();
+      else reject(new Error(`Unable to load image: ${url}`));
+    }
+  });
+
+  decodedImageCache.set(cacheKey, pendingImage);
+  pendingImage.catch(() => decodedImageCache.delete(cacheKey));
+  return pendingImage;
+};
 
 const proofPoints = [
   { value: "7+ years", label: "Product engineering" },
@@ -343,8 +413,11 @@ export default function PortfolioDetails() {
   const hasLoadedHeroRef = useRef(false);
   const loading = loaderPhase !== "hidden";
 
-  const portfolioBackgroundImage = publicAsset(
-    isDark ? "/ny-dark-optimized.jpg" : "/ny-bg-optimized.jpg",
+  const requestedPortfolioBackgroundImage = isDark
+    ? darkBackgroundUrl
+    : lightBackgroundUrl;
+  const [portfolioBackgroundImage, setPortfolioBackgroundImage] = useState(
+    requestedPortfolioBackgroundImage,
   );
   const activeSectionMeta = useMemo(
     () => sectionMeta.find((section) => section.id === activeSection) || sectionMeta[0],
@@ -399,19 +472,21 @@ export default function PortfolioDetails() {
   }, [updateBottomCtaExpanded]);
 
   useEffect(() => {
-    const syncTheme = () => {
-      const nextIsDark = document.documentElement.classList.contains("dark");
-      setIsDark((current) => (current === nextIsDark ? current : nextIsDark));
+    const syncTheme = (event) => {
+      const nextIsDark =
+        typeof event?.detail?.isDark === "boolean"
+          ? event.detail.isDark
+          : document.documentElement.classList.contains("dark");
+
+      startTransition(() => {
+        setIsDark((current) => (current === nextIsDark ? current : nextIsDark));
+      });
     };
 
     syncTheme();
-    const observer = new MutationObserver(syncTheme);
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ["class"],
-    });
+    window.addEventListener(THEME_CHANGE_EVENT, syncTheme);
 
-    return () => observer.disconnect();
+    return () => window.removeEventListener(THEME_CHANGE_EVENT, syncTheme);
   }, []);
 
   useEffect(() => {
@@ -582,26 +657,24 @@ export default function PortfolioDetails() {
             },
           ]
         : [],
-    [
-      data?.socialLinks?.facebook,
-      data?.socialLinks?.github,
-      data?.socialLinks?.instagram,
-      data?.socialLinks?.linkedin,
-    ],
+    [data],
   );
 
+  const requestedHeroMedia = useMemo(() => {
+    if (!data) return { height: 1, url: "", width: 1 };
 
+    const usesDarkPortrait = Boolean(isDark && data.photoUrlDark);
+    const preferredPhoto = usesDarkPortrait ? data.photoUrlDark : data.photoUrl;
 
-  const requestedHeroImageUrl = useMemo(() => {
-    if (!data) return "";
-
-    const preferredPhoto = isDark && data.photoUrlDark
-      ? data.photoUrlDark
-      : data.photoUrl;
-
-    return assetUrl(preferredPhoto);
+    return {
+      height: usesDarkPortrait ? 1024 : 1317,
+      url: heroAssetUrl(preferredPhoto),
+      width: usesDarkPortrait ? 1024 : 1477,
+    };
   }, [data, isDark]);
-  const [heroImageUrl, setHeroImageUrl] = useState(requestedHeroImageUrl);
+  const [heroMedia, setHeroMedia] = useState(requestedHeroMedia);
+  const [pixelEffectImageUrl, setPixelEffectImageUrl] = useState("");
+  const heroImageUrl = heroMedia.url;
 
   const handleHeroImageLoad = useCallback(
     (event) => {
@@ -622,14 +695,14 @@ export default function PortfolioDetails() {
   const handleHeroImageError = useCallback(
     (event) => {
       const image = event.currentTarget;
-      const fallbackUrl = assetUrl(data.photoUrl);
+      const fallbackUrl = heroAssetUrl(data.photoUrl);
 
       if (
         image.dataset.fallbackApplied !== "true" &&
         image.src !== fallbackUrl
       ) {
         image.dataset.fallbackApplied = "true";
-        setHeroImageUrl(fallbackUrl);
+        setHeroMedia({ height: 1317, url: fallbackUrl, width: 1477 });
         image.src = fallbackUrl;
         return;
       }
@@ -639,51 +712,29 @@ export default function PortfolioDetails() {
   );
 
   useEffect(() => {
-    if (!requestedHeroImageUrl) {
+    if (!requestedHeroMedia.url) {
       markHeroImageLoaded();
       return undefined;
     }
 
-    const heroImage = new Image();
+    if (requestedHeroMedia.url === heroMedia.url) return undefined;
+
     let cancelled = false;
-    heroImage.decoding = "async";
-    heroImage.fetchPriority = "high";
-    const revealStagedImage = () => {
-      if (cancelled) return;
-      setHeroImageUrl(requestedHeroImageUrl);
-      markHeroImageLoaded();
-    };
-    const handleStagedImageError = () => {
-      // Keep the loader in place until the rendered fallback is decoded or the
-      // bounded loader deadline is reached.
-    };
-    const decodeStagedImage = () => {
-      if (typeof heroImage.decode !== "function") {
-        revealStagedImage();
-        return;
-      }
 
-      heroImage.decode().then(revealStagedImage).catch(handleStagedImageError);
-    };
-
-    heroImage.addEventListener("load", decodeStagedImage);
-    heroImage.addEventListener("error", handleStagedImageError);
-    heroImage.src = requestedHeroImageUrl;
-
-    if (heroImage.complete) {
-      if (heroImage.naturalWidth > 0) {
-        decodeStagedImage();
-      } else {
-        handleStagedImageError();
-      }
-    }
+    preloadDecodedImage(requestedHeroMedia.url, { fetchPriority: "high" })
+      .then(() => {
+        if (cancelled) return;
+        setHeroMedia(requestedHeroMedia);
+        markHeroImageLoaded();
+      })
+      .catch(() => {
+        // The rendered image fallback and bounded loader deadline own recovery.
+      });
 
     return () => {
       cancelled = true;
-      heroImage.removeEventListener("load", decodeStagedImage);
-      heroImage.removeEventListener("error", handleStagedImageError);
     };
-  }, [markHeroImageLoaded, requestedHeroImageUrl]);
+  }, [heroMedia.url, markHeroImageLoaded, requestedHeroMedia]);
 
   useEffect(() => {
     if (
@@ -733,28 +784,75 @@ export default function PortfolioDetails() {
   }, [loaderPhase]);
 
   useEffect(() => {
-    setBackgroundImageLoaded(false);
+    let cancelled = false;
 
-    const backgroundImage = new Image();
-    backgroundImage.decoding = "async";
-    backgroundImage.fetchPriority = "low";
-    backgroundImage.src = portfolioBackgroundImage;
+    preloadDecodedImage(requestedPortfolioBackgroundImage, {
+      acceptDecodeFailure: true,
+      fetchPriority: "low",
+    })
+      .then(() => {
+        if (cancelled) return;
+        setPortfolioBackgroundImage(requestedPortfolioBackgroundImage);
+        setBackgroundImageLoaded(true);
+      })
+      .catch(() => {
+        if (!cancelled) {
+          // Never hold the page transparent if the decorative layer is unavailable.
+          setBackgroundImageLoaded(true);
+        }
+      });
 
-    const markBackgroundImageLoaded = () => setBackgroundImageLoaded(true);
+    return () => {
+      cancelled = true;
+    };
+  }, [requestedPortfolioBackgroundImage]);
 
-    if (backgroundImage.complete) {
-      markBackgroundImageLoaded();
+  useEffect(() => {
+    if (!imageLoaded || navigator.connection?.saveData) return undefined;
+
+    const alternatePortrait = heroAssetUrl(
+      isDark ? data.photoUrl : data.photoUrlDark || data.photoUrl,
+    );
+    const alternateBackground = isDark ? lightBackgroundUrl : darkBackgroundUrl;
+    const warmAlternateTheme = () => {
+      preloadDecodedImage(alternatePortrait, {
+        fetchPriority: "low",
+      }).catch(() => {});
+      preloadDecodedImage(alternateBackground, {
+        acceptDecodeFailure: true,
+        fetchPriority: "low",
+      }).catch(() => {});
+    };
+
+    if (typeof window.requestIdleCallback === "function") {
+      const idleId = window.requestIdleCallback(warmAlternateTheme, {
+        timeout: 1800,
+      });
+      return () => window.cancelIdleCallback(idleId);
+    }
+
+    const warmTimer = window.setTimeout(warmAlternateTheme, 240);
+    return () => window.clearTimeout(warmTimer);
+  }, [data.photoUrl, data.photoUrlDark, imageLoaded, isDark]);
+
+  useEffect(() => {
+    if (!imageLoaded || loading || prefersReducedMotion) {
+      setPixelEffectImageUrl("");
       return undefined;
     }
 
-    backgroundImage.addEventListener("load", markBackgroundImageLoaded);
-    backgroundImage.addEventListener("error", markBackgroundImageLoaded);
+    const enablePixelEffect = () => setPixelEffectImageUrl(heroImageUrl);
 
-    return () => {
-      backgroundImage.removeEventListener("load", markBackgroundImageLoaded);
-      backgroundImage.removeEventListener("error", markBackgroundImageLoaded);
-    };
-  }, [portfolioBackgroundImage]);
+    if (typeof window.requestIdleCallback === "function") {
+      const idleId = window.requestIdleCallback(enablePixelEffect, {
+        timeout: 900,
+      });
+      return () => window.cancelIdleCallback(idleId);
+    }
+
+    const effectTimer = window.setTimeout(enablePixelEffect, 160);
+    return () => window.clearTimeout(effectTimer);
+  }, [heroImageUrl, imageLoaded, loading, prefersReducedMotion]);
 
   useEffect(() => {
     if (isCompactViewport) {
@@ -912,15 +1010,9 @@ export default function PortfolioDetails() {
           ref={heroRef}
           className="portfolio-hero relative isolate overflow-hidden bg-slate-100 text-slate-950 dark:bg-black dark:text-white"
         >
-          <img
-            src={heroImageUrl}
-            alt=""
+          <div
             aria-hidden="true"
-            width={isDark ? 1024 : 1477}
-            height={isDark ? 1024 : 1317}
-            className="portfolio-hero-ambient pointer-events-none absolute -inset-8 hidden h-[calc(100%+4rem)] w-[calc(100%+4rem)] max-w-none object-cover object-center opacity-25 blur-3xl dark:opacity-[0.16] lg:block"
-            loading="eager"
-            decoding="async"
+            className="portfolio-hero-ambient pointer-events-none absolute -inset-8 hidden bg-[radial-gradient(circle_at_78%_35%,rgba(14,165,233,0.2),transparent_35%),radial-gradient(circle_at_58%_72%,rgba(20,184,166,0.14),transparent_42%)] opacity-70 blur-3xl dark:bg-[radial-gradient(circle_at_78%_35%,rgba(14,165,233,0.13),transparent_36%),radial-gradient(circle_at_58%_72%,rgba(20,184,166,0.09),transparent_44%)] dark:opacity-55 lg:block"
           />
           <div
             aria-hidden="true"
@@ -930,8 +1022,8 @@ export default function PortfolioDetails() {
             ref={heroImageRef}
             src={heroImageUrl}
             alt={`${data.name} portfolio portrait`}
-            width={isDark ? 1024 : 1477}
-            height={isDark ? 1024 : 1317}
+            width={heroMedia.width}
+            height={heroMedia.height}
             onLoad={handleHeroImageLoad}
             onError={handleHeroImageError}
             initial={
@@ -952,9 +1044,14 @@ export default function PortfolioDetails() {
           />
           <HeroPixelDistortion
             containerRef={heroRef}
-            enabled={imageLoaded && !loading && !prefersReducedMotion}
+            enabled={
+              imageLoaded &&
+              !loading &&
+              !prefersReducedMotion &&
+              pixelEffectImageUrl === heroImageUrl
+            }
             imageRef={heroImageRef}
-            imageUrl={heroImageUrl}
+            imageUrl={pixelEffectImageUrl || heroImageUrl}
           />
           <div
             aria-hidden="true"

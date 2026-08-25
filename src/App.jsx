@@ -208,7 +208,7 @@ const App = () => {
   return (
     <div
       ref={appShellRef}
-      className="amiverse-app-shell h-screen overflow-y-scroll relative"
+      className="amiverse-app-shell relative flex h-screen flex-col overflow-y-scroll"
     >
       <Header setLoading={setIsLoading} />
       <ToastContainer

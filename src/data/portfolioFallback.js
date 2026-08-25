@@ -73,8 +73,8 @@ const portfolioFallback = {
       ],
     },
   ],
-  photoUrl: "/images/your-photo.png",
-  photoUrlDark: "/images/your-photo-dark.png",
+  photoUrl: "/images/your-photo-optimized.jpg",
+  photoUrlDark: "/images/your-photo-dark-optimized.jpg",
   socialLinks: {
     linkedin: "https://www.linkedin.com/in/amritanshu-mishra-568598306/",
     github: "https://github.com/amritanshu99",

@@ -22,6 +22,41 @@ import UserAvatar from "./UserAvatar";
 
 // a11y-friendly animated pill
 const ActivePill = motion.create("span");
+const THEME_CHANGE_EVENT = "amiverse-theme-change";
+
+const getInitialDarkMode = () => {
+  if (typeof document === "undefined") return false;
+
+  try {
+    return (
+      document.documentElement.classList.contains("dark") ||
+      window.localStorage.getItem("theme") === "dark"
+    );
+  } catch {
+    return document.documentElement.classList.contains("dark");
+  }
+};
+
+const applyDocumentTheme = (isDark, { notify = true } = {}) => {
+  const root = document.documentElement;
+  root.classList.toggle("dark", isDark);
+  root.style.colorScheme = isDark ? "dark" : "light";
+
+  try {
+    window.localStorage.setItem("theme", isDark ? "dark" : "light");
+  } catch {
+    // Keep theme switching available when storage is restricted.
+  }
+
+  const themeColor = document.querySelector('meta[name="theme-color"]');
+  themeColor?.setAttribute("content", isDark ? "#071827" : "#eef7ff");
+
+  if (notify) {
+    window.dispatchEvent(
+      new CustomEvent(THEME_CHANGE_EVENT, { detail: { isDark } }),
+    );
+  }
+};
 
 export default function Header({ setLoading }) {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -38,17 +73,14 @@ export default function Header({ setLoading }) {
   const [canScrollRight, setCanScrollRight] = useState(false);
 
   // Theme: localStorage with light mode as the default
-  const [darkMode, setDarkMode] = useState(() => {
-    const saved = localStorage.getItem("theme");
-    if (saved) return saved === "dark";
-    return false;
-  });
+  const [darkMode, setDarkMode] = useState(getInitialDarkMode);
 
   const location = useLocation();
   const userMenuRef = useRef(null);
   const mobileMenuRef = useRef(null);
   const userButtonRef = useRef(null);
   const mobileMenuButtonRef = useRef(null);
+  const themeTransitionTimerRef = useRef(null);
 
   useEffect(() => setMounted(true), []);
 
@@ -56,16 +88,17 @@ export default function Header({ setLoading }) {
     if (isAdmin) preloadAdminRoutes();
   }, [isAdmin]);
 
-  // Apply theme class to <html>
+  // Keep browser chrome and the root class in sync, including test/embedded mounts.
   useEffect(() => {
-    if (darkMode) {
-      document.documentElement.classList.add("dark");
-      localStorage.setItem("theme", "dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-      localStorage.setItem("theme", "light");
-    }
+    const rootMatchesState =
+      document.documentElement.classList.contains("dark") === darkMode;
+    applyDocumentTheme(darkMode, { notify: !rootMatchesState });
   }, [darkMode]);
+
+  useEffect(
+    () => () => window.clearTimeout(themeTransitionTimerRef.current),
+    [],
+  );
 
   useEffect(() => {
     const handleOpenLogin = () => {
@@ -125,14 +158,12 @@ export default function Header({ setLoading }) {
     return () => document.removeEventListener("keydown", onKeyDown);
   }, []);
 
-  // Prevent body scroll when mobile menu open
+  // Prevent the actual app scroller from moving behind the mobile menu.
   useEffect(() => {
-    if (menuOpen) {
-      document.body.classList.add("overflow-hidden");
-    } else {
-      document.body.classList.remove("overflow-hidden");
-    }
-    return () => document.body.classList.remove("overflow-hidden");
+    const appShell = document.querySelector(".amiverse-app-shell");
+    appShell?.classList.toggle("amiverse-shell-menu-open", menuOpen);
+
+    return () => appShell?.classList.remove("amiverse-shell-menu-open");
   }, [menuOpen]);
 
   // Track scrollability of the sm+/md+ tab bar
@@ -160,9 +191,17 @@ export default function Header({ setLoading }) {
     el.addEventListener("scroll", onScroll, { passive: true });
     const onResize = () => updateScrollButtons();
     window.addEventListener("resize", onResize);
+    const resizeObserver =
+      typeof ResizeObserver === "function"
+        ? new ResizeObserver(updateScrollButtons)
+        : null;
+    resizeObserver?.observe(el);
+    if (el.parentElement) resizeObserver?.observe(el.parentElement);
+    document.fonts?.ready?.then(updateScrollButtons).catch(() => {});
     return () => {
       el.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onResize);
+      resizeObserver?.disconnect();
     };
   }, []);
 
@@ -171,6 +210,19 @@ export default function Header({ setLoading }) {
     if (!el) return;
     const delta = Math.round(el.clientWidth * 0.6) * (dir === "left" ? -1 : 1);
     el.scrollBy({ left: delta, behavior: "smooth" });
+  };
+
+  const handleThemeToggle = () => {
+    const nextDarkMode = !darkMode;
+    const root = document.documentElement;
+
+    root.dataset.themeTransition = "true";
+    window.clearTimeout(themeTransitionTimerRef.current);
+    applyDocumentTheme(nextDarkMode);
+    setDarkMode(nextDarkMode);
+    themeTransitionTimerRef.current = window.setTimeout(() => {
+      delete root.dataset.themeTransition;
+    }, 120);
   };
 
   const navLinks = [
@@ -211,17 +263,13 @@ export default function Header({ setLoading }) {
 
       <header
         className="
-          sticky left-0 right-0 top-0 z-50 w-full max-w-full overflow-x-clip isolate
+          amiverse-site-chrome sticky left-0 right-0 top-0 z-50 isolate w-full max-w-full overflow-x-clip
           pt-[env(safe-area-inset-top)]
-          border-b border-[#475569]/[0.18] dark:border-white/[0.13]
-          bg-[linear-gradient(135deg,#FFFFFF_0%,#F8FAFC_38%,#EEF2F7_72%,#E2E8F0_100%)]
-          backdrop-blur-2xl
-          shadow-[0_10px_34px_rgba(71,85,105,0.11)]
-          dark:bg-[linear-gradient(90deg,#000000_0%,#111827_100%)] dark:shadow-[0_10px_34px_rgba(0,0,0,0.5)]
+          border-b border-sky-900/[0.12] dark:border-cyan-100/[0.11]
         "
       >
         <div
-          className="pointer-events-none absolute inset-0 -z-10 bg-[linear-gradient(110deg,rgba(255,255,255,0.72),transparent_42%,rgba(71,85,105,0.08))] dark:bg-[radial-gradient(circle_at_12%_0%,rgba(255,255,255,0.08),transparent_34%),linear-gradient(110deg,rgba(255,255,255,0.06),transparent_42%,rgba(255,255,255,0.04))]"
+          className="amiverse-site-chrome-glow pointer-events-none absolute inset-0 -z-10"
           aria-hidden="true"
         />
         <div
@@ -229,23 +277,27 @@ export default function Header({ setLoading }) {
           aria-hidden="true"
         />
         <div className="mx-auto max-w-7xl px-3 sm:px-4 lg:px-6">
-          <div className="relative flex h-16 sm:h-[4.25rem] lg:h-[4.5rem] items-center justify-between gap-2 sm:gap-3 flex-nowrap">
+          <div className="relative grid h-16 grid-cols-[minmax(0,1fr)_auto] items-center gap-2 sm:h-[4.25rem] sm:gap-3 lg:h-[4.5rem] lg:grid-cols-[auto_minmax(0,1fr)_auto]">
             {/* Brand */}
             <Link
               to="/"
-              className="group flex min-w-0 max-w-[calc(100%-7rem)] shrink items-center gap-2 rounded-[1.15rem] px-2 py-1.5 transition-colors duration-200 hover:bg-white/64 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#475569]/[0.45] dark:hover:bg-white/10 dark:focus-visible:ring-white/70 sm:max-w-none"
+              className="group flex min-w-0 max-w-full shrink items-center gap-2 rounded-[1.15rem] px-1.5 py-1.5 transition-colors duration-200 hover:bg-white/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-700/40 dark:hover:bg-white/[0.08] dark:focus-visible:ring-cyan-100/70 sm:px-2"
               aria-label="AmiVerse Home"
             >
               <img
                 src="/icons/icon-96x96.png"
                 alt="AmiVerse logo"
+                width="96"
+                height="96"
+                decoding="async"
+                fetchPriority="high"
                 className="h-9 w-9 sm:h-10 sm:w-10 shrink-0 rounded-[1.05rem] object-contain bg-white/90 ring-1 ring-[#475569]/[0.10] shadow-[0_8px_22px_rgba(15,23,42,0.2)] transition-transform duration-300 group-hover:rotate-3 group-hover:scale-[1.04] dark:bg-white/[0.08] dark:ring-white/[0.12]"
                 draggable="false"
               />
               {/* Always show name; truncate if tight */}
               <span
                 className="
-                  hidden min-[390px]:inline-block text-[1rem] sm:text-[1.08rem] md:text-xl font-semibold tracking-tight
+                  hidden min-[390px]:inline-block lg:hidden xl:inline-block text-[1rem] sm:text-[1.08rem] md:text-xl font-semibold tracking-tight
                   text-[#111827] dark:text-slate-50 dark:drop-shadow-[0_1px_10px_rgba(0,0,0,0.35)]
                   whitespace-nowrap truncate
                   max-w-[28vw] sm:max-w-[24vw] md:max-w-[12rem] lg:max-w-[16rem] xl:max-w-[22rem]
@@ -256,8 +308,11 @@ export default function Header({ setLoading }) {
               </span>
             </Link>
 
-            {/* sm+ nav with horizontal scroll */}
-            <div className="relative hidden sm:flex items-center flex-1 basis-0 min-w-0 justify-center">
+            {/* Large-screen nav with horizontal overflow support */}
+            <div
+              className="relative hidden min-w-0 items-center justify-center lg:flex"
+              data-testid="desktop-navigation-shell"
+            >
               {/* Left gradient fade */}
               {canScrollLeft && (
                 <div className="pointer-events-none absolute left-0 top-0 h-full w-8 bg-gradient-to-r from-white/95 to-transparent dark:from-black z-10" />
@@ -267,7 +322,7 @@ export default function Header({ setLoading }) {
               {canScrollLeft && (
                 <button
                   onClick={() => scrollTabs("left")}
-                  className="absolute left-1 top-1/2 -translate-y-1/2 z-20 hidden h-9 w-9 items-center justify-center rounded-full bg-white/72 text-[#111827] shadow-sm ring-1 ring-[#475569]/[0.12] backdrop-blur-sm transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#475569]/[0.45] dark:bg-white/[0.16] dark:text-white dark:ring-white/20 dark:hover:bg-white/[0.24] dark:focus-visible:ring-white/70 md:flex"
+                  className="absolute left-1 top-1/2 z-20 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white/72 text-[#111827] shadow-sm ring-1 ring-[#475569]/[0.12] backdrop-blur-sm transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#475569]/[0.45] dark:bg-white/[0.16] dark:text-white dark:ring-white/20 dark:hover:bg-white/[0.24] dark:focus-visible:ring-white/70"
                   aria-label="Scroll tabs left"
                   type="button"
                 >
@@ -290,7 +345,7 @@ export default function Header({ setLoading }) {
                   [&::-webkit-scrollbar]:hidden
                 "
                 onScroll={updateScrollButtons}
-                role="tablist"
+                aria-label="Primary navigation"
               >
                 {navLinks.map((link) => (
                   <NavLink
@@ -305,7 +360,6 @@ export default function Header({ setLoading }) {
                            : "text-[#475569] hover:bg-white/70 hover:text-[#111827] dark:text-zinc-200/[0.85] dark:hover:bg-white/[0.09] dark:hover:text-white"
                        }`
                     }
-                    role="tab"
                   >
                     {({ isActive }) => (
                       <>
@@ -338,7 +392,7 @@ export default function Header({ setLoading }) {
               {canScrollRight && (
                 <button
                   onClick={() => scrollTabs("right")}
-                  className="absolute right-1 top-1/2 -translate-y-1/2 z-20 hidden h-9 w-9 items-center justify-center rounded-full bg-white/72 text-[#111827] shadow-sm ring-1 ring-[#475569]/[0.12] backdrop-blur-sm transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#475569]/[0.45] dark:bg-white/[0.16] dark:text-white dark:ring-white/20 dark:hover:bg-white/[0.24] dark:focus-visible:ring-white/70 md:flex"
+                  className="absolute right-1 top-1/2 z-20 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white/72 text-[#111827] shadow-sm ring-1 ring-[#475569]/[0.12] backdrop-blur-sm transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#475569]/[0.45] dark:bg-white/[0.16] dark:text-white dark:ring-white/20 dark:hover:bg-white/[0.24] dark:focus-visible:ring-white/70"
                   aria-label="Scroll tabs right"
                   type="button"
                 >
@@ -348,12 +402,13 @@ export default function Header({ setLoading }) {
             </div>
 
             {/* Right actions */}
-            <div className="fixed right-3 top-[calc(env(safe-area-inset-top)+0.75rem)] z-[60] flex shrink-0 items-center justify-end gap-1.5 sm:static sm:right-auto sm:top-auto sm:z-auto sm:gap-2">
+            <div className="flex shrink-0 items-center justify-end gap-1.5 sm:gap-2">
               {/* Theme toggle */}
               <button
-                onClick={() => setDarkMode((prev) => !prev)}
+                onClick={handleThemeToggle}
                 className="group relative inline-flex h-10 w-10 items-center justify-center rounded-[1.05rem] bg-white/72 text-[#111827] shadow-[0_8px_20px_rgba(71,85,105,0.11)] ring-1 ring-[#475569]/[0.12] transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#475569]/[0.45] dark:bg-white/[0.08] dark:text-white dark:ring-white/20 dark:hover:bg-white/[0.14] dark:focus-visible:ring-white/70"
-                aria-label="Toggle Dark Mode"
+                aria-label={darkMode ? "Switch to light mode" : "Switch to dark mode"}
+                aria-pressed={darkMode}
                 type="button"
               >
                 {mounted &&
@@ -450,7 +505,10 @@ export default function Header({ setLoading }) {
                   </AnimatePresence>
                 </div>
               ) : (
-                <div className="hidden md:flex gap-1.5 lg:gap-2">
+                <div
+                  className="hidden gap-1.5 lg:flex lg:gap-2"
+                  data-testid="desktop-auth-actions"
+                >
                   <button
                     onClick={() => setLoginOpen(true)}
                     className="min-h-10 rounded-[1.05rem] bg-[#111827] px-3.5 py-2 text-sm font-semibold text-white shadow-[0_9px_22px_rgba(71,85,105,0.15)] ring-1 ring-[#111827]/[0.10] transition hover:bg-[#475569] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#475569]/[0.50] focus-visible:ring-offset-slate-100 dark:bg-white/[0.92] dark:text-slate-950 dark:hover:bg-white dark:focus-visible:ring-white/80 dark:focus-visible:ring-offset-slate-950"
@@ -472,7 +530,7 @@ export default function Header({ setLoading }) {
               <button
                 ref={mobileMenuButtonRef}
                 onClick={() => setMenuOpen((p) => !p)}
-                className="sm:hidden inline-flex h-10 w-10 items-center justify-center rounded-[1.05rem] bg-white/72 text-[#111827] shadow-[0_8px_20px_rgba(71,85,105,0.11)] ring-1 ring-[#475569]/[0.12] transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#475569]/[0.45] dark:bg-white/[0.08] dark:text-white dark:ring-white/20 dark:hover:bg-white/[0.14] dark:focus-visible:ring-white/70"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-[1.05rem] bg-white/72 text-[#111827] shadow-[0_8px_20px_rgba(71,85,105,0.11)] ring-1 ring-[#475569]/[0.12] transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#475569]/[0.45] dark:bg-white/[0.08] dark:text-white dark:ring-white/20 dark:hover:bg-white/[0.14] dark:focus-visible:ring-white/70 lg:hidden"
                 aria-label="Toggle menu"
                 aria-expanded={menuOpen}
                 aria-controls="mobile-menu"
@@ -499,7 +557,7 @@ export default function Header({ setLoading }) {
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.18 }}
               id="mobile-menu"
-              className="sm:hidden border-t border-[#475569]/[0.18] bg-[linear-gradient(135deg,#FFFFFF_0%,#F8FAFC_38%,#EEF2F7_72%,#E2E8F0_100%)] shadow-[0_16px_42px_rgba(71,85,105,0.11)] supports-[backdrop-filter]:backdrop-blur-2xl dark:border-white/[0.13] dark:bg-[linear-gradient(90deg,#000000_0%,#111827_100%)] dark:shadow-[0_16px_42px_rgba(0,0,0,0.5)]"
+              className="amiverse-site-chrome border-t border-sky-900/[0.12] shadow-[0_16px_42px_rgba(15,91,126,0.14)] dark:border-cyan-100/[0.11] dark:shadow-[0_16px_42px_rgba(0,0,0,0.46)] lg:hidden"
               role="menu"
             >
               <div className="mx-auto max-w-7xl px-3.5 sm:px-5 py-3 pb-[calc(0.875rem+env(safe-area-inset-bottom))] max-h-[calc(100svh-4rem)] overflow-y-auto">

@@ -1,12 +1,12 @@
-import { Link } from "react-router-dom";
 import { useCallback } from "react";
-import { Heart } from "lucide-react";
+import { Link } from "react-router-dom";
+import { ArrowUp, ArrowUpRight, Heart, Mail, Sparkles } from "lucide-react";
 
 const productLinks = [
   { label: "AI Chat", href: "/ai-chat" },
   { label: "AI Tools", href: "/ai-tools" },
   { label: "Task Manager", href: "/task-manager" },
-  { label: "Amibot", href: "/amibot" },
+  { label: "AmiBot", href: "/amibot" },
   { label: "Tech Byte", href: "/tech-byte" },
   { label: "Blogs", href: "/blogs" },
 ];
@@ -25,21 +25,25 @@ const companyLinks = [
   { label: "Portfolio", href: "/" },
 ];
 
-const panelSurfaceClass =
-  "rounded-2xl border border-[#475569]/12 bg-white/72 p-2 shadow-lg shadow-slate-400/15 backdrop-blur-md dark:border-zinc-800/80 dark:bg-[linear-gradient(155deg,rgba(20,20,20,0.98),rgba(6,6,6,0.98),rgba(0,0,0,1))] dark:shadow-[0_28px_70px_-42px_rgba(0,0,0,0.96)] sm:p-2.5";
+const panelClass = "amiverse-chrome-panel rounded-3xl p-4 sm:p-5";
+const sectionHeadingClass =
+  "text-xs font-bold uppercase tracking-[0.18em] text-sky-800 dark:text-cyan-200";
+const footerLinkClass =
+  "group inline-flex min-h-11 w-full items-center justify-between gap-2 rounded-xl px-3 py-2 text-sm font-medium text-slate-600 transition-[background-color,color,transform] duration-200 hover:-translate-y-px hover:bg-white/72 hover:text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600/45 dark:text-slate-300 dark:hover:bg-white/[0.08] dark:hover:text-white dark:focus-visible:ring-cyan-200/65";
 
-const navSurfaceClass =
-  "rounded-2xl border border-[#475569]/12 bg-white/68 p-2 shadow-md shadow-slate-400/15 backdrop-blur-md dark:border-zinc-800/75 dark:bg-[linear-gradient(160deg,rgba(18,18,18,0.98),rgba(5,5,5,0.98),rgba(0,0,0,1))] dark:shadow-[0_24px_62px_-42px_rgba(0,0,0,0.94)] sm:p-2.5";
-
-const textLinkClass =
-  "inline-flex rounded-md px-2 py-0.5 text-[#475569] transition-colors hover:bg-[#475569]/8 hover:text-[#111827] dark:text-zinc-200 dark:hover:bg-white/5 dark:hover:text-white";
-
-const legalLinkClass =
-  "inline-flex w-full items-center rounded-lg border border-[#475569]/18 bg-white/88 px-2 py-0.5 text-[#475569] shadow-sm shadow-slate-400/25 backdrop-blur-md transition-all hover:border-[#475569]/50 hover:bg-[#475569]/8 hover:text-[#111827] hover:shadow-[0_8px_22px_rgba(71,85,105,0.12)] dark:border-zinc-800/80 dark:bg-[linear-gradient(145deg,rgba(15,15,15,0.98),rgba(2,2,2,1))] dark:text-zinc-100 dark:shadow-none dark:hover:border-zinc-700 dark:hover:bg-[linear-gradient(145deg,rgba(28,28,28,0.98),rgba(6,6,6,1))] dark:hover:text-white sm:px-2.5 sm:py-1";
+const FooterLink = ({ href, label, onClick }) => (
+  <Link className={footerLinkClass} to={href} onClick={onClick}>
+    <span>{label}</span>
+    <ArrowUpRight
+      className="h-3.5 w-3.5 shrink-0 opacity-45 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:opacity-80"
+      aria-hidden="true"
+    />
+  </Link>
+);
 
 const Footer = () => {
   const scrollToTop = useCallback(() => {
-    const appShell = document.querySelector(".h-screen.overflow-y-scroll");
+    const appShell = document.querySelector(".amiverse-app-shell");
     if (appShell) {
       appShell.scrollTo({ top: 0, behavior: "smooth" });
       return;
@@ -49,132 +53,134 @@ const Footer = () => {
   }, []);
 
   const handleContactClick = useCallback(() => {
-    scrollToTop();
     window.dispatchEvent(new Event("open-contact-modal"));
-  }, [scrollToTop]);
+  }, []);
 
   return (
-    <footer className="relative isolate w-full overflow-hidden border-t border-[#475569]/16 bg-[linear-gradient(135deg,#F8FAFC_0%,#E6EDF5_100%)] text-[#475569] ring-1 ring-inset ring-white/35 [background-clip:padding-box] dark:border-white/[0.06] dark:bg-[radial-gradient(circle_at_50%_-30%,rgba(255,255,255,0.08),transparent_34%),radial-gradient(circle_at_12%_12%,rgba(39,39,42,0.32),transparent_30%),radial-gradient(circle_at_88%_0%,rgba(24,24,27,0.26),transparent_28%),linear-gradient(180deg,rgba(18,18,18,0.98)_0%,rgba(5,5,5,0.99)_42%,rgba(0,0,0,1)_100%)] dark:text-zinc-300 dark:ring-white/[0.05]">
-      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#475569]/25 to-transparent dark:via-white/[0.14]" />
-      <div className="absolute inset-x-0 top-0 h-6 bg-gradient-to-b from-white/55 to-transparent dark:from-white/[0.05]" />
-      <div className="pointer-events-none absolute inset-0 opacity-75 dark:opacity-100">
-        <div className="absolute -left-24 top-6 h-56 w-56 rounded-full bg-white/50 blur-3xl dark:bg-transparent" />
-        <div className="absolute right-[-4.5rem] top-20 h-48 w-48 rounded-full bg-[#475569]/8 blur-3xl dark:bg-zinc-900/40" />
-        <div className="absolute -bottom-24 left-1/3 h-56 w-56 rounded-full bg-white/38 blur-3xl dark:bg-zinc-950/60" />
-      </div>
-      <div className="relative w-full px-3 py-1.5 sm:px-4 sm:py-2 lg:px-5">
-        <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2 sm:gap-2 lg:grid-cols-12 lg:gap-2.5">
-          <section className={`${panelSurfaceClass} lg:col-span-5`}>
-            <div className="flex items-center gap-2">
+    <footer className="amiverse-site-chrome relative isolate w-full shrink-0 overflow-hidden border-t border-sky-900/[0.12] text-slate-600 dark:border-cyan-100/[0.11] dark:text-slate-300">
+      <div
+        className="amiverse-site-chrome-glow pointer-events-none absolute inset-0 -z-10"
+        aria-hidden="true"
+      />
+      <div
+        className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-sky-700/25 to-transparent dark:via-cyan-200/20"
+        aria-hidden="true"
+      />
+
+      <div className="relative mx-auto w-full max-w-7xl px-4 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-8 sm:px-6 sm:pb-[calc(7.5rem+env(safe-area-inset-bottom))] sm:pt-10 lg:px-8 lg:pb-[calc(7rem+env(safe-area-inset-bottom))] lg:pt-12">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-12 xl:gap-5">
+          <section className={`${panelClass} amiverse-chrome-panel--strong sm:col-span-2 xl:col-span-5`}>
+            <div className="flex items-center gap-3">
               <img
                 src="/icons/icon-96x96.png"
-                alt="Amiverse logo"
-                className="h-6 w-6 rounded-lg object-contain ring-1 ring-black/10 shadow-sm dark:ring-white/15"
+                alt="AmiVerse logo"
+                width="96"
+                height="96"
+                loading="lazy"
+                decoding="async"
+                className="h-11 w-11 rounded-2xl bg-white/80 object-contain shadow-[0_10px_24px_rgba(15,23,42,0.14)] ring-1 ring-sky-900/10 dark:bg-white/[0.08] dark:ring-cyan-100/15"
                 draggable="false"
               />
-              <h2 className="text-sm font-semibold tracking-tight text-[#111827] dark:text-white sm:text-base">
-                Amiverse
-              </h2>
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  <h2 className="text-lg font-bold tracking-tight text-slate-950 dark:text-white">
+                    AmiVerse
+                  </h2>
+                  <Sparkles className="h-4 w-4 text-sky-600 dark:text-cyan-300" aria-hidden="true" />
+                </div>
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-sky-800/75 dark:text-cyan-200/70">
+                  Build / Learn / Create
+                </p>
+              </div>
             </div>
-            <p className="mt-1 text-[11px] leading-4 text-[#475569] dark:text-slate-400 sm:text-xs sm:leading-[1.05rem]">
-              Amiverse is the digital space of Amritanshu Mishra - a place where technology,
-              innovation, and continuous growth come together. It features his projects, ideas, and
-              practical solutions, reflecting his journey as a builder, learner, and creator, with a
-              vision to create meaningful impact through thoughtful and forward-looking work.
+
+            <p className="mt-4 max-w-xl text-sm leading-6 text-slate-600 dark:text-slate-300">
+              A digital space where Amritanshu Mishra shares thoughtful products,
+              practical AI work, engineering ideas, and a journey of continuous growth.
             </p>
+
+            <div className="mt-5 flex flex-col gap-2 min-[380px]:flex-row">
+              <button
+                type="button"
+                onClick={handleContactClick}
+                className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-sky-800 to-teal-700 px-4 py-2 text-sm font-bold text-white shadow-[0_12px_28px_rgba(14,116,144,0.22)] transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[0_16px_34px_rgba(14,116,144,0.3)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 dark:from-cyan-300 dark:to-emerald-300 dark:text-slate-950 dark:shadow-[0_12px_28px_rgba(34,211,238,0.1)]"
+              >
+                <Mail className="h-4 w-4" aria-hidden="true" />
+                Start a conversation
+              </button>
+              <a
+                href="mailto:amritanshu99@gmail.com"
+                className="inline-flex min-h-11 flex-1 items-center justify-center rounded-xl border border-sky-900/10 bg-white/55 px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-white/85 hover:text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600/45 dark:border-cyan-100/10 dark:bg-white/[0.055] dark:text-slate-200 dark:hover:bg-white/[0.1] dark:hover:text-white dark:focus-visible:ring-cyan-200/65"
+              >
+                Email directly
+              </a>
+            </div>
           </section>
 
-          <nav aria-label="Company links" className={`${navSurfaceClass} lg:col-span-2`}>
-            <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-[#111827] dark:text-white">
-              Company
-            </h3>
-            <ul className="mt-1 grid grid-cols-2 gap-1 text-[11px] sm:grid-cols-1 sm:text-xs">
+          <nav aria-label="Company links" className={`${panelClass} xl:col-span-2`}>
+            <h3 className={sectionHeadingClass}>Company</h3>
+            <ul className="mt-3 space-y-1">
               {companyLinks.map((link) => (
                 <li key={link.label}>
-                  <Link className={textLinkClass} to={link.href} onClick={scrollToTop}>
-                    {link.label}
-                  </Link>
+                  <FooterLink {...link} onClick={scrollToTop} />
                 </li>
               ))}
               <li>
-                <button
-                  type="button"
-                  className={textLinkClass}
-                  onClick={handleContactClick}
-                >
-                  Contact
+                <button type="button" className={footerLinkClass} onClick={handleContactClick}>
+                  <span>Contact</span>
+                  <Mail className="h-3.5 w-3.5 opacity-55" aria-hidden="true" />
                 </button>
               </li>
             </ul>
           </nav>
 
-          <nav aria-label="Product links" className={`${navSurfaceClass} lg:col-span-2`}>
-            <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-[#111827] dark:text-white">
-              Product
-            </h3>
-            <ul className="mt-1 grid grid-cols-2 gap-1 text-[11px] sm:grid-cols-1 sm:text-xs">
+          <nav aria-label="Product links" className={`${panelClass} xl:col-span-2`}>
+            <h3 className={sectionHeadingClass}>Explore</h3>
+            <ul className="mt-3 grid grid-cols-2 gap-1 xl:grid-cols-1">
               {productLinks.map((link) => (
                 <li key={link.label}>
-                  <Link className={textLinkClass} to={link.href} onClick={scrollToTop}>
-                    {link.label}
-                  </Link>
+                  <FooterLink {...link} onClick={scrollToTop} />
                 </li>
               ))}
             </ul>
           </nav>
 
-          <nav aria-label="Legal links" className={`${navSurfaceClass} lg:col-span-3`}>
-            <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-[#111827] dark:text-white">
-              Legal
-            </h3>
-            <ul className="mt-1 grid grid-cols-1 gap-1 text-[11px] sm:grid-cols-2 sm:text-xs lg:grid-cols-1">
+          <nav aria-label="Legal links" className={`${panelClass} sm:col-span-2 xl:col-span-3`}>
+            <h3 className={sectionHeadingClass}>Legal</h3>
+            <ul className="mt-3 grid grid-cols-2 gap-1">
               {legalLinks.map((link) => (
                 <li key={link.label}>
-                  <Link className={legalLinkClass} to={link.href} onClick={scrollToTop}>
-                    {link.label}
-                  </Link>
+                  <FooterLink {...link} onClick={scrollToTop} />
                 </li>
               ))}
             </ul>
           </nav>
         </div>
 
-        <div className="mt-1.5 flex flex-col gap-0.5 border-t border-[#475569]/20 pt-1 text-[10px] text-[#475569] dark:border-slate-800/80 dark:text-slate-400 sm:mt-2 sm:flex-row sm:items-center sm:justify-between sm:gap-2 sm:pt-1.5 sm:text-[11px]">
-          <p>Copyright {new Date().getFullYear()} Amiverse. All rights reserved.</p>
-          <p className="inline-flex items-center gap-1.5 text-[#475569] dark:text-slate-400">
-            <span>Made with</span>
-            <span className="sr-only">love</span>
-            <Heart
-              className="h-3.5 w-3.5 animate-[footerHeartBeat_1.15s_ease-in-out_infinite] fill-rose-500 text-rose-500 drop-shadow-[0_0_8px_rgba(244,63,94,0.38)]"
-              aria-hidden="true"
-              strokeWidth={2.4}
-            />
-            <span>by Amritanshu Mishra.</span>
-          </p>
+        <div className="mt-5 flex flex-col gap-3 border-t border-sky-900/10 pt-5 text-xs text-slate-500 dark:border-cyan-100/10 dark:text-slate-400 sm:flex-row sm:items-center sm:justify-between">
+          <p>Copyright {new Date().getFullYear()} AmiVerse. All rights reserved.</p>
+          <div className="flex flex-wrap items-center justify-between gap-3 sm:justify-end">
+            <p className="inline-flex items-center gap-1.5">
+              <span>Made with</span>
+              <span className="sr-only">love</span>
+              <Heart
+                className="amiverse-footer-heart h-3.5 w-3.5 fill-rose-500 text-rose-500 drop-shadow-[0_0_8px_rgba(244,63,94,0.34)]"
+                aria-hidden="true"
+                strokeWidth={2.4}
+              />
+              <span>by Amritanshu Mishra.</span>
+            </p>
+            <button
+              type="button"
+              onClick={scrollToTop}
+              className="mr-16 inline-flex min-h-11 items-center gap-2 rounded-full border border-sky-900/10 bg-white/55 px-3.5 py-2 font-semibold text-slate-700 transition-[background-color,color,transform] duration-200 hover:-translate-y-0.5 hover:bg-white/85 hover:text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600/45 dark:border-cyan-100/10 dark:bg-white/[0.055] dark:text-slate-200 dark:hover:bg-white/[0.1] dark:hover:text-white dark:focus-visible:ring-cyan-200/65 sm:mr-0"
+              aria-label="Back to top"
+            >
+              Back to top <ArrowUp className="h-3.5 w-3.5" aria-hidden="true" />
+            </button>
+          </div>
         </div>
       </div>
-      <style>
-        {`
-          @keyframes footerHeartBeat {
-            0%,
-            100% {
-              transform: scale(1);
-            }
-            14% {
-              transform: scale(1.24);
-            }
-            28% {
-              transform: scale(1);
-            }
-            42% {
-              transform: scale(1.16);
-            }
-            70% {
-              transform: scale(1);
-            }
-          }
-        `}
-      </style>
     </footer>
   );
 };

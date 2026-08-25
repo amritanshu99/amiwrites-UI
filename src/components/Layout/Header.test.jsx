@@ -61,6 +61,9 @@ jest.mock("../Auth/LoginModal", () => () => null);
 
 beforeEach(() => {
   mockSpaNavigate.mockClear();
+  localStorage.clear();
+  document.documentElement.className = "";
+  delete document.documentElement.dataset.themeTransition;
   mockAuthState = {
     isAuthenticated: true,
     username: "amritanshu99",
@@ -68,6 +71,50 @@ beforeEach(() => {
     avatarUrl: null,
     isAdmin: true,
   };
+});
+
+test("switches theme synchronously and announces the new mode", () => {
+  const themeChanges = [];
+  const handleThemeChange = (event) => themeChanges.push(event.detail);
+  window.addEventListener("amiverse-theme-change", handleThemeChange);
+
+  const { unmount } = render(<Header setLoading={jest.fn()} />);
+  const darkModeButton = screen.getByRole("button", {
+    name: "Switch to dark mode",
+  });
+
+  fireEvent.click(darkModeButton);
+
+  expect(document.documentElement).toHaveClass("dark");
+  expect(localStorage.getItem("theme")).toBe("dark");
+  expect(
+    screen.getByRole("button", { name: "Switch to light mode" }),
+  ).toHaveAttribute("aria-pressed", "true");
+  expect(themeChanges).toContainEqual({ isDark: true });
+
+  unmount();
+  window.removeEventListener("amiverse-theme-change", handleThemeChange);
+});
+
+test("keeps the compact navigation available through tablet widths", () => {
+  mockAuthState = {
+    isAuthenticated: false,
+    username: null,
+    displayName: null,
+    avatarUrl: null,
+    isAdmin: false,
+  };
+
+  render(<Header setLoading={jest.fn()} />);
+
+  expect(screen.getByRole("button", { name: "Toggle menu" })).toHaveClass(
+    "lg:hidden",
+  );
+  expect(screen.getByTestId("desktop-navigation-shell")).toHaveClass(
+    "hidden",
+    "lg:flex",
+  );
+  expect(screen.getByTestId("desktop-auth-actions")).toHaveClass("hidden", "lg:flex");
 });
 
 test.each([
