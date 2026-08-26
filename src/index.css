@@ -491,6 +491,51 @@ html:not(.dark) .amiverse-premium-light-overlay {
   background: var(--amiverse-premium-light-page-overlay);
 }
 
+/* Keep Tech Byte's optional phone reader focused on one story at a time. */
+@media (max-width: 47.999rem) {
+  body.tech-byte-swipe-active .amiverse-app-shell {
+    overflow-y: hidden;
+    scrollbar-gutter: auto;
+  }
+
+  body.tech-byte-swipe-active .amiverse-contact-trigger,
+  body.tech-byte-swipe-active .amiverse-app-shell > footer {
+    display: none !important;
+  }
+}
+
+@media (max-width: 47.999rem) and (max-height: 46rem) {
+  .tech-byte-swipe-card {
+    grid-template-rows: minmax(0, 36%) minmax(0, 1fr);
+  }
+
+  .tech-byte-swipe-card-content {
+    padding: 0.8rem 1rem 0.9rem;
+  }
+
+  .tech-byte-swipe-card-title {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    font-size: 1.05rem;
+  }
+
+  .tech-byte-swipe-card-description {
+    display: -webkit-box;
+    overflow: hidden;
+    margin-top: 0.45rem;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+}
+
+@media (max-width: 47.999rem) and (max-height: 38rem) {
+  .tech-byte-swipe-card-description {
+    display: none;
+  }
+}
+
 /* Mobile stable viewport */
 @supports (height: 100svh) {
   .h-screen {
