@@ -64,6 +64,10 @@ beforeEach(() => {
   localStorage.clear();
   document.documentElement.className = "";
   delete document.documentElement.dataset.themeTransition;
+  document.querySelector('meta[name="theme-color"]')?.remove();
+  const themeColor = document.createElement("meta");
+  themeColor.setAttribute("name", "theme-color");
+  document.head.appendChild(themeColor);
   mockAuthState = {
     isAuthenticated: true,
     username: "amritanshu99",
@@ -90,6 +94,10 @@ test("switches theme synchronously and announces the new mode", () => {
   expect(
     screen.getByRole("button", { name: "Switch to light mode" }),
   ).toHaveAttribute("aria-pressed", "true");
+  expect(document.querySelector('meta[name="theme-color"]')).toHaveAttribute(
+    "content",
+    "#000000",
+  );
   expect(themeChanges).toContainEqual({ isDark: true });
 
   unmount();

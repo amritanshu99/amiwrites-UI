@@ -25,7 +25,7 @@ const companyLinks = [
   { label: "Portfolio", href: "/" },
 ];
 
-const panelClass = "amiverse-chrome-panel rounded-3xl p-4 sm:p-5";
+const panelClass = "amiverse-chrome-panel rounded-2xl p-3 sm:p-4";
 const sectionHeadingClass =
   "text-xs font-bold uppercase tracking-[0.18em] text-sky-800 dark:text-cyan-200";
 const footerLinkClass =
@@ -67,9 +67,9 @@ const Footer = () => {
         aria-hidden="true"
       />
 
-      <div className="relative mx-auto w-full max-w-7xl px-4 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-8 sm:px-6 sm:pb-[calc(7.5rem+env(safe-area-inset-bottom))] sm:pt-10 lg:px-8 lg:pb-[calc(7rem+env(safe-area-inset-bottom))] lg:pt-12">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-12 xl:gap-5">
-          <section className={`${panelClass} amiverse-chrome-panel--strong sm:col-span-2 xl:col-span-5`}>
+      <div className="relative mx-auto w-full max-w-7xl px-4 pb-[calc(3.5rem+env(safe-area-inset-bottom))] pt-5 sm:px-6 sm:pb-[calc(3rem+env(safe-area-inset-bottom))] sm:pt-6 lg:px-8 lg:pt-6">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-12 lg:gap-3">
+          <section className={`${panelClass} amiverse-chrome-panel--strong sm:col-span-2 lg:col-span-4`}>
             <div className="flex items-center gap-3">
               <img
                 src="/icons/icon-96x96.png"
@@ -94,12 +94,12 @@ const Footer = () => {
               </div>
             </div>
 
-            <p className="mt-4 max-w-xl text-sm leading-6 text-slate-600 dark:text-slate-300">
+            <p className="mt-3 max-w-xl text-sm leading-5 text-slate-600 dark:text-slate-300">
               A digital space where Amritanshu Mishra shares thoughtful products,
               practical AI work, engineering ideas, and a journey of continuous growth.
             </p>
 
-            <div className="mt-5 flex flex-col gap-2 min-[380px]:flex-row">
+            <div className="mt-3 flex flex-col gap-2 min-[380px]:flex-row">
               <button
                 type="button"
                 onClick={handleContactClick}
@@ -117,9 +117,9 @@ const Footer = () => {
             </div>
           </section>
 
-          <nav aria-label="Company links" className={`${panelClass} xl:col-span-2`}>
+          <nav aria-label="Company links" className={`${panelClass} lg:col-span-2`}>
             <h3 className={sectionHeadingClass}>Company</h3>
-            <ul className="mt-3 space-y-1">
+            <ul className="mt-2 grid grid-cols-2 gap-1 min-[380px]:grid-cols-3 sm:grid-cols-1">
               {companyLinks.map((link) => (
                 <li key={link.label}>
                   <FooterLink {...link} onClick={scrollToTop} />
@@ -134,9 +134,9 @@ const Footer = () => {
             </ul>
           </nav>
 
-          <nav aria-label="Product links" className={`${panelClass} xl:col-span-2`}>
+          <nav aria-label="Product links" className={`${panelClass} lg:col-span-3`}>
             <h3 className={sectionHeadingClass}>Explore</h3>
-            <ul className="mt-3 grid grid-cols-2 gap-1 xl:grid-cols-1">
+            <ul className="mt-2 grid grid-cols-2 gap-1">
               {productLinks.map((link) => (
                 <li key={link.label}>
                   <FooterLink {...link} onClick={scrollToTop} />
@@ -145,9 +145,9 @@ const Footer = () => {
             </ul>
           </nav>
 
-          <nav aria-label="Legal links" className={`${panelClass} sm:col-span-2 xl:col-span-3`}>
+          <nav aria-label="Legal links" className={`${panelClass} sm:col-span-2 lg:col-span-3`}>
             <h3 className={sectionHeadingClass}>Legal</h3>
-            <ul className="mt-3 grid grid-cols-2 gap-1">
+            <ul className="mt-2 grid grid-cols-2 gap-1">
               {legalLinks.map((link) => (
                 <li key={link.label}>
                   <FooterLink {...link} onClick={scrollToTop} />
@@ -157,7 +157,7 @@ const Footer = () => {
           </nav>
         </div>
 
-        <div className="mt-5 flex flex-col gap-3 border-t border-sky-900/10 pt-5 text-xs text-slate-500 dark:border-cyan-100/10 dark:text-slate-400 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-3 flex flex-col gap-2 border-t border-sky-900/10 pt-3 text-xs text-slate-500 dark:border-cyan-100/10 dark:text-slate-400 sm:flex-row sm:items-center sm:justify-between">
           <p>Copyright {new Date().getFullYear()} AmiVerse. All rights reserved.</p>
           <div className="flex flex-wrap items-center justify-between gap-3 sm:justify-end">
             <p className="inline-flex items-center gap-1.5">

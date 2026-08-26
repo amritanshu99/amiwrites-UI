@@ -49,7 +49,7 @@ const applyDocumentTheme = (isDark, { notify = true } = {}) => {
   }
 
   const themeColor = document.querySelector('meta[name="theme-color"]');
-  themeColor?.setAttribute("content", isDark ? "#071827" : "#eef7ff");
+  themeColor?.setAttribute("content", isDark ? "#000000" : "#eef7ff");
 
   if (notify) {
     window.dispatchEvent(
@@ -385,7 +385,7 @@ export default function Header({ setLoading }) {
 
               {/* Right gradient fade */}
               {canScrollRight && (
-                <div className="pointer-events-none absolute right-0 top-0 h-full w-8 bg-gradient-to-l from-[#E2E8F0]/95 to-transparent dark:from-[#111827] z-10" />
+                <div className="pointer-events-none absolute right-0 top-0 h-full w-8 bg-gradient-to-l from-[#E2E8F0]/95 to-transparent dark:from-black z-10" />
               )}
 
               {/* Right nudge */}

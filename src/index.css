@@ -38,16 +38,13 @@
 html.dark {
   color-scheme: dark;
   --amiverse-chrome-bg:
-    radial-gradient(circle at 10% -45%, rgba(14, 165, 233, 0.2), transparent 44%),
-    radial-gradient(circle at 90% -42%, rgba(20, 184, 166, 0.15), transparent 42%),
-    linear-gradient(118deg, #020617 0%, #071827 48%, #06211f 100%);
+    linear-gradient(180deg, #050505 0%, #000 100%);
   --amiverse-chrome-glow:
-    linear-gradient(112deg, rgba(125, 211, 252, 0.055), transparent 42%, rgba(45, 212, 191, 0.045)),
-    radial-gradient(circle at 52% 0%, rgba(255, 255, 255, 0.055), transparent 38%);
-  --amiverse-chrome-panel: rgba(7, 24, 39, 0.72);
-  --amiverse-chrome-panel-strong: rgba(5, 19, 32, 0.9);
-  --amiverse-chrome-border: rgba(125, 211, 252, 0.13);
-  --amiverse-chrome-border-strong: rgba(94, 234, 212, 0.2);
+    radial-gradient(circle at 50% -45%, rgba(255, 255, 255, 0.07), transparent 42%);
+  --amiverse-chrome-panel: rgba(10, 10, 10, 0.88);
+  --amiverse-chrome-panel-strong: rgba(5, 5, 5, 0.96);
+  --amiverse-chrome-border: rgba(255, 255, 255, 0.11);
+  --amiverse-chrome-border-strong: rgba(255, 255, 255, 0.16);
   --amiverse-chrome-text: #f8fafc;
   --amiverse-chrome-muted: #b6c5d4;
   --amiverse-chrome-accent: #67e8f9;
@@ -63,7 +60,7 @@ html.dark {
 }
 
 .dark .amiverse-site-chrome {
-  background-color: #071827;
+  background-color: #000;
 }
 
 .amiverse-site-chrome-glow {
