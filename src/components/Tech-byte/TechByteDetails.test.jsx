@@ -1,5 +1,5 @@
 import React from "react";
-import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import axios from "axios";
 import TechByteDetails from "./TechByteDetails";
 
@@ -59,50 +59,96 @@ const apiArticles = [
   },
 ];
 
-describe("TechByteDetails view modes", () => {
+const originalMatchMedia = window.matchMedia;
+
+function installMatchMedia(matches) {
+  const listeners = new Set();
+  const mediaQuery = {
+    matches,
+    media: "(min-width: 768px)",
+    onchange: null,
+    addEventListener: jest.fn((type, listener) => {
+      if (type === "change") listeners.add(listener);
+    }),
+    removeEventListener: jest.fn((type, listener) => {
+      if (type === "change") listeners.delete(listener);
+    }),
+    addListener: jest.fn((listener) => listeners.add(listener)),
+    removeListener: jest.fn((listener) => listeners.delete(listener)),
+    dispatchEvent: jest.fn((event) => {
+      listeners.forEach((listener) => listener(event));
+      return true;
+    }),
+  };
+
+  Object.defineProperty(window, "matchMedia", {
+    configurable: true,
+    value: jest.fn(() => mediaQuery),
+    writable: true,
+  });
+
+  return mediaQuery;
+}
+
+describe("TechByteDetails responsive readers", () => {
   beforeEach(() => {
     axios.get.mockReset();
-    document.body.classList.remove("tech-byte-swipe-active");
+    document.body.classList.remove(
+      "tech-byte-reader-active",
+      "tech-byte-swipe-active",
+    );
   });
 
   afterEach(() => {
     jest.restoreAllMocks();
-    document.body.classList.remove("tech-byte-swipe-active");
+    document.body.classList.remove(
+      "tech-byte-reader-active",
+      "tech-byte-swipe-active",
+    );
+
+    if (originalMatchMedia) {
+      Object.defineProperty(window, "matchMedia", {
+        configurable: true,
+        value: originalMatchMedia,
+        writable: true,
+      });
+    } else {
+      delete window.matchMedia;
+    }
   });
 
-  test("switches between the mobile feed and swipe reader while retaining the desktop feed", async () => {
+  test("renders only the desktop scroll reader on desktop", async () => {
+    const mediaQuery = installMatchMedia(true);
     axios.get.mockResolvedValue({ data: { articles: apiArticles } });
     const openArticle = jest.spyOn(window, "open").mockImplementation(() => null);
 
-    render(<TechByteDetails />);
+    const { unmount } = render(<TechByteDetails />);
 
     expect(await screen.findByText("3 stories")).toBeInTheDocument();
     expect(axios.get).toHaveBeenCalledWith("/api/tech-news", {
       signal: expect.any(AbortSignal),
     });
-
-    const switcher = screen.getByRole("group", {
-      name: "Choose Tech Byte view",
-    });
-    const feedButton = within(switcher).getByRole("button", { name: "Feed" });
-    const swipeButton = within(switcher).getByRole("button", {
-      name: "Swipe reader",
-    });
-    const feedView = screen.getByTestId("tech-byte-feed-view");
-
-    expect(switcher).toHaveClass("md:hidden");
-    expect(feedButton).toHaveAttribute("aria-pressed", "true");
-    expect(swipeButton).toHaveAttribute("aria-pressed", "false");
-    expect(feedView).toHaveClass("grid");
-
-    fireEvent.click(swipeButton);
-
-    expect(feedButton).toHaveAttribute("aria-pressed", "false");
-    expect(swipeButton).toHaveAttribute("aria-pressed", "true");
-    expect(screen.getByLabelText("Tech news swipe deck")).toBeInTheDocument();
-    expect(screen.getByRole("status")).toHaveTextContent("Story 1 of 3");
-    expect(feedView).toHaveClass("hidden", "md:grid");
-    expect(document.body).toHaveClass("tech-byte-swipe-active");
+    expect(screen.getByTestId("tech-byte-reader-shell")).toHaveAttribute(
+      "data-reader-kind",
+      "scroll",
+    );
+    expect(
+      screen.getByLabelText("Tech news scroll reader"),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByLabelText("Tech news swipe deck"),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("group", { name: "Choose Tech Byte view" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Feed" }),
+    ).not.toBeInTheDocument();
+    expect(document.body).toHaveClass("tech-byte-reader-active");
+    expect(mediaQuery.addEventListener).toHaveBeenCalledWith(
+      "change",
+      expect.any(Function),
+    );
 
     fireEvent.click(
       screen.getByRole("button", {
@@ -115,15 +161,44 @@ describe("TechByteDetails view modes", () => {
       "noopener,noreferrer",
     );
 
-    fireEvent.click(feedButton);
-
-    expect(screen.queryByLabelText("Tech news swipe deck")).not.toBeInTheDocument();
-    expect(feedButton).toHaveAttribute("aria-pressed", "true");
-    expect(feedView).toHaveClass("grid");
-    expect(document.body).not.toHaveClass("tech-byte-swipe-active");
+    unmount();
+    expect(document.body).not.toHaveClass("tech-byte-reader-active");
+    expect(mediaQuery.removeEventListener).toHaveBeenCalledWith(
+      "change",
+      expect.any(Function),
+    );
   });
 
-  test("keeps view controls unavailable on failure and enables them after retry", async () => {
+  test("renders only the mobile swipe reader on mobile", async () => {
+    installMatchMedia(false);
+    axios.get.mockResolvedValue({ data: { articles: apiArticles } });
+
+    const { unmount } = render(<TechByteDetails />);
+
+    expect(
+      await screen.findByLabelText("Tech news swipe deck"),
+    ).toBeInTheDocument();
+    expect(screen.getByTestId("tech-byte-reader-shell")).toHaveAttribute(
+      "data-reader-kind",
+      "swipe",
+    );
+    expect(
+      screen.queryByLabelText("Tech news scroll reader"),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("group", { name: "Choose Tech Byte view" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Swipe reader" }),
+    ).not.toBeInTheDocument();
+    expect(document.body).toHaveClass("tech-byte-reader-active");
+
+    unmount();
+    expect(document.body).not.toHaveClass("tech-byte-reader-active");
+  });
+
+  test("shows the correct reader after a failed request is retried", async () => {
+    installMatchMedia(true);
     axios.get
       .mockRejectedValueOnce(new Error("offline"))
       .mockResolvedValueOnce({ data: { articles: apiArticles } });
@@ -133,23 +208,19 @@ describe("TechByteDetails view modes", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent(
       "The news feed is taking a break",
     );
-
-    const switcher = screen.getByRole("group", {
-      name: "Choose Tech Byte view",
-    });
-    const feedButton = within(switcher).getByRole("button", { name: "Feed" });
-    const swipeButton = within(switcher).getByRole("button", {
-      name: "Swipe reader",
-    });
-
-    expect(feedButton).toBeDisabled();
-    expect(swipeButton).toBeDisabled();
+    expect(
+      screen.queryByLabelText("Tech news scroll reader"),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByLabelText("Tech news swipe deck"),
+    ).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Try again" }));
 
     expect(await screen.findByText("3 stories")).toBeInTheDocument();
+    expect(
+      await screen.findByLabelText("Tech news scroll reader"),
+    ).toBeInTheDocument();
     await waitFor(() => expect(axios.get).toHaveBeenCalledTimes(2));
-    expect(feedButton).toBeEnabled();
-    expect(swipeButton).toBeEnabled();
   });
 });

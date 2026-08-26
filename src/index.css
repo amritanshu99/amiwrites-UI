@@ -491,17 +491,15 @@ html:not(.dark) .amiverse-premium-light-overlay {
   background: var(--amiverse-premium-light-page-overlay);
 }
 
-/* Keep Tech Byte's optional phone reader focused on one story at a time. */
-@media (max-width: 47.999rem) {
-  body.tech-byte-swipe-active .amiverse-app-shell {
-    overflow-y: hidden;
-    scrollbar-gutter: auto;
-  }
+/* Keep Tech Byte focused on its device-specific story reader. */
+body.tech-byte-reader-active .amiverse-app-shell {
+  overflow-y: hidden;
+  scrollbar-gutter: auto;
+}
 
-  body.tech-byte-swipe-active .amiverse-contact-trigger,
-  body.tech-byte-swipe-active .amiverse-app-shell > footer {
-    display: none !important;
-  }
+body.tech-byte-reader-active .amiverse-contact-trigger,
+body.tech-byte-reader-active .amiverse-app-shell > footer {
+  display: none !important;
 }
 
 @media (max-width: 47.999rem) and (max-height: 46rem) {
