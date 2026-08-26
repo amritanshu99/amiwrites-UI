@@ -25,7 +25,7 @@ const companyLinks = [
   { label: "Portfolio", href: "/" },
 ];
 
-const panelClass = "amiverse-chrome-panel rounded-2xl p-3 sm:p-4";
+const panelClass = "amiverse-chrome-panel rounded-2xl p-3";
 const sectionHeadingClass =
   "text-xs font-bold uppercase tracking-[0.18em] text-sky-800 dark:text-cyan-200";
 const footerLinkClass =
@@ -67,8 +67,11 @@ const Footer = () => {
         aria-hidden="true"
       />
 
-      <div className="relative mx-auto w-full max-w-7xl px-4 pb-[calc(3.5rem+env(safe-area-inset-bottom))] pt-5 sm:px-6 sm:pb-[calc(3rem+env(safe-area-inset-bottom))] sm:pt-6 lg:px-8 lg:pt-6">
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-12 lg:gap-3">
+      <div
+        className="relative mx-auto w-full max-w-[90rem] px-3 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-3 sm:px-4 sm:pt-4 lg:px-5"
+        data-testid="footer-content"
+      >
+        <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-12">
           <section className={`${panelClass} amiverse-chrome-panel--strong sm:col-span-2 lg:col-span-4`}>
             <div className="flex items-center gap-3">
               <img
@@ -94,12 +97,12 @@ const Footer = () => {
               </div>
             </div>
 
-            <p className="mt-3 max-w-xl text-sm leading-5 text-slate-600 dark:text-slate-300">
+            <p className="mt-2 max-w-xl text-sm leading-5 text-slate-600 dark:text-slate-300">
               A digital space where Amritanshu Mishra shares thoughtful products,
               practical AI work, engineering ideas, and a journey of continuous growth.
             </p>
 
-            <div className="mt-3 flex flex-col gap-2 min-[380px]:flex-row">
+            <div className="mt-2 flex flex-col gap-2 min-[380px]:flex-row">
               <button
                 type="button"
                 onClick={handleContactClick}
@@ -157,7 +160,7 @@ const Footer = () => {
           </nav>
         </div>
 
-        <div className="mt-3 flex flex-col gap-2 border-t border-sky-900/10 pt-3 text-xs text-slate-500 dark:border-cyan-100/10 dark:text-slate-400 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-2 flex flex-col gap-2 border-t border-sky-900/10 pt-2 text-xs text-slate-500 dark:border-cyan-100/10 dark:text-slate-400 sm:flex-row sm:items-center sm:justify-between">
           <p>Copyright {new Date().getFullYear()} AmiVerse. All rights reserved.</p>
           <div className="flex flex-wrap items-center justify-between gap-3 sm:justify-end">
             <p className="inline-flex items-center gap-1.5">

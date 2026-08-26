@@ -33,6 +33,11 @@ test("uses the shared site chrome and comfortable responsive link targets", () =
   expect(screen.getByRole("contentinfo")).toHaveClass(
     "amiverse-site-chrome",
   );
+  expect(screen.getByTestId("footer-content")).toHaveClass(
+    "max-w-[90rem]",
+    "pb-[calc(1rem+env(safe-area-inset-bottom))]",
+    "pt-3",
+  );
   expect(screen.getByRole("navigation", { name: "Company links" })).toBeInTheDocument();
   expect(screen.getByRole("navigation", { name: "Product links" })).toBeInTheDocument();
   expect(screen.getByRole("navigation", { name: "Legal links" })).toBeInTheDocument();
