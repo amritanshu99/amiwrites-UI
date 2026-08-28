@@ -65,7 +65,7 @@ function installMatchMedia(matches) {
   const listeners = new Set();
   const mediaQuery = {
     matches,
-    media: "(min-width: 768px)",
+    media: "(min-width: 900px) and (min-height: 620px)",
     onchange: null,
     addEventListener: jest.fn((type, listener) => {
       if (type === "change") listeners.add(listener);
@@ -127,7 +127,11 @@ describe("TechByteDetails responsive readers", () => {
     expect(await screen.findByText("3 stories")).toBeInTheDocument();
     expect(axios.get).toHaveBeenCalledWith("/api/tech-news", {
       signal: expect.any(AbortSignal),
+      timeout: 12000,
     });
+    expect(window.matchMedia).toHaveBeenCalledWith(
+      "(min-width: 900px) and (min-height: 620px)",
+    );
     expect(screen.getByTestId("tech-byte-reader-shell")).toHaveAttribute(
       "data-reader-kind",
       "scroll",
@@ -191,6 +195,16 @@ describe("TechByteDetails responsive readers", () => {
     expect(
       screen.queryByRole("button", { name: "Swipe reader" }),
     ).not.toBeInTheDocument();
+    expect(screen.getByText("Swipe reader")).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", {
+        level: 1,
+        name: "Tech news, one focused story at a time.",
+      }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Refresh Tech Byte stories" }),
+    ).toBeInTheDocument();
     expect(document.body).toHaveClass("tech-byte-reader-active");
 
     unmount();

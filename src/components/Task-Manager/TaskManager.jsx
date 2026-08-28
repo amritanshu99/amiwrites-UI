@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
 import { useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -23,12 +23,14 @@ import {
   ChevronDown,
   CircleDot,
   FolderKanban,
-  GripVertical,
   ListFilter,
   LockKeyhole,
+  LogIn,
   Plus,
+  RefreshCw,
   Search,
   Sparkles,
+  UserPlus,
   X,
 } from "lucide-react";
 import KanbanColumn from "./KanbanColumn";
@@ -40,26 +42,28 @@ import {
   TASK_STATUSES,
   getPriority,
   normalizeTask,
+  parseTaskDate,
 } from "./taskManagerConfig";
 import { moveTaskOnBoard } from "./kanbanDnd";
+import useDialogFocus from "./useDialogFocus";
 import { apiUrl } from "../../config/api";
 
 const API_BASE = apiUrl("/api/tasks");
 
 function SummaryCard({ icon: Icon, label, value, helper, iconClass }) {
   return (
-    <div className="rounded-2xl border border-white/70 bg-white/75 p-4 shadow-[0_15px_45px_-32px_rgba(15,23,42,0.55)] backdrop-blur-xl dark:border-zinc-800 dark:bg-zinc-950/70">
+    <div className="min-w-[9.25rem] snap-start rounded-xl border border-white/70 bg-white/80 p-3.5 shadow-[0_15px_45px_-32px_rgba(15,23,42,0.55)] backdrop-blur-xl sm:min-w-0 sm:p-4 dark:border-zinc-800 dark:bg-zinc-950/70">
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.1em] text-slate-400 dark:text-zinc-500">
             {label}
           </p>
-          <p className="mt-1.5 text-2xl font-black tracking-tight text-slate-950 dark:text-white">
+          <p className="mt-1.5 text-2xl font-black text-slate-950 dark:text-white">
             {value}
           </p>
-          <p className="mt-1 text-xs text-slate-500 dark:text-zinc-500">{helper}</p>
+          <p className="task-manager-summary-helper mt-1 hidden text-xs text-slate-500 sm:block dark:text-zinc-400">{helper}</p>
         </div>
-        <span className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${iconClass}`}>
+        <span className={`inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg sm:h-10 sm:w-10 sm:rounded-xl ${iconClass}`}>
           <Icon size={18} />
         </span>
       </div>
@@ -70,10 +74,10 @@ function SummaryCard({ icon: Icon, label, value, helper, iconClass }) {
 function BoardSkeleton() {
   return (
     <div className="flex gap-4 overflow-hidden xl:grid xl:grid-cols-4">
-      {TASK_STATUSES.map((status) => (
+      {TASK_STATUSES.map((status, index) => (
         <div
           key={status.id}
-          className="w-[320px] min-w-[320px] rounded-[1.35rem] border border-slate-200/80 bg-slate-100/70 p-3 xl:w-auto xl:min-w-0 dark:border-zinc-800 dark:bg-zinc-900/60"
+          className={`${index === 0 ? "block" : "hidden sm:block"} w-full min-w-0 rounded-[1.35rem] border border-slate-200/80 bg-slate-100/70 p-3 sm:w-[320px] sm:min-w-[320px] xl:w-auto xl:min-w-0 dark:border-zinc-800 dark:bg-zinc-900/60`}
         >
           <div className="mb-4 flex items-center gap-2 px-1">
             <span className={`h-2.5 w-2.5 rounded-full ${status.dotClass}`} />
@@ -112,14 +116,16 @@ function buildStats(tasks) {
   const done = statusCounts.done || 0;
   const overdue = tasks.filter((task) => {
     if (!task.dueDate || task.status === "done") return false;
-    const due = new Date(task.dueDate);
+    const due = parseTaskDate(task.dueDate);
+    if (!due) return false;
     due.setHours(0, 0, 0, 0);
     return due < today;
   }).length;
 
   const dueSoon = tasks.filter((task) => {
     if (!task.dueDate || task.status === "done") return false;
-    const due = new Date(task.dueDate);
+    const due = parseTaskDate(task.dueDate);
+    if (!due) return false;
     due.setHours(0, 0, 0, 0);
     return due >= today && due <= nextWeek;
   }).length;
@@ -196,6 +202,7 @@ function MobileStatusTab({
           ? `Drop task in ${status.label}`
           : `Show ${status.label} tasks`
       }
+      aria-pressed={isActive}
     >
       <span className="block truncate">{status.label}</span>
       <span
@@ -223,7 +230,7 @@ function MobileBoardNavigation({
       className={`grid grid-cols-4 gap-1 rounded-xl border border-slate-200 bg-white/95 p-1 backdrop-blur transition-[box-shadow,transform] sm:hidden dark:border-zinc-800 dark:bg-zinc-950/95 ${
         isDragging
           ? "fixed bottom-[calc(env(safe-area-inset-bottom)+0.75rem)] left-3 right-3 z-40 shadow-2xl shadow-slate-950/30 ring-1 ring-indigo-500/20"
-          : "mb-3"
+          : "sticky top-[calc(4rem+env(safe-area-inset-top))] z-40 mb-3 shadow-sm"
       }`}
       aria-label={isDragging ? "Drop task into a column" : "Board columns"}
     >
@@ -251,6 +258,7 @@ export default function TaskManager() {
   const [isAuthenticated, setIsAuthenticated] = useState(Boolean(initialToken));
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(Boolean(initialToken));
+  const [loadError, setLoadError] = useState("");
   const [saving, setSaving] = useState(false);
   const [isReordering, setIsReordering] = useState(false);
   const [activeTaskId, setActiveTaskId] = useState(null);
@@ -258,16 +266,27 @@ export default function TaskManager() {
   const [priorityFilter, setPriorityFilter] = useState("all");
   const [labelFilter, setLabelFilter] = useState("all");
   const [sortMode, setSortMode] = useState("board");
-  const [mobileStatus, setMobileStatus] = useState("todo");
+  const [mobileStatus, setMobileStatus] = useState("backlog");
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [taskModal, setTaskModal] = useState({ open: false, task: null, initialStatus: "backlog" });
+  const fetchRequestIdRef = useRef(0);
+  const analyticsCloseRef = useRef(null);
   const { pathname } = useLocation();
+
+  const closeAnalytics = useCallback(() => setShowAnalytics(false), []);
+  const analyticsDialogRef = useDialogFocus({
+    open: showAnalytics,
+    onClose: closeAnalytics,
+    initialFocusRef: analyticsCloseRef,
+  });
 
   const apiClient = useMemo(
     () =>
       axios.create({
         baseURL: API_BASE,
         headers: token ? { Authorization: `Bearer ${token}` } : {},
+        timeout: 12000,
       }),
     [token]
   );
@@ -279,22 +298,54 @@ export default function TaskManager() {
   );
 
   const fetchTasks = useCallback(async (tokenToUse) => {
+    const requestId = fetchRequestIdRef.current + 1;
+    fetchRequestIdRef.current = requestId;
+
     if (!tokenToUse) {
       setTasks([]);
+      setLoadError("");
       setLoading(false);
       return;
     }
 
     try {
       setLoading(true);
+      setLoadError("");
       const response = await axios.get(API_BASE, {
         headers: { Authorization: `Bearer ${tokenToUse}` },
+        timeout: 12000,
       });
-      setTasks(response.data.filter((task) => !task.isDeleted).map(normalizeTask));
+      if (requestId !== fetchRequestIdRef.current) return;
+
+      const nextTasks = response.data
+        .filter((task) => !task.isDeleted)
+        .map(normalizeTask);
+      setTasks(nextTasks);
+
+      const firstPopulatedStatus = TASK_STATUSES.find((status) =>
+        nextTasks.some((task) => task.status === status.id)
+      );
+      setMobileStatus(firstPopulatedStatus?.id || "backlog");
     } catch (error) {
-      toast.error(error.response?.data?.error || "We could not load your board.");
+      if (requestId !== fetchRequestIdRef.current) return;
+
+      if ([401, 403].includes(error.response?.status)) {
+        localStorage.removeItem("token");
+        setToken(null);
+        setTasks([]);
+        setIsAuthenticated(false);
+        setLoadError("");
+        toast.error("Your session expired. Log in to reopen your board.");
+        window.dispatchEvent(new Event("tokenChanged"));
+        return;
+      }
+
+      const message =
+        error.response?.data?.error ||
+        "We could not load your board. Check your connection and try again.";
+      setLoadError(message);
     } finally {
-      setLoading(false);
+      if (requestId === fetchRequestIdRef.current) setLoading(false);
     }
   }, []);
 
@@ -310,6 +361,16 @@ export default function TaskManager() {
     updateAuthState();
     return () => window.removeEventListener("tokenChanged", updateAuthState);
   }, [fetchTasks]);
+
+  useEffect(() => {
+    document.body.classList.add("task-manager-page-active");
+    return () => {
+      document.body.classList.remove(
+        "task-manager-page-active",
+        "task-manager-overlay-active"
+      );
+    };
+  }, []);
 
   useEffect(() => {
     const scrollContainer = document.querySelector(".h-screen.overflow-y-scroll.relative");
@@ -342,7 +403,11 @@ export default function TaskManager() {
       if (sortMode === "due") {
         if (!a.dueDate) return 1;
         if (!b.dueDate) return -1;
-        return new Date(a.dueDate) - new Date(b.dueDate);
+        const aDate = parseTaskDate(a.dueDate);
+        const bDate = parseTaskDate(b.dueDate);
+        if (!aDate) return 1;
+        if (!bDate) return -1;
+        return aDate - bDate;
       }
       return a.position - b.position;
     });
@@ -356,6 +421,16 @@ export default function TaskManager() {
   ].filter(Boolean).length;
   const dragDisabled = activeFilters > 0 || saving || isReordering;
   const activeTask = tasks.find((task) => task._id === activeTaskId);
+
+  useEffect(() => {
+    if (activeFilters === 0 || filteredTasks.length === 0) return;
+    if (filteredTasks.some((task) => task.status === mobileStatus)) return;
+
+    const firstMatchingStatus = TASK_STATUSES.find((status) =>
+      filteredTasks.some((task) => task.status === status.id)
+    );
+    if (firstMatchingStatus) setMobileStatus(firstMatchingStatus.id);
+  }, [activeFilters, filteredTasks, mobileStatus]);
 
   const closeTaskModal = useCallback(() => {
     setTaskModal({ open: false, task: null, initialStatus: "backlog" });
@@ -379,6 +454,7 @@ export default function TaskManager() {
         setTasks((current) =>
           current.map((task) => (task._id === updatedTask._id ? updatedTask : task))
         );
+        setMobileStatus(updatedTask.status);
         toast.success("Task updated");
       } else {
         const statusTasks = tasks.filter((task) => task.status === form.status);
@@ -500,19 +576,18 @@ export default function TaskManager() {
     setPriorityFilter("all");
     setLabelFilter("all");
     setSortMode("board");
+    setShowMobileFilters(false);
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#f4f6fa] px-3 pb-14 pt-5 transition-colors sm:px-5 lg:px-7 dark:bg-[#050506]">
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-[28rem] bg-[radial-gradient(circle_at_15%_0%,rgba(99,102,241,0.16),transparent_38%),radial-gradient(circle_at_85%_5%,rgba(14,165,233,0.13),transparent_34%)] dark:bg-[radial-gradient(circle_at_15%_0%,rgba(99,102,241,0.15),transparent_38%),radial-gradient(circle_at_85%_5%,rgba(14,165,233,0.1),transparent_34%)]" />
-
+    <div className="task-manager-page relative min-h-screen overflow-clip bg-[#f4f6fa] px-3 pb-[calc(3.5rem+env(safe-area-inset-bottom))] pt-4 transition-colors sm:px-5 sm:pt-5 lg:px-7 dark:bg-[#050506]">
       <div className="relative mx-auto max-w-[1600px]">
-        <header className="mb-5 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+        <header className="task-manager-header mb-4 flex flex-col gap-4 sm:mb-5 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-3xl">
-            <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-indigo-200/70 bg-white/65 px-3 py-1.5 text-[11px] font-extrabold uppercase tracking-[0.16em] text-indigo-700 shadow-sm backdrop-blur dark:border-indigo-900/70 dark:bg-indigo-950/35 dark:text-indigo-300">
+            <div className="task-manager-eyebrow mb-2 hidden items-center gap-2 rounded-full border border-indigo-200/70 bg-white/65 px-3 py-1.5 text-[11px] font-extrabold uppercase tracking-[0.16em] text-indigo-700 shadow-sm backdrop-blur sm:inline-flex dark:border-indigo-900/70 dark:bg-indigo-950/35 dark:text-indigo-300">
               <Sparkles size={13} /> Personal workspace
             </div>
-            <h1 className="text-3xl font-black tracking-[-0.04em] text-slate-950 sm:text-4xl lg:text-[2.75rem] dark:text-white">
+            <h1 className="text-3xl font-black text-slate-950 sm:text-4xl lg:text-[2.5rem] dark:text-white">
               Task Manager
             </h1>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 sm:text-[15px] dark:text-zinc-400">
@@ -532,7 +607,7 @@ export default function TaskManager() {
               <button
                 type="button"
                 onClick={() => openNewTask("backlog")}
-                className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-2.5 text-sm font-extrabold text-white shadow-lg shadow-indigo-500/20 transition hover:-translate-y-0.5 hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 sm:flex-none dark:focus-visible:ring-offset-black"
+                className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-extrabold text-white shadow-lg shadow-indigo-500/20 transition hover:-translate-y-0.5 hover:bg-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 sm:flex-none dark:focus-visible:ring-offset-black"
               >
                 <Plus size={17} /> New task
               </button>
@@ -541,18 +616,34 @@ export default function TaskManager() {
         </header>
 
         {!isAuthenticated ? (
-          <section className="mx-auto mt-12 max-w-xl rounded-[1.75rem] border border-white/70 bg-white/80 p-8 text-center shadow-2xl shadow-slate-900/5 backdrop-blur-xl dark:border-zinc-800 dark:bg-zinc-950/80">
-            <span className="mx-auto inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600 ring-1 ring-indigo-100 dark:bg-indigo-950/50 dark:text-indigo-300 dark:ring-indigo-900">
+          <section className="task-manager-auth-panel mx-auto mt-6 max-w-xl rounded-2xl border border-white/70 bg-white/80 p-5 text-center shadow-2xl shadow-slate-900/5 backdrop-blur-xl sm:mt-12 sm:p-8 dark:border-zinc-800 dark:bg-zinc-950/80">
+            <span className="task-manager-auth-icon mx-auto inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600 ring-1 ring-indigo-100 dark:bg-indigo-950/50 dark:text-indigo-300 dark:ring-indigo-900">
               <LockKeyhole size={24} />
             </span>
-            <h2 className="mt-5 text-xl font-black text-slate-950 dark:text-white">Your board is ready when you are</h2>
-            <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500 dark:text-zinc-400">
+            <h2 className="task-manager-auth-title mt-5 text-xl font-black text-slate-950 dark:text-white">Your board is ready when you are</h2>
+            <p className="task-manager-auth-copy mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500 dark:text-zinc-400">
               Log in or create an account to organize tasks, track deadlines, and keep your progress synced.
             </p>
+            <div className="task-manager-auth-actions mt-6 flex flex-col gap-2 min-[380px]:flex-row min-[380px]:justify-center">
+              <button
+                type="button"
+                onClick={() => window.dispatchEvent(new Event("open-login-modal"))}
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-slate-950 px-5 py-2.5 text-sm font-extrabold text-white transition hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200"
+              >
+                <LogIn size={17} /> Log in
+              </button>
+              <button
+                type="button"
+                onClick={() => window.dispatchEvent(new Event("open-signup-modal"))}
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-5 py-2.5 text-sm font-extrabold text-slate-700 transition hover:border-slate-400 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
+              >
+                <UserPlus size={17} /> Create account
+              </button>
+            </div>
           </section>
         ) : (
           <>
-            <section className="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
+            <section className="task-manager-metrics-strip -mx-3 mb-4 flex snap-x snap-mandatory gap-2.5 overflow-x-auto px-3 pb-1 sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-3 sm:px-0 sm:pb-0 lg:grid-cols-4">
               <SummaryCard
                 icon={FolderKanban}
                 label="Total work"
@@ -583,31 +674,52 @@ export default function TaskManager() {
               />
             </section>
 
-            <section className="mb-4 rounded-2xl border border-white/70 bg-white/75 p-2.5 shadow-[0_15px_45px_-32px_rgba(15,23,42,0.55)] backdrop-blur-xl dark:border-zinc-800 dark:bg-zinc-950/75">
+            <section className="mb-4 rounded-xl border border-white/70 bg-white/80 p-2.5 shadow-[0_15px_45px_-32px_rgba(15,23,42,0.55)] backdrop-blur-xl dark:border-zinc-800 dark:bg-zinc-950/75">
               <div className="flex flex-col gap-2 lg:flex-row lg:items-center">
-                <label className="relative min-w-0 flex-1">
-                  <span className="sr-only">Search tasks</span>
-                  <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={17} />
-                  <input
-                    type="search"
-                    value={searchQuery}
-                    onChange={(event) => setSearchQuery(event.target.value)}
-                    placeholder="Search titles, descriptions, and labels"
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-10 pr-10 text-sm font-medium text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 dark:border-zinc-800 dark:bg-zinc-900 dark:text-white dark:placeholder:text-zinc-600 dark:focus:border-indigo-600 dark:focus:bg-zinc-950"
-                  />
-                  {searchQuery && (
-                    <button
-                      type="button"
-                      onClick={() => setSearchQuery("")}
-                      className="absolute right-2 top-1/2 inline-flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-200 hover:text-slate-700 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
-                      aria-label="Clear search"
-                    >
-                      <X size={14} />
-                    </button>
-                  )}
-                </label>
+                <div className="flex min-w-0 flex-1 gap-2">
+                  <label className="relative min-w-0 flex-1">
+                    <span className="sr-only">Search tasks</span>
+                    <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={17} />
+                    <input
+                      type="search"
+                      value={searchQuery}
+                      onChange={(event) => setSearchQuery(event.target.value)}
+                      placeholder="Search tasks"
+                      className="min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-10 pr-10 text-sm font-medium text-slate-900 outline-none transition placeholder:text-slate-500 focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 dark:border-zinc-800 dark:bg-zinc-900 dark:text-white dark:placeholder:text-zinc-500 dark:focus:border-indigo-600 dark:focus:bg-zinc-950"
+                    />
+                    {searchQuery && (
+                      <button
+                        type="button"
+                        onClick={() => setSearchQuery("")}
+                        className="absolute right-1.5 top-1/2 inline-flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-200 hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
+                        aria-label="Clear search"
+                      >
+                        <X size={15} />
+                      </button>
+                    )}
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setShowMobileFilters((current) => !current)}
+                    className="relative inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 transition hover:border-slate-300 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 sm:hidden dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                    aria-label="Toggle task filters"
+                    aria-controls="task-manager-filter-controls"
+                    aria-expanded={showMobileFilters}
+                    title="Filters and sort"
+                  >
+                    <ListFilter size={18} />
+                    {activeFilters > 0 && (
+                      <span className="absolute -right-1 -top-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-indigo-600 px-1 text-[10px] font-extrabold text-white">
+                        {activeFilters}
+                      </span>
+                    )}
+                  </button>
+                </div>
 
-                <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
+                <div
+                  id="task-manager-filter-controls"
+                  className={`${showMobileFilters ? "grid" : "hidden"} grid-cols-2 gap-2 sm:flex sm:flex-wrap`}
+                >
                   <label className="relative">
                     <span className="sr-only">Filter by priority</span>
                     <select
@@ -667,64 +779,88 @@ export default function TaskManager() {
             </section>
 
             <div className="mb-3 flex items-center justify-between gap-3 px-1">
-              <div className="inline-flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-zinc-500">
-                {dragDisabled ? <ListFilter size={14} /> : <GripVertical size={14} />}
-                <span>
-                  {dragDisabled && activeFilters > 0
-                    ? "Clear filters to drag and reorder tasks"
-                    : "Drag cards between columns to update progress"}
+              <div className="inline-flex min-w-0 items-center gap-2 text-xs font-semibold text-slate-600 dark:text-zinc-400">
+                <ListFilter size={14} className="shrink-0" />
+                <span className="truncate">
+                  {activeFilters > 0
+                    ? `${activeFilters} filter${activeFilters === 1 ? "" : "s"} active`
+                    : "Board view"}
                 </span>
               </div>
-              <span className="hidden text-xs font-semibold text-slate-400 sm:inline dark:text-zinc-600">
+              <span className="shrink-0 text-xs font-semibold text-slate-500 dark:text-zinc-400">
                 {filteredTasks.length} of {tasks.length} shown
               </span>
             </div>
 
-            <DndContext
-              sensors={sensors}
-              collisionDetection={boardCollisionDetection}
-              measuring={{ droppable: { strategy: MeasuringStrategy.Always } }}
-              onDragStart={handleDragStart}
-              onDragEnd={handleDragEnd}
-              onDragCancel={() => setActiveTaskId(null)}
-            >
-              <MobileBoardNavigation
-                tasks={filteredTasks}
-                mobileStatus={mobileStatus}
-                onStatusChange={setMobileStatus}
-                dragDisabled={dragDisabled}
-                isDragging={Boolean(activeTaskId)}
-              />
-
-              {loading ? (
-                <BoardSkeleton />
-              ) : (
-                <div className="flex gap-4 overflow-x-auto overscroll-x-contain pb-4 sm:snap-x sm:snap-mandatory xl:grid xl:grid-cols-4 xl:overflow-visible xl:snap-none">
-                  {TASK_STATUSES.map((status) => (
-                    <KanbanColumn
-                      key={status.id}
-                      status={status}
-                      tasks={filteredTasks.filter((task) => task.status === status.id)}
-                      onAddTask={openNewTask}
-                      onEditTask={openEditTask}
-                      dragDisabled={dragDisabled}
-                      isMobileActive={mobileStatus === status.id}
-                    />
-                  ))}
-                </div>
-              )}
-
-              <DragOverlay
-                adjustScale={false}
-                dropAnimation={{ duration: 180, easing: "ease" }}
+            {loadError ? (
+              <section
+                role="alert"
+                className="rounded-xl border border-rose-200 bg-white p-6 text-center shadow-sm dark:border-rose-900/60 dark:bg-zinc-950"
               >
-                {activeTask ? (
-                  <div className="w-[min(300px,calc(100vw-1.5rem))]">
-                    <TaskCardSurface task={activeTask} overlay />
+                <span className="mx-auto inline-flex h-11 w-11 items-center justify-center rounded-xl bg-rose-50 text-rose-600 dark:bg-rose-950/50 dark:text-rose-300">
+                  <AlertTriangle size={20} />
+                </span>
+                <h2 className="mt-3 text-base font-extrabold text-slate-900 dark:text-white">
+                  Your board could not be loaded
+                </h2>
+                <p className="mx-auto mt-1 max-w-md text-sm leading-6 text-slate-600 dark:text-zinc-400">
+                  {loadError}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => fetchTasks(token)}
+                  className="mt-4 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-extrabold text-white transition hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200"
+                >
+                  <RefreshCw size={16} /> Retry loading board
+                </button>
+              </section>
+            ) : (
+              <DndContext
+                sensors={sensors}
+                collisionDetection={boardCollisionDetection}
+                measuring={{ droppable: { strategy: MeasuringStrategy.Always } }}
+                onDragStart={handleDragStart}
+                onDragEnd={handleDragEnd}
+                onDragCancel={() => setActiveTaskId(null)}
+              >
+                <MobileBoardNavigation
+                  tasks={filteredTasks}
+                  mobileStatus={mobileStatus}
+                  onStatusChange={setMobileStatus}
+                  dragDisabled={dragDisabled}
+                  isDragging={Boolean(activeTaskId)}
+                />
+
+                {loading ? (
+                  <BoardSkeleton />
+                ) : (
+                  <div className="flex gap-4 overflow-x-auto overscroll-x-contain pb-4 sm:snap-x sm:snap-mandatory xl:grid xl:grid-cols-4 xl:overflow-visible xl:snap-none">
+                    {TASK_STATUSES.map((status) => (
+                      <KanbanColumn
+                        key={status.id}
+                        status={status}
+                        tasks={filteredTasks.filter((task) => task.status === status.id)}
+                        onAddTask={openNewTask}
+                        onEditTask={openEditTask}
+                        dragDisabled={dragDisabled}
+                        isMobileActive={mobileStatus === status.id}
+                      />
+                    ))}
                   </div>
-                ) : null}
-              </DragOverlay>
-            </DndContext>
+                )}
+
+                <DragOverlay
+                  adjustScale={false}
+                  dropAnimation={{ duration: 180, easing: "ease" }}
+                >
+                  {activeTask ? (
+                    <div className="w-[min(300px,calc(100vw-1.5rem))]">
+                      <TaskCardSurface task={activeTask} overlay />
+                    </div>
+                  ) : null}
+                </DragOverlay>
+              </DndContext>
+            )}
 
             {!loading && tasks.length > 0 && filteredTasks.length === 0 && (
               <div className="mt-4 rounded-2xl border border-dashed border-slate-300 bg-white/60 p-8 text-center dark:border-zinc-700 dark:bg-zinc-950/60">
@@ -751,23 +887,31 @@ export default function TaskManager() {
 
       {showAnalytics && (
         <div
-          className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/60 p-0 backdrop-blur-sm sm:items-center sm:p-6"
+          className="fixed inset-0 z-[110] flex items-end justify-center bg-slate-950/60 p-0 backdrop-blur-sm sm:items-center sm:p-6"
           onMouseDown={(event) => {
-            if (event.target === event.currentTarget) setShowAnalytics(false);
+            if (event.target === event.currentTarget) closeAnalytics();
           }}
         >
-          <section role="dialog" aria-modal="true" aria-labelledby="analytics-title" className="max-h-[94vh] w-full overflow-y-auto rounded-t-[1.75rem] border border-white/60 bg-[#f8fafc] p-5 shadow-2xl sm:max-w-5xl sm:rounded-[1.75rem] sm:p-6 dark:border-zinc-800 dark:bg-[#09090b]">
-            <div className="mb-5 flex items-start justify-between gap-4">
+          <section
+            ref={analyticsDialogRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="analytics-title"
+            className="flex max-h-[100dvh] w-full flex-col overflow-hidden rounded-t-2xl border border-white/60 bg-[#f8fafc] shadow-2xl sm:max-h-[min(94dvh,56rem)] sm:max-w-5xl sm:rounded-2xl dark:border-zinc-800 dark:bg-[#09090b]"
+          >
+            <div className="flex shrink-0 items-start justify-between gap-4 border-b border-slate-200/80 p-5 sm:p-6 dark:border-zinc-800">
               <div>
                 <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-indigo-600 dark:text-indigo-400">Board analytics</p>
-                <h2 id="analytics-title" className="mt-1 text-2xl font-black tracking-tight text-slate-950 dark:text-white">Productivity insights</h2>
+                <h2 id="analytics-title" className="mt-1 text-2xl font-black text-slate-950 dark:text-white">Productivity insights</h2>
                 <p className="mt-1 text-sm text-slate-500 dark:text-zinc-400">A clear view of workload, flow, and delivery.</p>
               </div>
-              <button type="button" onClick={() => setShowAnalytics(false)} className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-slate-200/70 text-slate-500 transition hover:bg-slate-200 hover:text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-white" aria-label="Close analytics">
+              <button ref={analyticsCloseRef} type="button" onClick={closeAnalytics} className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-slate-200/70 text-slate-600 transition hover:bg-slate-200 hover:text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-white" aria-label="Close analytics">
                 <X size={18} />
               </button>
             </div>
-            <ProductivityAnalytics stats={stats} />
+            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] sm:p-6">
+              <ProductivityAnalytics stats={stats} />
+            </div>
           </section>
         </div>
       )}

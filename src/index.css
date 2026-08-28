@@ -437,6 +437,216 @@ body {
   overflow-y: hidden;
 }
 
+/* Full-height tools own one viewport slot; the footer follows in outer scroll. */
+.amiverse-viewport-workspace {
+  height: calc(100svh - 4rem - env(safe-area-inset-top));
+}
+
+@supports (height: 100dvh) {
+  .amiverse-viewport-workspace {
+    height: calc(100dvh - 4rem - env(safe-area-inset-top));
+  }
+}
+
+.amibot-workspace-padding {
+  padding-block: 0.5rem;
+  padding-left: max(0.5rem, env(safe-area-inset-left));
+  padding-right: max(0.5rem, env(safe-area-inset-right));
+}
+
+.amiverse-footer-content {
+  padding-left: max(0.75rem, env(safe-area-inset-left));
+  padding-right: max(0.75rem, env(safe-area-inset-right));
+}
+
+body.amibot-page-active .amiverse-footer-back-to-top {
+  margin-right: 0;
+}
+
+body.task-manager-page-active .amiverse-contact-trigger {
+  display: none !important;
+}
+
+body.task-manager-page-active .amiverse-footer-back-to-top {
+  margin-right: 0;
+}
+
+body.task-manager-overlay-active .amiverse-app-shell {
+  overflow-y: hidden;
+  scrollbar-gutter: auto;
+}
+
+.task-manager-page {
+  padding-left: max(0.75rem, env(safe-area-inset-left));
+  padding-right: max(0.75rem, env(safe-area-inset-right));
+}
+
+.task-manager-metrics-strip {
+  scrollbar-width: none;
+}
+
+.task-manager-metrics-strip::-webkit-scrollbar {
+  display: none;
+}
+
+@media (min-width: 40rem) {
+  .task-manager-page {
+    padding-left: max(1.25rem, env(safe-area-inset-left));
+    padding-right: max(1.25rem, env(safe-area-inset-right));
+  }
+}
+
+@media (min-width: 64rem) {
+  .task-manager-page {
+    padding-left: max(1.75rem, env(safe-area-inset-left));
+    padding-right: max(1.75rem, env(safe-area-inset-right));
+  }
+}
+
+@media (min-width: 40rem) and (hover: hover) and (pointer: fine) {
+  .task-manager-card-action,
+  .task-manager-column-action {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 0.5rem;
+  }
+
+  .task-manager-card-edit {
+    opacity: 0;
+  }
+
+  .group:hover .task-manager-card-edit,
+  .task-manager-card-edit:focus-visible {
+    opacity: 1;
+  }
+}
+
+@media (min-width: 40rem) and (max-height: 36rem) {
+  .task-manager-page {
+    padding-top: 0.75rem !important;
+  }
+
+  .task-manager-header {
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.75rem !important;
+  }
+
+  .task-manager-eyebrow,
+  .task-manager-summary-helper {
+    display: none !important;
+  }
+
+  .task-manager-auth-panel {
+    display: grid !important;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    column-gap: 1rem;
+    margin-top: 0.75rem !important;
+    padding: 1.25rem !important;
+    text-align: left;
+  }
+
+  .task-manager-auth-icon {
+    grid-row: 1 / 3;
+    margin: 0 !important;
+  }
+
+  .task-manager-auth-title {
+    grid-column: 2;
+    margin-top: 0 !important;
+  }
+
+  .task-manager-auth-copy {
+    grid-column: 2;
+    margin: 0.25rem 0 0 !important;
+  }
+
+  .task-manager-auth-actions {
+    grid-column: 3;
+    grid-row: 1 / 3;
+    flex-direction: column !important;
+    margin-top: 0 !important;
+  }
+
+  .task-manager-metrics-strip {
+    display: flex !important;
+    overflow-x: auto !important;
+  }
+
+  .task-manager-metrics-strip > div {
+    min-width: 9.25rem !important;
+  }
+}
+
+@media (min-width: 40rem) {
+  .amiverse-viewport-workspace {
+    height: calc(100svh - 4.25rem - env(safe-area-inset-top));
+  }
+
+  .amibot-workspace-padding {
+    padding-block: 1.5rem;
+    padding-left: max(1.25rem, env(safe-area-inset-left));
+    padding-right: max(1.25rem, env(safe-area-inset-right));
+  }
+
+  .amiverse-footer-content {
+    padding-left: max(1rem, env(safe-area-inset-left));
+    padding-right: max(1rem, env(safe-area-inset-right));
+  }
+
+  @supports (height: 100dvh) {
+    .amiverse-viewport-workspace {
+      height: calc(100dvh - 4.25rem - env(safe-area-inset-top));
+    }
+  }
+}
+
+@media (min-width: 64rem) {
+  .amiverse-viewport-workspace {
+    height: calc(100svh - 4.5rem - env(safe-area-inset-top));
+  }
+
+  .amibot-workspace-padding {
+    padding-left: max(2rem, env(safe-area-inset-left));
+    padding-right: max(2rem, env(safe-area-inset-right));
+  }
+
+  .amiverse-footer-content {
+    padding-left: max(1.25rem, env(safe-area-inset-left));
+    padding-right: max(1.25rem, env(safe-area-inset-right));
+  }
+
+  @supports (height: 100dvh) {
+    .amiverse-viewport-workspace {
+      height: calc(100dvh - 4.5rem - env(safe-area-inset-top));
+    }
+  }
+}
+
+@media (max-height: 36rem) {
+  .amibot-workspace-padding {
+    padding-block: 0.375rem;
+  }
+
+  .amibot-chat-header {
+    padding-block: 0.5rem;
+  }
+
+  .amibot-composer {
+    padding-top: 0.5rem;
+    padding-bottom: calc(0.5rem + env(safe-area-inset-bottom));
+  }
+
+  .amibot-chat-status,
+  .amibot-composer-meta,
+  .amibot-mobile-prompts {
+    display: none !important;
+  }
+}
+
 @keyframes footerHeartBeat {
   0%,
   100% {
@@ -502,7 +712,29 @@ body.tech-byte-reader-active .amiverse-app-shell > footer {
   display: none !important;
 }
 
-@media (max-width: 47.999rem) and (max-height: 46rem) {
+.tech-byte-reader-page {
+  padding-right: max(0.5rem, env(safe-area-inset-right)) !important;
+  padding-bottom: max(0.5rem, env(safe-area-inset-bottom)) !important;
+  padding-left: max(0.5rem, env(safe-area-inset-left)) !important;
+}
+
+@media (min-width: 40rem) {
+  .tech-byte-reader-page {
+    padding-right: max(1rem, env(safe-area-inset-right)) !important;
+    padding-bottom: max(0.75rem, env(safe-area-inset-bottom)) !important;
+    padding-left: max(1rem, env(safe-area-inset-left)) !important;
+  }
+}
+
+@media (min-width: 64rem) {
+  .tech-byte-reader-page {
+    padding-right: max(1.5rem, env(safe-area-inset-right)) !important;
+    padding-bottom: max(1rem, env(safe-area-inset-bottom)) !important;
+    padding-left: max(1.5rem, env(safe-area-inset-left)) !important;
+  }
+}
+
+@media (max-height: 46rem) {
   .tech-byte-swipe-card {
     grid-template-rows: minmax(0, 36%) minmax(0, 1fr);
   }
@@ -528,9 +760,38 @@ body.tech-byte-reader-active .amiverse-app-shell > footer {
   }
 }
 
-@media (max-width: 47.999rem) and (max-height: 38rem) {
+@media (max-height: 34rem) {
   .tech-byte-swipe-card-description {
     display: none;
+  }
+}
+
+@media (max-height: 30rem) {
+  .tech-byte-reader-heading,
+  .tech-byte-reader-subtitle {
+    display: none !important;
+  }
+}
+
+@media (min-width: 40rem) and (max-height: 30rem) {
+  .tech-byte-swipe-card {
+    grid-template-columns: minmax(0, 38%) minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+  }
+
+  .tech-byte-swipe-card-content {
+    padding: 0.75rem 1rem;
+  }
+
+  .tech-byte-swipe-card-title {
+    margin-top: 0.4rem;
+    font-size: 1rem;
+    line-height: 1.25rem;
+  }
+
+  .tech-byte-swipe-controls {
+    right: auto;
+    left: calc(38% - 6.5rem);
   }
 }
 

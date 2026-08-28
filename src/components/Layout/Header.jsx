@@ -263,7 +263,7 @@ export default function Header({ setLoading }) {
 
       <header
         className="
-          amiverse-site-chrome sticky left-0 right-0 top-0 z-50 isolate w-full max-w-full overflow-x-clip
+          amiverse-site-chrome sticky left-0 right-0 top-0 z-50 isolate w-full max-w-full shrink-0 overflow-x-clip
           pt-[env(safe-area-inset-top)]
           border-b border-sky-900/[0.12] dark:border-cyan-100/[0.11]
         "

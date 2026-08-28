@@ -9,7 +9,8 @@ import TechByteSwipeView from "./TechByteSwipeView";
 
 const TECH_NEWS_URL = apiUrl("/api/tech-news");
 const FALLBACK_NEWS_IMAGE = "/og-image.jpg";
-const DESKTOP_READER_QUERY = "(min-width: 768px)";
+const TECH_NEWS_TIMEOUT_MS = 12000;
+const DESKTOP_READER_QUERY = "(min-width: 900px) and (min-height: 620px)";
 // Intentionally match non-printing control characters in feed text.
 // eslint-disable-next-line no-control-regex
 const CONTROL_CHARACTERS = /[\u0000-\u001F\u007F]/g;
@@ -94,16 +95,28 @@ function useDesktopReader() {
   return isDesktop;
 }
 
-const TechReaderSkeleton = React.memo(function TechReaderSkeleton() {
+const TechReaderSkeleton = React.memo(function TechReaderSkeleton({
+  isDesktopReader,
+}) {
   return (
     <div
       aria-label="Loading Tech Byte stories"
       className="min-h-0 flex-1 pt-3 md:pt-4"
       role="status"
     >
-      <div className="grid h-full min-h-0 animate-pulse grid-rows-[minmax(0,40%)_minmax(0,1fr)] overflow-hidden rounded-[1.45rem] border border-white/80 bg-white/75 shadow-[0_26px_70px_-46px_rgba(15,23,42,0.28)] dark:border-zinc-900 dark:bg-black/70 md:grid-cols-[minmax(0,1.15fr)_minmax(22rem,0.85fr)] md:grid-rows-1 md:rounded-[1.75rem]">
+      <div
+        className={`grid h-full min-h-0 animate-pulse overflow-hidden rounded-lg border border-white/80 bg-white/75 shadow-[0_26px_70px_-46px_rgba(15,23,42,0.28)] dark:border-zinc-900 dark:bg-black/70 ${
+          isDesktopReader
+            ? "grid-cols-[minmax(0,1.15fr)_minmax(22rem,0.85fr)] grid-rows-1"
+            : "grid-rows-[minmax(0,40%)_minmax(0,1fr)]"
+        }`}
+      >
         <div className="bg-zinc-200 dark:bg-zinc-900" />
-        <div className="flex min-h-0 flex-col p-5 md:p-7 lg:p-9">
+        <div
+          className={`flex min-h-0 flex-col ${
+            isDesktopReader ? "p-7 lg:p-9" : "p-4 sm:p-5"
+          }`}
+        >
           <div className="flex gap-3">
             <div className="h-4 w-24 rounded-full bg-zinc-200 dark:bg-zinc-900" />
             <div className="h-4 w-32 rounded-full bg-zinc-200 dark:bg-zinc-900" />
@@ -125,7 +138,7 @@ const TechReaderSkeleton = React.memo(function TechReaderSkeleton() {
 function NewsStatePanel({ empty = false, onRetry }) {
   return (
     <div
-      className="mt-3 flex min-h-0 flex-1 flex-col items-center justify-center overflow-y-auto rounded-[1.45rem] border border-dashed border-zinc-300/90 bg-white/65 px-6 py-8 text-center dark:border-zinc-800 dark:bg-zinc-950/70 md:mt-4"
+      className="mt-3 flex min-h-0 flex-1 flex-col items-center justify-center overflow-y-auto rounded-lg border border-dashed border-zinc-300/90 bg-white/65 px-6 py-8 text-center dark:border-zinc-800 dark:bg-zinc-950/70 md:mt-4"
       role={empty ? "status" : "alert"}
     >
       <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-sky-100 text-sky-700 ring-1 ring-sky-200 dark:bg-cyan-300/10 dark:text-cyan-200 dark:ring-cyan-200/15">
@@ -167,7 +180,10 @@ function TechNewsCards() {
     setLoading(true);
 
     axios
-      .get(TECH_NEWS_URL, { signal: controller.signal })
+      .get(TECH_NEWS_URL, {
+        signal: controller.signal,
+        timeout: TECH_NEWS_TIMEOUT_MS,
+      })
       .then((response) => {
         if (!isMounted) return;
 
@@ -226,19 +242,14 @@ function TechNewsCards() {
 
   return (
     <div
-      className="amiverse-premium-light-page h-[calc(100svh_-_4rem_-_env(safe-area-inset-top))] w-full overflow-hidden px-2 pb-2 pt-2 dark:bg-[linear-gradient(180deg,_#000000_0%,_#070707_52%,_#000000_100%)] sm:h-[calc(100svh_-_4.25rem_-_env(safe-area-inset-top))] sm:px-4 sm:pb-3 sm:pt-3 lg:h-[calc(100svh_-_4.5rem_-_env(safe-area-inset-top))] lg:px-6 lg:pb-4 lg:pt-4"
+      className="amiverse-premium-light-page amiverse-viewport-workspace tech-byte-reader-page w-full overflow-hidden px-2 pb-2 pt-2 dark:bg-[linear-gradient(180deg,_#000000_0%,_#070707_52%,_#000000_100%)] sm:px-4 sm:pb-3 sm:pt-3 lg:px-6 lg:pb-4 lg:pt-4"
       data-reader-kind={isDesktopReader ? "scroll" : "swipe"}
       data-testid="tech-byte-reader-shell"
     >
       <section className="mx-auto h-full max-w-7xl">
-        <div className="relative flex h-full min-h-0 flex-col overflow-hidden rounded-[1.3rem] border border-white/85 bg-white/88 px-4 py-4 shadow-[0_30px_90px_-50px_rgba(15,23,42,0.28)] backdrop-blur-xl dark:border-zinc-900 dark:bg-black dark:shadow-[0_30px_90px_-50px_rgba(0,0,0,0.95)] sm:rounded-[1.6rem] sm:px-5 lg:px-6">
-          <div
-            className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-sky-300/70 to-transparent dark:via-sky-400/35"
-            aria-hidden="true"
-          />
-
-          <header className="relative flex shrink-0 items-start justify-between gap-5 border-b border-zinc-200/80 pb-3 dark:border-zinc-900 md:pb-4">
-            <div className="min-w-0 max-w-3xl">
+        <div className="relative flex h-full min-h-0 flex-col overflow-hidden px-1 py-1 sm:px-2 sm:py-2 lg:px-3">
+          <header className="relative shrink-0 border-b border-zinc-200/80 pb-3 dark:border-zinc-900 md:pb-4">
+            <div className="flex items-start justify-between gap-3">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="inline-flex items-center gap-1.5 rounded-full border border-sky-200 bg-sky-50/90 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-700 dark:border-sky-500/25 dark:bg-sky-500/10 dark:text-sky-200">
                   <Newspaper className="h-3.5 w-3.5" aria-hidden="true" />
@@ -252,23 +263,45 @@ function TechNewsCards() {
                 )}
               </div>
 
-              <h1 className="sr-only md:not-sr-only md:mt-2 md:text-[1.45rem] md:font-semibold md:tracking-tight md:text-zinc-950 md:dark:text-white lg:text-[1.65rem]">
-                Tech news, one focused story at a time.
-              </h1>
-              <p className="mt-1 hidden max-w-2xl text-sm leading-5 text-zinc-600 dark:text-zinc-300 md:block">
-                Scroll through a calm, full-story briefing built for quick
-                context without the clutter of a traditional news grid.
-              </p>
+              <div className="flex shrink-0 items-center gap-2">
+                <span className="hidden min-[390px]:inline-flex min-h-10 items-center gap-2 rounded-full border border-zinc-200/80 bg-white/80 px-3 text-xs font-semibold text-zinc-600 shadow-sm dark:border-zinc-800 dark:bg-zinc-950/80 dark:text-zinc-300">
+                  <MousePointer2
+                    className="h-4 w-4 text-sky-600 dark:text-sky-300"
+                    aria-hidden="true"
+                  />
+                  {isDesktopReader ? "Scroll reader" : "Swipe reader"}
+                </span>
+                <button
+                  type="button"
+                  onClick={retryNews}
+                  disabled={loading}
+                  className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-zinc-200/80 bg-white/85 text-zinc-700 shadow-sm transition-colors hover:bg-white hover:text-zinc-950 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-sky-200 disabled:cursor-wait disabled:opacity-60 dark:border-zinc-800 dark:bg-zinc-950/85 dark:text-zinc-200 dark:hover:bg-zinc-900 dark:hover:text-white dark:focus-visible:ring-sky-500/20"
+                  aria-label="Refresh Tech Byte stories"
+                  title="Refresh stories"
+                >
+                  <RefreshCw
+                    className={`h-4 w-4 ${loading ? "animate-spin" : ""}`}
+                    aria-hidden="true"
+                  />
+                </button>
+              </div>
             </div>
 
-            <div className="hidden shrink-0 items-center gap-2 rounded-full border border-zinc-200/80 bg-white/80 px-3 py-2 text-xs font-semibold text-zinc-600 shadow-sm dark:border-zinc-800 dark:bg-zinc-950/80 dark:text-zinc-300 md:inline-flex">
-              <MousePointer2 className="h-4 w-4 text-sky-600 dark:text-sky-300" aria-hidden="true" />
-              Scroll reader
-            </div>
+            <h1 className="tech-byte-reader-heading mt-2 max-w-3xl text-lg font-semibold leading-6 text-zinc-950 dark:text-white sm:text-xl lg:text-[1.65rem] lg:leading-8">
+              Tech news, one focused story at a time.
+            </h1>
+            <p
+              className={`tech-byte-reader-subtitle mt-1 max-w-2xl text-sm leading-5 text-zinc-600 dark:text-zinc-300 ${
+                isDesktopReader ? "hidden sm:block" : "hidden"
+              }`}
+            >
+              Scroll through a calm, full-story briefing built for quick
+              context without the clutter of a traditional news grid.
+            </p>
           </header>
 
           {loading ? (
-            <TechReaderSkeleton />
+            <TechReaderSkeleton isDesktopReader={isDesktopReader} />
           ) : error ? (
             <NewsStatePanel onRetry={retryNews} />
           ) : articles.length === 0 ? (

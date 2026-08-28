@@ -70,7 +70,8 @@ test("lets the AmiBot route reach the footer through the outer app scroller", ()
   expect(appShell).not.toHaveClass("overflow-hidden");
 
   expect(screen.getByRole("main")).toHaveClass(
-    "h-[calc(100svh_-_4rem_-_env(safe-area-inset-top))]",
+    "amiverse-viewport-workspace",
+    "shrink-0",
   );
   expect(screen.getByRole("contentinfo")).toHaveTextContent("Footer");
 });

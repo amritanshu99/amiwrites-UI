@@ -3,6 +3,7 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
+  Cell,
   Line,
   LineChart,
   ResponsiveContainer,
@@ -73,7 +74,11 @@ export default function ProductivityAnalytics({ stats }) {
               <XAxis dataKey="name" stroke={axisColor} tick={{ fontSize: 11 }} />
               <YAxis allowDecimals={false} stroke={axisColor} tick={{ fontSize: 11 }} />
               <Tooltip contentStyle={tooltipStyle} cursor={{ fill: isDarkMode ? "#18181b" : "#f8fafc" }} />
-              <Bar dataKey="value" radius={[7, 7, 2, 2]} fill="#6366f1" />
+              <Bar dataKey="value" radius={[7, 7, 2, 2]}>
+                {distribution.map((entry) => (
+                  <Cell key={entry.name} fill={entry.fill} />
+                ))}
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
         </section>

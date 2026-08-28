@@ -29,11 +29,11 @@ const panelClass = "amiverse-chrome-panel rounded-2xl p-3";
 const sectionHeadingClass =
   "text-xs font-bold uppercase tracking-[0.18em] text-sky-800 dark:text-cyan-200";
 const footerLinkClass =
-  "group inline-flex min-h-11 w-full items-center justify-between gap-2 rounded-xl px-3 py-2 text-sm font-medium text-slate-600 transition-[background-color,color,transform] duration-200 hover:-translate-y-px hover:bg-white/72 hover:text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600/45 dark:text-slate-300 dark:hover:bg-white/[0.08] dark:hover:text-white dark:focus-visible:ring-cyan-200/65";
+  "group inline-flex min-h-11 min-w-0 w-full items-center justify-between gap-2 rounded-xl px-3 py-2 text-sm font-medium text-slate-600 transition-[background-color,color,transform] duration-200 hover:-translate-y-px hover:bg-white/72 hover:text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600/45 dark:text-slate-300 dark:hover:bg-white/[0.08] dark:hover:text-white dark:focus-visible:ring-cyan-200/65";
 
 const FooterLink = ({ href, label, onClick }) => (
   <Link className={footerLinkClass} to={href} onClick={onClick}>
-    <span>{label}</span>
+    <span className="min-w-0 break-words">{label}</span>
     <ArrowUpRight
       className="h-3.5 w-3.5 shrink-0 opacity-45 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:opacity-80"
       aria-hidden="true"
@@ -68,7 +68,7 @@ const Footer = () => {
       />
 
       <div
-        className="relative mx-auto w-full max-w-[90rem] px-3 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-3 sm:px-4 sm:pt-4 lg:px-5"
+        className="amiverse-footer-content relative mx-auto w-full max-w-[90rem] px-3 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-3 sm:px-4 sm:pt-4 lg:px-5"
         data-testid="footer-content"
       >
         <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-12">
@@ -176,7 +176,7 @@ const Footer = () => {
             <button
               type="button"
               onClick={scrollToTop}
-              className="mr-16 inline-flex min-h-11 items-center gap-2 rounded-full border border-sky-900/10 bg-white/55 px-3.5 py-2 font-semibold text-slate-700 transition-[background-color,color,transform] duration-200 hover:-translate-y-0.5 hover:bg-white/85 hover:text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600/45 dark:border-cyan-100/10 dark:bg-white/[0.055] dark:text-slate-200 dark:hover:bg-white/[0.1] dark:hover:text-white dark:focus-visible:ring-cyan-200/65 sm:mr-0"
+              className="amiverse-footer-back-to-top mr-16 inline-flex min-h-11 items-center gap-2 rounded-full border border-sky-900/10 bg-white/55 px-3.5 py-2 font-semibold text-slate-700 transition-[background-color,color,transform] duration-200 hover:-translate-y-0.5 hover:bg-white/85 hover:text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600/45 dark:border-cyan-100/10 dark:bg-white/[0.055] dark:text-slate-200 dark:hover:bg-white/[0.1] dark:hover:text-white dark:focus-visible:ring-cyan-200/65 sm:mr-0"
               aria-label="Back to top"
             >
               Back to top <ArrowUp className="h-3.5 w-3.5" aria-hidden="true" />

@@ -139,8 +139,9 @@ function TechByteSwipeView({
     <section
       className="relative flex h-full min-h-0 flex-col"
       aria-labelledby={`${deckId}-title`}
+      data-testid="tech-byte-swipe-view"
     >
-      <div className="mb-2 flex shrink-0 items-end justify-between gap-4 px-1">
+      <div className="mb-2 flex shrink-0 items-center justify-between gap-4 px-1">
         <div className="min-w-0">
           <h2
             id={`${deckId}-title`}
@@ -148,10 +149,7 @@ function TechByteSwipeView({
           >
             Swipe briefing
           </h2>
-          <p
-            id={instructionsId}
-            className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400"
-          >
+          <p id={instructionsId} className="sr-only">
             Swipe vertically, or use the arrow controls.
           </p>
         </div>
@@ -189,7 +187,7 @@ function TechByteSwipeView({
           onScroll={handleScroll}
           aria-describedby={instructionsId}
           aria-label="Tech news swipe deck"
-          className={`h-full min-h-0 touch-pan-y snap-y snap-mandatory overflow-x-hidden overflow-y-auto rounded-[1.45rem] border border-white/80 bg-white/45 shadow-[0_26px_70px_-44px_rgba(15,23,42,0.32)] outline-none ring-1 ring-sky-100/60 backdrop-blur-xl focus-visible:ring-4 focus-visible:ring-sky-200/80 dark:border-zinc-900 dark:bg-black/55 dark:ring-white/5 dark:focus-visible:ring-sky-500/20 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden ${
+          className={`h-full min-h-0 touch-pan-y snap-y snap-mandatory overflow-x-hidden overflow-y-auto rounded-lg border border-white/80 bg-white/45 shadow-[0_26px_70px_-44px_rgba(15,23,42,0.32)] outline-none ring-1 ring-sky-100/60 backdrop-blur-xl focus-visible:ring-4 focus-visible:ring-sky-200/80 dark:border-zinc-900 dark:bg-black/55 dark:ring-white/5 dark:focus-visible:ring-sky-500/20 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden ${
             prefersReducedMotion ? "" : "scroll-smooth"
           } motion-reduce:scroll-auto`}
         >
@@ -205,7 +203,7 @@ function TechByteSwipeView({
               aria-setsize={articleCount}
               className="h-full snap-start snap-always p-2"
             >
-              <div className="tech-byte-swipe-card group grid h-full grid-rows-[minmax(0,42%)_minmax(0,1fr)] overflow-hidden rounded-[1.25rem] border border-white/90 bg-white/95 shadow-[0_24px_60px_-42px_rgba(15,23,42,0.28)] dark:border-zinc-800 dark:bg-black dark:shadow-[0_26px_64px_-40px_rgba(0,0,0,0.96)]">
+              <div className="tech-byte-swipe-card group grid h-full grid-rows-[minmax(0,42%)_minmax(0,1fr)] overflow-hidden rounded-lg border border-white/90 bg-white/95 shadow-[0_24px_60px_-42px_rgba(15,23,42,0.28)] dark:border-zinc-800 dark:bg-black dark:shadow-[0_26px_64px_-40px_rgba(0,0,0,0.96)]">
                 <div className="relative min-h-0 overflow-hidden bg-zinc-100 dark:bg-zinc-950">
                   <img
                     src={article.image}
@@ -219,7 +217,7 @@ function TechByteSwipeView({
                     className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/5 to-transparent"
                     aria-hidden="true"
                   />
-                  <span className="absolute left-3 top-3 max-w-[70%] truncate rounded-full border border-white/40 bg-black/60 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.15em] text-white backdrop-blur-md">
+                  <span className="absolute left-3 top-3 max-w-[calc(100%_-_7.5rem)] truncate rounded-full border border-white/40 bg-black/60 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.15em] text-white backdrop-blur-md">
                     {article.source?.name || "Unknown Source"}
                   </span>
                 </div>
@@ -244,11 +242,7 @@ function TechByteSwipeView({
                     {article.description}
                   </p>
 
-                  <div className="mt-auto flex items-end justify-between gap-3 pt-3">
-                    <span className="text-[11px] font-semibold uppercase tracking-[0.13em] text-zinc-400 dark:text-zinc-500">
-                      {index + 1} / {articleCount}
-                    </span>
-
+                  <div className="mt-auto flex justify-end pt-3">
                     <button
                       type="button"
                       onClick={() => handleOpenArticle(article.url)}
@@ -266,7 +260,7 @@ function TechByteSwipeView({
         </div>
 
         <nav
-          className="absolute right-4 top-4 z-10 flex gap-2"
+          className="tech-byte-swipe-controls absolute right-4 top-4 z-10 flex gap-2"
           aria-label="Swipe deck controls"
         >
           <button

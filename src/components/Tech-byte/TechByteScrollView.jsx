@@ -180,18 +180,15 @@ function TechByteScrollView({
       aria-labelledby={`${deckId}-title`}
       data-testid="tech-byte-scroll-view"
     >
-      <div className="mb-3 flex shrink-0 items-end justify-between gap-6 px-1">
+      <div className="mb-2 flex shrink-0 items-center justify-between gap-6 px-1">
         <div className="min-w-0">
           <h2
             id={`${deckId}-title`}
-            className="text-base font-semibold tracking-tight text-zinc-950 dark:text-white"
+            className="text-base font-semibold text-zinc-950 dark:text-white"
           >
             Scroll briefing
           </h2>
-          <p
-            id={instructionsId}
-            className="mt-1 text-sm text-zinc-500 dark:text-zinc-400"
-          >
+          <p id={instructionsId} className="sr-only">
             Use your mouse wheel or trackpad to move one story at a time. Arrow
             keys work too.
           </p>
@@ -237,7 +234,7 @@ function TechByteScrollView({
       </div>
 
       <div
-        className="mb-3 h-1 shrink-0 overflow-hidden rounded-full bg-zinc-200/90 dark:bg-zinc-800"
+        className="mb-2 h-1 shrink-0 overflow-hidden rounded-full bg-zinc-200/90 dark:bg-zinc-800"
         role="progressbar"
         aria-label="Reading progress"
         aria-valuemin={1}
@@ -258,7 +255,7 @@ function TechByteScrollView({
         onScroll={handleScroll}
         aria-describedby={instructionsId}
         aria-label="Tech news scroll reader"
-        className={`min-h-0 flex-1 snap-y snap-mandatory overflow-x-hidden overflow-y-auto rounded-[1.75rem] border border-white/80 bg-white/45 shadow-[0_32px_90px_-52px_rgba(15,23,42,0.38)] outline-none ring-1 ring-sky-100/60 backdrop-blur-xl focus-visible:ring-4 focus-visible:ring-sky-200/80 dark:border-zinc-900 dark:bg-black/55 dark:ring-white/5 dark:focus-visible:ring-sky-500/20 [scrollbar-color:rgb(14_165_233_/_0.45)_transparent] [scrollbar-width:thin] ${
+        className={`min-h-0 flex-1 snap-y snap-mandatory overflow-x-hidden overflow-y-auto rounded-lg border border-white/80 bg-white/45 shadow-[0_32px_90px_-52px_rgba(15,23,42,0.38)] outline-none ring-1 ring-sky-100/60 backdrop-blur-xl focus-visible:ring-4 focus-visible:ring-sky-200/80 dark:border-zinc-900 dark:bg-black/55 dark:ring-white/5 dark:focus-visible:ring-sky-500/20 [scrollbar-color:rgb(14_165_233_/_0.45)_transparent] [scrollbar-width:thin] ${
           prefersReducedMotion ? "" : "scroll-smooth"
         } motion-reduce:scroll-auto`}
       >
@@ -279,7 +276,7 @@ function TechByteScrollView({
               aria-setsize={articleCount}
               className="h-full snap-start snap-always p-3"
             >
-              <div className="group grid h-full grid-cols-[minmax(0,1.08fr)_minmax(20rem,0.92fr)] overflow-hidden rounded-[1.45rem] border border-white/90 bg-white/95 shadow-[0_28px_70px_-44px_rgba(15,23,42,0.32)] dark:border-zinc-800 dark:bg-black dark:shadow-[0_28px_72px_-42px_rgba(0,0,0,0.98)]">
+              <div className="group grid h-full grid-cols-[minmax(0,1.08fr)_minmax(20rem,0.92fr)] overflow-hidden rounded-lg border border-white/90 bg-white/95 shadow-[0_28px_70px_-44px_rgba(15,23,42,0.32)] dark:border-zinc-800 dark:bg-black dark:shadow-[0_28px_72px_-42px_rgba(0,0,0,0.98)]">
                 <div className="relative min-w-0 overflow-hidden bg-zinc-100 dark:bg-zinc-950">
                   {article?.image ? (
                     <img
@@ -333,7 +330,7 @@ function TechByteScrollView({
                     </time>
                   </div>
 
-                  <h3 className="mt-4 line-clamp-3 text-2xl font-semibold leading-[1.14] tracking-[-0.025em] text-zinc-950 [text-wrap:balance] dark:text-zinc-50 lg:text-[2rem]">
+                  <h3 className="mt-4 line-clamp-3 text-2xl font-semibold leading-[1.14] text-zinc-950 [text-wrap:balance] dark:text-zinc-50 lg:text-[2rem]">
                     {title}
                   </h3>
 
@@ -342,16 +339,7 @@ function TechByteScrollView({
                       "Open the full story for the complete report and context."}
                   </p>
 
-                  <div className="mt-auto flex items-end justify-between gap-5 border-t border-zinc-200/80 pt-5 dark:border-zinc-800">
-                    <div className="min-w-0">
-                      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-400 dark:text-zinc-500">
-                        Wheel / trackpad
-                      </p>
-                      <p className="mt-1 text-xs font-medium text-zinc-600 dark:text-zinc-400">
-                        Scroll for the next story
-                      </p>
-                    </div>
-
+                  <div className="mt-auto flex justify-end border-t border-zinc-200/80 pt-5 dark:border-zinc-800">
                     <button
                       type="button"
                       onClick={() => handleOpenArticle(article?.url)}

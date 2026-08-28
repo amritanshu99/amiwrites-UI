@@ -75,6 +75,41 @@ export const EMPTY_TASK = {
   labels: [],
 };
 
+export function parseTaskDate(value) {
+  if (!value) return null;
+
+  if (typeof value === "string") {
+    const dateOnlyMatch = /^(\d{4})-(\d{2})-(\d{2})/.exec(value);
+    if (dateOnlyMatch) {
+      const [, year, month, day] = dateOnlyMatch;
+      const localDate = new Date(Number(year), Number(month) - 1, Number(day));
+
+      if (
+        localDate.getFullYear() === Number(year) &&
+        localDate.getMonth() === Number(month) - 1 &&
+        localDate.getDate() === Number(day)
+      ) {
+        return localDate;
+      }
+
+      return null;
+    }
+  }
+
+  const parsedDate = new Date(value);
+  return Number.isNaN(parsedDate.getTime()) ? null : parsedDate;
+}
+
+export function toDateInputValue(value) {
+  const date = parseTaskDate(value);
+  if (!date) return "";
+
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
 export function getStatus(statusId) {
   return TASK_STATUSES.find((status) => status.id === statusId) || TASK_STATUSES[1];
 }

@@ -46,7 +46,7 @@ export default function KanbanColumn({
         <button
           type="button"
           onClick={() => onAddTask(status.id)}
-          className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white text-slate-500 shadow-sm ring-1 ring-slate-200 transition hover:-translate-y-0.5 hover:text-indigo-600 hover:shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 dark:bg-zinc-950 dark:text-zinc-400 dark:ring-zinc-800 dark:hover:text-indigo-400"
+          className="task-manager-column-action inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white text-slate-500 shadow-sm ring-1 ring-slate-200 transition hover:-translate-y-0.5 hover:text-indigo-600 hover:shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 dark:bg-zinc-950 dark:text-zinc-400 dark:ring-zinc-800 dark:hover:text-indigo-400"
           aria-label={`Add task to ${status.label}`}
           title={`Add to ${status.label}`}
         >

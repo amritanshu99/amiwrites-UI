@@ -239,7 +239,7 @@ const App = () => {
         id="main"
         className={
           isAmiBotWorkspace
-            ? "h-[calc(100svh_-_4rem_-_env(safe-area-inset-top))] min-h-0 sm:h-[calc(100svh_-_4.25rem_-_env(safe-area-inset-top))] lg:h-[calc(100svh_-_4.5rem_-_env(safe-area-inset-top))]"
+            ? "amiverse-viewport-workspace min-h-0 shrink-0"
             : "flex-1"
         }
         tabIndex={-1}

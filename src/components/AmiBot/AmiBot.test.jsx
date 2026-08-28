@@ -43,7 +43,7 @@ test("renders the AmiBot chat workspace and fills a prompt starter", async () =>
   });
   expect(workspaceOverview).toHaveAttribute("tabindex", "0");
   expect(workspaceOverview).toHaveClass(
-    "lg:h-[calc(100svh-8.5rem)]",
+    "h-full",
     "lg:overflow-y-auto"
   );
 
@@ -58,6 +58,7 @@ test("renders the AmiBot chat workspace and fills a prompt starter", async () =>
   const textbox = screen.getByRole("textbox", { name: /type your message/i });
   expect(textbox).toHaveAttribute("placeholder", "Ask about uploaded knowledge...");
   expect(screen.getByRole("button", { name: /send message/i })).toBeDisabled();
+  expect(screen.getByRole("log")).toHaveClass("overscroll-y-auto");
 
   fireEvent.click(
     screen.getAllByRole("button", { name: /summarize the uploaded knowledge/i })[0]

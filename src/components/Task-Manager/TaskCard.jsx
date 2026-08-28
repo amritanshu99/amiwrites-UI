@@ -9,12 +9,13 @@ import {
   Pencil,
   Tag,
 } from "lucide-react";
-import { getPriority } from "./taskManagerConfig";
+import { getPriority, parseTaskDate } from "./taskManagerConfig";
 
 function getDueDateMeta(dueDate, status) {
   if (!dueDate) return null;
 
-  const date = new Date(dueDate);
+  const date = parseTaskDate(dueDate);
+  if (!date) return null;
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const due = new Date(date);
@@ -61,7 +62,7 @@ export function TaskCardSurface({ task, overlay = false, onEdit, dragHandleProps
             <button
               type="button"
               onClick={() => onEdit(task)}
-              className="inline-flex h-11 w-11 items-center justify-center rounded-xl text-slate-400 opacity-100 transition hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 sm:h-8 sm:w-8 sm:rounded-lg sm:opacity-0 sm:group-hover:opacity-100 sm:focus:opacity-100 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
+              className="task-manager-card-action task-manager-card-edit inline-flex h-11 w-11 items-center justify-center rounded-xl text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
               aria-label={`Edit ${task.title}`}
               title="Edit task"
             >
@@ -73,7 +74,7 @@ export function TaskCardSurface({ task, overlay = false, onEdit, dragHandleProps
               type="button"
               {...dragHandleProps}
               onContextMenu={(event) => event.preventDefault()}
-              className="inline-flex h-11 w-11 touch-none select-none items-center justify-center rounded-xl text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 active:cursor-grabbing sm:h-8 sm:w-8 sm:rounded-lg dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
+              className="task-manager-card-action inline-flex h-11 w-11 touch-none select-none items-center justify-center rounded-xl text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 active:cursor-grabbing dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
               aria-label={`Move ${task.title}`}
               title="Drag to move; press and hold on touch screens"
             >
@@ -127,7 +128,7 @@ export function TaskCardSurface({ task, overlay = false, onEdit, dragHandleProps
             {dueDate.label}
           </span>
         ) : (
-          <span className="inline-flex items-center gap-1.5 text-slate-400 dark:text-zinc-500">
+          <span className="inline-flex items-center gap-1.5 text-slate-500 dark:text-zinc-400">
             <Clock3 size={13} />
             No due date
           </span>

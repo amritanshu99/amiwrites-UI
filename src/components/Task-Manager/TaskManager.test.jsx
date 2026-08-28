@@ -69,6 +69,10 @@ test("renders the professional board and safely maps legacy completed tasks", as
   expect(screen.getByRole("region", { name: "To Do column" })).toBeInTheDocument();
   expect(screen.getByRole("region", { name: "In Progress column" })).toHaveTextContent("Plan launch");
   expect(screen.getByRole("region", { name: "Done column" })).toHaveTextContent("Legacy completed task");
+  expect(screen.getByRole("button", { name: "Show In Progress tasks" })).toHaveAttribute(
+    "aria-pressed",
+    "true"
+  );
 });
 
 test("opens a complete task editor from the new task action", async () => {
@@ -86,4 +90,74 @@ test("opens a complete task editor from the new task action", async () => {
   expect(screen.getByRole("button", { name: "Create task" })).toBeEnabled();
 
   await waitFor(() => expect(axios.get).toHaveBeenCalledTimes(1));
+});
+
+test("shows a persistent load error and retries the board request", async () => {
+  axios.get
+    .mockRejectedValueOnce(new Error("offline"))
+    .mockResolvedValueOnce({ data: tasks });
+
+  renderTaskManager();
+
+  expect(
+    await screen.findByRole("heading", { name: "Your board could not be loaded" })
+  ).toBeInTheDocument();
+  expect(screen.queryByText("Plan launch")).not.toBeInTheDocument();
+
+  await userEvent.click(screen.getByRole("button", { name: "Retry loading board" }));
+
+  expect(await screen.findByText("Plan launch")).toBeInTheDocument();
+  expect(axios.get).toHaveBeenCalledTimes(2);
+});
+
+test("keeps mobile filters collapsed until requested", async () => {
+  renderTaskManager();
+  await screen.findByText("Plan launch");
+
+  const filterButton = screen.getByRole("button", { name: "Toggle task filters" });
+  expect(filterButton).toHaveAttribute("aria-expanded", "false");
+
+  await userEvent.click(filterButton);
+
+  expect(filterButton).toHaveAttribute("aria-expanded", "true");
+});
+
+test("traps the task editor lifecycle and restores focus on Escape", async () => {
+  renderTaskManager();
+  await screen.findByText("Plan launch");
+
+  const newTaskButton = screen.getByRole("button", { name: "New task" });
+  await userEvent.click(newTaskButton);
+
+  const titleInput = screen.getByRole("textbox", { name: /Task title/i });
+  await waitFor(() => expect(titleInput).toHaveFocus());
+  expect(document.body).toHaveClass("task-manager-overlay-active");
+
+  await userEvent.keyboard("{Escape}");
+
+  await waitFor(() => {
+    expect(screen.queryByRole("dialog", { name: "Create a task" })).not.toBeInTheDocument();
+  });
+  expect(newTaskButton).toHaveFocus();
+  expect(document.body).not.toHaveClass("task-manager-overlay-active");
+});
+
+test("offers direct authentication actions when the user is signed out", async () => {
+  localStorage.removeItem("token");
+  const loginListener = jest.fn();
+  const signupListener = jest.fn();
+  window.addEventListener("open-login-modal", loginListener);
+  window.addEventListener("open-signup-modal", signupListener);
+
+  renderTaskManager();
+
+  await userEvent.click(screen.getByRole("button", { name: "Log in" }));
+  await userEvent.click(screen.getByRole("button", { name: "Create account" }));
+
+  expect(loginListener).toHaveBeenCalledTimes(1);
+  expect(signupListener).toHaveBeenCalledTimes(1);
+  expect(axios.get).not.toHaveBeenCalled();
+
+  window.removeEventListener("open-login-modal", loginListener);
+  window.removeEventListener("open-signup-modal", signupListener);
 });

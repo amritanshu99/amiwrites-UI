@@ -658,11 +658,11 @@ const AmiBot = () => {
   );
 
   return (
-    <section className="h-full min-h-0 w-screen max-w-full overflow-hidden bg-[linear-gradient(180deg,#f8fafc_0%,#e0f2fe_46%,#ecfdf5_100%)] p-2 text-slate-900 dark:bg-[linear-gradient(180deg,#050505_0%,#0b1115_58%,#000000_100%)] dark:text-zinc-100 sm:px-5 sm:py-6 lg:px-8">
+    <section className="amibot-workspace-padding h-full min-h-0 w-full max-w-full overflow-hidden bg-[linear-gradient(180deg,#f8fafc_0%,#e0f2fe_46%,#ecfdf5_100%)] text-slate-900 dark:bg-[linear-gradient(180deg,#050505_0%,#0b1115_58%,#000000_100%)] dark:text-zinc-100">
       <div className="mx-auto grid h-full w-full min-w-0 max-w-7xl gap-0 overflow-hidden lg:grid-cols-[20rem_minmax(0,1fr)] lg:gap-5">
         <aside
           aria-label="AmiBot workspace overview"
-          className={`relative hidden w-full min-w-0 max-w-full overflow-hidden p-4 outline-none sm:p-5 lg:sticky lg:top-24 lg:block lg:h-[calc(100svh-8.5rem)] lg:self-start lg:overflow-x-hidden lg:overflow-y-auto lg:overscroll-contain lg:[scrollbar-gutter:stable] lg:[scrollbar-width:thin] lg:focus-visible:ring-2 lg:focus-visible:ring-cyan-400/50 ${surfaceClassName}`}
+          className={`relative hidden h-full w-full min-w-0 max-w-full overflow-hidden p-4 outline-none sm:p-5 lg:block lg:overflow-x-hidden lg:overflow-y-auto lg:overscroll-contain lg:[scrollbar-gutter:stable] lg:[scrollbar-width:thin] lg:focus-visible:ring-2 lg:focus-visible:ring-cyan-400/50 ${surfaceClassName}`}
           tabIndex={0}
         >
           <div className="absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,#0891b2,#10b981,#f59e0b)]" />
@@ -728,8 +728,8 @@ const AmiBot = () => {
           </div>
         </aside>
 
-        <section className={`flex h-full min-h-0 w-full min-w-0 max-w-full flex-col overflow-hidden lg:h-[calc(100svh-8.5rem)] ${surfaceClassName}`}>
-          <header className="border-b border-slate-200 bg-white/[0.94] px-3 py-3 dark:border-white/10 dark:bg-white/[0.04] sm:px-5 sm:py-4">
+        <section className={`flex h-full min-h-0 w-full min-w-0 max-w-full flex-col overflow-hidden ${surfaceClassName}`}>
+          <header className="amibot-chat-header border-b border-slate-200 bg-white/[0.94] px-3 py-3 dark:border-white/10 dark:bg-white/[0.04] sm:px-5 sm:py-4">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
               <div className="flex min-w-0 items-center gap-3">
                 <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-950 text-cyan-200 shadow-sm dark:bg-cyan-300 dark:text-slate-950 sm:h-10 sm:w-10">
@@ -749,7 +749,7 @@ const AmiBot = () => {
                 </div>
               </div>
 
-              <div className="hidden grid-cols-2 gap-2 text-xs text-slate-600 dark:text-zinc-300 min-[390px]:grid sm:flex">
+              <div className="amibot-chat-status hidden grid-cols-2 gap-2 text-xs text-slate-600 dark:text-zinc-300 min-[390px]:grid sm:flex">
                 <span className="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 font-semibold dark:border-white/10 dark:bg-white/[0.06]">
                   <History className="h-3.5 w-3.5 text-cyan-700 dark:text-cyan-200" />
                   {isAuthenticated ? "History active" : "Guest mode"}
@@ -762,7 +762,7 @@ const AmiBot = () => {
             </div>
           </header>
 
-          <div className="border-b border-slate-200 bg-white/[0.9] px-3 py-2 dark:border-white/10 dark:bg-zinc-950/[0.88] lg:hidden">
+          <div className="amibot-mobile-prompts border-b border-slate-200 bg-white/[0.9] px-3 py-2 dark:border-white/10 dark:bg-zinc-950/[0.88] lg:hidden">
             <div className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               {PROMPT_SUGGESTIONS.map((prompt) => (
                 <PromptSuggestionButton
@@ -779,7 +779,7 @@ const AmiBot = () => {
             ref={messagesContainerRef}
             aria-live="polite"
             aria-relevant="additions text"
-            className="min-h-0 flex-1 touch-pan-y overflow-y-auto overscroll-contain bg-slate-50/70 px-3 py-3 [-webkit-overflow-scrolling:touch] dark:bg-black/30 sm:px-5 sm:py-5"
+            className="min-h-0 flex-1 touch-pan-y overflow-y-auto overscroll-y-auto bg-slate-50/70 px-3 py-3 [-webkit-overflow-scrolling:touch] dark:bg-black/30 sm:px-5 sm:py-5"
             onScroll={handleMessagesScroll}
             role="log"
           >
@@ -804,7 +804,7 @@ const AmiBot = () => {
             )}
           </div>
 
-          <div className="min-w-0 max-w-full overflow-hidden border-t border-slate-200 bg-white/[0.96] px-3 pb-[calc(0.65rem+env(safe-area-inset-bottom))] pt-2 dark:border-white/10 dark:bg-zinc-950/[0.96] sm:p-4">
+          <div className="amibot-composer min-w-0 max-w-full overflow-hidden border-t border-slate-200 bg-white/[0.96] px-3 pb-[calc(0.65rem+env(safe-area-inset-bottom))] pt-2 dark:border-white/10 dark:bg-zinc-950/[0.96] sm:px-4 sm:pb-[calc(1rem+env(safe-area-inset-bottom))] sm:pt-4">
             <form
               ref={formRef}
               className="flex w-full min-w-0 max-w-full items-end gap-2"
@@ -842,7 +842,7 @@ const AmiBot = () => {
               </button>
             </form>
 
-            <div className="mt-1.5 flex items-center justify-between gap-3 px-1 text-[11px] font-semibold text-slate-500 dark:text-zinc-400 sm:mt-2 sm:text-xs">
+            <div className="amibot-composer-meta mt-1.5 flex items-center justify-between gap-3 px-1 text-[11px] font-semibold text-slate-500 dark:text-zinc-400 sm:mt-2 sm:text-xs">
               <span aria-live="polite">
                 {requestStatus || (isAuthenticated ? "History active" : "Guest mode")}
               </span>
