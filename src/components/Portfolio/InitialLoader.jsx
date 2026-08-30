@@ -75,10 +75,6 @@ const floatingDust = [
   { left: "93%", top: "77%", size: 4, delay: "2.1s", duration: "15.5s" },
 ];
 
-const timedFloatingDust = floatingDust.filter(
-  (_dust, index) => index % 2 === 0 || index === floatingDust.length - 1,
-);
-
 const sideMarkerOffsets = ["16%", "28%", "40%", "52%", "64%", "76%"];
 
 const queryMatches = (query) => {
@@ -171,12 +167,13 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
     isCompactViewport,
     isTouchViewport,
   } = performanceProfile;
+  const usesLightweightEffects = isTimedShowcase || shouldOptimize;
   const animatedDust = useMemo(
     () =>
-      shouldOptimize
+      isTimedShowcase || shouldOptimize
         ? []
-        : isTimedShowcase || isCompactViewport || isTouchViewport
-          ? timedFloatingDust
+        : isCompactViewport || isTouchViewport
+          ? floatingDust.filter((_dust, index) => index % 2 === 0)
           : floatingDust,
     [isCompactViewport, isTimedShowcase, isTouchViewport, shouldOptimize],
   );
@@ -205,7 +202,7 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
   const [initialProgressElapsedMs] = useState(() =>
     isTimedShowcase ? getInitialLoaderElapsedMs() : 0,
   );
-  const badgeClass = shouldOptimize
+  const badgeClass = usesLightweightEffects
     ? "loader-badge max-w-[calc(50vw-1.25rem)] truncate rounded-full border px-3 py-2 text-[0.44rem] uppercase tracking-[0.2em] min-[380px]:tracking-[0.28em] sm:max-w-none sm:px-4 sm:text-[0.52rem] sm:tracking-[0.36em]"
     : "loader-badge max-w-[calc(50vw-1.25rem)] truncate rounded-full border px-3 py-2 text-[0.44rem] uppercase tracking-[0.2em] backdrop-blur-md min-[380px]:tracking-[0.28em] sm:max-w-none sm:px-4 sm:text-[0.52rem] sm:tracking-[0.4em]";
   const shellClass = shouldOptimize
@@ -216,14 +213,14 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
       }`
     : `loader-shell relative mx-auto w-full max-w-5xl overflow-hidden rounded-[1.65rem] border px-4 py-8 text-center min-[380px]:rounded-[2rem] min-[380px]:px-6 min-[380px]:py-9 sm:rounded-[2.2rem] sm:px-10 sm:py-12 md:px-14 md:py-14 ${
         isTimedShowcase
-          ? "backdrop-blur-[6px]"
+          ? ""
           : "backdrop-blur-[10px] animate-[openingReveal_1000ms_cubic-bezier(.22,1,.36,1)_forwards]"
       }`;
-  const haloClass = shouldOptimize
-    ? "loader-halo absolute left-1/2 top-1/2 h-[84vw] w-[84vw] max-h-[420px] max-w-[420px] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-70"
+  const haloClass = usesLightweightEffects
+    ? "loader-halo absolute left-1/2 top-1/2 h-[84vw] w-[84vw] max-h-[420px] max-w-[420px] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-60"
     : "loader-halo absolute left-1/2 top-[49%] h-[68vh] w-[68vh] max-w-[88vw] -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl animate-[haloPulse_7.5s_ease-in-out_infinite]";
-  const centerGlowClass = shouldOptimize
-    ? "loader-center-glow absolute inset-0 opacity-40"
+  const centerGlowClass = usesLightweightEffects
+    ? "loader-center-glow absolute inset-0 opacity-35"
     : "loader-center-glow absolute inset-0 animate-[centerGlow_5.8s_ease-in-out_infinite]";
   const frameClass = isTouchViewport
     ? "loader-frame relative z-10 flex h-full min-h-0 items-center justify-center px-3 sm:px-8"
@@ -238,8 +235,6 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
       getMediaQueryList("(hover: none), (pointer: coarse)"),
     ].filter(Boolean);
     const updateProfile = () => setPerformanceProfile(getPerformanceProfile());
-
-    updateProfile();
 
     queries.forEach((query) => {
       if (query.addEventListener) {
@@ -279,6 +274,7 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
       data-loader-mode={shouldOptimize ? "optimized" : "cinematic"}
       data-loader-compact={isCompactViewport ? "true" : undefined}
       data-loader-timed={isTimedShowcase ? "true" : undefined}
+      data-loader-profile={isTimedShowcase ? "lightweight" : undefined}
       data-loader-state={phase}
       className="fixed left-0 top-0 z-[9999] overflow-hidden bg-black text-white antialiased"
       style={{
@@ -299,15 +295,21 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
       <div className="loader-visual absolute inset-0" aria-hidden="true">
       <div className="loader-backdrop absolute inset-0" />
       <div className="loader-horizon absolute inset-0" />
-      <div className="loader-aurora loader-aurora-left absolute" />
-      <div className="loader-aurora loader-aurora-right absolute" />
+      {!usesLightweightEffects && (
+        <>
+          <div data-loader-ambient className="loader-aurora loader-aurora-left absolute" />
+          <div data-loader-ambient className="loader-aurora loader-aurora-right absolute" />
+        </>
+      )}
 
-      {!shouldOptimize && (
+      {!usesLightweightEffects && (
         <>
           <div
+            data-loader-ambient
             className="absolute inset-x-0 top-0 h-[20vh] bg-black shadow-[0_20px_60px_rgba(0,0,0,0.9)]"
           />
           <div
+            data-loader-ambient
             className="absolute inset-x-0 bottom-0 h-[22vh] bg-black shadow-[0_-20px_60px_rgba(0,0,0,0.9)]"
           />
         </>
@@ -316,55 +318,57 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
       <div className="absolute inset-y-0 left-0 w-[28vw] min-w-[150px] bg-[linear-gradient(90deg,rgba(0,0,0,1),rgba(4,4,4,0.98)_28%,rgba(0,0,0,0)_100%)]" />
       <div className="absolute inset-y-0 right-0 w-[28vw] min-w-[150px] bg-[linear-gradient(270deg,rgba(0,0,0,1),rgba(4,4,4,0.98)_28%,rgba(0,0,0,0)_100%)]" />
 
-      {!shouldOptimize && !isCompactViewport && (
+      {!usesLightweightEffects && !isCompactViewport && (
         <>
           <div
+            data-loader-ambient
             data-loader-animate
             className="absolute left-1/2 top-[-14%] h-[82vh] w-[52vw] max-w-[720px] -translate-x-1/2 bg-[linear-gradient(180deg,rgba(255,255,255,0.13),rgba(255,255,255,0.045)_22%,rgba(255,255,255,0.012)_44%,rgba(255,255,255,0)_82%)] opacity-50 blur-[120px] animate-[projectorBloom_12s_ease-in-out_infinite]"
           />
-          {!isTimedShowcase && (
-            <>
-              <div
-                data-loader-animate
-                className="absolute left-[-12%] top-[-18%] h-[78vh] w-[40vw] min-w-[220px] rotate-[16deg] bg-[linear-gradient(90deg,rgba(255,255,255,0),rgba(255,255,255,0.1),rgba(255,255,255,0.016),rgba(255,255,255,0))] opacity-[0.24] blur-3xl animate-[beamSweepLeft_13s_ease-in-out_infinite]"
-              />
-              <div
-                data-loader-animate
-                className="absolute right-[-12%] top-[-10%] h-[70vh] w-[38vw] min-w-[220px] -rotate-[16deg] bg-[linear-gradient(90deg,rgba(255,255,255,0),rgba(255,255,255,0.085),rgba(255,255,255,0.012),rgba(255,255,255,0))] opacity-[0.22] blur-3xl animate-[beamSweepRight_15s_ease-in-out_infinite]"
-              />
-            </>
-          )}
+          <div
+            data-loader-ambient
+            data-loader-animate
+            className="absolute left-[-12%] top-[-18%] h-[78vh] w-[40vw] min-w-[220px] rotate-[16deg] bg-[linear-gradient(90deg,rgba(255,255,255,0),rgba(255,255,255,0.1),rgba(255,255,255,0.016),rgba(255,255,255,0))] opacity-[0.24] blur-3xl animate-[beamSweepLeft_13s_ease-in-out_infinite]"
+          />
+          <div
+            data-loader-ambient
+            data-loader-animate
+            className="absolute right-[-12%] top-[-10%] h-[70vh] w-[38vw] min-w-[220px] -rotate-[16deg] bg-[linear-gradient(90deg,rgba(255,255,255,0),rgba(255,255,255,0.085),rgba(255,255,255,0.012),rgba(255,255,255,0))] opacity-[0.22] blur-3xl animate-[beamSweepRight_15s_ease-in-out_infinite]"
+          />
         </>
       )}
 
       <div
-        {...(!shouldOptimize ? { "data-loader-animate": true } : {})}
+        {...(!usesLightweightEffects ? { "data-loader-animate": true } : {})}
         className={haloClass}
       />
 
       <div
-        {...(!shouldOptimize ? { "data-loader-animate": true } : {})}
+        {...(!usesLightweightEffects ? { "data-loader-animate": true } : {})}
         className={centerGlowClass}
       />
 
-      {!shouldOptimize && (
+      {!usesLightweightEffects && (
         <>
           <div
+            data-loader-ambient
             className="absolute inset-0 opacity-[0.08] [background-image:radial-gradient(rgba(255,255,255,0.22)_0.65px,transparent_0.75px)] [background-size:5px_5px]"
           />
           <div
+            data-loader-ambient
             className="absolute inset-0 opacity-[0.12] [background:repeating-linear-gradient(0deg,transparent_0px,transparent_3px,rgba(255,255,255,0.026)_4px,transparent_5px)]"
           />
           <div
+            data-loader-ambient
             className="absolute inset-0 bg-[linear-gradient(110deg,transparent_0%,rgba(255,255,255,0.035)_44%,transparent_56%,rgba(255,255,255,0.018)_70%,transparent_100%)] opacity-[0.34]"
           />
         </>
       )}
 
       <div className="loader-vignette absolute inset-0" />
-      <div className={`absolute inset-0 ${shouldOptimize ? "shadow-[inset_0_0_120px_rgba(0,0,0,0.92)]" : "shadow-[inset_0_0_200px_rgba(0,0,0,0.96)]"}`} />
+      <div className={`absolute inset-0 ${usesLightweightEffects ? "shadow-[inset_0_0_120px_rgba(0,0,0,0.92)]" : "shadow-[inset_0_0_200px_rgba(0,0,0,0.96)]"}`} />
       <div className="loader-outer-frame absolute inset-[14px] rounded-[2rem] border" />
-      {!shouldOptimize && (
+      {!usesLightweightEffects && (
         <div className="loader-outer-frame-secondary absolute inset-[30px] hidden rounded-[1.75rem] border sm:block" />
       )}
 
@@ -423,8 +427,8 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
           <div className="loader-shell-inset absolute inset-[1px] rounded-[calc(2rem-1px)] border sm:rounded-[calc(2.2rem-1px)]" />
           <div className="loader-shell-glow absolute inset-0" />
 
-          {!shouldOptimize && (
-            <div className="absolute left-1/2 top-0 h-full w-[40%] max-w-[460px] -translate-x-1/2 bg-[linear-gradient(180deg,rgba(255,255,255,0.09),rgba(255,255,255,0.02)_38%,transparent_100%)] opacity-30 blur-[80px]" />
+          {!usesLightweightEffects && (
+            <div data-loader-ambient className="absolute left-1/2 top-0 h-full w-[40%] max-w-[460px] -translate-x-1/2 bg-[linear-gradient(180deg,rgba(255,255,255,0.09),rgba(255,255,255,0.02)_38%,transparent_100%)] opacity-30 blur-[80px]" />
           )}
 
           <div className="loader-content relative z-10 mx-auto flex max-w-4xl flex-col items-center">
@@ -467,7 +471,7 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
               <div className="loader-emblem-plate absolute inset-0 rounded-full border" />
               {!shouldOptimize && (
                 <div
-                  data-loader-animate
+                  {...(!isCompactViewport ? { "data-loader-animate": true } : {})}
                   className="loader-emblem-shutter absolute inset-[10px] rounded-full border animate-[shutterSpin_18s_linear_infinite]"
                 />
               )}
@@ -482,24 +486,18 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
                   className="h-9 w-9 rounded-[0.8rem] object-contain opacity-95 sm:h-12 sm:w-12"
                 />
               </div>
-              {!shouldOptimize &&
-                (isTimedShowcase ? (
+              {!shouldOptimize && !isTimedShowcase && (
+                <>
                   <span
                     data-loader-animate
-                    className="absolute inset-[-10px] rounded-full border border-white/[0.06] animate-[cinematicRingCue_780ms_cubic-bezier(.22,1,.36,1)_160ms_both]"
+                    className="absolute inset-[-10px] rounded-full border border-white/[0.06] animate-[ringEcho_3.6s_ease-out_infinite]"
                   />
-                ) : (
-                  <>
-                    <span
-                      data-loader-animate
-                      className="absolute inset-[-10px] rounded-full border border-white/[0.06] animate-[ringEcho_3.6s_ease-out_infinite]"
-                    />
-                    <span
-                      data-loader-animate
-                      className="absolute inset-[-20px] rounded-full border border-white/[0.04] animate-[ringEcho_3.6s_ease-out_1.1s_infinite]"
-                    />
-                  </>
-                ))}
+                  <span
+                    data-loader-animate
+                    className="absolute inset-[-20px] rounded-full border border-white/[0.04] animate-[ringEcho_3.6s_ease-out_1.1s_infinite]"
+                  />
+                </>
+              )}
             </div>
 
             <p className="loader-intro mt-7 max-w-full text-[0.62rem] font-semibold uppercase tracking-[0.2em] min-[380px]:mt-8 min-[380px]:tracking-[0.28em] sm:text-xs sm:tracking-[0.4em]">
@@ -522,7 +520,7 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
             <div className="loader-divider loader-divider-main mt-6 h-px w-40 max-w-full sm:w-56 md:w-72" />
 
             <p
-              {...(!shouldOptimize ? { "data-loader-animate": true } : {})}
+              {...(!usesLightweightEffects ? { "data-loader-animate": true } : {})}
               className={`loader-quote mt-6 max-w-2xl font-cinzel text-[0.68rem] leading-relaxed tracking-[0.08em] min-[380px]:text-[0.72rem] min-[380px]:tracking-[0.12em] sm:text-sm sm:tracking-[0.16em] md:text-base ${
                 shouldOptimize
                   ? ""
@@ -612,7 +610,7 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
             )}
 
             <p
-              {...(!shouldOptimize ? { "data-loader-animate": true } : {})}
+              {...(!usesLightweightEffects ? { "data-loader-animate": true } : {})}
               className="loader-footer mt-7 flex max-w-full items-center justify-center gap-2.5 text-[0.56rem] font-medium uppercase tracking-[0.26em] min-[380px]:tracking-[0.36em] sm:text-[0.62rem] sm:tracking-[0.46em]"
             >
               <span className="loader-footer-pulse h-1.5 w-1.5 shrink-0 rounded-full" />
@@ -662,12 +660,6 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
 
           .loader-visual {
             overflow: hidden;
-            transform: translate3d(0, 0, 0) scale(1);
-            transition: transform ${INITIAL_LOADER_EXIT_DURATION_MS}ms cubic-bezier(.22, 1, .36, 1);
-          }
-
-          [data-loader-root][data-loader-state="exiting"] .loader-visual {
-            transform: translate3d(0, 0, 0) scale(1.012);
           }
 
           .loader-backdrop {
@@ -998,6 +990,7 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
 
           [data-loader-root][data-loader-state="exiting"] .loader-progress-hold {
             opacity: 0;
+            animation: none !important;
           }
 
           .loader-status,
@@ -1021,12 +1014,13 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
             backdrop-filter: none !important;
           }
 
-          [data-loader-root][data-loader-compact="true"] .loader-halo {
+          [data-loader-root][data-loader-compact="true"]:not([data-loader-timed="true"]) .loader-halo {
             filter: blur(32px);
           }
 
           [data-loader-root][data-loader-compact="true"] .loader-halo,
-          [data-loader-root][data-loader-compact="true"] .loader-center-glow {
+          [data-loader-root][data-loader-compact="true"] .loader-center-glow,
+          [data-loader-root][data-loader-compact="true"] .loader-emblem-shutter {
             animation: none !important;
           }
 
@@ -1048,51 +1042,27 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
             animation: cinematicSheenCue 980ms cubic-bezier(.22, 1, .36, 1) calc(var(--loader-progress-delay) + 40ms) both;
           }
 
-          [data-loader-root]:not([data-loader-timed="true"])[data-loader-mode="cinematic"] .loader-shell::after {
-            animation: cinematicSheenCue 1120ms cubic-bezier(.22, 1, .36, 1) 180ms both;
+          [data-loader-root][data-loader-timed="true"] .loader-emblem,
+          [data-loader-root][data-loader-timed="true"] .loader-emblem-aura,
+          [data-loader-root][data-loader-timed="true"] .loader-title,
+          [data-loader-root][data-loader-timed="true"] .loader-progress-hold {
+            filter: none !important;
           }
 
-          [data-loader-root][data-loader-timed="true"] .loader-kicker,
-          [data-loader-root][data-loader-timed="true"] .loader-divider-top {
-            animation: cinematicTextCue 560ms cubic-bezier(.22, 1, .36, 1) calc(var(--loader-progress-delay) + 40ms) both;
+          [data-loader-root]:not([data-loader-timed="true"])[data-loader-mode="cinematic"] .loader-shell::after {
+            animation: cinematicSheenCue 1120ms cubic-bezier(.22, 1, .36, 1) 180ms both;
           }
 
           [data-loader-root][data-loader-timed="true"] .loader-emblem {
             animation: cinematicEmblemCue 760ms cubic-bezier(.22, 1, .36, 1) calc(var(--loader-progress-delay) + 70ms) both;
           }
 
-          [data-loader-root][data-loader-timed="true"] .loader-emblem-plate {
-            animation: cinematicApertureCue 860ms cubic-bezier(.22, 1, .36, 1) calc(var(--loader-progress-delay) + 80ms) both;
-          }
-
-          [data-loader-root][data-loader-timed="true"] .loader-emblem-shutter {
+          [data-loader-root][data-loader-timed="true"]:not([data-loader-compact="true"]) .loader-emblem-shutter {
             animation: cinematicShutterCue 920ms cubic-bezier(.22, 1, .36, 1) calc(var(--loader-progress-delay) + 90ms) both;
-          }
-
-          [data-loader-root][data-loader-timed="true"] .loader-orbit-node {
-            animation: cinematicOrbitCue 760ms cubic-bezier(.22, 1, .36, 1) calc(var(--loader-progress-delay) + 180ms) both;
-          }
-
-          [data-loader-root][data-loader-timed="true"] .loader-intro {
-            animation: cinematicTextCue 560ms cubic-bezier(.22, 1, .36, 1) calc(var(--loader-progress-delay) + 130ms) both;
           }
 
           [data-loader-root][data-loader-timed="true"] .loader-title {
             animation: cinematicTitleCue 660ms cubic-bezier(.22, 1, .36, 1) calc(var(--loader-progress-delay) + 170ms) both;
-          }
-
-          [data-loader-root][data-loader-timed="true"] .loader-title-accent {
-            animation: cinematicTitleSheen 920ms cubic-bezier(.22, 1, .36, 1) calc(var(--loader-progress-delay) + 190ms) both;
-          }
-
-          [data-loader-root][data-loader-timed="true"] .loader-divider-main,
-          [data-loader-root][data-loader-timed="true"] .loader-quote {
-            animation: cinematicQuoteCue 580ms cubic-bezier(.22, 1, .36, 1) calc(var(--loader-progress-delay) + 230ms) both;
-          }
-
-          [data-loader-root][data-loader-timed="true"] .loader-rail,
-          [data-loader-root][data-loader-timed="true"] .loader-footer {
-            animation: cinematicTextCue 520ms cubic-bezier(.22, 1, .36, 1) calc(var(--loader-progress-delay) + 300ms) both;
           }
 
           @media (min-width: 768px) and (min-height: 760px) {
@@ -1309,17 +1279,6 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
             }
           }
 
-          @keyframes cinematicTextCue {
-            0% {
-              opacity: 0;
-              transform: translate3d(0, 4px, 0);
-            }
-            100% {
-              opacity: 1;
-              transform: translate3d(0, 0, 0);
-            }
-          }
-
           @keyframes openingReveal {
             0% {
               opacity: 0.82;
@@ -1328,18 +1287,6 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
             100% {
               opacity: 1;
               transform: translate3d(0, 0, 0) scale(1);
-            }
-          }
-
-          @keyframes letterboxBreath {
-            0%,
-            100% {
-              transform: scaleY(1);
-              opacity: 0.98;
-            }
-            50% {
-              transform: scaleY(1.035);
-              opacity: 1;
             }
           }
 
@@ -1370,21 +1317,6 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
             }
           }
 
-          @keyframes cinematicApertureCue {
-            0% {
-              opacity: 0;
-              transform: scale(0.72);
-            }
-            64% {
-              opacity: 1;
-              transform: scale(1.045);
-            }
-            100% {
-              opacity: 1;
-              transform: scale(1);
-            }
-          }
-
           @keyframes cinematicShutterCue {
             0% {
               opacity: 0;
@@ -1399,65 +1331,14 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
             }
           }
 
-          @keyframes cinematicOrbitCue {
-            0% {
-              opacity: 0;
-              transform: translateX(-50%) scale(0);
-            }
-            58% {
-              opacity: 1;
-              transform: translateX(-50%) scale(1.4);
-            }
-            100% {
-              opacity: 1;
-              transform: translateX(-50%) scale(1);
-            }
-          }
-
           @keyframes cinematicTitleCue {
             0% {
               opacity: 0;
-              filter: blur(2px) drop-shadow(0 18px 40px rgba(0, 0, 0, 0.9));
               transform: translate3d(0, 6px, 0);
             }
             100% {
               opacity: 1;
-              filter: blur(0) drop-shadow(0 18px 40px rgba(0, 0, 0, 0.9));
               transform: translate3d(0, 0, 0);
-            }
-          }
-
-          @keyframes cinematicTitleSheen {
-            0% {
-              background-position: 0% 50%;
-            }
-            100% {
-              background-position: 100% 50%;
-            }
-          }
-
-          @keyframes cinematicQuoteCue {
-            0% {
-              opacity: 0;
-              transform: translate3d(0, 4px, 0);
-            }
-            100% {
-              opacity: 0.9;
-              transform: translate3d(0, 0, 0);
-            }
-          }
-
-          @keyframes cinematicRingCue {
-            0% {
-              opacity: 0;
-              transform: scale(0.92);
-            }
-            42% {
-              opacity: 0.45;
-            }
-            100% {
-              opacity: 0;
-              transform: scale(1.16);
             }
           }
 
@@ -1506,24 +1387,6 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
             50% {
               opacity: 0.42;
               transform: scale(1.03);
-            }
-          }
-
-          @keyframes grainDrift {
-            0% {
-              transform: translate3d(0, 0, 0);
-            }
-            100% {
-              transform: translate3d(-2.4%, 2%, 0);
-            }
-          }
-
-          @keyframes scanlines {
-            0% {
-              transform: translate3d(0, 0, 0);
-            }
-            100% {
-              transform: translate3d(0, 18px, 0);
             }
           }
 
@@ -1660,17 +1523,6 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
             animation: progressTravel var(--loader-progress-duration) cubic-bezier(.22, 1, .36, 1) var(--loader-progress-delay) infinite;
           }
 
-          @keyframes statusSwap {
-            0% {
-              opacity: 0;
-              transform: translate3d(0, 6px, 0);
-            }
-            100% {
-              opacity: 1;
-              transform: translate3d(0, 0, 0);
-            }
-          }
-
           @keyframes dotPulse {
             0%,
             100% {
@@ -1680,18 +1532,6 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
             50% {
               transform: scale(1.14);
               opacity: 0.82;
-            }
-          }
-
-          @keyframes footerBlink {
-            0%,
-            100% {
-              opacity: 0.34;
-              transform: translate3d(0, 0, 0);
-            }
-            50% {
-              opacity: 0.78;
-              transform: translate3d(0, -1px, 0);
             }
           }
 

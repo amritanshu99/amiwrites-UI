@@ -134,6 +134,28 @@ describe("PortfolioDetails startup experience", () => {
     jest.useRealTimers();
   });
 
+  it("defers floating interactive chrome until the loader has fully cleared", async () => {
+    axios.get.mockImplementationOnce(() => new Promise(() => {}));
+
+    renderPortfolio();
+
+    expect(
+      screen.queryByRole("button", { name: "Open Ami Pulse" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /expand section switcher/i }),
+    ).not.toBeInTheDocument();
+
+    await finishInitialLoader();
+
+    expect(
+      screen.getByRole("button", { name: "Open Ami Pulse" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /expand section switcher/i }),
+    ).toBeInTheDocument();
+  });
+
   it("keeps the page inert until the rendered hero has decoded", async () => {
     axios.get.mockImplementationOnce(() => new Promise(() => {}));
     let resolveDecode;

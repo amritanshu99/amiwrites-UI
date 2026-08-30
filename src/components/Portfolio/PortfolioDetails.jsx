@@ -412,6 +412,7 @@ export default function PortfolioDetails() {
   const pendingScrollTimerRef = useRef(null);
   const hasLoadedHeroRef = useRef(false);
   const loading = loaderPhase !== "hidden";
+  const heroIsWaiting = loaderPhase === "visible";
 
   const requestedPortfolioBackgroundImage = isDark
     ? darkBackgroundUrl
@@ -808,7 +809,9 @@ export default function PortfolioDetails() {
   }, [requestedPortfolioBackgroundImage]);
 
   useEffect(() => {
-    if (!imageLoaded || navigator.connection?.saveData) return undefined;
+    if (loading || !imageLoaded || navigator.connection?.saveData) {
+      return undefined;
+    }
 
     const alternatePortrait = heroAssetUrl(
       isDark ? data.photoUrl : data.photoUrlDark || data.photoUrl,
@@ -833,7 +836,7 @@ export default function PortfolioDetails() {
 
     const warmTimer = window.setTimeout(warmAlternateTheme, 240);
     return () => window.clearTimeout(warmTimer);
-  }, [data.photoUrl, data.photoUrlDark, imageLoaded, isDark]);
+  }, [data.photoUrl, data.photoUrlDark, imageLoaded, isDark, loading]);
 
   useEffect(() => {
     if (!imageLoaded || loading || prefersReducedMotion) {
@@ -1032,11 +1035,15 @@ export default function PortfolioDetails() {
                 : { opacity: 0, x: 20, scale: 1.012 }
             }
             animate={{
-              opacity: imageLoaded ? 1 : 0,
-              x: 0,
-              scale: 1,
+              opacity: imageLoaded && !heroIsWaiting ? 1 : 0,
+              x: heroIsWaiting && !prefersReducedMotion ? 20 : 0,
+              scale: heroIsWaiting && !prefersReducedMotion ? 1.012 : 1,
             }}
-            transition={{ duration: 0.86, ease: [0.22, 1, 0.36, 1] }}
+            transition={
+              prefersReducedMotion
+                ? { duration: 0 }
+                : { duration: 0.86, ease: [0.22, 1, 0.36, 1] }
+            }
             className="portfolio-hero-image absolute inset-0 h-full w-full max-w-none object-cover object-[38%_17%] saturate-[1.03] contrast-[1.02] will-change-[opacity,transform] sm:object-[46%_18%] lg:left-auto lg:right-0 lg:w-auto lg:object-contain lg:object-right dark:saturate-100 dark:contrast-[1.06]"
             loading="eager"
             fetchPriority="high"
@@ -1074,7 +1081,7 @@ export default function PortfolioDetails() {
             <motion.div
               variants={heroCopyContainerVariants}
               initial={prefersReducedMotion ? false : "hidden"}
-              animate="visible"
+              animate={heroIsWaiting && !prefersReducedMotion ? "hidden" : "visible"}
               className="hero-name-area w-full max-w-lg"
             >
               <motion.p
@@ -1148,7 +1155,7 @@ export default function PortfolioDetails() {
             </motion.div>
           </div>
 
-          <AmiversePulseWidget />
+          {!loading && <AmiversePulseWidget />}
         </section>
 
         {/* ================= INTRO ================= */}
@@ -1507,7 +1514,7 @@ export default function PortfolioDetails() {
 
       </article>
 
-      <div className={bottomCtaWrapperClassName}>
+      {!loading && <div className={bottomCtaWrapperClassName}>
         <motion.div
           ref={bottomCtaRef}
           layout
@@ -1636,7 +1643,7 @@ export default function PortfolioDetails() {
             )}
           </AnimatePresence>
         </motion.div>
-      </div>
+      </div>}
 
       {hasOpenedGallery && (
         <React.Suspense fallback={null}>

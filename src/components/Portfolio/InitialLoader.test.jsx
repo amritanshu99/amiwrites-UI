@@ -95,12 +95,18 @@ test("preserves the production loader state and accessible status contract", () 
   const root = status.parentElement;
 
   expect(root).toHaveAttribute("data-loader-timed", "true");
+  expect(root).toHaveAttribute("data-loader-profile", "lightweight");
   expect(root).toHaveAttribute("data-loader-state", "visible");
   expect(root.style.getPropertyValue("--loader-progress-duration")).toBe(
     `${INITIAL_LOADER_MIN_DURATION_MS}ms`,
   );
   expect(root.querySelector(".loader-progress-fill")).toBeInTheDocument();
   expect(root.querySelector(".loader-progress-hold")).toBeInTheDocument();
+  expect(root.querySelector(".loader-emblem")).toBeInTheDocument();
+  expect(root.querySelector(".loader-title")).toBeInTheDocument();
+  expect(root.querySelector("[data-loader-ambient]")).not.toBeInTheDocument();
+  expect(root.querySelector(".loader-dust")).not.toBeInTheDocument();
+  expect(root.querySelector(".loader-aurora")).not.toBeInTheDocument();
   expect(screen.queryByRole("heading", { name: "AmiVerse" })).not.toBeInTheDocument();
 
   rerender(
@@ -134,6 +140,23 @@ test("keeps premium rendering enabled for compact touch viewports", () => {
   expect(root).toHaveAttribute("data-loader-compact", "true");
   expect(root).toHaveAttribute("data-loader-mode", "cinematic");
   expect(root.querySelector(".loader-emblem-shutter")).toBeInTheDocument();
+});
+
+test("uses the lightweight timed profile on compact touch viewports", () => {
+  installMatchMedia((query) =>
+    query.includes("max-width") || query.includes("pointer: coarse"),
+  );
+  const { container } = render(
+    <InitialLoader durationMs={INITIAL_LOADER_MIN_DURATION_MS} />,
+  );
+  const root = container.querySelector("[data-loader-root]");
+
+  expect(root).toHaveAttribute("data-loader-compact", "true");
+  expect(root).toHaveAttribute("data-loader-profile", "lightweight");
+  expect(root.querySelector(".loader-emblem-shutter")).toBeInTheDocument();
+  expect(root.querySelector("[data-loader-ambient]")).not.toBeInTheDocument();
+  expect(root.querySelector("[data-loader-animate].loader-emblem-shutter"))
+    .not.toBeInTheDocument();
 });
 
 test("honors reduced motion and removes media-query listeners", () => {
