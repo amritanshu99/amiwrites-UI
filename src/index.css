@@ -734,6 +734,40 @@ body.tech-byte-reader-active .amiverse-app-shell > footer {
   }
 }
 
+@media (min-width: 56.25rem) and (min-height: 38.75rem) and (max-height: 47.5rem) {
+  .tech-byte-scroll-story {
+    padding: 0.5rem;
+  }
+
+  .tech-byte-scroll-copy {
+    padding: 0.9rem 1.1rem;
+  }
+
+  .tech-byte-scroll-title {
+    display: -webkit-box;
+    overflow: hidden;
+    margin-top: 0.45rem;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    font-size: 1.2rem !important;
+    line-height: 1.35 !important;
+  }
+
+  .tech-byte-scroll-description {
+    display: -webkit-box;
+    overflow: hidden;
+    margin-top: 0.45rem;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    font-size: 0.8rem;
+    line-height: 1.25rem !important;
+  }
+
+  .tech-byte-scroll-cta {
+    padding-top: 0.55rem;
+  }
+}
+
 @media (max-height: 46rem) {
   .tech-byte-swipe-card {
     grid-template-rows: minmax(0, 36%) minmax(0, 1fr);

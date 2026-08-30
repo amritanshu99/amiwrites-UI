@@ -269,7 +269,7 @@ function TechNewsCards() {
                     className="h-4 w-4 text-sky-600 dark:text-sky-300"
                     aria-hidden="true"
                   />
-                  {isDesktopReader ? "Scroll reader" : "Swipe reader"}
+                  {isDesktopReader ? "Scroll + ↑ ↓" : "Swipe reader"}
                 </span>
                 <button
                   type="button"

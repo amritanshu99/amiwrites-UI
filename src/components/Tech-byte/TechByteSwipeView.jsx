@@ -26,7 +26,8 @@ function TechByteSwipeView({
   const scrollFrameRef = useRef(null);
   const prefersReducedMotion = useReducedMotion();
   const [activeIndex, setActiveIndex] = useState(0);
-  const articleCount = articles.length;
+  const safeArticles = Array.isArray(articles) ? articles : [];
+  const articleCount = safeArticles.length;
 
   useEffect(() => {
     storyRefs.current = storyRefs.current.slice(0, articleCount);
@@ -59,10 +60,16 @@ function TechByteSwipeView({
       const deckTop = deck.getBoundingClientRect().top;
       const storyTop = story.getBoundingClientRect().top;
 
-      deck.scrollTo({
-        top: deck.scrollTop + storyTop - deckTop,
-        behavior: prefersReducedMotion ? "auto" : "smooth",
-      });
+      const nextScrollTop = deck.scrollTop + storyTop - deckTop;
+
+      if (typeof deck.scrollTo === "function") {
+        deck.scrollTo({
+          top: nextScrollTop,
+          behavior: prefersReducedMotion ? "auto" : "smooth",
+        });
+      } else {
+        deck.scrollTop = nextScrollTop;
+      }
     },
     [articleCount, prefersReducedMotion],
   );
@@ -191,7 +198,7 @@ function TechByteSwipeView({
             prefersReducedMotion ? "" : "scroll-smooth"
           } motion-reduce:scroll-auto`}
         >
-          {articles.map((article, index) => (
+          {safeArticles.map((article, index) => (
             <article
               key={`${article.url}-${index}`}
               ref={(node) => {
@@ -217,7 +224,7 @@ function TechByteSwipeView({
                     className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/5 to-transparent"
                     aria-hidden="true"
                   />
-                  <span className="absolute left-3 top-3 max-w-[calc(100%_-_7.5rem)] truncate rounded-full border border-white/40 bg-black/60 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.15em] text-white backdrop-blur-md">
+                  <span className="absolute left-3 top-3 max-w-[calc(100%_-_8rem)] truncate rounded-full border border-white/40 bg-black/60 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.15em] text-white backdrop-blur-md">
                     {article.source?.name || "Unknown Source"}
                   </span>
                 </div>

@@ -280,7 +280,7 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
       data-loader-compact={isCompactViewport ? "true" : undefined}
       data-loader-timed={isTimedShowcase ? "true" : undefined}
       data-loader-state={phase}
-      className="fixed left-0 top-0 z-[9999] overflow-hidden bg-[#010305] text-white antialiased"
+      className="fixed left-0 top-0 z-[9999] overflow-hidden bg-black text-white antialiased"
       style={{
         "--loader-progress-delay": `-${initialProgressElapsedMs}ms`,
         "--loader-progress-duration": `${progressDurationMs}ms`,
@@ -433,7 +433,7 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
                 {visiblePills.map((pill) => (
                   <span
                     key={pill}
-                    className={`rounded-full border border-white/[0.08] px-3 py-1.5 text-[0.46rem] uppercase text-white/[0.3] sm:px-4 sm:text-[0.5rem] ${
+                    className={`rounded-full border border-white/[0.1] px-3 py-1.5 text-[0.46rem] uppercase text-white/[0.56] sm:px-4 sm:text-[0.5rem] ${
                       shouldOptimize
                         ? "bg-white/[0.015] tracking-[0.3em]"
                         : "bg-white/[0.02] tracking-[0.42em]"
@@ -535,7 +535,7 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
             </p>
 
             <div className="loader-rail mt-10 w-full max-w-xl sm:mt-11">
-              <div className="flex items-center justify-between gap-3 text-[0.48rem] uppercase tracking-[0.18em] text-white/[0.44] min-[380px]:tracking-[0.26em] sm:text-[0.56rem] sm:tracking-[0.34em]">
+              <div className="flex items-center justify-between gap-3 text-[0.48rem] uppercase tracking-[0.18em] text-white/[0.64] min-[380px]:tracking-[0.26em] sm:text-[0.56rem] sm:tracking-[0.34em]">
                 <span>{railStart}</span>
                 <span>{railEnd}</span>
               </div>
@@ -574,7 +574,7 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
             {!isTimedShowcase && (
               <div className="loader-status mt-7 grid w-full max-w-2xl items-start gap-4 sm:grid-cols-[1fr_auto] sm:items-center">
                 <div className="text-center sm:text-left">
-                  <p className="text-[0.5rem] uppercase tracking-[0.28em] text-white/[0.28] sm:tracking-[0.42em]">
+                  <p className="text-[0.5rem] uppercase tracking-[0.28em] text-white/[0.52] sm:tracking-[0.42em]">
                     Current cue
                   </p>
                   <p className="mt-2 min-h-[1.1rem] font-cinzel text-[0.64rem] uppercase tracking-[0.16em] text-white/[0.72] transition-colors duration-300 min-[380px]:text-[0.68rem] min-[380px]:tracking-[0.22em] sm:text-[0.74rem] sm:tracking-[0.28em]">
@@ -632,9 +632,9 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
             height: 100vh;
             height: 100svh;
             min-height: 100svh;
-            --loader-accent: 103, 232, 249;
-            --loader-accent-strong: 34, 211, 238;
-            --loader-blue: 14, 165, 233;
+            --loader-accent: 244, 244, 245;
+            --loader-accent-strong: 255, 255, 255;
+            --loader-metal: 161, 161, 170;
             --loader-frame-top: max(clamp(3.25rem, 6vh, 4.5rem), calc(env(safe-area-inset-top) + 0.75rem));
             --loader-frame-bottom: max(clamp(3.25rem, 6vh, 4.5rem), calc(env(safe-area-inset-bottom) + 0.75rem));
             --loader-shell-x: clamp(1rem, 4vw, 3.5rem);
@@ -662,18 +662,24 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
 
           .loader-visual {
             overflow: hidden;
+            transform: translate3d(0, 0, 0) scale(1);
+            transition: transform ${INITIAL_LOADER_EXIT_DURATION_MS}ms cubic-bezier(.22, 1, .36, 1);
+          }
+
+          [data-loader-root][data-loader-state="exiting"] .loader-visual {
+            transform: translate3d(0, 0, 0) scale(1.012);
           }
 
           .loader-backdrop {
             background:
-              radial-gradient(circle at 50% 42%, rgba(var(--loader-accent), 0.105), rgba(4, 12, 17, 0.92) 30%, #010305 68%),
-              linear-gradient(145deg, #02070a 0%, #010203 46%, #03070a 100%);
+              radial-gradient(circle at 50% 42%, rgba(var(--loader-accent), 0.075), rgba(8, 8, 8, 0.96) 30%, #000 68%),
+              linear-gradient(145deg, #050505 0%, #000 46%, #030303 100%);
           }
 
           .loader-horizon {
             background:
-              linear-gradient(180deg, rgba(0, 0, 0, 0.92) 0%, rgba(1, 7, 10, 0.7) 34%, rgba(0, 0, 0, 0.72) 68%, #000 100%),
-              linear-gradient(90deg, transparent 0%, rgba(var(--loader-accent), 0.035) 50%, transparent 100%);
+              linear-gradient(180deg, rgba(0, 0, 0, 0.94) 0%, rgba(10, 10, 10, 0.72) 34%, rgba(0, 0, 0, 0.8) 68%, #000 100%),
+              linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.025) 50%, transparent 100%);
           }
 
           .loader-aurora {
@@ -681,29 +687,29 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
             height: min(38rem, 58vw);
             border-radius: 9999px;
             filter: blur(90px);
-            opacity: 0.12;
+            opacity: 0.08;
             pointer-events: none;
           }
 
           .loader-aurora-left {
             left: -24rem;
             top: -18rem;
-            background: rgba(var(--loader-blue), 0.82);
+            background: rgba(var(--loader-metal), 0.46);
           }
 
           .loader-aurora-right {
             right: -26rem;
             bottom: -20rem;
-            background: rgba(var(--loader-accent-strong), 0.62);
+            background: rgba(var(--loader-accent-strong), 0.34);
           }
 
           .loader-halo {
-            border: 1px solid rgba(var(--loader-accent), 0.07);
-            background: radial-gradient(circle, rgba(var(--loader-accent), 0.12) 0%, rgba(var(--loader-blue), 0.035) 31%, rgba(0, 0, 0, 0) 70%);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.09) 0%, rgba(var(--loader-metal), 0.025) 31%, rgba(0, 0, 0, 0) 70%);
           }
 
           .loader-center-glow {
-            background: radial-gradient(circle at 50% 53%, rgba(var(--loader-accent), 0.12), rgba(var(--loader-blue), 0.028) 24%, rgba(0, 0, 0, 0) 48%);
+            background: radial-gradient(circle at 50% 53%, rgba(255, 255, 255, 0.085), rgba(var(--loader-metal), 0.022) 24%, rgba(0, 0, 0, 0) 48%);
           }
 
           .loader-vignette {
@@ -711,8 +717,8 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
           }
 
           .loader-outer-frame {
-            border-color: rgba(var(--loader-accent), 0.075);
-            box-shadow: inset 0 0 40px rgba(var(--loader-accent), 0.018);
+            border-color: rgba(255, 255, 255, 0.07);
+            box-shadow: inset 0 0 40px rgba(255, 255, 255, 0.014);
           }
 
           .loader-outer-frame-secondary {
@@ -732,9 +738,9 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
           }
 
           .loader-badge {
-            border-color: rgba(var(--loader-accent), 0.14);
-            background: rgba(1, 7, 10, 0.72);
-            color: rgba(226, 249, 252, 0.68);
+            border-color: rgba(255, 255, 255, 0.14);
+            background: rgba(5, 5, 5, 0.78);
+            color: rgba(255, 255, 255, 0.72);
             box-shadow:
               0 10px 32px rgba(0, 0, 0, 0.5),
               inset 0 1px 0 rgba(255, 255, 255, 0.035);
@@ -742,12 +748,12 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
 
           .loader-badge-signal,
           .loader-footer-pulse {
-            background: rgb(var(--loader-accent));
-            box-shadow: 0 0 12px rgba(var(--loader-accent), 0.9);
+            background: rgb(var(--loader-accent-strong));
+            box-shadow: 0 0 12px rgba(255, 255, 255, 0.72);
           }
 
           .loader-badge-index {
-            color: rgba(var(--loader-accent), 0.78);
+            color: rgba(255, 255, 255, 0.82);
             font-weight: 700;
             letter-spacing: 0.08em;
           }
@@ -765,25 +771,25 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
             max-height: 100%;
             min-height: 0;
             padding: var(--loader-shell-y) var(--loader-shell-x) !important;
-            border-color: rgba(var(--loader-accent), 0.14) !important;
+            border-color: rgba(255, 255, 255, 0.14) !important;
             background:
-              radial-gradient(circle at 50% 4%, rgba(var(--loader-accent), 0.1), transparent 38%),
-              linear-gradient(155deg, rgba(8, 17, 22, 0.94), rgba(1, 4, 6, 0.9) 45%, rgba(2, 9, 12, 0.96));
+              radial-gradient(circle at 50% 4%, rgba(255, 255, 255, 0.085), transparent 38%),
+              linear-gradient(155deg, rgba(13, 13, 13, 0.96), rgba(2, 2, 2, 0.94) 45%, rgba(8, 8, 8, 0.98));
             box-shadow:
               0 36px 130px rgba(0, 0, 0, 0.9),
-              0 0 80px rgba(var(--loader-blue), 0.045),
+              0 0 80px rgba(255, 255, 255, 0.025),
               inset 0 1px 0 rgba(255, 255, 255, 0.065),
-              inset 0 -1px 0 rgba(var(--loader-accent), 0.035) !important;
+              inset 0 -1px 0 rgba(255, 255, 255, 0.03) !important;
             transform-origin: center;
           }
 
           .loader-shell-highlight {
-            background: linear-gradient(90deg, transparent, rgba(var(--loader-accent), 0.88), rgba(255, 255, 255, 0.5), transparent);
-            box-shadow: 0 0 18px rgba(var(--loader-accent), 0.26);
+            background: linear-gradient(90deg, transparent, rgba(161, 161, 170, 0.46), rgba(255, 255, 255, 0.88), rgba(161, 161, 170, 0.46), transparent);
+            box-shadow: 0 0 18px rgba(255, 255, 255, 0.14);
           }
 
           .loader-shell-highlight-bottom {
-            background: linear-gradient(90deg, transparent, rgba(var(--loader-accent), 0.18), transparent);
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.14), transparent);
             box-shadow: none;
           }
 
@@ -792,7 +798,7 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
           }
 
           .loader-shell-glow {
-            background: radial-gradient(circle at 50% 12%, rgba(var(--loader-accent), 0.105), rgba(var(--loader-blue), 0.025) 34%, transparent 58%);
+            background: radial-gradient(circle at 50% 12%, rgba(255, 255, 255, 0.075), rgba(var(--loader-metal), 0.018) 34%, transparent 58%);
           }
 
           .loader-shell::before {
@@ -812,13 +818,17 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
 
           .loader-shell::after {
             position: absolute;
-            inset: 0;
+            top: -24%;
+            bottom: -24%;
+            left: -38%;
             z-index: 1;
-            border-radius: inherit;
-            background: linear-gradient(112deg, transparent 18%, rgba(255, 255, 255, 0.028) 43%, transparent 63%);
+            width: 28%;
+            border-radius: 9999px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.095), transparent);
             content: "";
-            opacity: 0.7;
+            opacity: 0;
             pointer-events: none;
+            transform: skewX(-16deg) translate3d(-180%, 0, 0);
           }
 
           .loader-content {
@@ -834,21 +844,21 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
 
           .loader-divider {
             flex: 0 0 auto;
-            background: linear-gradient(90deg, transparent, rgba(var(--loader-accent), 0.76), rgba(255, 255, 255, 0.62), rgba(var(--loader-accent), 0.76), transparent);
-            box-shadow: 0 0 12px rgba(var(--loader-accent), 0.12);
+            background: linear-gradient(90deg, transparent, rgba(161, 161, 170, 0.44), rgba(255, 255, 255, 0.82), rgba(161, 161, 170, 0.44), transparent);
+            box-shadow: 0 0 12px rgba(255, 255, 255, 0.09);
           }
 
           .loader-kicker {
-            color: rgba(218, 247, 250, 0.72);
+            color: rgba(244, 244, 245, 0.72);
           }
 
           .loader-kicker-index {
-            color: rgb(var(--loader-accent));
-            text-shadow: 0 0 16px rgba(var(--loader-accent), 0.35);
+            color: #fff;
+            text-shadow: 0 0 16px rgba(255, 255, 255, 0.22);
           }
 
           .loader-kicker-line {
-            background: linear-gradient(90deg, rgba(var(--loader-accent), 0.12), rgba(var(--loader-accent), 0.78));
+            background: linear-gradient(90deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.72));
           }
 
           .loader-emblem {
@@ -859,67 +869,69 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
           }
 
           .loader-emblem-aura {
-            background: radial-gradient(circle, rgba(var(--loader-accent), 0.15), rgba(var(--loader-blue), 0.035) 40%, transparent 70%);
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.12), rgba(var(--loader-metal), 0.025) 40%, transparent 70%);
             filter: blur(12px);
           }
 
           .loader-emblem-plate {
-            border-color: rgba(var(--loader-accent), 0.2);
+            border-color: rgba(255, 255, 255, 0.2);
             background:
-              radial-gradient(circle, rgba(var(--loader-accent), 0.12) 0%, rgba(255, 255, 255, 0.03) 34%, rgba(1, 8, 11, 0.76) 72%, rgba(0, 0, 0, 0.92) 100%);
+              radial-gradient(circle, rgba(255, 255, 255, 0.105) 0%, rgba(255, 255, 255, 0.025) 34%, rgba(9, 9, 9, 0.82) 72%, rgba(0, 0, 0, 0.94) 100%);
             box-shadow:
-              0 0 50px rgba(var(--loader-accent), 0.1),
+              0 0 50px rgba(255, 255, 255, 0.075),
               inset 0 1px 0 rgba(255, 255, 255, 0.08);
           }
 
           .loader-emblem-shutter {
-            border-color: rgba(var(--loader-accent), 0.14);
-            background: conic-gradient(from 0deg, rgba(var(--loader-accent), 0.9) 0deg, rgba(var(--loader-accent), 0.06) 25deg, transparent 62deg, rgba(255, 255, 255, 0.36) 132deg, transparent 202deg, rgba(var(--loader-accent), 0.45) 262deg, transparent 322deg, rgba(var(--loader-accent), 0.9) 360deg);
+            border-color: rgba(255, 255, 255, 0.14);
+            background: conic-gradient(from 0deg, rgba(255, 255, 255, 0.92) 0deg, rgba(255, 255, 255, 0.06) 25deg, transparent 62deg, rgba(161, 161, 170, 0.4) 132deg, transparent 202deg, rgba(255, 255, 255, 0.42) 262deg, transparent 322deg, rgba(255, 255, 255, 0.92) 360deg);
             -webkit-mask: radial-gradient(circle, transparent 57%, #000 59%);
             mask: radial-gradient(circle, transparent 57%, #000 59%);
           }
 
           .loader-emblem-core {
-            border-color: rgba(var(--loader-accent), 0.18);
-            background: rgba(0, 5, 7, 0.92);
+            border-color: rgba(255, 255, 255, 0.18);
+            background: rgba(3, 3, 3, 0.94);
             box-shadow:
-              inset 0 0 30px rgba(var(--loader-accent), 0.06),
-              0 0 24px rgba(var(--loader-accent), 0.045);
+              inset 0 0 30px rgba(255, 255, 255, 0.05),
+              0 0 24px rgba(255, 255, 255, 0.035);
           }
 
           .loader-emblem-icon {
-            border-color: rgba(var(--loader-accent), 0.22);
-            background: linear-gradient(145deg, rgba(8, 22, 27, 0.98), rgba(0, 3, 5, 0.98));
+            border-color: rgba(255, 255, 255, 0.22);
+            background: linear-gradient(145deg, rgba(18, 18, 18, 0.99), rgba(1, 1, 1, 0.99));
             box-shadow:
               0 16px 36px rgba(0, 0, 0, 0.66),
               inset 0 1px 0 rgba(255, 255, 255, 0.08),
-              0 0 22px rgba(var(--loader-accent), 0.06);
+              0 0 22px rgba(255, 255, 255, 0.05);
           }
 
           .loader-orbit-node {
-            background: rgb(var(--loader-accent));
+            background: #fff;
             box-shadow:
-              0 0 8px rgba(var(--loader-accent), 1),
-              0 0 20px rgba(var(--loader-accent), 0.72);
+              0 0 8px rgba(255, 255, 255, 1),
+              0 0 20px rgba(255, 255, 255, 0.6);
           }
 
           .loader-intro {
-            color: rgba(var(--loader-accent), 0.72);
-            text-shadow: 0 0 18px rgba(var(--loader-accent), 0.12);
+            color: rgba(244, 244, 245, 0.7);
+            text-shadow: 0 0 18px rgba(255, 255, 255, 0.08);
           }
 
           .loader-title {
             font-size: clamp(2rem, min(9vw, 8.2vh), 5.3rem) !important;
             line-height: 0.92 !important;
-            color: #f8feff;
+            color: #fafafa;
             filter: drop-shadow(0 18px 36px rgba(0, 0, 0, 0.82));
             text-wrap: balance;
           }
 
           .loader-title-accent {
-            background: linear-gradient(112deg, #ffffff 4%, #dffcff 34%, rgb(var(--loader-accent)) 62%, #f8ffff 96%);
-            color: rgb(var(--loader-accent));
-            text-shadow: 0 0 34px rgba(var(--loader-accent), 0.12);
+            background: linear-gradient(112deg, #ffffff 4%, #a1a1aa 32%, #ffffff 54%, #d4d4d8 76%, #ffffff 96%);
+            background-position: 0% 50%;
+            background-size: 220% 100%;
+            color: #f4f4f5;
+            text-shadow: 0 0 34px rgba(255, 255, 255, 0.08);
           }
 
           @supports ((-webkit-background-clip: text) or (background-clip: text)) {
@@ -933,7 +945,7 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
           .loader-quote {
             display: -webkit-box;
             overflow: hidden;
-            color: rgba(226, 243, 245, 0.78);
+            color: rgba(244, 244, 245, 0.78);
             -webkit-box-orient: vertical;
             -webkit-line-clamp: 2;
           }
@@ -943,24 +955,24 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
           }
 
           .loader-rail > div:first-child {
-            color: rgba(209, 241, 245, 0.56);
+            color: rgba(244, 244, 245, 0.64);
           }
 
           .loader-progress-track {
-            background: rgba(var(--loader-accent), 0.075);
+            background: rgba(255, 255, 255, 0.075);
             box-shadow:
-              0 0 22px rgba(var(--loader-accent), 0.075),
+              0 0 22px rgba(255, 255, 255, 0.065),
               inset 0 0 0 1px rgba(255, 255, 255, 0.025);
           }
 
           .loader-progress-bed {
-            background: linear-gradient(90deg, rgba(var(--loader-accent), 0.02), rgba(var(--loader-accent), 0.12), rgba(var(--loader-accent), 0.02));
+            background: linear-gradient(90deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.02));
           }
 
           .loader-progress-fill,
           .loader-progress-complete {
-            background: linear-gradient(90deg, rgba(var(--loader-blue), 0.56), rgb(var(--loader-accent)), #f2ffff);
-            box-shadow: 0 0 16px rgba(var(--loader-accent), 0.58);
+            background: linear-gradient(90deg, rgba(var(--loader-metal), 0.48), #e4e4e7, #fff);
+            box-shadow: 0 0 16px rgba(255, 255, 255, 0.38);
           }
 
           .loader-progress-fill {
@@ -972,8 +984,8 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
           }
 
           .loader-progress-hold {
-            background: linear-gradient(90deg, transparent, rgba(231, 254, 255, 0.94), transparent);
-            filter: drop-shadow(0 0 6px rgba(var(--loader-accent), 0.72));
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.94), transparent);
+            filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.54));
             animation: progressHold 1.3s ease-in-out calc(var(--loader-progress-delay) + var(--loader-progress-duration)) infinite;
           }
 
@@ -994,7 +1006,7 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
           }
 
           .loader-footer {
-            color: rgba(211, 241, 245, 0.64);
+            color: rgba(244, 244, 245, 0.7);
           }
 
           [data-loader-root][data-loader-compact="true"] .loader-aurora,
@@ -1014,8 +1026,7 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
           }
 
           [data-loader-root][data-loader-compact="true"] .loader-halo,
-          [data-loader-root][data-loader-compact="true"] .loader-center-glow,
-          [data-loader-root][data-loader-compact="true"] .loader-emblem-shutter {
+          [data-loader-root][data-loader-compact="true"] .loader-center-glow {
             animation: none !important;
           }
 
@@ -1030,7 +1041,15 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
           }
 
           [data-loader-root][data-loader-timed="true"] .loader-shell {
-            animation: cinematicShellCue 720ms cubic-bezier(.22, 1, .36, 1) var(--loader-progress-delay) both;
+            animation: cinematicShellCue 740ms cubic-bezier(.22, 1, .36, 1) var(--loader-progress-delay) both;
+          }
+
+          [data-loader-root][data-loader-timed="true"] .loader-shell::after {
+            animation: cinematicSheenCue 980ms cubic-bezier(.22, 1, .36, 1) calc(var(--loader-progress-delay) + 40ms) both;
+          }
+
+          [data-loader-root]:not([data-loader-timed="true"])[data-loader-mode="cinematic"] .loader-shell::after {
+            animation: cinematicSheenCue 1120ms cubic-bezier(.22, 1, .36, 1) 180ms both;
           }
 
           [data-loader-root][data-loader-timed="true"] .loader-kicker,
@@ -1039,7 +1058,19 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
           }
 
           [data-loader-root][data-loader-timed="true"] .loader-emblem {
-            animation: cinematicEmblemCue 620ms cubic-bezier(.22, 1, .36, 1) calc(var(--loader-progress-delay) + 80ms) both;
+            animation: cinematicEmblemCue 760ms cubic-bezier(.22, 1, .36, 1) calc(var(--loader-progress-delay) + 70ms) both;
+          }
+
+          [data-loader-root][data-loader-timed="true"] .loader-emblem-plate {
+            animation: cinematicApertureCue 860ms cubic-bezier(.22, 1, .36, 1) calc(var(--loader-progress-delay) + 80ms) both;
+          }
+
+          [data-loader-root][data-loader-timed="true"] .loader-emblem-shutter {
+            animation: cinematicShutterCue 920ms cubic-bezier(.22, 1, .36, 1) calc(var(--loader-progress-delay) + 90ms) both;
+          }
+
+          [data-loader-root][data-loader-timed="true"] .loader-orbit-node {
+            animation: cinematicOrbitCue 760ms cubic-bezier(.22, 1, .36, 1) calc(var(--loader-progress-delay) + 180ms) both;
           }
 
           [data-loader-root][data-loader-timed="true"] .loader-intro {
@@ -1047,7 +1078,11 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
           }
 
           [data-loader-root][data-loader-timed="true"] .loader-title {
-            animation: cinematicTitleCue 620ms cubic-bezier(.22, 1, .36, 1) calc(var(--loader-progress-delay) + 170ms) both;
+            animation: cinematicTitleCue 660ms cubic-bezier(.22, 1, .36, 1) calc(var(--loader-progress-delay) + 170ms) both;
+          }
+
+          [data-loader-root][data-loader-timed="true"] .loader-title-accent {
+            animation: cinematicTitleSheen 920ms cubic-bezier(.22, 1, .36, 1) calc(var(--loader-progress-delay) + 190ms) both;
           }
 
           [data-loader-root][data-loader-timed="true"] .loader-divider-main,
@@ -1257,6 +1292,23 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
             }
           }
 
+          @keyframes cinematicSheenCue {
+            0% {
+              opacity: 0;
+              transform: skewX(-16deg) translate3d(-180%, 0, 0);
+            }
+            24% {
+              opacity: 0.46;
+            }
+            72% {
+              opacity: 0.22;
+            }
+            100% {
+              opacity: 0;
+              transform: skewX(-16deg) translate3d(610%, 0, 0);
+            }
+          }
+
           @keyframes cinematicTextCue {
             0% {
               opacity: 0;
@@ -1306,11 +1358,59 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
           @keyframes cinematicEmblemCue {
             0% {
               opacity: 0;
-              transform: translate3d(0, 6px, 0) scale(0.96);
+              transform: translate3d(0, 8px, 0) scale(0.88);
+            }
+            62% {
+              opacity: 1;
+              transform: translate3d(0, -1px, 0) scale(1.025);
             }
             100% {
               opacity: 1;
               transform: translate3d(0, 0, 0) scale(1);
+            }
+          }
+
+          @keyframes cinematicApertureCue {
+            0% {
+              opacity: 0;
+              transform: scale(0.72);
+            }
+            64% {
+              opacity: 1;
+              transform: scale(1.045);
+            }
+            100% {
+              opacity: 1;
+              transform: scale(1);
+            }
+          }
+
+          @keyframes cinematicShutterCue {
+            0% {
+              opacity: 0;
+              transform: rotate(-105deg) scale(0.74);
+            }
+            58% {
+              opacity: 0.92;
+            }
+            100% {
+              opacity: 1;
+              transform: rotate(24deg) scale(1);
+            }
+          }
+
+          @keyframes cinematicOrbitCue {
+            0% {
+              opacity: 0;
+              transform: translateX(-50%) scale(0);
+            }
+            58% {
+              opacity: 1;
+              transform: translateX(-50%) scale(1.4);
+            }
+            100% {
+              opacity: 1;
+              transform: translateX(-50%) scale(1);
             }
           }
 
@@ -1324,6 +1424,15 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
               opacity: 1;
               filter: blur(0) drop-shadow(0 18px 40px rgba(0, 0, 0, 0.9));
               transform: translate3d(0, 0, 0);
+            }
+          }
+
+          @keyframes cinematicTitleSheen {
+            0% {
+              background-position: 0% 50%;
+            }
+            100% {
+              background-position: 100% 50%;
             }
           }
 

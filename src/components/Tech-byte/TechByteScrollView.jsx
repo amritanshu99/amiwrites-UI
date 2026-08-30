@@ -15,6 +15,47 @@ const defaultFormatPublishedAt = () => "Date unavailable";
 
 const getArticleTitle = (article) => article?.title || "Untitled story";
 
+const ARROW_OWNING_SELECTOR = [
+  "input",
+  "textarea",
+  "select",
+  '[contenteditable]:not([contenteditable="false"])',
+  '[role="textbox"]',
+  '[role="combobox"]',
+  '[role="listbox"]',
+  '[role="menu"]',
+  '[role="menubar"]',
+  '[role="radiogroup"]',
+  '[role="slider"]',
+  '[role="spinbutton"]',
+  '[role="tablist"]',
+  '[role="tree"]',
+  '[role="grid"]',
+].join(",");
+
+const shouldIgnorePageArrow = (event) => {
+  if (
+    event.defaultPrevented ||
+    event.isComposing ||
+    event.altKey ||
+    event.ctrlKey ||
+    event.metaKey ||
+    event.shiftKey
+  ) {
+    return true;
+  }
+
+  const target = event.target;
+  if (target && typeof target.closest === "function") {
+    if (target.closest(ARROW_OWNING_SELECTOR)) return true;
+    if (target.closest('[aria-modal="true"], dialog[open]')) return true;
+  }
+
+  return Boolean(
+    document.querySelector('[role="menu"], [aria-modal="true"], dialog[open]'),
+  );
+};
+
 function TechByteScrollView({
   articles = [],
   formatPublishedAt = defaultFormatPublishedAt,
@@ -26,6 +67,7 @@ function TechByteScrollView({
   const deckRef = useRef(null);
   const storyRefs = useRef([]);
   const scrollFrameRef = useRef(null);
+  const activeIndexRef = useRef(0);
   const prefersReducedMotion = useReducedMotion();
   const [activeIndex, setActiveIndex] = useState(0);
   const safeArticles = Array.isArray(articles) ? articles : [];
@@ -33,9 +75,11 @@ function TechByteScrollView({
 
   useEffect(() => {
     storyRefs.current = storyRefs.current.slice(0, articleCount);
-    setActiveIndex((currentIndex) =>
-      clampIndex(currentIndex, articleCount),
-    );
+    setActiveIndex((currentIndex) => {
+      const nextIndex = clampIndex(currentIndex, articleCount);
+      activeIndexRef.current = nextIndex;
+      return nextIndex;
+    });
   }, [articleCount]);
 
   useEffect(
@@ -58,6 +102,7 @@ function TechByteScrollView({
       const deck = deckRef.current;
       const story = storyRefs.current[boundedIndex];
 
+      activeIndexRef.current = boundedIndex;
       setActiveIndex(boundedIndex);
 
       if (!deck || !story) return;
@@ -87,6 +132,7 @@ function TechByteScrollView({
       articleCount,
     );
 
+    activeIndexRef.current = nextIndex;
     setActiveIndex((currentIndex) =>
       currentIndex === nextIndex ? currentIndex : nextIndex,
     );
@@ -113,9 +159,9 @@ function TechByteScrollView({
       let nextIndex = null;
 
       if (event.key === "ArrowDown" || event.key === "PageDown") {
-        nextIndex = activeIndex + 1;
+        nextIndex = activeIndexRef.current + 1;
       } else if (event.key === "ArrowUp" || event.key === "PageUp") {
-        nextIndex = activeIndex - 1;
+        nextIndex = activeIndexRef.current - 1;
       } else if (event.key === "Home") {
         nextIndex = 0;
       } else if (event.key === "End") {
@@ -127,8 +173,25 @@ function TechByteScrollView({
       event.preventDefault();
       scrollToStory(nextIndex);
     },
-    [activeIndex, articleCount, scrollToStory],
+    [articleCount, scrollToStory],
   );
+
+  useEffect(() => {
+    if (!articleCount) return undefined;
+
+    const handlePageArrow = (event) => {
+      if (event.key !== "ArrowDown" && event.key !== "ArrowUp") return;
+      if (shouldIgnorePageArrow(event)) return;
+
+      event.preventDefault();
+      scrollToStory(
+        activeIndexRef.current + (event.key === "ArrowDown" ? 1 : -1),
+      );
+    };
+
+    window.addEventListener("keydown", handlePageArrow);
+    return () => window.removeEventListener("keydown", handlePageArrow);
+  }, [articleCount, scrollToStory]);
 
   const handleImageError = useCallback(
     (event) => {
@@ -190,7 +253,7 @@ function TechByteScrollView({
           </h2>
           <p id={instructionsId} className="sr-only">
             Use your mouse wheel or trackpad to move one story at a time. Arrow
-            keys work too.
+            Up and Arrow Down work from anywhere on this page.
           </p>
         </div>
 
@@ -274,7 +337,7 @@ function TechByteScrollView({
               aria-label={`Story ${index + 1} of ${articleCount}: ${title}`}
               aria-posinset={index + 1}
               aria-setsize={articleCount}
-              className="h-full snap-start snap-always p-3"
+              className="tech-byte-scroll-story h-full snap-start snap-always p-3"
             >
               <div className="group grid h-full grid-cols-[minmax(0,1.08fr)_minmax(20rem,0.92fr)] overflow-hidden rounded-lg border border-white/90 bg-white/95 shadow-[0_28px_70px_-44px_rgba(15,23,42,0.32)] dark:border-zinc-800 dark:bg-black dark:shadow-[0_28px_72px_-42px_rgba(0,0,0,0.98)]">
                 <div className="relative min-w-0 overflow-hidden bg-zinc-100 dark:bg-zinc-950">
@@ -315,7 +378,7 @@ function TechByteScrollView({
                   </div>
                 </div>
 
-                <div className="flex min-w-0 flex-col border-l border-zinc-100 p-7 dark:border-zinc-900 lg:p-9">
+                <div className="tech-byte-scroll-copy flex min-w-0 flex-col border-l border-zinc-100 p-7 dark:border-zinc-900 lg:p-9">
                   <div className="flex flex-wrap items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-zinc-500 dark:text-zinc-400">
                     <span>{sourceName}</span>
                     <span className="text-zinc-300 dark:text-zinc-700">
@@ -330,16 +393,16 @@ function TechByteScrollView({
                     </time>
                   </div>
 
-                  <h3 className="mt-4 line-clamp-3 text-2xl font-semibold leading-[1.14] text-zinc-950 [text-wrap:balance] dark:text-zinc-50 lg:text-[2rem]">
+                  <h3 className="tech-byte-scroll-title mt-4 line-clamp-3 text-2xl font-semibold leading-[1.14] text-zinc-950 [text-wrap:balance] dark:text-zinc-50 lg:text-[2rem]">
                     {title}
                   </h3>
 
-                  <p className="mt-3 line-clamp-4 text-[15px] leading-6 text-zinc-600 dark:text-zinc-300 lg:leading-7">
+                  <p className="tech-byte-scroll-description mt-3 line-clamp-4 text-[15px] leading-6 text-zinc-600 dark:text-zinc-300 lg:leading-7">
                     {article?.description ||
                       "Open the full story for the complete report and context."}
                   </p>
 
-                  <div className="mt-auto flex justify-end border-t border-zinc-200/80 pt-5 dark:border-zinc-800">
+                  <div className="tech-byte-scroll-cta mt-auto flex justify-end border-t border-zinc-200/80 pt-5 dark:border-zinc-800">
                     <button
                       type="button"
                       onClick={() => handleOpenArticle(article?.url)}

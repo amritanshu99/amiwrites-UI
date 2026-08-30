@@ -52,7 +52,7 @@ function renderScrollView(overrides = {}) {
   const onImageError = jest.fn();
   const onOpenArticle = jest.fn();
 
-  render(
+  const view = render(
     <TechByteScrollView
       articles={articles}
       formatPublishedAt={formatPublishedAt}
@@ -62,7 +62,7 @@ function renderScrollView(overrides = {}) {
     />,
   );
 
-  return { onImageError, onOpenArticle };
+  return { ...view, onImageError, onOpenArticle };
 }
 
 function installDeckLayout() {
@@ -156,7 +156,9 @@ describe("TechByteScrollView", () => {
     expect(stories[1]).toHaveAttribute("aria-current", "true");
     expect(previous).toBeEnabled();
 
+    const callsBeforePageDown = scrollTo.mock.calls.length;
     expect(fireEvent.keyDown(deck, { key: "PageDown" })).toBe(false);
+    expect(scrollTo).toHaveBeenCalledTimes(callsBeforePageDown + 1);
     expect(scrollTo).toHaveBeenLastCalledWith({ top: 1120, behavior: "smooth" });
     expect(screen.getByRole("status")).toHaveTextContent("Story 3 of 3");
     expect(stories[2]).toHaveAttribute("aria-current", "true");
@@ -175,6 +177,62 @@ describe("TechByteScrollView", () => {
       }),
     );
     expect(onOpenArticle).toHaveBeenCalledWith("https://news.example.com/three");
+  });
+
+  test("moves with page-level arrow keys without requiring reader focus", () => {
+    renderScrollView();
+    const { scrollTo } = installDeckLayout();
+    const next = screen.getByRole("button", { name: "Next story" });
+
+    next.focus();
+    expect(fireEvent.keyDown(next, { key: "ArrowDown" })).toBe(false);
+    expect(scrollTo).toHaveBeenLastCalledWith({ top: 560, behavior: "smooth" });
+    expect(screen.getByRole("status")).toHaveTextContent("Story 2 of 3");
+
+    const readStory = screen.getByRole("button", {
+      name: "Read full story: Battery research reaches a new milestone",
+    });
+    readStory.focus();
+    expect(fireEvent.keyDown(readStory, { key: "ArrowUp" })).toBe(false);
+    expect(scrollTo).toHaveBeenLastCalledWith({ top: 0, behavior: "smooth" });
+    expect(screen.getByRole("status")).toHaveTextContent("Story 1 of 3");
+  });
+
+  test("does not hijack arrows from editors, modifiers, menus, or dialogs", () => {
+    renderScrollView();
+    const { scrollTo } = installDeckLayout();
+    const input = document.createElement("input");
+    document.body.appendChild(input);
+
+    expect(fireEvent.keyDown(input, { key: "ArrowDown" })).toBe(true);
+    expect(
+      fireEvent.keyDown(window, { key: "ArrowDown", ctrlKey: true }),
+    ).toBe(true);
+
+    const menu = document.createElement("div");
+    menu.setAttribute("role", "menu");
+    document.body.appendChild(menu);
+    expect(fireEvent.keyDown(window, { key: "ArrowDown" })).toBe(true);
+    menu.remove();
+
+    const dialog = document.createElement("div");
+    dialog.setAttribute("role", "dialog");
+    dialog.setAttribute("aria-modal", "true");
+    document.body.appendChild(dialog);
+    expect(fireEvent.keyDown(window, { key: "ArrowDown" })).toBe(true);
+
+    expect(scrollTo).not.toHaveBeenCalled();
+    input.remove();
+    dialog.remove();
+  });
+
+  test("removes the page-level arrow listener when the reader unmounts", () => {
+    const { unmount } = renderScrollView();
+    const { scrollTo } = installDeckLayout();
+
+    unmount();
+    expect(fireEvent.keyDown(window, { key: "ArrowDown" })).toBe(true);
+    expect(scrollTo).not.toHaveBeenCalled();
   });
 
   test("updates the active story after the native scroll position changes", () => {
@@ -200,7 +258,7 @@ describe("TechByteScrollView", () => {
     renderScrollView();
     const { scrollTo } = installDeckLayout();
 
-    fireEvent.click(screen.getByRole("button", { name: "Next story" }));
+    fireEvent.keyDown(window, { key: "ArrowDown" });
     expect(scrollTo).toHaveBeenLastCalledWith({ top: 560, behavior: "auto" });
   });
 

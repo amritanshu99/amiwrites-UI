@@ -204,10 +204,45 @@ describe("TechByteSwipeView", () => {
     expect(scrollTo).toHaveBeenLastCalledWith({ top: 600, behavior: "auto" });
   });
 
+  test("keeps page-level arrow shortcuts scoped to the desktop reader", () => {
+    renderSwipeView();
+    const { scrollTo } = installDeckLayout();
+
+    expect(fireEvent.keyDown(window, { key: "ArrowDown" })).toBe(true);
+    expect(scrollTo).not.toHaveBeenCalled();
+    expect(screen.getByRole("status")).toHaveTextContent("Story 1 of 3");
+  });
+
+  test("falls back to assigning scrollTop when scrollTo is unavailable", () => {
+    renderSwipeView();
+    const { deck } = installDeckLayout();
+    Object.defineProperty(deck, "scrollTo", {
+      configurable: true,
+      value: undefined,
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Next story" }));
+    expect(deck.scrollTop).toBe(600);
+    expect(screen.getByRole("status")).toHaveTextContent("Story 2 of 3");
+  });
+
   test("renders a useful empty reader state", () => {
     render(
       <TechByteSwipeView
         articles={[]}
+        formatPublishedAt={formatPublishedAt}
+      />,
+    );
+
+    expect(
+      screen.getByLabelText("Swipe through tech news"),
+    ).toHaveTextContent("No stories are available in swipe view yet.");
+  });
+
+  test("handles a non-array feed as an empty reader", () => {
+    render(
+      <TechByteSwipeView
+        articles={null}
         formatPublishedAt={formatPublishedAt}
       />,
     );
