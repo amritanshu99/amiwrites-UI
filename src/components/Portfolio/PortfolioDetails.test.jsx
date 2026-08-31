@@ -423,10 +423,10 @@ describe("PortfolioDetails startup experience", () => {
     const pixelEffect = screen.getByTestId("hero-pixel-distortion");
 
     expect(
-      screen.getByText("Building useful products with clarity"),
-    ).toHaveClass("flex", "text-[0.62rem]", "sm:text-sm");
+      screen.getByText("Engineering the Future, Today"),
+    ).toHaveClass("inline-flex", "text-[0.62rem]", "sm:text-xs");
     expect(
-      screen.getByText("Building useful products with clarity"),
+      screen.getByText("Engineering the Future, Today"),
     ).not.toHaveClass("max-sm:hidden");
     expect(
       screen.getByText(/combined to solve real product problems/i),
