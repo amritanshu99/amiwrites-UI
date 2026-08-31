@@ -1086,9 +1086,29 @@ export default function PortfolioDetails() {
             >
               <motion.p
                 variants={heroCopyItemVariants}
-                className="mb-4 block w-fit max-w-full font-cinzel text-[0.62rem] font-semibold uppercase leading-[1.55] tracking-[0.16em] text-slate-900 [text-shadow:0_1px_10px_rgba(255,255,255,0.9)] dark:text-slate-100 dark:[text-shadow:0_2px_12px_rgba(0,0,0,0.78)] min-[360px]:text-[0.66rem] sm:mb-5 sm:text-xs sm:tracking-[0.2em]"
+                data-state={
+                  loading
+                    ? "waiting"
+                    : prefersReducedMotion
+                      ? "complete"
+                      : "typing"
+                }
+                className="portfolio-terminal-kicker mb-4 block w-fit max-w-full font-mono text-[0.62rem] font-semibold leading-[1.55] tracking-[0.04em] text-slate-900 [text-shadow:0_1px_10px_rgba(255,255,255,0.9)] dark:text-slate-100 dark:[text-shadow:0_2px_12px_rgba(0,0,0,0.78)] min-[360px]:text-[0.66rem] sm:mb-5 sm:text-xs sm:tracking-[0.06em]"
               >
-                Engineering the Future, Today
+                <span className="portfolio-terminal-line">
+                  <span aria-hidden="true" className="portfolio-terminal-prompt">
+                    &gt;
+                  </span>
+                  <span className="portfolio-terminal-command">
+                    <span className="portfolio-terminal-text">
+                      Engineering the Future, Today
+                    </span>
+                    <span
+                      aria-hidden="true"
+                      className="portfolio-terminal-cursor"
+                    />
+                  </span>
+                </span>
               </motion.p>
               <motion.h1
                 variants={heroCopyItemVariants}

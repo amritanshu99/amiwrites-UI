@@ -4,6 +4,8 @@ import axios from "axios";
 import { completeInitialLoaderCycle } from "./InitialLoader";
 import PortfolioDetails from "./PortfolioDetails";
 
+const mockUseReducedMotion = jest.fn(() => true);
+
 jest.mock("axios", () => ({
   get: jest.fn(),
   isCancel: jest.fn(),
@@ -57,7 +59,7 @@ jest.mock("framer-motion", () => {
       img: createMotionComponent("img"),
       p: createMotionComponent("p"),
     },
-    useReducedMotion: () => true,
+    useReducedMotion: () => mockUseReducedMotion(),
   };
 });
 
@@ -101,6 +103,8 @@ describe("PortfolioDetails startup experience", () => {
     axios.get.mockReset();
     axios.isCancel.mockReset();
     axios.isCancel.mockReturnValue(false);
+    mockUseReducedMotion.mockReset();
+    mockUseReducedMotion.mockReturnValue(true);
     document.documentElement.className = "";
 
     Object.defineProperty(window, "matchMedia", {
@@ -421,16 +425,21 @@ describe("PortfolioDetails startup experience", () => {
     await finishInitialLoader();
 
     const pixelEffect = screen.getByTestId("hero-pixel-distortion");
+    const kickerText = screen.getByText("Engineering the Future, Today");
+    const kicker = kickerText.closest("p");
+    const cursor = kicker.querySelector(".portfolio-terminal-cursor");
 
-    expect(
-      screen.getByText("Engineering the Future, Today"),
-    ).toHaveClass("block", "font-cinzel", "text-[0.62rem]", "sm:text-xs");
-    expect(
-      screen.getByText("Engineering the Future, Today"),
-    ).not.toHaveClass("bg-white/60", "rounded-full", "border");
-    expect(
-      screen.getByText("Engineering the Future, Today"),
-    ).not.toHaveClass("max-sm:hidden");
+    expect(kicker).toHaveClass(
+      "portfolio-terminal-kicker",
+      "block",
+      "font-mono",
+      "text-[0.62rem]",
+      "sm:text-xs",
+    );
+    expect(kicker).toHaveAttribute("data-state", "complete");
+    expect(kicker).not.toHaveClass("bg-white/60", "rounded-full", "border");
+    expect(kicker).not.toHaveClass("max-sm:hidden");
+    expect(cursor).toHaveAttribute("aria-hidden", "true");
     expect(
       screen.getByText(/combined to solve real product problems/i),
     ).toHaveClass("max-sm:hidden");
@@ -449,6 +458,23 @@ describe("PortfolioDetails startup experience", () => {
     expect(pixelEffect).toHaveAttribute("aria-hidden", "true");
     expect(pixelEffect).toHaveAttribute("data-ready", "false");
     expect(pixelEffect).toHaveClass("pointer-events-none");
+  });
+
+  it("starts the terminal typing effect only after the loader has cleared", async () => {
+    mockUseReducedMotion.mockReturnValue(false);
+    axios.get.mockImplementationOnce(() => new Promise(() => {}));
+
+    renderPortfolio();
+
+    const kicker = screen
+      .getByText("Engineering the Future, Today")
+      .closest("p");
+
+    expect(kicker).toHaveAttribute("data-state", "waiting");
+
+    await finishInitialLoader();
+
+    expect(kicker).toHaveAttribute("data-state", "typing");
   });
 
   it("opens the career journey at the experience section", async () => {

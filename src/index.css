@@ -849,6 +849,116 @@ body.tech-byte-reader-active .amiverse-app-shell > footer {
   container-type: inline-size;
 }
 
+.portfolio-terminal-line {
+  display: inline-flex;
+  max-width: 100%;
+  align-items: baseline;
+  gap: 0.55em;
+  white-space: nowrap;
+}
+
+.portfolio-terminal-prompt {
+  color: #0369a1;
+  text-shadow: 0 0 0.7rem rgba(14, 165, 233, 0.35);
+}
+
+.dark .portfolio-terminal-prompt {
+  color: #67e8f9;
+  text-shadow: 0 0 0.75rem rgba(34, 211, 238, 0.45);
+}
+
+.portfolio-terminal-command {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+  font-variant-ligatures: none;
+}
+
+.portfolio-terminal-text {
+  display: inline-block;
+  will-change: clip-path;
+}
+
+.portfolio-terminal-cursor {
+  position: absolute;
+  top: 0.15em;
+  bottom: 0.15em;
+  left: 0;
+  width: 0.12em;
+  min-width: 1px;
+  border-radius: 999px;
+  background: #0284c7;
+  box-shadow: 0 0 0.6rem rgba(14, 165, 233, 0.55);
+  opacity: 0;
+  transform: translateX(0.12em);
+  will-change: left, opacity;
+}
+
+.dark .portfolio-terminal-cursor {
+  background: #67e8f9;
+  box-shadow: 0 0 0.65rem rgba(34, 211, 238, 0.62);
+}
+
+.portfolio-terminal-kicker[data-state="waiting"] .portfolio-terminal-text {
+  clip-path: inset(0 100% 0 0);
+}
+
+.portfolio-terminal-kicker[data-state="typing"] .portfolio-terminal-text {
+  animation: portfolioTerminalType 1.75s steps(29, end) 0.18s both;
+}
+
+.portfolio-terminal-kicker[data-state="typing"] .portfolio-terminal-cursor {
+  animation:
+    portfolioTerminalCursorMove 1.75s steps(29, end) 0.18s both,
+    portfolioTerminalCursorBlink 0.72s step-end 0.18s 6 forwards;
+}
+
+.portfolio-terminal-kicker[data-state="complete"] .portfolio-terminal-text {
+  clip-path: inset(0);
+}
+
+.portfolio-terminal-kicker[data-state="complete"] .portfolio-terminal-cursor {
+  left: 100%;
+  opacity: 0.78;
+}
+
+@keyframes portfolioTerminalType {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+
+  to {
+    clip-path: inset(0);
+  }
+}
+
+@keyframes portfolioTerminalCursorMove {
+  from {
+    left: 0;
+  }
+
+  to {
+    left: 100%;
+  }
+}
+
+@keyframes portfolioTerminalCursorBlink {
+  0%,
+  46% {
+    opacity: 1;
+  }
+
+  47%,
+  92% {
+    opacity: 0;
+  }
+
+  93%,
+  100% {
+    opacity: 1;
+  }
+}
+
 .hero-name {
   max-width: min(11ch, 100%);
   font-family: "Inter Tight", sans-serif;
@@ -1271,6 +1381,20 @@ body.tech-byte-reader-active .amiverse-app-shell > footer {
   .portfolio-hero-ambient {
     animation: none;
     transform: translate3d(0, 0, 0) scale(1.035);
+  }
+
+  .portfolio-terminal-text,
+  .portfolio-terminal-cursor {
+    animation: none !important;
+  }
+
+  .portfolio-terminal-text {
+    clip-path: inset(0) !important;
+  }
+
+  .portfolio-terminal-cursor {
+    left: 100% !important;
+    opacity: 0.78 !important;
   }
 
   .portfolio-hero-pixels {
