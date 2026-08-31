@@ -1086,7 +1086,7 @@ export default function PortfolioDetails() {
             >
               <motion.p
                 variants={heroCopyItemVariants}
-                className="mb-4 inline-flex w-fit max-w-full items-center gap-2.5 rounded-full border border-slate-900/10 bg-white/60 px-3.5 py-2 text-[0.62rem] font-semibold uppercase leading-[1.35] tracking-[0.17em] text-slate-900 shadow-[0_12px_34px_-20px_rgba(15,23,42,0.65)] backdrop-blur-md [text-shadow:0_1px_8px_rgba(255,255,255,0.82)] before:h-1.5 before:w-1.5 before:shrink-0 before:rounded-full before:bg-gradient-to-br before:from-amber-300 before:via-amber-500 before:to-orange-600 before:shadow-[0_0_14px_rgba(245,158,11,0.75)] after:hidden after:h-px after:w-6 after:shrink-0 after:bg-gradient-to-r after:from-amber-500/75 after:to-transparent dark:border-white/15 dark:bg-slate-950/45 dark:text-slate-100 dark:shadow-[0_16px_38px_-22px_rgba(0,0,0,0.92)] dark:[text-shadow:0_2px_12px_rgba(0,0,0,0.72)] min-[360px]:text-[0.67rem] sm:mb-5 sm:gap-3 sm:px-4 sm:py-2.5 sm:text-xs sm:tracking-[0.22em] sm:after:block"
+                className="mb-4 block w-fit max-w-full font-cinzel text-[0.62rem] font-semibold uppercase leading-[1.55] tracking-[0.16em] text-slate-900 [text-shadow:0_1px_10px_rgba(255,255,255,0.9)] dark:text-slate-100 dark:[text-shadow:0_2px_12px_rgba(0,0,0,0.78)] min-[360px]:text-[0.66rem] sm:mb-5 sm:text-xs sm:tracking-[0.2em]"
               >
                 Engineering the Future, Today
               </motion.p>

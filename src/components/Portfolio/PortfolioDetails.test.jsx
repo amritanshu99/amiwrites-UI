@@ -424,7 +424,10 @@ describe("PortfolioDetails startup experience", () => {
 
     expect(
       screen.getByText("Engineering the Future, Today"),
-    ).toHaveClass("inline-flex", "text-[0.62rem]", "sm:text-xs");
+    ).toHaveClass("block", "font-cinzel", "text-[0.62rem]", "sm:text-xs");
+    expect(
+      screen.getByText("Engineering the Future, Today"),
+    ).not.toHaveClass("bg-white/60", "rounded-full", "border");
     expect(
       screen.getByText("Engineering the Future, Today"),
     ).not.toHaveClass("max-sm:hidden");
