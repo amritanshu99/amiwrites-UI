@@ -70,6 +70,10 @@ jest.mock("./MemoryLaneCta", () => () => null);
 
 const renderPortfolio = () => render(<PortfolioDetails />);
 const originalImageDecode = HTMLImageElement.prototype.decode;
+const originalConnectionDescriptor = Object.getOwnPropertyDescriptor(
+  navigator,
+  "connection",
+);
 
 const markInitialHeroReady = () => {
   const portrait = document.querySelector('img[alt$="portfolio portrait"]');
@@ -134,6 +138,15 @@ describe("PortfolioDetails startup experience", () => {
     } else {
       delete HTMLImageElement.prototype.decode;
     }
+    if (originalConnectionDescriptor) {
+      Object.defineProperty(
+        navigator,
+        "connection",
+        originalConnectionDescriptor,
+      );
+    } else {
+      delete navigator.connection;
+    }
     jest.runOnlyPendingTimers();
     jest.useRealTimers();
   });
@@ -158,6 +171,37 @@ describe("PortfolioDetails startup experience", () => {
     expect(
       screen.getByRole("button", { name: /expand section switcher/i }),
     ).toBeInTheDocument();
+  });
+
+  it("keeps surrounding app chrome inert only while the loader is visible", async () => {
+    axios.get.mockImplementationOnce(() => new Promise(() => {}));
+
+    render(
+      <div className="amiverse-app-shell">
+        <header data-testid="app-header">
+          <button type="button">Navigation</button>
+        </header>
+        <main tabIndex={-1}>
+          <PortfolioDetails />
+        </main>
+        <footer data-testid="app-footer">Footer</footer>
+      </div>,
+    );
+
+    expect(screen.getByTestId("app-header")).toHaveAttribute("inert");
+    expect(screen.getByTestId("app-header")).toHaveAttribute(
+      "aria-hidden",
+      "true",
+    );
+    expect(screen.getByTestId("app-footer")).toHaveAttribute("inert");
+
+    await finishInitialLoader();
+
+    expect(screen.getByTestId("app-header")).not.toHaveAttribute("inert");
+    expect(screen.getByTestId("app-header")).not.toHaveAttribute(
+      "aria-hidden",
+    );
+    expect(screen.getByTestId("app-footer")).not.toHaveAttribute("inert");
   });
 
   it("keeps the page inert until the rendered hero has decoded", async () => {
@@ -216,7 +260,7 @@ describe("PortfolioDetails startup experience", () => {
     expect(page).not.toHaveAttribute("inert");
   });
 
-  it("does not reveal an image whose decode rejects", async () => {
+  it("uses the loaded hero frame when decode rejects", async () => {
     axios.get.mockImplementationOnce(() => new Promise(() => {}));
     Object.defineProperty(HTMLImageElement.prototype, "decode", {
       configurable: true,
@@ -224,32 +268,7 @@ describe("PortfolioDetails startup experience", () => {
     });
 
     renderPortfolio();
-    markInitialHeroReady();
-
-    await act(async () => {
-      jest.advanceTimersByTime(1200);
-      await Promise.resolve();
-      await Promise.resolve();
-    });
-
-    expect(
-      screen.getByRole("status", { name: /loading amiverse/i }),
-    ).toBeInTheDocument();
-
-    await act(async () => {
-      jest.advanceTimersByTime(2000);
-      await Promise.resolve();
-    });
-
-    await act(async () => {
-      jest.advanceTimersByTime(50);
-      await Promise.resolve();
-    });
-
-    await act(async () => {
-      jest.advanceTimersByTime(1);
-      await Promise.resolve();
-    });
+    await finishInitialLoader();
 
     expect(
       screen.queryByRole("status", { name: /loading amiverse/i }),
@@ -355,6 +374,22 @@ describe("PortfolioDetails startup experience", () => {
       ).toBeInTheDocument();
     },
   );
+
+  it("skips the decorative background when Save-Data is enabled", async () => {
+    Object.defineProperty(navigator, "connection", {
+      configurable: true,
+      value: { saveData: true },
+    });
+    axios.get.mockImplementationOnce(() => new Promise(() => {}));
+
+    const { container } = renderPortfolio();
+    await finishInitialLoader();
+
+    expect(container.querySelector(".portfolio-ny-background")).toHaveStyle({
+      backgroundImage: "none",
+      opacity: "1",
+    });
+  });
 
   it("uses a bounded wait when the hero asset never settles", async () => {
     axios.get.mockImplementationOnce(() => new Promise(() => {}));

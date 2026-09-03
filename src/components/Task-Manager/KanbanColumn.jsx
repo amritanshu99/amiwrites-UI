@@ -10,6 +10,7 @@ export default function KanbanColumn({
   onAddTask,
   onEditTask,
   dragDisabled,
+  actionsDisabled = false,
   isMobileActive,
 }) {
   const { setNodeRef, isOver } = useDroppable({
@@ -46,7 +47,8 @@ export default function KanbanColumn({
         <button
           type="button"
           onClick={() => onAddTask(status.id)}
-          className="task-manager-column-action inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white text-slate-500 shadow-sm ring-1 ring-slate-200 transition hover:-translate-y-0.5 hover:text-indigo-600 hover:shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 dark:bg-zinc-950 dark:text-zinc-400 dark:ring-zinc-800 dark:hover:text-indigo-400"
+          disabled={actionsDisabled}
+          className="task-manager-column-action inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white text-slate-500 shadow-sm ring-1 ring-slate-200 transition hover:-translate-y-0.5 hover:text-indigo-600 hover:shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 dark:bg-zinc-950 dark:text-zinc-400 dark:ring-zinc-800 dark:hover:text-indigo-400"
           aria-label={`Add task to ${status.label}`}
           title={`Add to ${status.label}`}
         >
@@ -63,7 +65,8 @@ export default function KanbanColumn({
             <button
               type="button"
               onClick={() => onAddTask(status.id)}
-              className="flex min-h-32 flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-white/45 px-4 text-center transition hover:border-indigo-300 hover:bg-white/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 dark:border-zinc-700 dark:bg-zinc-950/35 dark:hover:border-indigo-700 dark:hover:bg-zinc-950/70"
+              disabled={actionsDisabled}
+              className="flex min-h-32 flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-white/45 px-4 text-center transition hover:border-indigo-300 hover:bg-white/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-950/35 dark:hover:border-indigo-700 dark:hover:bg-zinc-950/70"
             >
               <span className="mb-2 inline-flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 text-slate-400 dark:bg-zinc-900 dark:text-zinc-500">
                 <Inbox size={17} />
@@ -80,7 +83,7 @@ export default function KanbanColumn({
               <TaskCard
                 key={task._id}
                 task={task}
-                onEdit={onEditTask}
+                onEdit={actionsDisabled ? undefined : onEditTask}
                 disabled={dragDisabled}
               />
             ))

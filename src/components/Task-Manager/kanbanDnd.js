@@ -108,3 +108,79 @@ export function moveTaskOnBoard(
 
   return assignBoardPositions(candidateTasks);
 }
+
+export function restoreTaskMoveOnLatestBoard(
+  latestTasks,
+  previousTasks,
+  movedTasks,
+  activeId
+) {
+  const normalizedActiveId = String(activeId);
+  const latestTask = latestTasks.find(
+    (task) => taskId(task) === normalizedActiveId
+  );
+  const previousTask = previousTasks.find(
+    (task) => taskId(task) === normalizedActiveId
+  );
+  const movedTask = movedTasks.find(
+    (task) => taskId(task) === normalizedActiveId
+  );
+
+  if (!latestTask || !previousTask || !movedTask) return latestTasks;
+  if (latestTask.status !== movedTask.status) return latestTasks;
+
+  // A newer completion of the same task must not be undone by an older toast.
+  if (
+    movedTask.status === "done" &&
+    (latestTask.completedAt || null) !== (movedTask.completedAt || null)
+  ) {
+    return latestTasks;
+  }
+
+  const previousColumn = previousTasks
+    .filter((task) => task.status === previousTask.status)
+    .sort((a, b) => a.position - b.position);
+  const previousIndex = previousColumn.findIndex(
+    (task) => taskId(task) === normalizedActiveId
+  );
+
+  if (previousIndex < 0) return latestTasks;
+
+  const latestTargetIds = new Set(
+    latestTasks
+      .filter((task) => task.status === previousTask.status)
+      .map(taskId)
+  );
+  const nextAnchor = previousColumn
+    .slice(previousIndex + 1)
+    .find((task) => latestTargetIds.has(taskId(task)));
+  const previousAnchor = previousColumn
+    .slice(0, previousIndex)
+    .reverse()
+    .find((task) => latestTargetIds.has(taskId(task)));
+
+  const restoredTasks = moveTaskOnBoard(latestTasks, {
+    activeId: normalizedActiveId,
+    overId: nextAnchor
+      ? taskId(nextAnchor)
+      : previousAnchor
+        ? taskId(previousAnchor)
+        : `column:${previousTask.status}`,
+    insertAfter: !nextAnchor && Boolean(previousAnchor),
+  });
+
+  if (restoredTasks === latestTasks) return latestTasks;
+
+  return restoredTasks.map((task) =>
+    taskId(task) === normalizedActiveId
+      ? {
+          ...task,
+          completed: previousTask.status === "done",
+          completedAt:
+            previousTask.status === "done"
+              ? previousTask.completedAt || null
+              : null,
+        }
+      : task
+  );
+}

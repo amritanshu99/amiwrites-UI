@@ -101,9 +101,9 @@ test("preserves the production loader state and accessible status contract", () 
     `${INITIAL_LOADER_MIN_DURATION_MS}ms`,
   );
   expect(root.querySelector(".loader-progress-fill")).toBeInTheDocument();
-  expect(root.querySelector(".loader-progress-hold")).toBeInTheDocument();
   expect(root.querySelector(".loader-emblem")).toBeInTheDocument();
   expect(root.querySelector(".loader-title")).toBeInTheDocument();
+  expect(root.querySelector("style")).not.toBeInTheDocument();
   expect(root.querySelector("[data-loader-ambient]")).not.toBeInTheDocument();
   expect(root.querySelector(".loader-dust")).not.toBeInTheDocument();
   expect(root.querySelector(".loader-aurora")).not.toBeInTheDocument();
@@ -157,6 +157,26 @@ test("uses the lightweight timed profile on compact touch viewports", () => {
   expect(root.querySelector("[data-loader-ambient]")).not.toBeInTheDocument();
   expect(root.querySelector("[data-loader-animate].loader-emblem-shutter"))
     .not.toBeInTheDocument();
+});
+
+test("does not subscribe the short-lived production loader to media changes", () => {
+  const queries = installMatchMedia();
+
+  const { unmount } = render(
+    <InitialLoader durationMs={INITIAL_LOADER_MIN_DURATION_MS} />,
+  );
+
+  queries.forEach((query) => {
+    expect(query.addEventListener).not.toHaveBeenCalled();
+    expect(query.addListener).not.toHaveBeenCalled();
+  });
+
+  unmount();
+
+  queries.forEach((query) => {
+    expect(query.removeEventListener).not.toHaveBeenCalled();
+    expect(query.removeListener).not.toHaveBeenCalled();
+  });
 });
 
 test("honors reduced motion and removes media-query listeners", () => {

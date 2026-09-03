@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
 import { useLocation } from "react-router-dom";
-import { toast } from "react-toastify";
+import { Slide, ToastContainer, toast } from "react-toastify";
 import {
   DndContext,
   DragOverlay,
@@ -30,6 +30,7 @@ import {
   RefreshCw,
   Search,
   Sparkles,
+  Trophy,
   UserPlus,
   X,
 } from "lucide-react";
@@ -44,11 +45,79 @@ import {
   normalizeTask,
   parseTaskDate,
 } from "./taskManagerConfig";
-import { moveTaskOnBoard } from "./kanbanDnd";
+import {
+  moveTaskOnBoard,
+  restoreTaskMoveOnLatestBoard,
+} from "./kanbanDnd";
+import {
+  getTaskCompletionAchievement,
+  isTaskNewlyCompleted,
+} from "./taskCompletionAchievement";
 import useDialogFocus from "./useDialogFocus";
 import { apiUrl } from "../../config/api";
 
 const API_BASE = apiUrl("/api/tasks");
+const TASK_MOVE_TOAST_DURATION_MS = 8000;
+const TASK_MOVE_TOAST_CONTAINER_ID = "task-manager-moves";
+
+function TaskMoveToastCloseButton({ closeToast }) {
+  return (
+    <button
+      type="button"
+      className="amiverse-toast-close"
+      onClick={closeToast}
+      aria-label="Dismiss notification"
+    >
+      <X size={14} aria-hidden="true" />
+    </button>
+  );
+}
+
+function CompletionAchievementToast({
+  taskTitle,
+  completedCount,
+  achievement,
+  onUndo,
+  onUndoFocus,
+  onUndoBlur,
+}) {
+  return (
+    <div className="min-w-0">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-[0.16em] text-emerald-700 dark:text-emerald-300">
+            <Sparkles size={12} aria-hidden="true" /> Achievement unlocked
+          </p>
+          <p className="mt-0.5 truncate text-base font-black text-slate-950 dark:text-white">
+            {achievement.title}
+          </p>
+        </div>
+        <span className="shrink-0 rounded-full bg-emerald-50 px-2 py-1 text-[10px] font-black uppercase tracking-wide text-emerald-700 ring-1 ring-emerald-200/80 dark:bg-emerald-950/60 dark:text-emerald-300 dark:ring-emerald-800/70">
+          {completedCount} done
+        </span>
+      </div>
+      <p className="mt-1.5 text-xs font-medium leading-5 text-slate-600 dark:text-zinc-300">
+        <span className="font-extrabold text-slate-800 dark:text-zinc-100">
+          &ldquo;{taskTitle}&rdquo;
+        </span>{" "}
+        is done. {achievement.message}
+      </p>
+      <button
+        type="button"
+        className="mt-2 inline-flex min-h-8 items-center rounded-lg bg-emerald-50 px-2.5 py-1 text-xs font-black text-emerald-700 ring-1 ring-emerald-200/80 transition hover:bg-emerald-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 dark:bg-emerald-950/60 dark:text-emerald-300 dark:ring-emerald-800/70 dark:hover:bg-emerald-950"
+        onClick={(event) => {
+          event.stopPropagation();
+          onUndo();
+        }}
+        onFocus={onUndoFocus}
+        onBlur={onUndoBlur}
+        aria-label={`Undo completing ${taskTitle}`}
+      >
+        Undo move
+      </button>
+    </div>
+  );
+}
 
 function SummaryCard({ icon: Icon, label, value, helper, iconClass }) {
   return (
@@ -272,7 +341,87 @@ export default function TaskManager() {
   const [taskModal, setTaskModal] = useState({ open: false, task: null, initialStatus: "backlog" });
   const fetchRequestIdRef = useRef(0);
   const analyticsCloseRef = useRef(null);
+  const isMountedRef = useRef(true);
+  const tasksRef = useRef(tasks);
+  const mutationQueueRef = useRef(Promise.resolve());
+  const pendingMutationCountRef = useRef(0);
+  const undoRequestKeysRef = useRef(new Set());
+  const taskMoveVersionsRef = useRef(new Map());
+  const taskMoveToastIdsRef = useRef(new Map());
+  const boardSessionVersionRef = useRef(0);
   const { pathname } = useLocation();
+
+  const setTasksAndRef = useCallback((nextTasksOrUpdater) => {
+    const nextTasks =
+      typeof nextTasksOrUpdater === "function"
+        ? nextTasksOrUpdater(tasksRef.current)
+        : nextTasksOrUpdater;
+
+    tasksRef.current = nextTasks;
+    if (isMountedRef.current) setTasks(nextTasks);
+    return nextTasks;
+  }, []);
+
+  const dismissTaskMoveToasts = useCallback(() => {
+    taskMoveToastIdsRef.current.forEach((toastId) =>
+      toast.dismiss({
+        id: toastId,
+        containerId: TASK_MOVE_TOAST_CONTAINER_ID,
+      })
+    );
+    toast.clearWaitingQueue?.({ containerId: TASK_MOVE_TOAST_CONTAINER_ID });
+    taskMoveToastIdsRef.current.clear();
+  }, []);
+
+  const invalidateTaskMove = useCallback((taskId) => {
+    const normalizedTaskId = String(taskId);
+    const nextVersion =
+      (taskMoveVersionsRef.current.get(normalizedTaskId) || 0) + 1;
+    const toastId = taskMoveToastIdsRef.current.get(normalizedTaskId);
+
+    if (toastId) {
+      toast.dismiss({
+        id: toastId,
+        containerId: TASK_MOVE_TOAST_CONTAINER_ID,
+      });
+    }
+    toast.clearWaitingQueue?.({ containerId: TASK_MOVE_TOAST_CONTAINER_ID });
+    taskMoveToastIdsRef.current.delete(normalizedTaskId);
+    taskMoveVersionsRef.current.set(normalizedTaskId, nextVersion);
+    return nextVersion;
+  }, []);
+
+  const enqueueTaskMutation = useCallback((mutation) => {
+    pendingMutationCountRef.current += 1;
+    setIsReordering(true);
+
+    const queuedMutation = mutationQueueRef.current
+      .catch(() => undefined)
+      .then(mutation);
+    mutationQueueRef.current = queuedMutation.catch(() => undefined);
+
+    return queuedMutation.finally(() => {
+      pendingMutationCountRef.current = Math.max(
+        0,
+        pendingMutationCountRef.current - 1
+      );
+      if (pendingMutationCountRef.current === 0 && isMountedRef.current) {
+        setIsReordering(false);
+      }
+    });
+  }, []);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    const undoRequestKeys = undoRequestKeysRef.current;
+
+    return () => {
+      isMountedRef.current = false;
+      boardSessionVersionRef.current += 1;
+      dismissTaskMoveToasts();
+      undoRequestKeys.clear();
+    };
+  }, [dismissTaskMoveToasts]);
 
   const closeAnalytics = useCallback(() => setShowAnalytics(false), []);
   const analyticsDialogRef = useDialogFocus({
@@ -302,7 +451,7 @@ export default function TaskManager() {
     fetchRequestIdRef.current = requestId;
 
     if (!tokenToUse) {
-      setTasks([]);
+      setTasksAndRef([]);
       setLoadError("");
       setLoading(false);
       return;
@@ -320,7 +469,7 @@ export default function TaskManager() {
       const nextTasks = response.data
         .filter((task) => !task.isDeleted)
         .map(normalizeTask);
-      setTasks(nextTasks);
+      setTasksAndRef(nextTasks);
 
       const firstPopulatedStatus = TASK_STATUSES.find((status) =>
         nextTasks.some((task) => task.status === status.id)
@@ -332,7 +481,7 @@ export default function TaskManager() {
       if ([401, 403].includes(error.response?.status)) {
         localStorage.removeItem("token");
         setToken(null);
-        setTasks([]);
+        setTasksAndRef([]);
         setIsAuthenticated(false);
         setLoadError("");
         toast.error("Your session expired. Log in to reopen your board.");
@@ -347,11 +496,15 @@ export default function TaskManager() {
     } finally {
       if (requestId === fetchRequestIdRef.current) setLoading(false);
     }
-  }, []);
+  }, [setTasksAndRef]);
 
   useEffect(() => {
     const updateAuthState = () => {
       const nextToken = localStorage.getItem("token");
+      boardSessionVersionRef.current += 1;
+      dismissTaskMoveToasts();
+      taskMoveVersionsRef.current.clear();
+      undoRequestKeysRef.current.clear();
       setToken(nextToken);
       setIsAuthenticated(Boolean(nextToken));
       fetchTasks(nextToken);
@@ -360,7 +513,7 @@ export default function TaskManager() {
     window.addEventListener("tokenChanged", updateAuthState);
     updateAuthState();
     return () => window.removeEventListener("tokenChanged", updateAuthState);
-  }, [fetchTasks]);
+  }, [dismissTaskMoveToasts, fetchTasks]);
 
   useEffect(() => {
     document.body.classList.add("task-manager-page-active");
@@ -437,60 +590,140 @@ export default function TaskManager() {
   }, []);
 
   const openNewTask = (status = "backlog") => {
+    if (pendingMutationCountRef.current > 0) return;
     setTaskModal({ open: true, task: null, initialStatus: status });
   };
 
   const openEditTask = (task) => {
+    if (pendingMutationCountRef.current > 0) return;
     setTaskModal({ open: true, task, initialStatus: task.status });
   };
 
   const handleSaveTask = async (form) => {
+    const mutationSessionVersion = boardSessionVersionRef.current;
     setSaving(true);
 
     try {
       if (taskModal.task) {
-        const response = await apiClient.put(`/${taskModal.task._id}`, form);
-        const updatedTask = normalizeTask(response.data);
-        setTasks((current) =>
-          current.map((task) => (task._id === updatedTask._id ? updatedTask : task))
-        );
+        const updatedTask = await enqueueTaskMutation(async () => {
+          if (
+            !isMountedRef.current ||
+            boardSessionVersionRef.current !== mutationSessionVersion
+          ) {
+            return null;
+          }
+
+          const response = await apiClient.put(`/${taskModal.task._id}`, form);
+          if (
+            !isMountedRef.current ||
+            boardSessionVersionRef.current !== mutationSessionVersion
+          ) {
+            return null;
+          }
+
+          const normalizedTask = normalizeTask(response.data);
+          invalidateTaskMove(normalizedTask._id);
+          setTasksAndRef((current) =>
+            current.map((task) =>
+              task._id === normalizedTask._id ? normalizedTask : task
+            )
+          );
+          return normalizedTask;
+        });
+
+        if (!updatedTask) return;
         setMobileStatus(updatedTask.status);
         toast.success("Task updated");
       } else {
-        const statusTasks = tasks.filter((task) => task.status === form.status);
-        const maxPosition = statusTasks.reduce(
-          (max, task) => Math.max(max, Number(task.position) || 0),
-          0
-        );
-        const response = await apiClient.post("/", {
-          ...form,
-          position: maxPosition + 1000,
+        const createdTask = await enqueueTaskMutation(async () => {
+          if (
+            !isMountedRef.current ||
+            boardSessionVersionRef.current !== mutationSessionVersion
+          ) {
+            return null;
+          }
+
+          const statusTasks = tasksRef.current.filter(
+            (task) => task.status === form.status
+          );
+          const maxPosition = statusTasks.reduce(
+            (max, task) => Math.max(max, Number(task.position) || 0),
+            0
+          );
+          const response = await apiClient.post("/", {
+            ...form,
+            position: maxPosition + 1000,
+          });
+          if (
+            !isMountedRef.current ||
+            boardSessionVersionRef.current !== mutationSessionVersion
+          ) {
+            return null;
+          }
+
+          const normalizedTask = normalizeTask(response.data);
+          setTasksAndRef((current) => [...current, normalizedTask]);
+          return normalizedTask;
         });
-        setTasks((current) => [...current, normalizeTask(response.data)]);
-        setMobileStatus(form.status);
+
+        if (!createdTask) return;
+        setMobileStatus(createdTask.status);
         toast.success("Task created");
       }
 
       closeTaskModal();
     } catch (error) {
-      toast.error(error.response?.data?.error || "We could not save this task.");
+      if (
+        isMountedRef.current &&
+        boardSessionVersionRef.current === mutationSessionVersion
+      ) {
+        toast.error(error.response?.data?.error || "We could not save this task.");
+      }
     } finally {
-      setSaving(false);
+      if (isMountedRef.current) setSaving(false);
     }
   };
 
   const handleDeleteTask = async (task) => {
+    const mutationSessionVersion = boardSessionVersionRef.current;
     setSaving(true);
 
     try {
-      await apiClient.delete(`/${task._id}`);
-      setTasks((current) => current.filter((item) => item._id !== task._id));
+      const deleted = await enqueueTaskMutation(async () => {
+        if (
+          !isMountedRef.current ||
+          boardSessionVersionRef.current !== mutationSessionVersion
+        ) {
+          return false;
+        }
+
+        await apiClient.delete(`/${task._id}`);
+        if (
+          !isMountedRef.current ||
+          boardSessionVersionRef.current !== mutationSessionVersion
+        ) {
+          return false;
+        }
+
+        invalidateTaskMove(task._id);
+        setTasksAndRef((current) =>
+          current.filter((item) => item._id !== task._id)
+        );
+        return true;
+      });
+
+      if (!deleted) return;
       closeTaskModal();
       toast.success("Task deleted");
     } catch (error) {
-      toast.error(error.response?.data?.error || "We could not delete this task.");
+      if (
+        isMountedRef.current &&
+        boardSessionVersionRef.current === mutationSessionVersion
+      ) {
+        toast.error(error.response?.data?.error || "We could not delete this task.");
+      }
     } finally {
-      setSaving(false);
+      if (isMountedRef.current) setSaving(false);
     }
   };
 
@@ -513,9 +746,15 @@ export default function TaskManager() {
 
   const handleDragEnd = async ({ active, over }) => {
     setActiveTaskId(null);
-    if (!over || active.id === over.id) return;
+    if (
+      pendingMutationCountRef.current > 0 ||
+      !over ||
+      active.id === over.id
+    ) {
+      return;
+    }
 
-    const previousTasks = tasks;
+    const previousTasks = tasksRef.current;
     const activeRect = active.rect.current.translated;
     const insertAfter = Boolean(
       activeRect &&
@@ -523,51 +762,208 @@ export default function TaskManager() {
         activeRect.top + activeRect.height / 2 >
           over.rect.top + over.rect.height / 2
     );
-    const nextTasks = moveTaskOnBoard(tasks, {
+    const nextTasks = moveTaskOnBoard(previousTasks, {
       activeId: active.id,
       overId: over.id,
       insertAfter,
     });
 
-    if (nextTasks === tasks) return;
+    if (nextTasks === previousTasks) return;
 
     const movedTask = nextTasks.find(
       (task) => String(task._id) === String(active.id)
     );
     if (!movedTask) return;
 
-    setTasks(nextTasks);
+    const movedIntoDone = isTaskNewlyCompleted(
+      previousTasks,
+      nextTasks,
+      active.id
+    );
+    const completedCount = nextTasks.filter(
+      (task) => task.status === "done"
+    ).length;
+    const normalizedTaskId = String(movedTask._id);
+    dismissTaskMoveToasts();
+    const moveVersion = invalidateTaskMove(movedTask._id);
+    const mutationSessionVersion = boardSessionVersionRef.current;
+
+    setTasksAndRef(nextTasks);
     setMobileStatus(movedTask.status);
-    setIsReordering(true);
 
     try {
-      await persistBoardOrder(nextTasks);
-      toast.success(({ closeToast }) => (
-        <div className="flex items-center justify-between gap-3">
-          <span>Task moved</span>
-          <button
-            type="button"
-            className="font-extrabold text-indigo-600 underline underline-offset-2 dark:text-indigo-300"
-            onClick={async () => {
-              setTasks(previousTasks);
-              closeToast?.();
-              try {
-                await persistBoardOrder(previousTasks);
-              } catch {
-                setTasks(nextTasks);
-                toast.error("The move could not be undone.");
+      const persisted = await enqueueTaskMutation(async () => {
+        if (
+          !isMountedRef.current ||
+          boardSessionVersionRef.current !== mutationSessionVersion
+        ) {
+          return false;
+        }
+
+        await persistBoardOrder(nextTasks);
+        return (
+          isMountedRef.current &&
+          boardSessionVersionRef.current === mutationSessionVersion
+        );
+      });
+
+      if (!persisted) return;
+
+      const taskMoveToastId = `task-move:${normalizedTaskId}:${moveVersion}`;
+      const removeTrackedToast = () => {
+        if (
+          taskMoveToastIdsRef.current.get(normalizedTaskId) ===
+          taskMoveToastId
+        ) {
+          taskMoveToastIdsRef.current.delete(normalizedTaskId);
+        }
+      };
+
+      const undoMove = async (closeToast) => {
+        closeToast?.();
+        if (
+          !isMountedRef.current ||
+          boardSessionVersionRef.current !== mutationSessionVersion ||
+          taskMoveVersionsRef.current.get(normalizedTaskId) !== moveVersion ||
+          undoRequestKeysRef.current.has(taskMoveToastId)
+        ) {
+          return;
+        }
+
+        undoRequestKeysRef.current.add(taskMoveToastId);
+
+        try {
+          await enqueueTaskMutation(async () => {
+            if (
+              !isMountedRef.current ||
+              boardSessionVersionRef.current !== mutationSessionVersion ||
+              taskMoveVersionsRef.current.get(normalizedTaskId) !== moveVersion
+            ) {
+              return;
+            }
+
+            const latestTasks = tasksRef.current;
+            const restoredTasks = restoreTaskMoveOnLatestBoard(
+              latestTasks,
+              previousTasks,
+              nextTasks,
+              active.id
+            );
+
+            if (restoredTasks === latestTasks) return;
+
+            taskMoveVersionsRef.current.set(normalizedTaskId, moveVersion + 1);
+            taskMoveToastIdsRef.current.delete(normalizedTaskId);
+            setTasksAndRef(restoredTasks);
+
+            try {
+              await persistBoardOrder(restoredTasks);
+            } catch (error) {
+              if (tasksRef.current === restoredTasks) {
+                setTasksAndRef(latestTasks);
               }
-            }}
-          >
-            Undo
-          </button>
-        </div>
-      ));
+              throw error;
+            }
+          });
+        } catch {
+          if (
+            isMountedRef.current &&
+            boardSessionVersionRef.current === mutationSessionVersion
+          ) {
+            toast.error("The move could not be undone.");
+          }
+        } finally {
+          undoRequestKeysRef.current.delete(taskMoveToastId);
+        }
+      };
+
+      taskMoveToastIdsRef.current.set(normalizedTaskId, taskMoveToastId);
+
+      if (movedIntoDone) {
+        const achievement = getTaskCompletionAchievement(
+          completedCount,
+          nextTasks.length
+        );
+
+        toast.success(
+          ({ closeToast }) => (
+            <CompletionAchievementToast
+              taskTitle={movedTask.title}
+              completedCount={completedCount}
+              achievement={achievement}
+              onUndo={() => undoMove(closeToast)}
+              onUndoFocus={() =>
+                toast.pause?.({
+                  id: taskMoveToastId,
+                  containerId: TASK_MOVE_TOAST_CONTAINER_ID,
+                })
+              }
+              onUndoBlur={() =>
+                toast.play?.({
+                  id: taskMoveToastId,
+                  containerId: TASK_MOVE_TOAST_CONTAINER_ID,
+                })
+              }
+            />
+          ),
+          {
+            toastId: taskMoveToastId,
+            containerId: TASK_MOVE_TOAST_CONTAINER_ID,
+            autoClose: TASK_MOVE_TOAST_DURATION_MS,
+            closeOnClick: false,
+            role: "status",
+            ariaLabel: `Achievement unlocked: ${achievement.title}. ${movedTask.title} completed. ${completedCount} tasks done. Undo move is available for eight seconds.`,
+            icon: <Trophy size={19} aria-hidden="true" />,
+            onClose: removeTrackedToast,
+          }
+        );
+      } else {
+        toast.success(({ closeToast }) => (
+          <div className="flex items-center justify-between gap-3">
+            <span>Task moved</span>
+            <button
+              type="button"
+              className="font-extrabold text-indigo-600 underline underline-offset-2 dark:text-indigo-300"
+              onClick={(event) => {
+                event.stopPropagation();
+                undoMove(closeToast);
+              }}
+              onFocus={() =>
+                toast.pause?.({
+                  id: taskMoveToastId,
+                  containerId: TASK_MOVE_TOAST_CONTAINER_ID,
+                })
+              }
+              onBlur={() =>
+                toast.play?.({
+                  id: taskMoveToastId,
+                  containerId: TASK_MOVE_TOAST_CONTAINER_ID,
+                })
+              }
+            >
+              Undo
+            </button>
+          </div>
+        ), {
+          toastId: taskMoveToastId,
+          containerId: TASK_MOVE_TOAST_CONTAINER_ID,
+          autoClose: TASK_MOVE_TOAST_DURATION_MS,
+          closeOnClick: false,
+          role: "status",
+          ariaLabel: `${movedTask.title} moved. Undo move is available for eight seconds.`,
+          onClose: removeTrackedToast,
+        });
+      }
     } catch (error) {
-      setTasks(previousTasks);
-      toast.error(error.response?.data?.error || "The task could not be moved.");
-    } finally {
-      setIsReordering(false);
+      if (tasksRef.current === nextTasks) {
+        setTasksAndRef(previousTasks);
+      }
+      if (
+        isMountedRef.current &&
+        boardSessionVersionRef.current === mutationSessionVersion
+      ) {
+        toast.error(error.response?.data?.error || "The task could not be moved.");
+      }
     }
   };
 
@@ -581,6 +977,24 @@ export default function TaskManager() {
 
   return (
     <div className="task-manager-page relative min-h-screen overflow-clip bg-[#f4f6fa] px-3 pb-[calc(3.5rem+env(safe-area-inset-bottom))] pt-4 transition-colors sm:px-5 sm:pt-5 lg:px-7 dark:bg-[#050506]">
+      <ToastContainer
+        containerId={TASK_MOVE_TOAST_CONTAINER_ID}
+        aria-label="Task activity notifications"
+        className="amiverse-toast-container"
+        toastClassName="amiverse-toast"
+        progressClassName="amiverse-toast-progress"
+        position="bottom-center"
+        autoClose={TASK_MOVE_TOAST_DURATION_MS}
+        hideProgressBar={false}
+        closeOnClick={false}
+        pauseOnHover
+        pauseOnFocusLoss
+        draggable
+        newestOnTop
+        limit={1}
+        closeButton={TaskMoveToastCloseButton}
+        transition={Slide}
+      />
       <div className="relative mx-auto max-w-[1600px]">
         <header className="task-manager-header mb-4 flex flex-col gap-4 sm:mb-5 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-3xl">
@@ -607,7 +1021,8 @@ export default function TaskManager() {
               <button
                 type="button"
                 onClick={() => openNewTask("backlog")}
-                className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-extrabold text-white shadow-lg shadow-indigo-500/20 transition hover:-translate-y-0.5 hover:bg-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 sm:flex-none dark:focus-visible:ring-offset-black"
+                disabled={saving || isReordering}
+                className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-extrabold text-white shadow-lg shadow-indigo-500/20 transition hover:-translate-y-0.5 hover:bg-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 sm:flex-none dark:focus-visible:ring-offset-black"
               >
                 <Plus size={17} /> New task
               </button>
@@ -843,6 +1258,7 @@ export default function TaskManager() {
                         onAddTask={openNewTask}
                         onEditTask={openEditTask}
                         dragDisabled={dragDisabled}
+                        actionsDisabled={saving || isReordering}
                         isMobileActive={mobileStatus === status.id}
                       />
                     ))}

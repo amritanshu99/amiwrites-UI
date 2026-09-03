@@ -280,6 +280,15 @@ const heroAssetUrl = (path = "") => {
 };
 const cx = (...classes) => classes.filter(Boolean).join(" ");
 const decodedImageCache = new Map();
+const shouldSkipDecorativeBackground = () =>
+  typeof navigator !== "undefined" &&
+  Boolean(
+    (
+      navigator.connection ||
+      navigator.mozConnection ||
+      navigator.webkitConnection
+    )?.saveData,
+  );
 
 const preloadDecodedImage = (
   url,
@@ -391,7 +400,9 @@ export default function PortfolioDetails() {
     }
   });
   const [imageLoaded, setImageLoaded] = useState(false);
-  const [backgroundImageLoaded, setBackgroundImageLoaded] = useState(false);
+  const [backgroundImageLoaded, setBackgroundImageLoaded] = useState(
+    shouldSkipDecorativeBackground,
+  );
   const [activeSection, setActiveSection] = useState("intro");
   const [isBottomCtaExpanded, setIsBottomCtaExpanded] = useState(false);
   const [isTouchDevice, setIsTouchDevice] = useState(false);
@@ -418,7 +429,10 @@ export default function PortfolioDetails() {
     ? darkBackgroundUrl
     : lightBackgroundUrl;
   const [portfolioBackgroundImage, setPortfolioBackgroundImage] = useState(
-    requestedPortfolioBackgroundImage,
+    () =>
+      shouldSkipDecorativeBackground()
+        ? ""
+        : requestedPortfolioBackgroundImage,
   );
   const activeSectionMeta = useMemo(
     () => sectionMeta.find((section) => section.id === activeSection) || sectionMeta[0],
@@ -495,6 +509,47 @@ export default function PortfolioDetails() {
       window.clearTimeout(pendingScrollTimerRef.current);
     };
   }, []);
+
+  useEffect(() => {
+    if (!loading) return undefined;
+
+    const mainElement = pageRef.current?.closest("main");
+    const appShell = mainElement?.closest(".amiverse-app-shell");
+    if (!mainElement || !appShell) return undefined;
+
+    const chromeElements = Array.from(appShell.children).filter(
+      (element) => element !== mainElement,
+    );
+    const previousAttributes = chromeElements.map((element) => ({
+      element,
+      hadInert: element.hasAttribute("inert"),
+      ariaHidden: element.getAttribute("aria-hidden"),
+    }));
+
+    chromeElements.forEach((element) => {
+      element.setAttribute("inert", "");
+      element.setAttribute("aria-hidden", "true");
+    });
+
+    if (
+      chromeElements.some((element) =>
+        element.contains(document.activeElement),
+      )
+    ) {
+      mainElement.focus({ preventScroll: true });
+    }
+
+    return () => {
+      previousAttributes.forEach(({ element, hadInert, ariaHidden }) => {
+        if (!hadInert) element.removeAttribute("inert");
+        if (ariaHidden === null) {
+          element.removeAttribute("aria-hidden");
+        } else {
+          element.setAttribute("aria-hidden", ariaHidden);
+        }
+      });
+    };
+  }, [loading]);
 
 
   useEffect(() => {
@@ -686,9 +741,7 @@ export default function PortfolioDetails() {
         return;
       }
 
-      image.decode().then(markHeroImageLoaded).catch(() => {
-        // A decoded frame (or the bounded deadline) owns the reveal.
-      });
+      image.decode().then(markHeroImageLoaded).catch(markHeroImageLoaded);
     },
     [markHeroImageLoaded],
   );
@@ -785,6 +838,12 @@ export default function PortfolioDetails() {
   }, [loaderPhase]);
 
   useEffect(() => {
+    if (shouldSkipDecorativeBackground()) {
+      setPortfolioBackgroundImage("");
+      setBackgroundImageLoaded(true);
+      return undefined;
+    }
+
     let cancelled = false;
 
     preloadDecodedImage(requestedPortfolioBackgroundImage, {
@@ -998,7 +1057,9 @@ export default function PortfolioDetails() {
         aria-hidden="true"
         className="portfolio-ny-background pointer-events-none fixed inset-y-0 left-0 right-0 z-0 bg-cover transition-opacity duration-500 lg:right-[var(--scrollbar-size)]"
         style={{
-          backgroundImage: `url(${portfolioBackgroundImage})`,
+          backgroundImage: portfolioBackgroundImage
+            ? `url(${portfolioBackgroundImage})`
+            : "none",
           opacity: backgroundImageLoaded ? 1 : 0,
         }}
       >
