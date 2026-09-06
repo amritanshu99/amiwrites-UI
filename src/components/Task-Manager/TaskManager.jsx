@@ -23,6 +23,7 @@ import {
   ChevronDown,
   CircleDot,
   FolderKanban,
+  Hourglass,
   ListFilter,
   LockKeyhole,
   LogIn,
@@ -36,7 +37,7 @@ import {
 } from "lucide-react";
 import KanbanColumn from "./KanbanColumn";
 import ProductivityAnalytics from "./ProductivityAnalytics";
-import PrimeTimePanel from "./PrimeTimePanel";
+import PrimeTimeDialog from "./PrimeTimeDialog";
 import TaskModal from "./TaskModal";
 import { TaskCardSurface } from "./TaskCard";
 import {
@@ -341,6 +342,7 @@ export default function TaskManager() {
   const [mobileStatus, setMobileStatus] = useState("backlog");
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [showAnalytics, setShowAnalytics] = useState(false);
+  const [showPrimeTime, setShowPrimeTime] = useState(false);
   const [taskModal, setTaskModal] = useState({ open: false, task: null, initialStatus: "backlog" });
   const fetchRequestIdRef = useRef(0);
   const analyticsCloseRef = useRef(null);
@@ -427,6 +429,11 @@ export default function TaskManager() {
   }, [dismissTaskMoveToasts]);
 
   const closeAnalytics = useCallback(() => setShowAnalytics(false), []);
+  const closePrimeTime = useCallback(() => setShowPrimeTime(false), []);
+
+  useEffect(() => {
+    if (!isAdmin || !isAuthenticated) closePrimeTime();
+  }, [isAdmin, isAuthenticated, closePrimeTime]);
   const analyticsDialogRef = useDialogFocus({
     open: showAnalytics,
     onClose: closeAnalytics,
@@ -1014,20 +1021,32 @@ export default function TaskManager() {
 
           {isAuthenticated && (
             <div className="flex w-full items-center gap-2 sm:w-auto">
+              {isAdmin && (
+                <button
+                  type="button"
+                  onClick={() => setShowPrimeTime(true)}
+                  aria-haspopup="dialog"
+                  aria-expanded={showPrimeTime}
+                  aria-controls={showPrimeTime ? "prime-time-dialog" : undefined}
+                  className="inline-flex min-h-10 flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-xs font-extrabold text-emerald-800 shadow-sm transition hover:bg-emerald-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 sm:flex-none sm:px-4 sm:text-sm dark:border-emerald-900 dark:bg-emerald-950/50 dark:text-emerald-300 dark:hover:bg-emerald-950"
+                >
+                  <Hourglass size={17} className="hidden sm:block" aria-hidden="true" /> Prime time
+                </button>
+              )}
               <button
                 type="button"
                 onClick={() => setShowAnalytics(true)}
-                className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white/80 px-4 py-2.5 text-sm font-extrabold text-slate-700 shadow-sm backdrop-blur transition hover:-translate-y-0.5 hover:bg-white hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 sm:flex-none dark:border-zinc-700 dark:bg-zinc-900/80 dark:text-zinc-200 dark:hover:bg-zinc-900"
+                className="inline-flex min-h-10 flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-xl border border-slate-300 bg-white/80 px-3 py-2.5 text-xs font-extrabold text-slate-700 shadow-sm backdrop-blur transition hover:-translate-y-0.5 hover:bg-white hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 sm:flex-none sm:px-4 sm:text-sm dark:border-zinc-700 dark:bg-zinc-900/80 dark:text-zinc-200 dark:hover:bg-zinc-900"
               >
-                <BarChart3 size={17} /> Insights
+                <BarChart3 size={17} className="hidden sm:block" aria-hidden="true" /> Insights
               </button>
               <button
                 type="button"
                 onClick={() => openNewTask("backlog")}
                 disabled={saving || isReordering}
-                className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-extrabold text-white shadow-lg shadow-indigo-500/20 transition hover:-translate-y-0.5 hover:bg-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 sm:flex-none dark:focus-visible:ring-offset-black"
+                className="inline-flex min-h-10 flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-indigo-600 px-3 py-2.5 text-xs font-extrabold text-white shadow-lg shadow-indigo-500/20 transition hover:-translate-y-0.5 hover:bg-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 sm:flex-none sm:px-4 sm:text-sm dark:focus-visible:ring-offset-black"
               >
-                <Plus size={17} /> New task
+                <Plus size={17} className="hidden sm:block" aria-hidden="true" /> New task
               </button>
             </div>
           )}
@@ -1061,7 +1080,6 @@ export default function TaskManager() {
           </section>
         ) : (
           <>
-            {isAdmin && <PrimeTimePanel />}
             <section className="task-manager-metrics-strip -mx-3 mb-4 flex snap-x snap-mandatory gap-2.5 overflow-x-auto px-3 pb-1 sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-3 sm:px-0 sm:pb-0 lg:grid-cols-4">
               <SummaryCard
                 icon={FolderKanban}
@@ -1304,6 +1322,10 @@ export default function TaskManager() {
         onDelete={handleDeleteTask}
         isSaving={saving}
       />
+
+      {isAuthenticated && isAdmin && showPrimeTime && (
+        <PrimeTimeDialog onClose={closePrimeTime} />
+      )}
 
       {showAnalytics && (
         <div

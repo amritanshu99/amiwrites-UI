@@ -20,7 +20,7 @@ function TimeMetric({ label, value, helper }) {
   );
 }
 
-export default function PrimeTimePanel() {
+export default function PrimeTimePanel({ headerAction }) {
   const [now, setNow] = useState(Date.now);
 
   useEffect(() => {
@@ -51,10 +51,10 @@ export default function PrimeTimePanel() {
   return (
     <section
       aria-labelledby="prime-time-title"
-      className="mb-4 overflow-hidden rounded-2xl border border-emerald-200/80 bg-gradient-to-br from-emerald-50 via-white to-teal-50 p-4 shadow-[0_15px_45px_-32px_rgba(16,185,129,0.4)] sm:p-5 dark:border-emerald-900/70 dark:from-emerald-950/40 dark:via-zinc-950 dark:to-teal-950/30"
+      className="overflow-hidden rounded-2xl border border-emerald-200/80 bg-gradient-to-br from-emerald-50 via-white to-teal-50 p-4 shadow-[0_15px_45px_-32px_rgba(16,185,129,0.4)] sm:p-5 dark:border-emerald-900/70 dark:from-emerald-950/40 dark:via-zinc-950 dark:to-teal-950/30"
     >
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <Hourglass size={17} className="text-emerald-700 dark:text-emerald-400" aria-hidden="true" />
             <h2 id="prime-time-title" className="text-base font-black text-slate-950 dark:text-white">Your prime time</h2>
@@ -64,10 +64,11 @@ export default function PrimeTimePanel() {
             Age 30 to 45 <span aria-hidden="true">&middot;</span> 9 Sep 2026 – 9 Sep 2041
           </p>
         </div>
-        <span className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-200 bg-white/80 px-2.5 py-1.5 text-xs font-bold text-emerald-800 dark:border-emerald-900 dark:bg-emerald-950/50 dark:text-emerald-300">
-          <Sunrise size={14} aria-hidden="true" /> {PRIME_HOURS_PER_DAY} prime hours / day
-        </span>
+        {headerAction}
       </div>
+      <span className="mt-3 inline-flex items-center gap-1.5 rounded-lg border border-emerald-200 bg-white/80 px-2.5 py-1.5 text-xs font-bold text-emerald-800 dark:border-emerald-900 dark:bg-emerald-950/50 dark:text-emerald-300">
+        <Sunrise size={14} aria-hidden="true" /> {PRIME_HOURS_PER_DAY} prime hours / day
+      </span>
 
       <div className="mt-4 flex flex-wrap items-end justify-between gap-x-5 gap-y-2">
         <p className="text-sm font-semibold text-emerald-800 dark:text-emerald-300">
@@ -99,7 +100,7 @@ export default function PrimeTimePanel() {
       </dl>
 
       <details className="mt-3 text-xs text-slate-600 dark:text-zinc-400">
-        <summary className="w-fit cursor-pointer rounded py-1 font-bold text-emerald-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 dark:text-emerald-300">How this is calculated</summary>
+        <summary tabIndex={0} className="w-fit cursor-pointer rounded py-1 font-bold text-emerald-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 dark:text-emerald-300">How this is calculated</summary>
         <div className="mt-2 border-t border-emerald-200/70 pt-3 dark:border-emerald-900/60">
           <ul className="flex flex-wrap gap-x-5 gap-y-2">
             <li className="inline-flex items-center gap-1.5"><Moon size={14} aria-hidden="true" /> {SLEEP_HOURS_PER_DAY} hours sleep excluded / day</li>

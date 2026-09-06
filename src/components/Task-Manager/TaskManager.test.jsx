@@ -1,5 +1,5 @@
 import React from "react";
-import { act, render, screen, waitFor, within } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import axios from "axios";
 import TaskManager from "./TaskManager";
@@ -252,22 +252,81 @@ function setUserToken(username) {
   localStorage.setItem("token", `eyJhbGciOiJIUzI1NiJ9.${claims}.test-${++authTokenSequence}`);
 }
 
-test("reveals prime time only after admin verification and removes it on logout", async () => {
+test("keeps prime time behind an admin button and dismisses the popup on logout", async () => {
   const verification = deferred();
   verifyToken.mockReturnValueOnce(verification.promise);
   setUserToken(ADMIN_USERNAME);
   renderTaskManager();
   await screen.findByText("Plan launch");
-  expect(screen.queryByRole("region", { name: "Your prime time" })).not.toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: "Prime time" })).not.toBeInTheDocument();
 
   await act(async () => verification.resolve(true));
-  expect(await screen.findByRole("region", { name: "Your prime time" })).toBeInTheDocument();
+  const trigger = await screen.findByRole("button", { name: "Prime time" });
+  expect(trigger).toHaveAttribute("aria-expanded", "false");
+  expect(screen.queryByRole("region", { name: "Your prime time" })).not.toBeInTheDocument();
+  expect(screen.getByRole("region", { name: "In Progress column" })).toHaveTextContent("Plan launch");
+
+  await userEvent.click(trigger);
+  expect(screen.getByRole("dialog", { name: "Your prime time" })).toHaveAttribute("aria-modal", "true");
+  expect(trigger).toHaveAttribute("aria-expanded", "true");
+  expect(document.body).toHaveClass("task-manager-overlay-active");
 
   act(() => {
     localStorage.removeItem("token");
     window.dispatchEvent(new Event("tokenChanged"));
   });
-  expect(screen.queryByRole("region", { name: "Your prime time" })).not.toBeInTheDocument();
+  expect(screen.queryByRole("dialog", { name: "Your prime time" })).not.toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: "Prime time" })).not.toBeInTheDocument();
+  expect(document.body).not.toHaveClass("task-manager-overlay-active");
+
+  verifyToken.mockResolvedValueOnce(true);
+  act(() => {
+    setUserToken(ADMIN_USERNAME);
+    window.dispatchEvent(new Event("tokenChanged"));
+  });
+  expect(await screen.findByRole("button", { name: "Prime time" })).toHaveAttribute("aria-expanded", "false");
+  expect(screen.queryByRole("dialog", { name: "Your prime time" })).not.toBeInTheDocument();
+});
+
+test("traps popup focus including the calculation disclosure and restores the trigger on close", async () => {
+  verifyToken.mockResolvedValueOnce(true);
+  setUserToken(ADMIN_USERNAME);
+  renderTaskManager();
+  const trigger = await screen.findByRole("button", { name: "Prime time" });
+  await userEvent.click(trigger);
+  const dialog = screen.getByRole("dialog", { name: "Your prime time" });
+  const closeButton = within(dialog).getByRole("button", { name: "Close prime time" });
+  const disclosure = within(dialog).getByText("How this is calculated");
+  await waitFor(() => expect(closeButton).toHaveFocus());
+
+  await userEvent.tab({ shift: true });
+  expect(disclosure).toHaveFocus();
+  await userEvent.tab();
+  expect(closeButton).toHaveFocus();
+  await userEvent.click(within(dialog).getByRole("heading", { name: "Your prime time" }));
+  expect(dialog).toBeInTheDocument();
+
+  await userEvent.keyboard("{Escape}");
+  expect(screen.queryByRole("dialog", { name: "Your prime time" })).not.toBeInTheDocument();
+  expect(trigger).toHaveFocus();
+  expect(document.body).not.toHaveClass("task-manager-overlay-active");
+
+  await userEvent.click(trigger);
+  await userEvent.click(screen.getByRole("button", { name: "Close prime time" }));
+  expect(screen.queryByRole("dialog", { name: "Your prime time" })).not.toBeInTheDocument();
+  expect(trigger).toHaveFocus();
+  expect(screen.getByRole("region", { name: "In Progress column" })).toHaveTextContent("Plan launch");
+});
+
+test("closes prime time when the backdrop is clicked", async () => {
+  verifyToken.mockResolvedValueOnce(true);
+  setUserToken(ADMIN_USERNAME);
+  renderTaskManager();
+  const trigger = await screen.findByRole("button", { name: "Prime time" });
+  await userEvent.click(trigger);
+  fireEvent.mouseDown(screen.getByRole("dialog", { name: "Your prime time" }).parentElement);
+  expect(screen.queryByRole("dialog", { name: "Your prime time" })).not.toBeInTheDocument();
+  expect(trigger).toHaveFocus();
 });
 
 test("hides prime time when admin verification fails", async () => {
@@ -277,6 +336,7 @@ test("hides prime time when admin verification fails", async () => {
   await screen.findByText("Plan launch");
   await waitFor(() => expect(verifyToken).toHaveBeenCalledTimes(1));
   expect(screen.queryByRole("region", { name: "Your prime time" })).not.toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: "Prime time" })).not.toBeInTheDocument();
 });
 
 test("hides prime time for a signed-in regular user", async () => {
@@ -285,6 +345,7 @@ test("hides prime time for a signed-in regular user", async () => {
   await screen.findByText("Plan launch");
   expect(verifyToken).not.toHaveBeenCalled();
   expect(screen.queryByRole("region", { name: "Your prime time" })).not.toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: "Prime time" })).not.toBeInTheDocument();
 });
 
 test("persists a Done move before celebrating the achievement and supports Undo", async () => {
