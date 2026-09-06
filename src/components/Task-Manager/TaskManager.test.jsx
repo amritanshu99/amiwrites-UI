@@ -3,6 +3,10 @@ import { act, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import axios from "axios";
 import TaskManager from "./TaskManager";
+import { verifyToken } from "../../utils/authApi";
+import { ADMIN_USERNAME } from "../../config/auth";
+
+jest.mock("../../utils/authApi", () => ({ verifyToken: jest.fn() }));
 
 const mockApiClient = {
   post: jest.fn(),
@@ -125,6 +129,7 @@ function deferred() {
 beforeEach(() => {
   jest.clearAllMocks();
   mockDndHandlers = {};
+  verifyToken.mockReset();
   localStorage.setItem("token", "test-token");
   axios.get.mockResolvedValue({ data: tasks });
   axios.create.mockReturnValue(mockApiClient);
@@ -141,6 +146,7 @@ test("renders the professional board and safely maps legacy completed tasks", as
   renderTaskManager();
 
   expect(await screen.findByRole("heading", { name: "Task Manager" })).toBeInTheDocument();
+  expect(screen.queryByRole("region", { name: "Your prime time" })).not.toBeInTheDocument();
   await screen.findByText("Plan launch");
   expect(screen.getByRole("region", { name: "Backlog column" })).toBeInTheDocument();
   expect(screen.getByRole("region", { name: "To Do column" })).toBeInTheDocument();
@@ -234,9 +240,51 @@ test("offers direct authentication actions when the user is signed out", async (
   expect(loginListener).toHaveBeenCalledTimes(1);
   expect(signupListener).toHaveBeenCalledTimes(1);
   expect(axios.get).not.toHaveBeenCalled();
+  expect(screen.queryByRole("region", { name: "Your prime time" })).not.toBeInTheDocument();
 
   window.removeEventListener("open-login-modal", loginListener);
   window.removeEventListener("open-signup-modal", signupListener);
+});
+
+let authTokenSequence = 0;
+function setUserToken(username) {
+  const claims = btoa(JSON.stringify({ username, exp: Math.floor(Date.now() / 1000) + 3600 }));
+  localStorage.setItem("token", `eyJhbGciOiJIUzI1NiJ9.${claims}.test-${++authTokenSequence}`);
+}
+
+test("reveals prime time only after admin verification and removes it on logout", async () => {
+  const verification = deferred();
+  verifyToken.mockReturnValueOnce(verification.promise);
+  setUserToken(ADMIN_USERNAME);
+  renderTaskManager();
+  await screen.findByText("Plan launch");
+  expect(screen.queryByRole("region", { name: "Your prime time" })).not.toBeInTheDocument();
+
+  await act(async () => verification.resolve(true));
+  expect(await screen.findByRole("region", { name: "Your prime time" })).toBeInTheDocument();
+
+  act(() => {
+    localStorage.removeItem("token");
+    window.dispatchEvent(new Event("tokenChanged"));
+  });
+  expect(screen.queryByRole("region", { name: "Your prime time" })).not.toBeInTheDocument();
+});
+
+test("hides prime time when admin verification fails", async () => {
+  verifyToken.mockResolvedValueOnce(false);
+  setUserToken(ADMIN_USERNAME);
+  renderTaskManager();
+  await screen.findByText("Plan launch");
+  await waitFor(() => expect(verifyToken).toHaveBeenCalledTimes(1));
+  expect(screen.queryByRole("region", { name: "Your prime time" })).not.toBeInTheDocument();
+});
+
+test("hides prime time for a signed-in regular user", async () => {
+  setUserToken("reader");
+  renderTaskManager();
+  await screen.findByText("Plan launch");
+  expect(verifyToken).not.toHaveBeenCalled();
+  expect(screen.queryByRole("region", { name: "Your prime time" })).not.toBeInTheDocument();
 });
 
 test("persists a Done move before celebrating the achievement and supports Undo", async () => {

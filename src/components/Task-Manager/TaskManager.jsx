@@ -36,6 +36,7 @@ import {
 } from "lucide-react";
 import KanbanColumn from "./KanbanColumn";
 import ProductivityAnalytics from "./ProductivityAnalytics";
+import PrimeTimePanel from "./PrimeTimePanel";
 import TaskModal from "./TaskModal";
 import { TaskCardSurface } from "./TaskCard";
 import {
@@ -55,6 +56,7 @@ import {
 } from "./taskCompletionAchievement";
 import useDialogFocus from "./useDialogFocus";
 import { apiUrl } from "../../config/api";
+import { useVerifiedAuth } from "../../hooks/useVerifiedAuth";
 
 const API_BASE = apiUrl("/api/tasks");
 const TASK_MOVE_TOAST_DURATION_MS = 8000;
@@ -322,6 +324,7 @@ function MobileBoardNavigation({
 }
 
 export default function TaskManager() {
+  const { isAdmin } = useVerifiedAuth();
   const initialToken = localStorage.getItem("token");
   const [token, setToken] = useState(initialToken);
   const [isAuthenticated, setIsAuthenticated] = useState(Boolean(initialToken));
@@ -1058,6 +1061,7 @@ export default function TaskManager() {
           </section>
         ) : (
           <>
+            {isAdmin && <PrimeTimePanel />}
             <section className="task-manager-metrics-strip -mx-3 mb-4 flex snap-x snap-mandatory gap-2.5 overflow-x-auto px-3 pb-1 sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-3 sm:px-0 sm:pb-0 lg:grid-cols-4">
               <SummaryCard
                 icon={FolderKanban}
