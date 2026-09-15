@@ -31,11 +31,15 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
+    "generate:loader": "node scripts/generate-initial-loader.js",
     "generate-sitemap": "node scripts/generate-sitemap.js",
     "generate-seo-pages": "node scripts/generate-seo-pages.js",
+    "prestart": "npm run generate:loader",
     "start": "react-scripts start",
+    "prebuild": "npm run generate:loader",
     "build": "npm run generate-sitemap && react-scripts build && npm run generate-seo-pages",
     "test": "react-scripts test",
+    "test:loader": "node --test scripts/generate-initial-loader.test.js",
     "test:seo": "node --test server/seoContent.test.js scripts/generate-seo-pages.test.js",
     "eject": "react-scripts eject"
   },

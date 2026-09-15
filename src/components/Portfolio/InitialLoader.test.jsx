@@ -63,6 +63,8 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  jest.useRealTimers();
+  jest.restoreAllMocks();
   delete document.documentElement.dataset.loaderQuip;
   window.matchMedia = originalMatchMedia;
   restoreNavigatorValue("deviceMemory", originalDeviceMemory);
@@ -85,7 +87,7 @@ test("always shows the written and directed credit in showcase mode", () => {
   ).toBeInTheDocument();
 });
 
-test("preserves the production loader state and accessible status contract", () => {
+test("renders the galaxy scene with the production state and accessible status contract", () => {
   installMatchMedia();
 
   const { rerender } = render(
@@ -98,18 +100,21 @@ test("preserves the production loader state and accessible status contract", () 
   const root = status.parentElement;
 
   expect(root).toHaveAttribute("data-loader-timed", "true");
+  expect(root).toHaveAttribute("data-loader-design", "galaxy");
   expect(root).toHaveAttribute("data-loader-profile", "lightweight");
   expect(root).toHaveAttribute("data-loader-state", "visible");
   expect(root.style.getPropertyValue("--loader-progress-duration")).toBe(
     `${INITIAL_LOADER_MIN_DURATION_MS}ms`,
   );
-  expect(root.querySelector(".loader-progress-fill")).toBeInTheDocument();
-  expect(root.querySelector(".loader-emblem")).toBeInTheDocument();
-  expect(root.querySelector(".loader-title")).toBeInTheDocument();
+  expect(root.querySelector(".galaxy-progress-fill")).toBeInTheDocument();
+  expect(root.querySelector(".galaxy-scenery")).toHaveAttribute("aria-hidden", "true");
+  expect(root.querySelector(".galaxy-nebula")).toBeInTheDocument();
+  expect(root.querySelector(".galaxy-wordmark")).toHaveTextContent("AmiVerse");
+  expect(screen.getAllByRole("status")).toHaveLength(1);
+  expect(status).toHaveAttribute("aria-live", "polite");
+  expect(status).toHaveAttribute("aria-atomic", "true");
   expect(root.querySelector("style")).not.toBeInTheDocument();
-  expect(root.querySelector("[data-loader-ambient]")).not.toBeInTheDocument();
-  expect(root.querySelector(".loader-dust")).not.toBeInTheDocument();
-  expect(root.querySelector(".loader-aurora")).not.toBeInTheDocument();
+  expect(root.querySelector(".loader-shell")).not.toBeInTheDocument();
   expect(screen.queryByRole("heading", { name: "AmiVerse" })).not.toBeInTheDocument();
 
   rerender(
@@ -124,13 +129,16 @@ test("preserves the production loader state and accessible status contract", () 
 
 test("announces and labels the secure session variant", () => {
   installMatchMedia();
-  render(<InitialLoader mode="session" />);
+  const { container } = render(<InitialLoader mode="session" />);
 
   expect(
     screen.getByRole("status", { name: "Verifying secure access" }),
   ).toBeInTheDocument();
   expect(screen.getAllByText("Secure Access").length).toBeGreaterThan(0);
   expect(screen.getByText("Private Session")).toBeInTheDocument();
+  expect(container.querySelector(".galaxy-progress-travel")).toBeInTheDocument();
+  expect(container.querySelector("[data-loader-root]")).not.toHaveAttribute("data-loader-timed");
+  expect(screen.queryByText(INITIAL_LOADER_CREDIT)).not.toBeInTheDocument();
 });
 
 test("keeps premium rendering enabled for compact touch viewports", () => {
@@ -142,7 +150,8 @@ test("keeps premium rendering enabled for compact touch viewports", () => {
 
   expect(root).toHaveAttribute("data-loader-compact", "true");
   expect(root).toHaveAttribute("data-loader-mode", "cinematic");
-  expect(root.querySelector(".loader-emblem-shutter")).toBeInTheDocument();
+  expect(root.querySelector(".galaxy-nebula")).toBeInTheDocument();
+  expect(root.querySelector(".galaxy-wordmark")).toHaveTextContent("AmiVerse");
 });
 
 test("uses the lightweight timed profile on compact touch viewports", () => {
@@ -156,10 +165,8 @@ test("uses the lightweight timed profile on compact touch viewports", () => {
 
   expect(root).toHaveAttribute("data-loader-compact", "true");
   expect(root).toHaveAttribute("data-loader-profile", "lightweight");
-  expect(root.querySelector(".loader-emblem-shutter")).not.toBeInTheDocument();
-  expect(root.querySelector("[data-loader-ambient]")).not.toBeInTheDocument();
-  expect(root.querySelector("[data-loader-animate].loader-emblem-shutter"))
-    .not.toBeInTheDocument();
+  expect(root.querySelector(".galaxy-progress-fill")).toBeInTheDocument();
+  expect(root.querySelector(".galaxy-nebula")).toBeInTheDocument();
 });
 
 test("does not subscribe the short-lived production loader to media changes", () => {
@@ -190,23 +197,65 @@ test("honors reduced motion and removes media-query listeners", () => {
   const root = container.querySelector("[data-loader-root]");
 
   expect(root).toHaveAttribute("data-loader-mode", "optimized");
-  expect(root.querySelector(".loader-emblem-shutter")).not.toBeInTheDocument();
+  expect(root.querySelector(".galaxy-wordmark")).toHaveTextContent("AmiVerse");
 
   unmount();
 
   queries.forEach((query) => {
     expect(query.addEventListener).toHaveBeenCalledTimes(1);
     expect(query.removeEventListener).toHaveBeenCalledTimes(1);
+    expect(query.removeEventListener).toHaveBeenCalledWith(
+      "change",
+      query.addEventListener.mock.calls[0][1],
+    );
   });
 });
 
-test("does not schedule React updates while the timed progress animates", () => {
+test("uses static completed progress when reduced motion is requested", () => {
+  installMatchMedia((query) => query.includes("prefers-reduced-motion"));
+  const { container } = render(
+    <InitialLoader durationMs={INITIAL_LOADER_MIN_DURATION_MS} />,
+  );
+
+  expect(container.querySelector("[data-loader-root]")).toHaveAttribute("data-loader-mode", "optimized");
+  expect(container.querySelector(".galaxy-progress-complete")).toBeInTheDocument();
+  expect(container.querySelector(".galaxy-progress-fill")).not.toBeInTheDocument();
+});
+
+test.each([
+  ["limited memory", "deviceMemory", 4],
+  ["limited processors", "hardwareConcurrency", 4],
+  ["data saving", "connection", { saveData: true }],
+])("uses the optimized galaxy profile for %s", (_, key, value) => {
+  installMatchMedia();
+  setNavigatorValue(key, value);
+  const { container } = render(<InitialLoader />);
+
+  expect(container.querySelector("[data-loader-root]")).toHaveAttribute("data-loader-mode", "optimized");
+  expect(container.querySelector(".galaxy-wordmark")).toHaveTextContent("AmiVerse");
+  expect(screen.getByRole("status", { name: "Loading AmiVerse" })).toBeInTheDocument();
+});
+
+test("preserves the minimum duration for a shorter requested progress animation", () => {
+  installMatchMedia();
+  const { container } = render(<InitialLoader durationMs={100} />);
+
+  expect(container.querySelector("[data-loader-root]").style.getPropertyValue("--loader-progress-duration")).toBe(
+    `${INITIAL_LOADER_MIN_DURATION_MS}ms`,
+  );
+});
+
+test.each([
+  ["timed showcase", { durationMs: INITIAL_LOADER_MIN_DURATION_MS }],
+  ["secure session", { mode: "session" }],
+])("does not poll or schedule React updates during the %s animation", (_, props) => {
   jest.useFakeTimers();
   installMatchMedia();
+  const setInterval = jest.spyOn(window, "setInterval");
   const onRender = jest.fn();
   const { unmount } = render(
     <Profiler id="loader" onRender={onRender}>
-      <InitialLoader durationMs={INITIAL_LOADER_MIN_DURATION_MS} />
+      <InitialLoader {...props} />
     </Profiler>,
   );
   onRender.mockClear();
@@ -214,8 +263,8 @@ test("does not schedule React updates while the timed progress animates", () => 
   act(() => jest.advanceTimersByTime(5000));
 
   expect(onRender).not.toHaveBeenCalled();
+  expect(setInterval).not.toHaveBeenCalled();
   unmount();
-  jest.useRealTimers();
 });
 
 test("shows the shared waiting line alongside the showcase credit", () => {
