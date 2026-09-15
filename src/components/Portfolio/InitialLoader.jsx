@@ -4,7 +4,7 @@ import "./InitialLoader.css";
 export const INITIAL_LOADER_CREDIT =
   "Written & Directed by Amritanshu Mishra";
 
-export const INITIAL_LOADER_MIN_DURATION_MS = 1200;
+export const INITIAL_LOADER_MIN_DURATION_MS = 600;
 export const INITIAL_LOADER_EXIT_DURATION_MS = 220;
 
 const sessionQuotes = [
@@ -140,6 +140,7 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
   } = performanceProfile;
   const statusLines = isSessionMode ? sessionStatusLines : showcaseStatusLines;
   const shouldCycleStatus =
+    phase === "visible" &&
     !isTimedShowcase &&
     !shouldOptimize &&
     !isCompactViewport &&
@@ -268,7 +269,9 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
 
             <div className="loader-emblem">
               <div className="loader-emblem-plate" />
-              {!shouldOptimize && <div className="loader-emblem-shutter" />}
+              {!isTimedShowcase && !shouldOptimize && (
+                <div className="loader-emblem-shutter" />
+              )}
               <span className="loader-orbit-node" />
               <div className="loader-emblem-core" />
               <div className="loader-emblem-icon">

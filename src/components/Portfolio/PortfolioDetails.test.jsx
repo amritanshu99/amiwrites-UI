@@ -1,7 +1,10 @@
 import React from "react";
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import axios from "axios";
-import { completeInitialLoaderCycle } from "./InitialLoader";
+import {
+  completeInitialLoaderCycle,
+  INITIAL_LOADER_MIN_DURATION_MS,
+} from "./InitialLoader";
 import PortfolioDetails from "./PortfolioDetails";
 
 const mockUseReducedMotion = jest.fn(() => true);
@@ -85,7 +88,7 @@ const finishInitialLoader = async () => {
   markInitialHeroReady();
 
   await act(async () => {
-    jest.advanceTimersByTime(1200);
+    jest.advanceTimersByTime(INITIAL_LOADER_MIN_DURATION_MS);
     await Promise.resolve();
   });
 
@@ -173,6 +176,33 @@ describe("PortfolioDetails startup experience", () => {
     ).toBeInTheDocument();
   });
 
+  it("cancels the loader deadline once the ready page is interactive", async () => {
+    axios.get.mockImplementationOnce(() => new Promise(() => {}));
+    const onRender = jest.fn();
+    const { container } = render(
+      <React.Profiler id="portfolio" onRender={onRender}>
+        <PortfolioDetails />
+      </React.Profiler>,
+    );
+    expect(container.querySelector("article")).toHaveAttribute(
+      "data-portfolio-loading",
+      "true",
+    );
+
+    await finishInitialLoader();
+    expect(container.querySelector("article")).not.toHaveAttribute(
+      "data-portfolio-loading",
+    );
+    onRender.mockClear();
+
+    await act(async () => {
+      jest.advanceTimersByTime(4000);
+      await Promise.resolve();
+    });
+
+    expect(onRender).not.toHaveBeenCalled();
+  });
+
   it("keeps surrounding app chrome inert only while the loader is visible", async () => {
     axios.get.mockImplementationOnce(() => new Promise(() => {}));
 
@@ -225,7 +255,7 @@ describe("PortfolioDetails startup experience", () => {
     fireEvent.load(portrait);
 
     await act(async () => {
-      jest.advanceTimersByTime(1200);
+      jest.advanceTimersByTime(INITIAL_LOADER_MIN_DURATION_MS);
       await Promise.resolve();
     });
 
@@ -290,7 +320,7 @@ describe("PortfolioDetails startup experience", () => {
     markInitialHeroReady();
 
     act(() => {
-      jest.advanceTimersByTime(1199);
+      jest.advanceTimersByTime(INITIAL_LOADER_MIN_DURATION_MS - 1);
     });
 
     expect(
@@ -344,7 +374,7 @@ describe("PortfolioDetails startup experience", () => {
       markInitialHeroReady();
 
       act(() => {
-        jest.advanceTimersByTime(1199);
+        jest.advanceTimersByTime(INITIAL_LOADER_MIN_DURATION_MS - 1);
       });
 
       expect(
@@ -570,7 +600,9 @@ describe("PortfolioDetails startup experience", () => {
     ).not.toBeInTheDocument();
 
     await act(async () => {
-      jest.advanceTimersByTime(1500);
+      jest.advanceTimersByTime(
+        new Date(2026, 8, 1, 0, 0, 1).getTime() - Date.now(),
+      );
       await Promise.resolve();
     });
 

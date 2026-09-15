@@ -581,6 +581,8 @@ export default function PortfolioDetails() {
   }, []);
 
   useEffect(() => {
+    if (!loading) return undefined;
+
     const minimumDelay = Math.max(
       0,
       INITIAL_LOADER_MIN_DURATION_MS - initialLoaderElapsedMs,
@@ -600,7 +602,7 @@ export default function PortfolioDetails() {
       if (minimumTimer !== null) window.clearTimeout(minimumTimer);
       if (deadlineTimer !== null) window.clearTimeout(deadlineTimer);
     };
-  }, [initialLoaderElapsedMs]);
+  }, [initialLoaderElapsedMs, loading]);
 
   useEffect(() => {
     if (loading) return undefined;
@@ -1051,6 +1053,7 @@ export default function PortfolioDetails() {
         aria-labelledby="portfolio-title"
         aria-hidden={loading ? true : undefined}
         inert={loading ? true : undefined}
+        data-portfolio-loading={heroIsWaiting ? "true" : undefined}
         className="relative isolate w-full max-w-full overflow-hidden bg-white text-zinc-900 dark:bg-black dark:text-zinc-100"
       >
       <div

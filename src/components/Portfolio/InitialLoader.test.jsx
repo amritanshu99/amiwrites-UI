@@ -1,4 +1,5 @@
-import { render, screen } from "@testing-library/react";
+import { Profiler } from "react";
+import { act, render, screen } from "@testing-library/react";
 import InitialLoader, {
   INITIAL_LOADER_CREDIT,
   INITIAL_LOADER_MIN_DURATION_MS,
@@ -153,7 +154,7 @@ test("uses the lightweight timed profile on compact touch viewports", () => {
 
   expect(root).toHaveAttribute("data-loader-compact", "true");
   expect(root).toHaveAttribute("data-loader-profile", "lightweight");
-  expect(root.querySelector(".loader-emblem-shutter")).toBeInTheDocument();
+  expect(root.querySelector(".loader-emblem-shutter")).not.toBeInTheDocument();
   expect(root.querySelector("[data-loader-ambient]")).not.toBeInTheDocument();
   expect(root.querySelector("[data-loader-animate].loader-emblem-shutter"))
     .not.toBeInTheDocument();
@@ -195,4 +196,22 @@ test("honors reduced motion and removes media-query listeners", () => {
     expect(query.addEventListener).toHaveBeenCalledTimes(1);
     expect(query.removeEventListener).toHaveBeenCalledTimes(1);
   });
+});
+
+test("does not schedule React updates while the timed progress animates", () => {
+  jest.useFakeTimers();
+  installMatchMedia();
+  const onRender = jest.fn();
+  const { unmount } = render(
+    <Profiler id="loader" onRender={onRender}>
+      <InitialLoader durationMs={INITIAL_LOADER_MIN_DURATION_MS} />
+    </Profiler>,
+  );
+  onRender.mockClear();
+
+  act(() => jest.advanceTimersByTime(5000));
+
+  expect(onRender).not.toHaveBeenCalled();
+  unmount();
+  jest.useRealTimers();
 });
