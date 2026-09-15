@@ -82,6 +82,14 @@
   animation: galaxyDrift 32s ease-in-out infinite alternate;
 }
 
+.galaxy-nebula::after {
+  position: absolute;
+  inset: 30% 20%;
+  background: radial-gradient(ellipse, rgba(218, 219, 244, 0.13), transparent 68%);
+  transform: rotate(-22deg);
+  content: "";
+}
+
 .galaxy-stars-near {
   opacity: 0.7;
   background:
@@ -91,6 +99,29 @@
     radial-gradient(circle at 92% 52%, #d1d2e1 0 1px, transparent 1.7px),
     radial-gradient(circle at 72% 85%, #eeeef2 0 0.9px, transparent 1.6px);
   animation: galaxyStarlight 5s ease-in-out infinite alternate;
+}
+
+.galaxy-shooting-star {
+  position: absolute;
+  top: 18%;
+  left: 72%;
+  width: clamp(5rem, 12vw, 10rem);
+  height: 1px;
+  opacity: 0;
+  background: linear-gradient(90deg, #f5f4ff, rgba(207, 211, 239, 0.3) 22%, transparent);
+  transform: rotate(-28deg);
+  animation: galaxyMeteor 6s ease-out infinite;
+}
+.galaxy-shooting-star::before {
+  position: absolute;
+  top: -1px;
+  left: 0;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 8px rgba(228, 232, 255, 0.6);
+  content: "";
 }
 
 .galaxy-orbit-plane {
@@ -181,6 +212,10 @@
   text-align: center;
 }
 .galaxy-eyebrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
   margin: 0 0 1.3rem;
   color: #aaaab6;
   font-size: clamp(0.53rem, 1.2vw, 0.65rem);
@@ -188,6 +223,14 @@
   letter-spacing: 0.36em;
   text-transform: uppercase;
 }
+.galaxy-eyebrow::before,
+.galaxy-eyebrow::after {
+  width: clamp(1.25rem, 4vw, 3rem);
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(205, 205, 225, 0.4));
+  content: "";
+}
+.galaxy-eyebrow::after { transform: rotate(180deg); }
 .galaxy-wordmark {
   position: relative;
   display: inline-flex;
@@ -218,8 +261,8 @@
 }
 .galaxy-tagline {
   margin: 1.3rem 0 0;
-  color: #9999a5;
-  font-size: clamp(0.62rem, 1.4vw, 0.82rem);
+  color: #aaaab7;
+  font-size: clamp(0.7rem, 1.4vw, 0.82rem);
   letter-spacing: 0.14em;
   line-height: 1.6;
 }
@@ -257,16 +300,23 @@
 .galaxy-nebula,
 .galaxy-orbit-runner,
 .galaxy-stars-near,
+.galaxy-shooting-star,
 .galaxy-status-light { animation-delay: var(--loader-scene-delay, 0ms); }
 
 .galaxy-progress-track {
-  width: 7rem;
-  height: 1px;
+  width: 8rem;
+  height: 2px;
   margin: 1rem auto 0;
   overflow: hidden;
+  border-radius: 2px;
   background: rgba(220, 220, 235, 0.15);
 }
-.galaxy-progress-track > span { display: block; height: 100%; background: #d8d6e4; }
+.galaxy-progress-track > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #767687, #d8d6e4 65%, #fff);
+}
 .galaxy-progress-fill {
   width: 100%;
   transform-origin: left;
@@ -278,15 +328,15 @@
   max-width: 36ch;
   min-height: 3.2em;
   margin: 1.1rem auto 0;
-  color: #92929f;
-  font-size: clamp(0.74rem, 1.3vw, 0.84rem);
+  color: #a0a0ad;
+  font-size: clamp(0.8rem, 1.3vw, 0.88rem);
   line-height: 1.6;
   text-wrap: balance;
 }
 .galaxy-footer {
   bottom: max(clamp(1.25rem, 3.5vh, 2.75rem), env(safe-area-inset-bottom));
   color: #7a7a85;
-  font-size: clamp(0.5rem, 1vw, 0.62rem);
+  font-size: clamp(0.58rem, 1vw, 0.65rem);
   line-height: 1.5;
   letter-spacing: 0.04em;
 }
@@ -300,12 +350,18 @@
 [data-portfolio-loading="true"] *::before,
 [data-portfolio-loading="true"] *::after { animation-play-state: paused !important; }
 [data-loader-state="exiting"] .galaxy-progress-fill { animation: none; transform: scaleX(1); }
+[data-loader-mode="optimized"] .galaxy-shooting-star { display: none; }
 
 @keyframes galaxyDrift {
   from { transform: translate(-50%, -50%) rotate(-5deg) scale(1); }
   to { transform: translate(-50%, -50%) rotate(4deg) scale(1.045); }
 }
 @keyframes galaxyOrbit { to { transform: rotate(360deg); } }
+@keyframes galaxyMeteor {
+  0% { opacity: 0; transform: translate(3rem, -1.6rem) rotate(-28deg); }
+  6% { opacity: 0.75; }
+  22%, 100% { opacity: 0; transform: translate(-10rem, 5.3rem) rotate(-28deg); }
+}
 @keyframes galaxyStarlight { from { opacity: 0.4; } to { opacity: 0.85; } }
 @keyframes galaxyProgressFill { from { transform: scaleX(0); } to { transform: scaleX(0.88); } }
 @keyframes galaxyProgressTravel { from { transform: translateX(-110%); } to { transform: translateX(360%); } }
@@ -317,9 +373,10 @@
   .galaxy-brand-signature > span { font-size: 0.53rem; }
   .galaxy-brand-signature img { width: 28px; height: 28px; }
   .galaxy-identity { top: 40%; }
+  .galaxy-wordmark { font-size: clamp(2.6rem, 17vw, 4.5rem); }
   .galaxy-nebula,
   .galaxy-orbit-plane { top: 40%; }
-  .galaxy-eyebrow { letter-spacing: 0.24em; }
+  .galaxy-eyebrow { gap: 0.75rem; letter-spacing: 0.24em; }
   .galaxy-tagline { letter-spacing: 0.07em; }
   .galaxy-footer-note { display: none; }
   .galaxy-footer { justify-content: center; text-align: center; }
@@ -332,8 +389,8 @@
   .galaxy-nebula,
   .galaxy-orbit-plane { top: 38%; }
   .galaxy-wordmark { font-size: clamp(3.5rem, 13vh, 5.4rem); }
-  .galaxy-eyebrow { margin-bottom: 0.5rem; font-size: 0.48rem; }
-  .galaxy-tagline { margin-top: 0.5rem; font-size: 0.6rem; }
+  .galaxy-eyebrow { margin-bottom: 0.5rem; font-size: 0.55rem; }
+  .galaxy-tagline { margin-top: 0.5rem; font-size: 0.65rem; }
   .galaxy-loading-dock { bottom: max(2.65rem, calc(env(safe-area-inset-bottom) + 1.5rem)); }
   .galaxy-waiting-line { min-height: 0; margin-top: 0.6rem; font-size: 0.7rem; }
   .galaxy-progress-track { margin-top: 0.6rem; }

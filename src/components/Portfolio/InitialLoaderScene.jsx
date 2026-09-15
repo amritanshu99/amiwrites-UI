@@ -47,6 +47,7 @@ export default function InitialLoaderScene({
           <div className="galaxy-orbit-runner"><span /></div>
         </div>
         <div className="galaxy-stars galaxy-stars-near" />
+        <div className="galaxy-shooting-star" />
         <i className="galaxy-spark galaxy-spark-one" />
         <i className="galaxy-spark galaxy-spark-two" />
         <i className="galaxy-spark galaxy-spark-three" />
