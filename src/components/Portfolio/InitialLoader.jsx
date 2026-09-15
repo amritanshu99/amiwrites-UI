@@ -1,5 +1,4 @@
 import React, { memo, useEffect, useState } from "react";
-import LoadingBackdrop from "../Loader/LoadingBackdrop";
 import { getWaitingLine } from "../Loader/waitingLines";
 import "./InitialLoader.css";
 
@@ -241,7 +240,7 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
         {isSessionMode ? "Verifying secure access" : "Loading AmiVerse"}
       </span>
 
-      <LoadingBackdrop />
+      <div className="loader-backdrop" aria-hidden="true" />
 
       <div className="loader-badges" aria-hidden="true">
         <div className="loader-badge">
@@ -250,7 +249,7 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
         </div>
         <div className="loader-badge loader-badge-right">
           <span>{topRightLabel}</span>
-          <span className="loader-badge-index">01</span>
+          {!isTimedShowcase && <span className="loader-badge-index">01</span>}
         </div>
       </div>
 
@@ -264,11 +263,13 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
               </div>
             )}
 
-            <div className="loader-kicker">
-              <span className="loader-kicker-index">01</span>
-              <span className="loader-kicker-line" />
-              <span>{isSessionMode ? "Access protocol" : "AmiVerse original"}</span>
-            </div>
+            {!isTimedShowcase && (
+              <div className="loader-kicker">
+                <span className="loader-kicker-index">01</span>
+                <span className="loader-kicker-line" />
+                <span>{isSessionMode ? "Access protocol" : "AmiVerse original"}</span>
+              </div>
+            )}
 
             <div className="loader-emblem">
               <div className="loader-emblem-plate" />
@@ -299,10 +300,6 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
             <div className="loader-divider" />
 
             <p className="loader-quote">{quote}</p>
-
-            {!isSessionMode && (
-              <p className="loader-credit">{INITIAL_LOADER_CREDIT}</p>
-            )}
 
             <div className="loader-rail">
               <div className="loader-rail-labels">
@@ -337,10 +334,16 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
               </div>
             )}
 
-            <p className="loader-footer">
-              <span className="loader-footer-pulse" />
-              <span>{footerLabel}</span>
-            </p>
+            {!isSessionMode && (
+              <p className="loader-credit">{INITIAL_LOADER_CREDIT}</p>
+            )}
+
+            {!isTimedShowcase && (
+              <p className="loader-footer">
+                <span className="loader-footer-pulse" />
+                <span>{footerLabel}</span>
+              </p>
+            )}
           </div>
         </div>
       </div>

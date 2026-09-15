@@ -1,6 +1,6 @@
 [data-loader-root] {
-  --loader-accent: 162, 223, 242;
-  --loader-metal: 176, 168, 224;
+  --loader-accent: 238, 238, 238;
+  --loader-metal: 166, 166, 166;
   --loader-frame-top: max(
     clamp(3.25rem, 6vh, 4.5rem),
     calc(env(safe-area-inset-top) + 0.75rem)
@@ -10,7 +10,7 @@
     calc(env(safe-area-inset-bottom) + 0.75rem)
   );
   --loader-shell-x: clamp(1rem, 4vw, 3.5rem);
-  --loader-shell-y: clamp(1rem, 4vh, 3.5rem);
+  --loader-shell-y: clamp(1.5rem, 5vh, 3rem);
   --loader-stack-gap: clamp(0.5rem, 1.9vh, 1.5rem);
   position: fixed;
   inset: 0;
@@ -49,6 +49,37 @@
   animation-play-state: paused !important;
 }
 
+.loader-backdrop {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 50% -15%, rgba(255, 255, 255, 0.085), transparent 62%),
+    radial-gradient(ellipse at 50% 110%, rgba(255, 255, 255, 0.025), transparent 55%),
+    #000;
+}
+
+.loader-backdrop::before {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 17% 24%, rgba(255, 255, 255, 0.3) 0 0.7px, transparent 1.3px),
+    radial-gradient(circle at 82% 18%, rgba(255, 255, 255, 0.24) 0 0.7px, transparent 1.3px),
+    radial-gradient(circle at 12% 78%, rgba(255, 255, 255, 0.2) 0 0.7px, transparent 1.3px),
+    radial-gradient(circle at 88% 72%, rgba(255, 255, 255, 0.25) 0 0.7px, transparent 1.3px);
+  content: "";
+}
+
+.loader-backdrop::after {
+  position: absolute;
+  inset: 72% -35% -100%;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 50%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.018), transparent 40%);
+  content: "";
+}
+
 .loader-badges {
   position: absolute;
   top: max(0.75rem, calc(env(safe-area-inset-top) + 0.35rem));
@@ -69,10 +100,8 @@
   gap: 0.5rem;
   padding: 0.5rem 0.75rem;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 9999px;
-  background: rgba(14, 23, 40, 0.9);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.44);
+  border: 0;
+  background: transparent;
   color: rgba(255, 255, 255, 0.72);
   font-size: 0.44rem;
   line-height: 1;
@@ -132,14 +161,14 @@
   overflow: hidden;
   padding: var(--loader-shell-y) var(--loader-shell-x);
   border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: clamp(1.5rem, 4vw, 2.2rem);
+  border-radius: 1.25rem;
   background:
     radial-gradient(
       circle at 50% 4%,
       rgba(255, 255, 255, 0.075),
       transparent 40%
     ),
-    linear-gradient(145deg, #102130, #0d1224 48%, #17162d);
+    linear-gradient(160deg, #101010, #050505 50%, #080808);
   box-shadow:
     0 28px 80px rgba(0, 0, 0, 0.82),
     inset 0 1px 0 rgba(255, 255, 255, 0.06);
@@ -155,9 +184,9 @@
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(161, 161, 170, 0.42),
+    rgba(161, 161, 161, 0.42),
     rgba(255, 255, 255, 0.84),
-    rgba(161, 161, 170, 0.42),
+    rgba(161, 161, 161, 0.42),
     transparent
   );
   content: "";
@@ -199,7 +228,7 @@
   align-items: center;
   justify-content: center;
   gap: 0.75rem;
-  color: rgba(244, 244, 245, 0.7);
+  color: rgba(244, 244, 244, 0.7);
   font-size: 0.58rem;
   letter-spacing: 0.28em;
   text-transform: uppercase;
@@ -317,7 +346,7 @@
 }
 
 .loader-intro {
-  color: rgba(244, 244, 245, 0.7);
+  color: rgba(244, 244, 244, 0.7);
   font-size: clamp(0.62rem, 1.6vw, 0.75rem);
   font-weight: 600;
   letter-spacing: clamp(0.2em, 0.8vw, 0.4em);
@@ -327,10 +356,10 @@
 .loader-title {
   color: #fafafa;
   font-family: Cinzel, Georgia, serif;
-  font-size: clamp(2rem, min(9vw, 8.2vh), 5.3rem);
-  font-weight: 500;
-  line-height: 0.92;
-  letter-spacing: clamp(0.08em, 1.4vw, 0.24em);
+  font-size: clamp(2.2rem, min(9vw, 8.2vh), 5.3rem);
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: clamp(0.07em, 1vw, 0.16em);
   text-shadow: 0 16px 30px rgba(0, 0, 0, 0.82);
   text-transform: uppercase;
   text-wrap: balance;
@@ -340,12 +369,12 @@
   background: linear-gradient(
     112deg,
     #fff 4%,
-    #a1a1aa 32%,
+    #aaa 32%,
     #fff 54%,
-    #d4d4d8 76%,
+    #d4d4d4 76%,
     #fff 96%
   );
-  color: #f4f4f5;
+  color: #f4f4f4;
 }
 
 @supports ((-webkit-background-clip: text) or (background-clip: text)) {
@@ -372,7 +401,7 @@
 
 .loader-quote {
   max-width: 34ch;
-  color: #c5cde0;
+  color: #c2c2c2;
   font-family: system-ui, sans-serif;
   font-size: clamp(0.82rem, 2.2vw, 1.05rem);
   line-height: 1.6;
@@ -380,15 +409,15 @@
 }
 
 .loader-credit {
-  color: #8e9cba;
+  color: #858585;
   font-size: clamp(0.56rem, 1.5vw, 0.68rem);
   line-height: 1.5;
   letter-spacing: 0.06em;
 }
 
 .loader-rail {
-  width: min(36rem, 100%);
-  margin-top: clamp(0.15rem, 0.8vh, 0.75rem);
+  width: min(28rem, 100%);
+  margin-top: clamp(0.5rem, 1.4vh, 1rem);
 }
 
 .loader-rail-labels {
@@ -396,7 +425,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
-  color: rgba(244, 244, 245, 0.64);
+  color: rgba(244, 244, 244, 0.64);
   font-size: 0.5rem;
   letter-spacing: clamp(0.18em, 0.7vw, 0.34em);
   text-transform: uppercase;
@@ -434,7 +463,7 @@
 .loader-progress-fill,
 .loader-progress-complete {
   width: 100%;
-  background: linear-gradient(90deg, #777, #e4e4e7, #fff);
+  background: linear-gradient(90deg, #777, #e4e4e4, #fff);
   box-shadow: 0 0 10px rgba(255, 255, 255, 0.32);
   transform: scaleX(0);
   transform-origin: left;
@@ -516,7 +545,7 @@
   align-items: center;
   justify-content: center;
   gap: 0.625rem;
-  color: rgba(244, 244, 245, 0.7);
+  color: rgba(244, 244, 244, 0.7);
   font-size: 0.56rem;
   font-weight: 500;
   letter-spacing: clamp(0.24em, 0.8vw, 0.46em);
@@ -537,7 +566,7 @@
 
 /* Keep startup to one small progress layer and the final overlay fade. */
 [data-loader-root][data-loader-profile="lightweight"] .loader-shell {
-  background: linear-gradient(145deg, #102130, #0d1224 48%, #17162d);
+  background: linear-gradient(160deg, #101010, #050505 50%, #080808);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
@@ -551,6 +580,32 @@
   /* A downloaded font must not resize a short-lived loading screen. */
   font-family: Georgia, "Times New Roman", serif;
   text-shadow: none;
+}
+
+[data-loader-timed="true"] .loader-emblem-plate {
+  background: radial-gradient(circle at 50% 5%, #222, #080808 65%);
+  border-color: rgba(255, 255, 255, 0.22);
+}
+
+[data-loader-timed="true"] .loader-emblem-icon {
+  border-radius: 50%;
+  background: #050505;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-loader-timed="true"] .loader-emblem-icon img {
+  border-radius: 50%;
+}
+
+[data-loader-timed="true"] .loader-orbit-node {
+  width: 0.3rem;
+  height: 0.3rem;
+  top: -0.1rem;
+  background: #d4d4d4;
+}
+
+[data-loader-timed="true"] .loader-credit {
+  margin-top: 0.25rem;
 }
 
 [data-portfolio-loading="true"] *,
@@ -633,7 +688,6 @@
   .loader-pills {
     display: none;
   }
-
 }
 
 @media (max-height: 560px) {
