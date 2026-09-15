@@ -11,7 +11,7 @@ const routeLoadingLabels = {
 const AppLoadingFallback = ({ pathname }) => {
   return (
     <Loader
-      label={routeLoadingLabels[pathname] || "Loading page"}
+      label={routeLoadingLabels[pathname] || "Loading AmiVerse"}
       opaque
     />
   );

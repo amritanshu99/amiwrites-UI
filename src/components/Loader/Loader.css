@@ -1,0 +1,241 @@
+.amiverse-loading-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 18% 22%, rgba(28, 119, 154, 0.24), transparent 52%),
+    radial-gradient(ellipse at 85% 72%, rgba(116, 67, 177, 0.25), transparent 52%),
+    radial-gradient(ellipse at 52% 108%, rgba(31, 86, 136, 0.3), transparent 55%),
+    #060914;
+}
+
+.amiverse-loading-backdrop::before {
+  position: absolute;
+  inset: 0;
+  content: "";
+  opacity: 0.55;
+  background:
+    radial-gradient(circle at 14% 18%, #d8eeff 0 1px, transparent 1.6px),
+    radial-gradient(circle at 77% 12%, #afc2ec 0 1px, transparent 1.6px),
+    radial-gradient(circle at 90% 37%, #d8eeff 0 1px, transparent 1.6px),
+    radial-gradient(circle at 7% 65%, #8fadda 0 1px, transparent 1.6px),
+    radial-gradient(circle at 29% 87%, #d8eeff 0 1px, transparent 1.6px),
+    radial-gradient(circle at 82% 84%, #b7b2e8 0 1px, transparent 1.6px),
+    radial-gradient(circle at 38% 9%, #b7b2e8 0 0.6px, transparent 1.2px),
+    radial-gradient(circle at 65% 92%, #d8eeff 0 0.6px, transparent 1.2px);
+}
+
+.amiverse-loading-backdrop::after {
+  position: absolute;
+  inset: 66% -30% -90%;
+  border: 1px solid rgba(157, 182, 239, 0.13);
+  border-radius: 50%;
+  background: radial-gradient(ellipse at 50% 0, rgba(116, 135, 213, 0.08), transparent 65%);
+  transform: rotate(-12deg);
+  content: "";
+}
+
+.amiverse-loading-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: grid;
+  box-sizing: border-box;
+  min-width: 0;
+  height: 100%;
+  min-height: 100svh;
+  place-items: center;
+  place-items: safe center;
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right))
+    max(1rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left));
+  background: rgba(6, 9, 20, 0.92);
+  color: #f5f7ff;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  isolation: isolate;
+  transition: opacity 180ms ease-out;
+}
+
+.amiverse-loading-overlay > .amiverse-loading-backdrop {
+  opacity: 0.94;
+}
+
+.amiverse-loading-overlay[data-opaque="true"] > .amiverse-loading-backdrop {
+  opacity: 1;
+}
+
+.amiverse-loading-overlay[data-state="exiting"] {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.amiverse-loading-overlay[data-state="exiting"] * {
+  animation-play-state: paused !important;
+}
+
+.amiverse-loading-card {
+  position: relative;
+  z-index: 1;
+  box-sizing: border-box;
+  width: min(100%, 30rem);
+  min-width: 0;
+  padding: clamp(1.5rem, 5vw, 2.75rem);
+  border: 1px solid transparent;
+  border-radius: clamp(1.35rem, 4vw, 2rem);
+  background:
+    linear-gradient(145deg, #102130, #0d1224 48%, #17162d) padding-box,
+    linear-gradient(135deg, rgba(136, 219, 239, 0.4), rgba(156, 175, 218, 0.13) 45%, rgba(195, 165, 239, 0.32)) border-box;
+  box-shadow: 0 24px 64px -32px rgba(0, 0, 0, 0.8);
+  text-align: center;
+}
+
+.amiverse-loading-masthead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  color: #b6c9de;
+  font-size: 0.59rem;
+  font-weight: 600;
+  line-height: 1.5;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.amiverse-loading-tag {
+  color: #a3afca;
+  font-size: 0.54rem;
+  letter-spacing: 0.1em;
+}
+
+.amiverse-loading-orbit {
+  position: relative;
+  width: clamp(5.5rem, 15vw, 7rem);
+  aspect-ratio: 1;
+  margin: clamp(1.75rem, 5vh, 2.5rem) auto 1.6rem;
+  border: 1px solid rgba(154, 189, 236, 0.13);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(77, 146, 180, 0.14), transparent 70%);
+}
+
+.amiverse-loading-orbit-ring {
+  position: absolute;
+  inset: 0.5rem;
+  border: 1px solid rgba(128, 177, 214, 0.18);
+  border-top-color: #a5ecf7;
+  border-right-color: #a8a8eb;
+  border-radius: 50%;
+  animation: amiverseLoadingOrbit 3s linear infinite;
+}
+
+.amiverse-loading-orbit-ring::after {
+  position: absolute;
+  top: 11%;
+  right: 11%;
+  width: 0.3rem;
+  height: 0.3rem;
+  border-radius: 50%;
+  background: #d7fbff;
+  box-shadow: 0 0 10px rgba(140, 231, 255, 0.6);
+  content: "";
+}
+
+.amiverse-loading-orbit-core {
+  position: absolute;
+  inset: 1.45rem;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(185, 220, 240, 0.22);
+  border-radius: 50%;
+  background: #080d17;
+}
+
+.amiverse-loading-orbit-core img {
+  display: block;
+  width: 76%;
+  height: 76%;
+  object-fit: contain;
+  border-radius: 50%;
+}
+
+.amiverse-loading-label {
+  margin: 0;
+  color: #f3f7ff;
+  font-size: clamp(1.35rem, 4.5vw, 1.9rem);
+  font-weight: 600;
+  line-height: 1.22;
+  letter-spacing: -0.04em;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+
+.amiverse-loading-quip {
+  max-width: 28ch;
+  min-height: 3.3em;
+  margin: 1rem auto 1.75rem;
+  color: #b8c3da;
+  font-size: clamp(0.85rem, 2.8vw, 0.96rem);
+  line-height: 1.65;
+  text-wrap: balance;
+}
+
+.amiverse-loading-progress {
+  width: min(100%, 16rem);
+  height: 3px;
+  margin: 0 auto;
+  overflow: hidden;
+  border-radius: 99px;
+  background: rgba(170, 196, 238, 0.12);
+}
+
+.amiverse-loading-progress > span {
+  display: block;
+  width: 45%;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #7bd8ea, #c5b6ef);
+  animation: amiverseLoadingProgress 1.8s ease-in-out infinite;
+}
+
+.amiverse-loading-caption {
+  margin: 1.25rem 0 0;
+  color: #8595b3;
+  font-size: 0.65rem;
+  line-height: 1.5;
+  letter-spacing: 0.05em;
+}
+
+@keyframes amiverseLoadingOrbit {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes amiverseLoadingProgress {
+  from { transform: translateX(-110%); }
+  to { transform: translateX(325%); }
+}
+
+@media (max-height: 540px) and (min-width: 540px) {
+  .amiverse-loading-card { padding: 1rem 2rem; }
+  .amiverse-loading-orbit { width: 4.5rem; margin: 0.75rem auto; }
+  .amiverse-loading-orbit-core { inset: 1.1rem; }
+  .amiverse-loading-quip { min-height: 0; max-width: 36ch; margin: 0.65rem auto 1rem; }
+  .amiverse-loading-caption { margin-top: 0.75rem; }
+}
+
+@media (max-height: 320px) {
+  .amiverse-loading-card { padding: 1rem 1.25rem; }
+  .amiverse-loading-orbit,
+  .amiverse-loading-caption { display: none; }
+  .amiverse-loading-label { margin-top: 1rem; }
+  .amiverse-loading-quip { min-height: 0; margin-block: 0.65rem 1rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .amiverse-loading-overlay { transition: none; }
+  .amiverse-loading-orbit-ring,
+  .amiverse-loading-progress > span { animation: none; }
+  .amiverse-loading-progress > span { width: 60%; margin-inline: auto; }
+}

@@ -1,6 +1,6 @@
 [data-loader-root] {
-  --loader-accent: 244, 244, 245;
-  --loader-metal: 161, 161, 170;
+  --loader-accent: 162, 223, 242;
+  --loader-metal: 176, 168, 224;
   --loader-frame-top: max(
     clamp(3.25rem, 6vh, 4.5rem),
     calc(env(safe-area-inset-top) + 0.75rem)
@@ -49,38 +49,6 @@
   animation-play-state: paused !important;
 }
 
-.loader-backdrop {
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(
-      circle at 50% 45%,
-      rgba(var(--loader-accent), 0.085),
-      rgba(8, 8, 8, 0.96) 31%,
-      #000 68%
-    ),
-    linear-gradient(145deg, #050505 0%, #000 46%, #030303 100%);
-}
-
-.loader-backdrop::before,
-.loader-backdrop::after {
-  position: absolute;
-  inset-block: 0;
-  width: min(28vw, 28rem);
-  min-width: 9rem;
-  content: "";
-}
-
-.loader-backdrop::before {
-  left: 0;
-  background: linear-gradient(90deg, #000, rgba(0, 0, 0, 0));
-}
-
-.loader-backdrop::after {
-  right: 0;
-  background: linear-gradient(270deg, #000, rgba(0, 0, 0, 0));
-}
-
 .loader-badges {
   position: absolute;
   top: max(0.75rem, calc(env(safe-area-inset-top) + 0.35rem));
@@ -103,7 +71,7 @@
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 9999px;
-  background: rgba(5, 5, 5, 0.9);
+  background: rgba(14, 23, 40, 0.9);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.44);
   color: rgba(255, 255, 255, 0.72);
   font-size: 0.44rem;
@@ -157,7 +125,7 @@
   position: relative;
   display: flex;
   box-sizing: border-box;
-  width: min(64rem, 100%);
+  width: min(52rem, 100%);
   max-height: 100%;
   min-height: 0;
   justify-content: center;
@@ -171,7 +139,7 @@
       rgba(255, 255, 255, 0.075),
       transparent 40%
     ),
-    linear-gradient(155deg, #0d0d0d, #020202 47%, #080808);
+    linear-gradient(145deg, #102130, #0d1224 48%, #17162d);
   box-shadow:
     0 28px 80px rgba(0, 0, 0, 0.82),
     inset 0 1px 0 rgba(255, 255, 255, 0.06);
@@ -342,6 +310,7 @@
 .loader-intro,
 .loader-title,
 .loader-quote,
+.loader-credit,
 .loader-footer,
 .loader-status p {
   margin: 0;
@@ -402,16 +371,19 @@
 }
 
 .loader-quote {
-  display: -webkit-box;
-  max-width: 42rem;
-  overflow: hidden;
-  color: rgba(244, 244, 245, 0.78);
-  font-family: Cinzel, Georgia, serif;
-  font-size: clamp(0.68rem, 1.7vw, 1rem);
-  line-height: 1.65;
-  letter-spacing: clamp(0.08em, 0.5vw, 0.16em);
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
+  max-width: 34ch;
+  color: #c5cde0;
+  font-family: system-ui, sans-serif;
+  font-size: clamp(0.82rem, 2.2vw, 1.05rem);
+  line-height: 1.6;
+  text-wrap: balance;
+}
+
+.loader-credit {
+  color: #8e9cba;
+  font-size: clamp(0.56rem, 1.5vw, 0.68rem);
+  line-height: 1.5;
+  letter-spacing: 0.06em;
 }
 
 .loader-rail {
@@ -564,17 +536,8 @@
 }
 
 /* Keep startup to one small progress layer and the final overlay fade. */
-[data-loader-profile="lightweight"] .loader-backdrop {
-  background: radial-gradient(circle at 50% 45%, #111, #000 68%);
-}
-
-[data-loader-profile="lightweight"] .loader-backdrop::before,
-[data-loader-profile="lightweight"] .loader-backdrop::after {
-  content: none;
-}
-
 [data-loader-root][data-loader-profile="lightweight"] .loader-shell {
-  background: linear-gradient(155deg, #0d0d0d, #020202 47%, #080808);
+  background: linear-gradient(145deg, #102130, #0d1224 48%, #17162d);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
@@ -584,8 +547,7 @@
   box-shadow: none;
 }
 
-[data-loader-profile="lightweight"] .loader-title,
-[data-loader-profile="lightweight"] .loader-quote {
+[data-loader-profile="lightweight"] .loader-title {
   /* A downloaded font must not resize a short-lived loading screen. */
   font-family: Georgia, "Times New Roman", serif;
   text-shadow: none;
@@ -672,9 +634,6 @@
     display: none;
   }
 
-  .loader-quote {
-    -webkit-line-clamp: 1;
-  }
 }
 
 @media (max-height: 560px) {
@@ -721,7 +680,7 @@
 
 @media (max-height: 430px) {
   .loader-badges,
-  .loader-quote,
+  .loader-credit,
   .loader-status {
     display: none;
   }

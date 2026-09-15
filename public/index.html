@@ -144,10 +144,21 @@
           "/amibot-admin": "Loading AmiBot settings",
         };
 
+        // Keep these first-paint lines in sync with Loader/waitingLines.js.
+        const waitingLines = [
+          "Good things take time. Apparently, so does this.",
+          "Making you wait. For character development.",
+          "The pixels are making a dramatic entrance.",
+          "Patience is a virtue. We're really testing yours.",
+          "Just a moment. The universe has a lot of tabs open.",
+        ];
+        document.documentElement.dataset.loaderQuip =
+          waitingLines[Math.floor(Math.random() * waitingLines.length)];
+
         document.documentElement.dataset.bootstrapLoader =
           pathname === "/" ? "showcase" : "route";
         document.documentElement.dataset.bootstrapLoaderLabel =
-          routeLabels[pathname] || "Loading page";
+          routeLabels[pathname] || "Loading AmiVerse";
       })();
     </script>
     <style>
@@ -436,117 +447,256 @@
         }
       }
 
-      .bootstrap-route-loader {
-        position: relative;
-        box-sizing: border-box;
-        display: none;
-        width: min(18rem, calc(100vw - 2rem));
-        flex-direction: column;
-        align-items: center;
-        padding: 1.5rem 1.5rem 1.35rem;
-        overflow: hidden;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 0.75rem;
-        color: #fff;
-        background: rgba(0, 0, 0, 0.78);
-        box-shadow: 0 24px 80px rgba(0, 0, 0, 0.5);
-        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-        text-align: center;
-        isolation: isolate;
-      }
+      /* Shared with src/components/Loader/Loader.css for a steady first paint. */
+.amiverse-loading-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 18% 22%, rgba(28, 119, 154, 0.24), transparent 52%),
+    radial-gradient(ellipse at 85% 72%, rgba(116, 67, 177, 0.25), transparent 52%),
+    radial-gradient(ellipse at 52% 108%, rgba(31, 86, 136, 0.3), transparent 55%),
+    #060914;
+}
 
-      .bootstrap-route-loader::before {
-        position: absolute;
-        top: 0;
-        right: 1.5rem;
-        left: 1.5rem;
-        height: 1px;
-        background: linear-gradient(90deg, transparent, rgba(165, 243, 252, 0.72), transparent);
-        content: "";
-      }
+.amiverse-loading-backdrop::before {
+  position: absolute;
+  inset: 0;
+  content: "";
+  opacity: 0.55;
+  background:
+    radial-gradient(circle at 14% 18%, #d8eeff 0 1px, transparent 1.6px),
+    radial-gradient(circle at 77% 12%, #afc2ec 0 1px, transparent 1.6px),
+    radial-gradient(circle at 90% 37%, #d8eeff 0 1px, transparent 1.6px),
+    radial-gradient(circle at 7% 65%, #8fadda 0 1px, transparent 1.6px),
+    radial-gradient(circle at 29% 87%, #d8eeff 0 1px, transparent 1.6px),
+    radial-gradient(circle at 82% 84%, #b7b2e8 0 1px, transparent 1.6px),
+    radial-gradient(circle at 38% 9%, #b7b2e8 0 0.6px, transparent 1.2px),
+    radial-gradient(circle at 65% 92%, #d8eeff 0 0.6px, transparent 1.2px);
+}
 
-      .bootstrap-route-loader__spinner {
-        position: relative;
-        width: 5rem;
-        height: 5rem;
-      }
+.amiverse-loading-backdrop::after {
+  position: absolute;
+  inset: 66% -30% -90%;
+  border: 1px solid rgba(157, 182, 239, 0.13);
+  border-radius: 50%;
+  background: radial-gradient(ellipse at 50% 0, rgba(116, 135, 213, 0.08), transparent 65%);
+  transform: rotate(-12deg);
+  content: "";
+}
 
-      .bootstrap-route-loader__spinner::before,
-      .bootstrap-route-loader__spinner::after {
-        position: absolute;
-        border: 3px solid rgba(165, 243, 252, 0.15);
-        border-radius: 999px;
-        content: "";
-        animation: bootstrapRouteSpin 1.05s linear infinite;
-      }
+.amiverse-loading-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: grid;
+  box-sizing: border-box;
+  min-width: 0;
+  height: 100%;
+  min-height: 100svh;
+  place-items: center;
+  place-items: safe center;
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right))
+    max(1rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left));
+  background: rgba(6, 9, 20, 0.92);
+  color: #f5f7ff;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  isolation: isolate;
+  transition: opacity 180ms ease-out;
+}
 
-      .bootstrap-route-loader__spinner::before {
-        inset: 0;
-        border-top-color: #67e8f9;
-        border-right-color: #f9a8d4;
-        box-shadow: 0 0 32px rgba(34, 211, 238, 0.24);
-      }
+.amiverse-loading-overlay > .amiverse-loading-backdrop {
+  opacity: 0.94;
+}
 
-      .bootstrap-route-loader__spinner::after {
-        inset: 0.5rem;
-        border-color: transparent;
-        border-bottom-color: #bae6fd;
-        border-left-color: #f9a8d4;
-        animation-duration: 1.7s;
-        animation-direction: reverse;
-      }
+.amiverse-loading-overlay[data-opaque="true"] > .amiverse-loading-backdrop {
+  opacity: 1;
+}
 
-      .bootstrap-route-loader__core {
-        position: absolute;
-        inset: 2.15rem;
-        border-radius: 999px;
-        background: #cffafe;
-        box-shadow: 0 0 18px rgba(165, 243, 252, 0.8);
-        animation: bootstrapRoutePulse 1.4s ease-in-out infinite;
-      }
+.amiverse-loading-overlay[data-state="exiting"] {
+  opacity: 0;
+  pointer-events: none;
+}
 
-      .bootstrap-route-loader__label {
-        margin: 1.25rem 0 0;
-        color: #ecfeff;
-        font-size: 0.95rem;
-        font-weight: 600;
-        line-height: 1.4;
-      }
+.amiverse-loading-overlay[data-state="exiting"] * {
+  animation-play-state: paused !important;
+}
 
-      .bootstrap-route-loader__dots {
-        display: flex;
-        height: 0.5rem;
-        align-items: center;
-        justify-content: center;
-        gap: 0.375rem;
-        margin-top: 1rem;
-      }
+.amiverse-loading-card {
+  position: relative;
+  z-index: 1;
+  box-sizing: border-box;
+  width: min(100%, 30rem);
+  min-width: 0;
+  padding: clamp(1.5rem, 5vw, 2.75rem);
+  border: 1px solid transparent;
+  border-radius: clamp(1.35rem, 4vw, 2rem);
+  background:
+    linear-gradient(145deg, #102130, #0d1224 48%, #17162d) padding-box,
+    linear-gradient(135deg, rgba(136, 219, 239, 0.4), rgba(156, 175, 218, 0.13) 45%, rgba(195, 165, 239, 0.32)) border-box;
+  box-shadow: 0 24px 64px -32px rgba(0, 0, 0, 0.8);
+  text-align: center;
+}
 
-      .bootstrap-route-loader__dots span {
-        width: 0.375rem;
-        height: 0.375rem;
-        border-radius: 999px;
-        background: rgba(165, 243, 252, 0.94);
-        animation: bootstrapRoutePulse 1.1s ease-in-out infinite;
-      }
+.amiverse-loading-masthead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  color: #b6c9de;
+  font-size: 0.59rem;
+  font-weight: 600;
+  line-height: 1.5;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
 
-      .bootstrap-route-loader__dots span:nth-child(2) {
-        background: rgba(186, 230, 253, 0.82);
-        animation-delay: 180ms;
-      }
+.amiverse-loading-tag {
+  color: #a3afca;
+  font-size: 0.54rem;
+  letter-spacing: 0.1em;
+}
 
-      .bootstrap-route-loader__dots span:nth-child(3) {
-        background: rgba(249, 168, 212, 0.82);
-        animation-delay: 360ms;
-      }
+.amiverse-loading-orbit {
+  position: relative;
+  width: clamp(5.5rem, 15vw, 7rem);
+  aspect-ratio: 1;
+  margin: clamp(1.75rem, 5vh, 2.5rem) auto 1.6rem;
+  border: 1px solid rgba(154, 189, 236, 0.13);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(77, 146, 180, 0.14), transparent 70%);
+}
+
+.amiverse-loading-orbit-ring {
+  position: absolute;
+  inset: 0.5rem;
+  border: 1px solid rgba(128, 177, 214, 0.18);
+  border-top-color: #a5ecf7;
+  border-right-color: #a8a8eb;
+  border-radius: 50%;
+  animation: amiverseLoadingOrbit 3s linear infinite;
+}
+
+.amiverse-loading-orbit-ring::after {
+  position: absolute;
+  top: 11%;
+  right: 11%;
+  width: 0.3rem;
+  height: 0.3rem;
+  border-radius: 50%;
+  background: #d7fbff;
+  box-shadow: 0 0 10px rgba(140, 231, 255, 0.6);
+  content: "";
+}
+
+.amiverse-loading-orbit-core {
+  position: absolute;
+  inset: 1.45rem;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(185, 220, 240, 0.22);
+  border-radius: 50%;
+  background: #080d17;
+}
+
+.amiverse-loading-orbit-core img {
+  display: block;
+  width: 76%;
+  height: 76%;
+  object-fit: contain;
+  border-radius: 50%;
+}
+
+.amiverse-loading-label {
+  margin: 0;
+  color: #f3f7ff;
+  font-size: clamp(1.35rem, 4.5vw, 1.9rem);
+  font-weight: 600;
+  line-height: 1.22;
+  letter-spacing: -0.04em;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+
+.amiverse-loading-quip {
+  max-width: 28ch;
+  min-height: 3.3em;
+  margin: 1rem auto 1.75rem;
+  color: #b8c3da;
+  font-size: clamp(0.85rem, 2.8vw, 0.96rem);
+  line-height: 1.65;
+  text-wrap: balance;
+}
+
+.amiverse-loading-progress {
+  width: min(100%, 16rem);
+  height: 3px;
+  margin: 0 auto;
+  overflow: hidden;
+  border-radius: 99px;
+  background: rgba(170, 196, 238, 0.12);
+}
+
+.amiverse-loading-progress > span {
+  display: block;
+  width: 45%;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #7bd8ea, #c5b6ef);
+  animation: amiverseLoadingProgress 1.8s ease-in-out infinite;
+}
+
+.amiverse-loading-caption {
+  margin: 1.25rem 0 0;
+  color: #8595b3;
+  font-size: 0.65rem;
+  line-height: 1.5;
+  letter-spacing: 0.05em;
+}
+
+@keyframes amiverseLoadingOrbit {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes amiverseLoadingProgress {
+  from { transform: translateX(-110%); }
+  to { transform: translateX(325%); }
+}
+
+@media (max-height: 540px) and (min-width: 540px) {
+  .amiverse-loading-card { padding: 1rem 2rem; }
+  .amiverse-loading-orbit { width: 4.5rem; margin: 0.75rem auto; }
+  .amiverse-loading-orbit-core { inset: 1.1rem; }
+  .amiverse-loading-quip { min-height: 0; max-width: 36ch; margin: 0.65rem auto 1rem; }
+  .amiverse-loading-caption { margin-top: 0.75rem; }
+}
+
+@media (max-height: 320px) {
+  .amiverse-loading-card { padding: 1rem 1.25rem; }
+  .amiverse-loading-orbit,
+  .amiverse-loading-caption { display: none; }
+  .amiverse-loading-label { margin-top: 1rem; }
+  .amiverse-loading-quip { min-height: 0; margin-block: 0.65rem 1rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .amiverse-loading-overlay { transition: none; }
+  .amiverse-loading-orbit-ring,
+  .amiverse-loading-progress > span { animation: none; }
+  .amiverse-loading-progress > span { width: 60%; margin-inline: auto; }
+}
+
+      .bootstrap-route-loader { display: none; }
 
       html[data-bootstrap-loader="route"] #app-bootstrap-loader {
         padding: max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right))
           max(1rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left));
-        background:
-          linear-gradient(135deg, rgba(34, 211, 238, 0.16), transparent 34%, rgba(244, 114, 182, 0.12) 68%, transparent),
-          rgba(0, 0, 0, 0.88);
-        backdrop-filter: blur(16px);
+        overflow: auto;
+        font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
       }
 
       html[data-bootstrap-loader="route"] #app-bootstrap-loader::before,
@@ -555,26 +705,35 @@
         display: none;
       }
 
-      html[data-bootstrap-loader="route"] .bootstrap-route-loader {
-        display: flex;
+      html[data-bootstrap-loader="route"] .bootstrap-route-loader { display: block; }
+
+      .bootstrap-loader__stage {
+        background: linear-gradient(145deg, #102130, #0d1224 48%, #17162d);
+        border-color: rgba(173, 198, 231, 0.2);
       }
 
-      @keyframes bootstrapRouteSpin {
-        to {
-          transform: rotate(360deg);
-        }
+      .bootstrap-loader__quote {
+        max-width: 34ch;
+        margin-inline: auto;
+        color: #c5cde0;
+        font-size: clamp(0.82rem, 2.2vw, 1.05rem);
+        font-style: normal;
+        line-height: 1.6;
+        letter-spacing: normal;
+        text-transform: none;
+        text-wrap: balance;
       }
 
-      @keyframes bootstrapRoutePulse {
-        0%,
-        100% {
-          opacity: 0.45;
-          transform: scale(0.82);
-        }
-        50% {
-          opacity: 1;
-          transform: scale(1);
-        }
+      .bootstrap-loader__credit {
+        margin: 0.65rem 0 0;
+        color: #8e9cba;
+        font: 400 clamp(0.56rem, 1.5vw, 0.68rem)/1.5 system-ui, sans-serif;
+        letter-spacing: 0.06em;
+      }
+
+      @media (max-height: 430px) {
+        .bootstrap-loader__quote { display: block; }
+        .bootstrap-loader__credit { display: none; }
       }
 
       @media (prefers-reduced-motion: reduce) {
@@ -587,13 +746,6 @@
         .bootstrap-loader__quote,
         .bootstrap-loader__rail,
         .bootstrap-loader__status {
-          animation: none;
-        }
-
-        .bootstrap-route-loader__spinner::before,
-        .bootstrap-route-loader__spinner::after,
-        .bootstrap-route-loader__core,
-        .bootstrap-route-loader__dots span {
           animation: none;
         }
 
@@ -712,22 +864,25 @@
         aria-live="polite"
         aria-label="Loading AmiVerse"
       >
+        <div class="amiverse-loading-backdrop" aria-hidden="true"></div>
         <div class="bootstrap-loader__badges" aria-hidden="true">
           <span class="bootstrap-loader__badge">Feature Presentation</span>
-          <span class="bootstrap-loader__badge">Monochrome Intro</span>
+          <span class="bootstrap-loader__badge">Please stand by</span>
         </div>
-        <div class="bootstrap-route-loader">
-          <div class="bootstrap-route-loader__spinner" aria-hidden="true">
-            <span class="bootstrap-route-loader__core"></span>
+        <div class="bootstrap-route-loader amiverse-loading-card" aria-hidden="true">
+          <div class="amiverse-loading-masthead">
+            <span>AmiVerse</span><span class="amiverse-loading-tag">Please stand by</span>
           </div>
-          <p id="bootstrap-route-loader-label" class="bootstrap-route-loader__label">
-            Loading page
-          </p>
-          <div class="bootstrap-route-loader__dots" aria-hidden="true">
-            <span></span>
-            <span></span>
-            <span></span>
+          <div class="amiverse-loading-orbit">
+            <span class="amiverse-loading-orbit-ring"></span>
+            <span class="amiverse-loading-orbit-core">
+              <img src="/icons/icon-96x96.png" width="48" height="48" alt="" />
+            </span>
           </div>
+          <p id="bootstrap-route-loader-label" class="amiverse-loading-label">Loading AmiVerse</p>
+          <p class="amiverse-loading-quip" data-bootstrap-quip>Good things take time. Apparently, so does this.</p>
+          <div class="amiverse-loading-progress"><span></span></div>
+          <p class="amiverse-loading-caption">A tiny pause. A whole universe.</p>
         </div>
         <div class="bootstrap-loader__stage">
           <p class="bootstrap-loader__eyebrow">Feature Presentation</p>
@@ -738,22 +893,25 @@
           <div class="bootstrap-loader__emblem" aria-hidden="true">
             <img src="/icons/icon-96x96.png" alt="" width="96" height="96" />
           </div>
-          <p class="bootstrap-loader__intro">Lights out. Let the universe arrive.</p>
+          <p class="bootstrap-loader__intro">Loading AmiVerse</p>
           <p class="bootstrap-loader__title">AmiVerse</p>
           <div class="bootstrap-loader__divider" aria-hidden="true"></div>
-          <p class="bootstrap-loader__quote">
-            Written &amp; Directed by Amritanshu Mishra
-          </p>
+          <p class="bootstrap-loader__quote" data-bootstrap-quip>Good things take time. Apparently, so does this.</p>
+          <p class="bootstrap-loader__credit">Written &amp; Directed by Amritanshu Mishra</p>
           <div class="bootstrap-loader__rail" aria-hidden="true"></div>
           <p class="bootstrap-loader__status">Preparing the opening scene</p>
         </div>
       </div>
       <script>
         (() => {
+          const waitingLine = document.documentElement.dataset.loaderQuip;
+          document.querySelectorAll("[data-bootstrap-quip]").forEach((line) => {
+            if (waitingLine) line.textContent = waitingLine;
+          });
           if (document.documentElement.dataset.bootstrapLoader !== "route") return;
 
           const label =
-            document.documentElement.dataset.bootstrapLoaderLabel || "Loading page";
+            document.documentElement.dataset.bootstrapLoaderLabel || "Loading AmiVerse";
           const loader = document.getElementById("app-bootstrap-loader");
           const labelNode = document.getElementById("bootstrap-route-loader-label");
 

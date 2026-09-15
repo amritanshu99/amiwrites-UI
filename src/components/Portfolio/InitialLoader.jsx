@@ -1,4 +1,6 @@
 import React, { memo, useEffect, useState } from "react";
+import LoadingBackdrop from "../Loader/LoadingBackdrop";
+import { getWaitingLine } from "../Loader/waitingLines";
 import "./InitialLoader.css";
 
 export const INITIAL_LOADER_CREDIT =
@@ -125,6 +127,7 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
   const isTimedShowcase =
     !isSessionMode && Number.isFinite(durationMs) && durationMs > 0;
   const [activeStatusIndex, setActiveStatusIndex] = useState(0);
+  const [waitingLine] = useState(getWaitingLine);
   const [performanceProfile, setPerformanceProfile] = useState(
     getPerformanceProfile,
   );
@@ -198,10 +201,10 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
   }, [shouldCycleStatus, statusLines.length]);
 
   const topLeftLabel = isSessionMode ? "Secure Access" : "Feature Presentation";
-  const topRightLabel = isSessionMode ? "Monochrome Boot" : "Monochrome Intro";
+  const topRightLabel = isSessionMode ? "Secure connection" : "Please stand by";
   const introLine = isSessionMode
     ? "House lights stay low while your session is cleared."
-    : "Lights out. Let the universe arrive.";
+    : "Loading AmiVerse";
   const footerLabel = isSessionMode
     ? "Verifying secure access"
     : "Preparing the opening scene";
@@ -209,7 +212,7 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
   const railEnd = isSessionMode ? "Private Session" : "Opening Sequence";
   const quote = isSessionMode
     ? sessionQuotes[startupSessionQuoteIndex % sessionQuotes.length]
-    : INITIAL_LOADER_CREDIT;
+    : waitingLine;
   const currentStatus = shouldCycleStatus
     ? statusLines[activeStatusIndex]
     : statusLines[0];
@@ -238,7 +241,7 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
         {isSessionMode ? "Verifying secure access" : "Loading AmiVerse"}
       </span>
 
-      <div className="loader-backdrop" aria-hidden="true" />
+      <LoadingBackdrop />
 
       <div className="loader-badges" aria-hidden="true">
         <div className="loader-badge">
@@ -296,6 +299,10 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
             <div className="loader-divider" />
 
             <p className="loader-quote">{quote}</p>
+
+            {!isSessionMode && (
+              <p className="loader-credit">{INITIAL_LOADER_CREDIT}</p>
+            )}
 
             <div className="loader-rail">
               <div className="loader-rail-labels">

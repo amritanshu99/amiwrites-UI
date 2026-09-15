@@ -1,5 +1,6 @@
 import { Profiler } from "react";
 import { act, render, screen } from "@testing-library/react";
+import { waitingLines } from "../Loader/waitingLines";
 import InitialLoader, {
   INITIAL_LOADER_CREDIT,
   INITIAL_LOADER_MIN_DURATION_MS,
@@ -62,6 +63,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  delete document.documentElement.dataset.loaderQuip;
   window.matchMedia = originalMatchMedia;
   restoreNavigatorValue("deviceMemory", originalDeviceMemory);
   restoreNavigatorValue("hardwareConcurrency", originalHardwareConcurrency);
@@ -214,4 +216,11 @@ test("does not schedule React updates while the timed progress animates", () => 
   expect(onRender).not.toHaveBeenCalled();
   unmount();
   jest.useRealTimers();
+});
+
+test("shows the shared waiting line alongside the showcase credit", () => {
+  document.documentElement.dataset.loaderQuip = waitingLines[0];
+  render(<InitialLoader durationMs={INITIAL_LOADER_MIN_DURATION_MS} />);
+  expect(screen.getByText(waitingLines[0])).toBeInTheDocument();
+  expect(screen.getByText(INITIAL_LOADER_CREDIT)).toBeInTheDocument();
 });

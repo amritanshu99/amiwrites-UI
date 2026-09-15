@@ -1,3 +1,7 @@
+import { useState } from "react";
+import LoadingBackdrop from "./LoadingBackdrop";
+import { getWaitingLine } from "./waitingLines";
+
 const Loader = ({
   size = "default",
   label = "Loading AmiVerse",
@@ -32,56 +36,46 @@ const Loader = ({
   }
 
   return (
+    <FullscreenLoader
+      label={label}
+      opaque={opaque}
+      isExiting={isExiting}
+      className={className}
+    />
+  );
+};
+
+const FullscreenLoader = ({ label, opaque, isExiting, className }) => {
+  const [waitingLine] = useState(getWaitingLine);
+
+  return (
     <div
       role="status"
       aria-live="polite"
       aria-atomic="true"
       aria-busy="true"
       aria-label={label}
-      className={`fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden px-4 py-6 text-white transition-[opacity,transform] duration-300 ease-out motion-reduce:transition-none ${
-        opaque ? "bg-black" : "bg-black/[0.65] backdrop-blur-md"
-      } ${
-        isExiting
-          ? "pointer-events-none scale-[0.98] opacity-0"
-          : `scale-100 opacity-100 ${opaque ? "" : "motion-safe:animate-fade-in"}`
-      } ${className}`}
+      data-app-loader="fullscreen"
+      data-opaque={opaque ? "true" : undefined}
+      data-state={isExiting ? "exiting" : "visible"}
+      className={`amiverse-loading-overlay ${className}`}
     >
-      <div
-        aria-hidden="true"
-        className="absolute inset-0 bg-[linear-gradient(135deg,rgba(34,211,238,0.16),transparent_34%,rgba(244,114,182,0.12)_68%,transparent)] motion-reduce:hidden"
-      />
-
-      <div className="relative flex w-full max-w-[18rem] flex-col items-center rounded-xl border border-white/10 bg-black/[0.78] px-6 py-5 shadow-[0_24px_80px_rgba(0,0,0,0.5)] ring-1 ring-cyan-200/10 backdrop-blur-xl sm:max-w-xs sm:px-7 sm:py-6">
-        <div className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-cyan-200/70 to-transparent" />
-        <div className="pointer-events-none absolute inset-x-10 bottom-0 h-px bg-gradient-to-r from-transparent via-pink-200/30 to-transparent" />
-
-        <div
-          aria-hidden="true"
-          className="relative flex h-16 w-16 items-center justify-center sm:h-20 sm:w-20"
-        >
-          <span className="absolute -inset-3 rounded-full bg-cyan-300/[0.12] blur-xl motion-safe:animate-pulse motion-reduce:hidden" />
-          <span className="absolute inset-0 rounded-full border-[3px] border-cyan-200/[0.15] border-r-pink-300/90 border-t-cyan-300 shadow-[0_0_32px_rgba(34,211,238,0.24)] motion-safe:animate-[spin_1.05s_linear_infinite]" />
-          <span className="absolute inset-2 rounded-full border-[3px] border-transparent border-b-sky-200/90 border-l-pink-300/90 motion-safe:animate-[spin_1.7s_linear_infinite_reverse]" />
-          <span className="absolute inset-[1.35rem] flex items-center justify-center rounded-full border border-white/[0.15] bg-black/[0.85] shadow-[inset_0_0_18px_rgba(255,255,255,0.08)] sm:inset-[1.65rem]">
-            <span className="h-2.5 w-2.5 rounded-full bg-cyan-100 shadow-[0_0_18px_rgba(165,243,252,0.8)] motion-safe:animate-pulse" />
+      <LoadingBackdrop />
+      <div className="amiverse-loading-card" aria-hidden="true">
+        <div className="amiverse-loading-masthead">
+          <span>AmiVerse</span>
+          <span className="amiverse-loading-tag">Please stand by</span>
+        </div>
+        <div className="amiverse-loading-orbit">
+          <span className="amiverse-loading-orbit-ring" />
+          <span className="amiverse-loading-orbit-core">
+            <img src="/icons/icon-96x96.png" width="48" height="48" alt="" decoding="async" />
           </span>
         </div>
-
-        <p
-          aria-hidden="true"
-          className="mt-5 text-center text-sm font-semibold text-cyan-50 sm:text-base"
-        >
-          {label}
-        </p>
-
-        <div
-          aria-hidden="true"
-          className="mt-4 flex h-2 items-center justify-center gap-1.5"
-        >
-          <span className="h-1.5 w-1.5 rounded-full bg-cyan-200/95 motion-safe:animate-pulse" />
-          <span className="h-1.5 w-1.5 rounded-full bg-sky-200/80 motion-safe:animate-pulse [animation-delay:180ms]" />
-          <span className="h-1.5 w-1.5 rounded-full bg-pink-200/80 motion-safe:animate-pulse [animation-delay:360ms]" />
-        </div>
+        <p className="amiverse-loading-label">{label}</p>
+        <p className="amiverse-loading-quip">{waitingLine}</p>
+        <div className="amiverse-loading-progress"><span /></div>
+        <p className="amiverse-loading-caption">A tiny pause. A whole universe.</p>
       </div>
     </div>
   );
