@@ -1,6 +1,4 @@
-import { useState } from "react";
-import LoadingBackdrop from "./LoadingBackdrop";
-import { getWaitingLine } from "./waitingLines";
+import "./Loader.css";
 
 const Loader = ({
   size = "default",
@@ -46,8 +44,6 @@ const Loader = ({
 };
 
 const FullscreenLoader = ({ label, opaque, isExiting, className }) => {
-  const [waitingLine] = useState(getWaitingLine);
-
   return (
     <div
       role="status"
@@ -60,23 +56,7 @@ const FullscreenLoader = ({ label, opaque, isExiting, className }) => {
       data-state={isExiting ? "exiting" : "visible"}
       className={`amiverse-loading-overlay ${className}`}
     >
-      <LoadingBackdrop />
-      <div className="amiverse-loading-card" aria-hidden="true">
-        <div className="amiverse-loading-masthead">
-          <span>AmiVerse</span>
-          <span className="amiverse-loading-tag">Please stand by</span>
-        </div>
-        <div className="amiverse-loading-orbit">
-          <span className="amiverse-loading-orbit-ring" />
-          <span className="amiverse-loading-orbit-core">
-            <img src="/icons/icon-96x96.png" width="48" height="48" alt="" decoding="async" />
-          </span>
-        </div>
-        <p className="amiverse-loading-label">{label}</p>
-        <p className="amiverse-loading-quip">{waitingLine}</p>
-        <div className="amiverse-loading-progress"><span /></div>
-        <p className="amiverse-loading-caption">A tiny pause. A whole universe.</p>
-      </div>
+      <span className="amiverse-loading-spinner" aria-hidden="true" />
     </div>
   );
 };

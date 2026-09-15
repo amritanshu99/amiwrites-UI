@@ -1,22 +1,15 @@
 import { render, screen } from "@testing-library/react";
 import Loader from "./Loader";
 import AppLoadingFallback from "./AppLoadingFallback";
-import { waitingLines } from "./waitingLines";
-
-afterEach(() => {
-  delete document.documentElement.dataset.loaderQuip;
-});
-
-test("keeps the first-paint joke stable when the loading label changes", () => {
-  document.documentElement.dataset.loaderQuip = waitingLines[1];
-  const { rerender } = render(<Loader />);
+test("keeps the spinner accessible when the loading label and exit state change", () => {
+  const { container, rerender } = render(<Loader />);
   expect(screen.getByRole("status", { name: "Loading AmiVerse" })).toHaveAttribute("aria-busy", "true");
-  expect(screen.getByText(waitingLines[1])).toBeInTheDocument();
+  expect(container.querySelector(".amiverse-loading-spinner")).toHaveAttribute("aria-hidden", "true");
+  expect(container.textContent).toBe("");
 
-  document.documentElement.dataset.loaderQuip = waitingLines[2];
   rerender(<Loader label="Verifying access" isExiting />);
   expect(screen.getByRole("status", { name: "Verifying access" })).toHaveAttribute("data-state", "exiting");
-  expect(screen.getByText(waitingLines[1])).toBeInTheDocument();
+  expect(container.querySelector(".amiverse-loading-spinner")).toBeInTheDocument();
 });
 
 test("keeps button spinners inline and preserves their accessible labels", () => {

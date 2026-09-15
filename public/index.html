@@ -144,17 +144,6 @@
           "/amibot-admin": "Loading AmiBot settings",
         };
 
-        // Keep these first-paint lines in sync with Loader/waitingLines.js.
-        const waitingLines = [
-          "Good things take time. Apparently, so does this.",
-          "Making you wait. For character development.",
-          "The pixels are making a dramatic entrance.",
-          "Patience is a virtue. We're really testing yours.",
-          "Just a moment. The universe has a lot of tabs open.",
-        ];
-        document.documentElement.dataset.loaderQuip =
-          waitingLines[Math.floor(Math.random() * waitingLines.length)];
-
         document.documentElement.dataset.bootstrapLoader =
           pathname === "/" ? "showcase" : "route";
         document.documentElement.dataset.bootstrapLoaderLabel =
@@ -226,24 +215,15 @@
   height: 100%;
   min-height: 100svh;
   place-items: center;
-  place-items: safe center;
-  overflow: auto;
-  overscroll-behavior: contain;
   padding: max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right))
     max(1rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left));
-  background: rgba(6, 9, 20, 0.92);
-  color: #f5f7ff;
-  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
-  isolation: isolate;
+  background: rgba(9, 9, 11, 0.85);
+  color: #f4f4f5;
   transition: opacity 180ms ease-out;
 }
 
-.amiverse-loading-overlay > .amiverse-loading-backdrop {
-  opacity: 0.94;
-}
-
-.amiverse-loading-overlay[data-opaque="true"] > .amiverse-loading-backdrop {
-  opacity: 1;
+.amiverse-loading-overlay[data-opaque="true"] {
+  background: #09090b;
 }
 
 .amiverse-loading-overlay[data-state="exiting"] {
@@ -255,168 +235,24 @@
   animation-play-state: paused !important;
 }
 
-.amiverse-loading-card {
-  position: relative;
-  z-index: 1;
+.amiverse-loading-spinner {
+  display: block;
   box-sizing: border-box;
-  width: min(100%, 30rem);
-  min-width: 0;
-  padding: clamp(1.5rem, 5vw, 2.75rem);
-  border: 1px solid transparent;
-  border-radius: clamp(1.35rem, 4vw, 2rem);
-  background:
-    linear-gradient(145deg, #102130, #0d1224 48%, #17162d) padding-box,
-    linear-gradient(135deg, rgba(136, 219, 239, 0.4), rgba(156, 175, 218, 0.13) 45%, rgba(195, 165, 239, 0.32)) border-box;
-  box-shadow: 0 24px 64px -32px rgba(0, 0, 0, 0.8);
-  text-align: center;
-}
-
-.amiverse-loading-masthead {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-  color: #b6c9de;
-  font-size: 0.59rem;
-  font-weight: 600;
-  line-height: 1.5;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-}
-
-.amiverse-loading-tag {
-  color: #a3afca;
-  font-size: 0.54rem;
-  letter-spacing: 0.1em;
-}
-
-.amiverse-loading-orbit {
-  position: relative;
-  width: clamp(5.5rem, 15vw, 7rem);
-  aspect-ratio: 1;
-  margin: clamp(1.75rem, 5vh, 2.5rem) auto 1.6rem;
-  border: 1px solid rgba(154, 189, 236, 0.13);
+  width: 3rem;
+  height: 3rem;
+  border: 3px solid rgba(244, 244, 245, 0.16);
+  border-top-color: currentColor;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(77, 146, 180, 0.14), transparent 70%);
+  animation: amiverseLoadingSpin 0.8s linear infinite;
 }
 
-.amiverse-loading-orbit-ring {
-  position: absolute;
-  inset: 0.5rem;
-  border: 1px solid rgba(128, 177, 214, 0.18);
-  border-top-color: #a5ecf7;
-  border-right-color: #a8a8eb;
-  border-radius: 50%;
-  animation: amiverseLoadingOrbit 3s linear infinite;
-}
-
-.amiverse-loading-orbit-ring::after {
-  position: absolute;
-  top: 11%;
-  right: 11%;
-  width: 0.3rem;
-  height: 0.3rem;
-  border-radius: 50%;
-  background: #d7fbff;
-  box-shadow: 0 0 10px rgba(140, 231, 255, 0.6);
-  content: "";
-}
-
-.amiverse-loading-orbit-core {
-  position: absolute;
-  inset: 1.45rem;
-  display: grid;
-  place-items: center;
-  border: 1px solid rgba(185, 220, 240, 0.22);
-  border-radius: 50%;
-  background: #080d17;
-}
-
-.amiverse-loading-orbit-core img {
-  display: block;
-  width: 76%;
-  height: 76%;
-  object-fit: contain;
-  border-radius: 50%;
-}
-
-.amiverse-loading-label {
-  margin: 0;
-  color: #f3f7ff;
-  font-size: clamp(1.35rem, 4.5vw, 1.9rem);
-  font-weight: 600;
-  line-height: 1.22;
-  letter-spacing: -0.04em;
-  overflow-wrap: anywhere;
-  text-wrap: balance;
-}
-
-.amiverse-loading-quip {
-  max-width: 28ch;
-  min-height: 3.3em;
-  margin: 1rem auto 1.75rem;
-  color: #b8c3da;
-  font-size: clamp(0.85rem, 2.8vw, 0.96rem);
-  line-height: 1.65;
-  text-wrap: balance;
-}
-
-.amiverse-loading-progress {
-  width: min(100%, 16rem);
-  height: 3px;
-  margin: 0 auto;
-  overflow: hidden;
-  border-radius: 99px;
-  background: rgba(170, 196, 238, 0.12);
-}
-
-.amiverse-loading-progress > span {
-  display: block;
-  width: 45%;
-  height: 100%;
-  border-radius: inherit;
-  background: linear-gradient(90deg, #7bd8ea, #c5b6ef);
-  animation: amiverseLoadingProgress 1.8s ease-in-out infinite;
-}
-
-.amiverse-loading-caption {
-  margin: 1.25rem 0 0;
-  color: #8595b3;
-  font-size: 0.65rem;
-  line-height: 1.5;
-  letter-spacing: 0.05em;
-}
-
-@keyframes amiverseLoadingOrbit {
+@keyframes amiverseLoadingSpin {
   to { transform: rotate(360deg); }
-}
-
-@keyframes amiverseLoadingProgress {
-  from { transform: translateX(-110%); }
-  to { transform: translateX(325%); }
-}
-
-@media (max-height: 540px) and (min-width: 540px) {
-  .amiverse-loading-card { padding: 1rem 2rem; }
-  .amiverse-loading-orbit { width: 4.5rem; margin: 0.75rem auto; }
-  .amiverse-loading-orbit-core { inset: 1.1rem; }
-  .amiverse-loading-quip { min-height: 0; max-width: 36ch; margin: 0.65rem auto 1rem; }
-  .amiverse-loading-caption { margin-top: 0.75rem; }
-}
-
-@media (max-height: 320px) {
-  .amiverse-loading-card { padding: 1rem 1.25rem; }
-  .amiverse-loading-orbit,
-  .amiverse-loading-caption { display: none; }
-  .amiverse-loading-label { margin-top: 1rem; }
-  .amiverse-loading-quip { min-height: 0; margin-block: 0.65rem 1rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .amiverse-loading-overlay { transition: none; }
-  .amiverse-loading-orbit-ring,
-  .amiverse-loading-progress > span { animation: none; }
-  .amiverse-loading-progress > span { width: 60%; margin-inline: auto; }
+  .amiverse-loading-spinner { animation: none; }
 }
 
       #app-bootstrap-route-loader { display: none; }
@@ -750,15 +586,6 @@
 }
 .galaxy-progress-complete { width: 88%; }
 .galaxy-progress-travel { width: 40%; animation: galaxyProgressTravel 1.8s ease-in-out infinite; }
-.galaxy-waiting-line {
-  max-width: 36ch;
-  min-height: 3.2em;
-  margin: 1.1rem auto 0;
-  color: #a0a0ad;
-  font-size: clamp(0.8rem, 1.3vw, 0.88rem);
-  line-height: 1.6;
-  text-wrap: balance;
-}
 .galaxy-footer {
   bottom: max(clamp(1.25rem, 3.5vh, 2.75rem), env(safe-area-inset-bottom));
   color: #7a7a85;
@@ -818,7 +645,6 @@
   .galaxy-eyebrow { margin-bottom: 0.5rem; font-size: 0.55rem; }
   .galaxy-tagline { margin-top: 0.5rem; font-size: 0.65rem; }
   .galaxy-loading-dock { bottom: max(2.65rem, calc(env(safe-area-inset-bottom) + 1.5rem)); }
-  .galaxy-waiting-line { min-height: 0; margin-top: 0.6rem; font-size: 0.7rem; }
   .galaxy-progress-track { margin-top: 0.6rem; }
   .galaxy-footer { bottom: max(0.65rem, env(safe-area-inset-bottom)); }
 }
@@ -948,7 +774,7 @@
     </noscript>
     <div id="root">
       <!-- INITIAL_LOADER_MARKUP_START -->
-      <link rel="preload" as="image" href="/icons/icon-96x96.png"/><div id="app-bootstrap-loader" data-loader-root="true" data-loader-design="galaxy" data-loader-mode="cinematic" data-loader-timed="true" data-loader-profile="lightweight" data-loader-state="visible" style="--loader-scene-delay:-0ms;--loader-progress-delay:-0ms;--loader-progress-duration:600ms;--loader-exit-duration:220ms"><span role="status" aria-live="polite" aria-atomic="true" aria-label="Loading AmiVerse" class="galaxy-sr-only">Loading AmiVerse</span><div class="galaxy-scenery" aria-hidden="true"><div class="galaxy-stars galaxy-stars-distant"></div><div class="galaxy-nebula" style="background-image:url(&quot;/images/initial-loader-galaxy.svg&quot;)"></div><div class="galaxy-orbit-plane"><div class="galaxy-orbit-path"></div><div class="galaxy-orbit-runner"><span></span></div></div><div class="galaxy-stars galaxy-stars-near"></div><div class="galaxy-shooting-star"></div><i class="galaxy-spark galaxy-spark-one"></i><i class="galaxy-spark galaxy-spark-two"></i><i class="galaxy-spark galaxy-spark-three"></i><div class="galaxy-vignette"></div></div><div class="galaxy-masthead" aria-hidden="true"><div class="galaxy-brand-signature"><img src="/icons/icon-96x96.png" alt="" width="32" height="32"/><span>A personal universe</span></div><span class="galaxy-edition">Beyond the ordinary</span></div><div class="galaxy-identity" aria-hidden="true"><p class="galaxy-eyebrow">Welcome to my orbit</p><p class="galaxy-wordmark">AmiVerse<i class="galaxy-brand-star"></i></p><p class="galaxy-tagline">Ideas. Code. A little cosmic chaos.</p></div><div class="galaxy-loading-dock" aria-hidden="true"><p class="galaxy-loading-label"><span class="galaxy-status-light"></span>Loading AmiVerse</p><div class="galaxy-progress-track"><span class="galaxy-progress-fill"></span></div><p class="galaxy-waiting-line" data-bootstrap-quip="true">Good things take time. Apparently, so does this.</p></div><div class="galaxy-footer" aria-hidden="true"><span>Written &amp; Directed by Amritanshu Mishra</span><span class="galaxy-footer-note">Made on Earth <span>✦</span></span></div></div>
+      <link rel="preload" as="image" href="/icons/icon-96x96.png"/><div id="app-bootstrap-loader" data-loader-root="true" data-loader-design="galaxy" data-loader-mode="cinematic" data-loader-timed="true" data-loader-profile="lightweight" data-loader-state="visible" style="--loader-scene-delay:-0ms;--loader-progress-delay:-0ms;--loader-progress-duration:600ms;--loader-exit-duration:220ms"><span role="status" aria-live="polite" aria-atomic="true" aria-label="Loading AmiVerse" class="galaxy-sr-only">Loading AmiVerse</span><div class="galaxy-scenery" aria-hidden="true"><div class="galaxy-stars galaxy-stars-distant"></div><div class="galaxy-nebula" style="background-image:url(&quot;/images/initial-loader-galaxy.svg&quot;)"></div><div class="galaxy-orbit-plane"><div class="galaxy-orbit-path"></div><div class="galaxy-orbit-runner"><span></span></div></div><div class="galaxy-stars galaxy-stars-near"></div><div class="galaxy-shooting-star"></div><i class="galaxy-spark galaxy-spark-one"></i><i class="galaxy-spark galaxy-spark-two"></i><i class="galaxy-spark galaxy-spark-three"></i><div class="galaxy-vignette"></div></div><div class="galaxy-masthead" aria-hidden="true"><div class="galaxy-brand-signature"><img src="/icons/icon-96x96.png" alt="" width="32" height="32"/><span>A personal universe</span></div><span class="galaxy-edition">Beyond the ordinary</span></div><div class="galaxy-identity" aria-hidden="true"><p class="galaxy-eyebrow">Welcome to my orbit</p><p class="galaxy-wordmark">AmiVerse<i class="galaxy-brand-star"></i></p><p class="galaxy-tagline">Ideas. Code. A little cosmic chaos.</p></div><div class="galaxy-loading-dock" aria-hidden="true"><p class="galaxy-loading-label"><span class="galaxy-status-light"></span>Loading AmiVerse</p><div class="galaxy-progress-track"><span class="galaxy-progress-fill"></span></div></div><div class="galaxy-footer" aria-hidden="true"><span>Written &amp; Directed by Amritanshu Mishra</span><span class="galaxy-footer-note">Made on Earth <span>✦</span></span></div></div>
       <!-- INITIAL_LOADER_MARKUP_END -->
       <div
         id="app-bootstrap-route-loader"
@@ -956,40 +782,21 @@
         data-opaque="true"
         role="status"
         aria-live="polite"
+        aria-atomic="true"
+        aria-busy="true"
         aria-label="Loading AmiVerse"
       >
-        <div class="amiverse-loading-backdrop" aria-hidden="true"></div>
-        <div class="amiverse-loading-card" aria-hidden="true">
-          <div class="amiverse-loading-masthead">
-            <span>AmiVerse</span><span class="amiverse-loading-tag">Please stand by</span>
-          </div>
-          <div class="amiverse-loading-orbit">
-            <span class="amiverse-loading-orbit-ring"></span>
-            <span class="amiverse-loading-orbit-core">
-              <img src="/icons/icon-96x96.png" width="48" height="48" alt="" />
-            </span>
-          </div>
-          <p id="bootstrap-route-loader-label" class="amiverse-loading-label">Loading AmiVerse</p>
-          <p class="amiverse-loading-quip" data-bootstrap-quip>Good things take time. Apparently, so does this.</p>
-          <div class="amiverse-loading-progress"><span></span></div>
-          <p class="amiverse-loading-caption">A tiny pause. A whole universe.</p>
-        </div>
+        <span class="amiverse-loading-spinner" aria-hidden="true"></span>
       </div>
       <script>
         (() => {
-          const waitingLine = document.documentElement.dataset.loaderQuip;
-          document.querySelectorAll("[data-bootstrap-quip]").forEach((line) => {
-            if (waitingLine) line.textContent = waitingLine;
-          });
           if (document.documentElement.dataset.bootstrapLoader !== "route") return;
 
           const label =
             document.documentElement.dataset.bootstrapLoaderLabel || "Loading AmiVerse";
           const loader = document.getElementById("app-bootstrap-route-loader");
-          const labelNode = document.getElementById("bootstrap-route-loader-label");
 
           loader?.setAttribute("aria-label", label);
-          if (labelNode) labelNode.textContent = label;
         })();
       </script>
     </div>

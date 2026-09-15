@@ -1,5 +1,4 @@
 import React, { memo, useEffect, useState } from "react";
-import { getWaitingLine } from "../Loader/waitingLines";
 import InitialLoaderScene from "./InitialLoaderScene";
 import "./InitialLoader.css";
 
@@ -98,7 +97,6 @@ export const completeInitialLoaderCycle = () => {
 
 const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => {
   const isTimedShowcase = mode !== "session" && Number.isFinite(durationMs) && durationMs > 0;
-  const [waitingLine] = useState(getWaitingLine);
   const [performanceProfile, setPerformanceProfile] = useState(getPerformanceProfile);
   const [initialProgressElapsedMs] = useState(() => isTimedShowcase ? getInitialLoaderElapsedMs() : 0);
 
@@ -131,7 +129,6 @@ const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => 
       prefersReducedMotion={performanceProfile.prefersReducedMotion}
       progressDurationMs={isTimedShowcase ? Math.max(durationMs, INITIAL_LOADER_MIN_DURATION_MS) : 1800}
       initialProgressElapsedMs={initialProgressElapsedMs}
-      waitingLine={waitingLine}
     />
   );
 };

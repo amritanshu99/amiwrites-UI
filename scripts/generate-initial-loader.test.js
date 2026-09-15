@@ -30,17 +30,14 @@ test("committed first-paint scene is current and regeneration is stable", () => 
   assert.equal(generateInitialLoader(generated), generated);
 });
 
-test("homepage bootstrap shares a waiting line with React and retains SEO metadata", () => {
+test("homepage bootstrap retains the scene and SEO metadata without waiting jokes", () => {
   const dom = bootstrapDocument("/");
   try {
     const { document } = dom.window;
     const scene = document.getElementById("app-bootstrap-loader");
     assert.ok(scene?.hasAttribute("data-loader-root"));
     assert.equal(document.documentElement.dataset.bootstrapLoader, "showcase");
-    assert.equal(
-      scene.querySelector("[data-bootstrap-quip]").textContent,
-      document.documentElement.dataset.loaderQuip,
-    );
+    assert.equal(scene.querySelector("[data-bootstrap-quip]"), null);
     assert.ok(document.querySelector('meta[name="description"]').content);
     assert.ok(JSON.parse(document.getElementById("seo-structured-data").textContent)["@graph"]);
   } finally {
@@ -55,11 +52,9 @@ test("direct routes retain the shared route loader and initialize its accessible
     const route = document.getElementById("app-bootstrap-route-loader");
     assert.equal(document.documentElement.dataset.bootstrapLoader, "route");
     assert.equal(route.getAttribute("aria-label"), "Loading Create Blog");
-    assert.equal(route.querySelector(".amiverse-loading-label").textContent, "Loading Create Blog");
-    assert.equal(
-      route.querySelector("[data-bootstrap-quip]").textContent,
-      document.documentElement.dataset.loaderQuip,
-    );
+    assert.equal(route.getAttribute("aria-busy"), "true");
+    assert.equal(route.querySelector(".amiverse-loading-spinner").getAttribute("aria-hidden"), "true");
+    assert.equal(route.textContent.trim(), "");
   } finally {
     dom.window.close();
   }

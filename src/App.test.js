@@ -24,7 +24,7 @@ test.each([
   render(<AppLoadingFallback pathname={pathname} />);
 
   expect(screen.getByRole("status", { name: label })).toBeInTheDocument();
-  expect(screen.getByRole("status", { name: label })).toHaveClass("bg-black");
+  expect(screen.getByRole("status", { name: label })).toHaveClass("amiverse-loading-overlay");
   expect(screen.queryByText("Feature Presentation")).not.toBeInTheDocument();
 });
 
@@ -32,10 +32,10 @@ test("never uses the cinematic loader as an app-level fallback", () => {
   render(<AppLoadingFallback pathname="/" />);
 
   expect(
-    screen.getByRole("status", { name: "Loading page" }),
+    screen.getByRole("status", { name: "Loading AmiVerse" }),
   ).toBeInTheDocument();
-  expect(screen.getByRole("status", { name: "Loading page" })).toHaveClass(
-    "bg-black",
+  expect(screen.getByRole("status", { name: "Loading AmiVerse" })).toHaveClass(
+    "amiverse-loading-overlay",
   );
   expect(screen.queryByText("Feature Presentation")).not.toBeInTheDocument();
 });

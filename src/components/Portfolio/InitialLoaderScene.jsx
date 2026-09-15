@@ -13,7 +13,6 @@ export default function InitialLoaderScene({
   prefersReducedMotion = false,
   progressDurationMs = 600,
   initialProgressElapsedMs = 0,
-  waitingLine = "Good things take time. Apparently, so does this.",
 }) {
   const isSessionMode = mode === "session";
   const status = isSessionMode ? "Verifying secure access" : "Loading AmiVerse";
@@ -75,7 +74,6 @@ export default function InitialLoaderScene({
             ? prefersReducedMotion ? "galaxy-progress-complete" : "galaxy-progress-fill"
             : "galaxy-progress-travel"} />
         </div>
-        <p className="galaxy-waiting-line" data-bootstrap-quip>{waitingLine}</p>
       </div>
 
       <div className="galaxy-footer" aria-hidden="true">
