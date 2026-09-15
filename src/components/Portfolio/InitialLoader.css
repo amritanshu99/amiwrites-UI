@@ -233,29 +233,27 @@
 .galaxy-eyebrow::after { transform: rotate(180deg); }
 .galaxy-wordmark {
   position: relative;
-  display: inline-flex;
-  align-items: baseline;
+  display: inline-block;
   margin: 0;
-  color: #fafafa;
-  font-size: clamp(4rem, 12vw, 10rem);
-  font-weight: 250;
-  line-height: 1.08;
-  letter-spacing: -0.065em;
+  padding-left: 0.1em;
+  color: #f1efeb;
+  font-family: "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+  font-size: clamp(2rem, 9vw, 7.5rem);
+  font-style: normal;
+  font-weight: 400;
+  font-kerning: normal;
+  line-height: 1.2;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
   text-shadow: 0 4px 28px rgba(0, 0, 0, 0.68);
   white-space: nowrap;
 }
-.galaxy-wordmark > span:last-of-type {
-  font-family: Georgia, "Times New Roman", serif;
-  font-style: italic;
-  font-weight: 400;
-  letter-spacing: -0.08em;
-}
 .galaxy-brand-star {
   position: absolute;
-  top: 0.08em;
-  right: -0.25em;
-  width: 0.11em;
-  height: 0.11em;
+  top: 0.18em;
+  right: -0.16em;
+  width: 0.08em;
+  height: 0.08em;
   background: #eeedf5;
   clip-path: polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%);
 }
@@ -373,7 +371,7 @@
   .galaxy-brand-signature > span { font-size: 0.53rem; }
   .galaxy-brand-signature img { width: 28px; height: 28px; }
   .galaxy-identity { top: 40%; }
-  .galaxy-wordmark { font-size: clamp(2.6rem, 17vw, 4.5rem); }
+  .galaxy-wordmark { font-size: clamp(1.5rem, 9vw, 3.375rem); }
   .galaxy-nebula,
   .galaxy-orbit-plane { top: 40%; }
   .galaxy-eyebrow { gap: 0.75rem; letter-spacing: 0.24em; }
@@ -388,7 +386,7 @@
   .galaxy-identity,
   .galaxy-nebula,
   .galaxy-orbit-plane { top: 38%; }
-  .galaxy-wordmark { font-size: clamp(3.5rem, 13vh, 5.4rem); }
+  .galaxy-wordmark { font-size: clamp(1.5rem, min(9vw, 12vh), 4.25rem); }
   .galaxy-eyebrow { margin-bottom: 0.5rem; font-size: 0.55rem; }
   .galaxy-tagline { margin-top: 0.5rem; font-size: 0.65rem; }
   .galaxy-loading-dock { bottom: max(2.65rem, calc(env(safe-area-inset-bottom) + 1.5rem)); }
@@ -404,7 +402,7 @@
   .galaxy-tagline,
   .galaxy-footer { display: none; }
   .galaxy-identity { top: 34%; }
-  .galaxy-wordmark { font-size: 3rem; }
+  .galaxy-wordmark { font-size: clamp(1.5rem, min(9vw, 14vh), 3rem); }
   .galaxy-loading-dock { bottom: max(0.75rem, env(safe-area-inset-bottom)); }
 }
 

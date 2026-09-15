@@ -64,7 +64,7 @@ export default function InitialLoaderScene({
 
       <div className="galaxy-identity" aria-hidden="true">
         <p className="galaxy-eyebrow">{isSessionMode ? "Secure Access" : "Welcome to my orbit"}</p>
-        <p className="galaxy-wordmark"><span>Ami</span><span>Verse</span><i className="galaxy-brand-star" /></p>
+        <p className="galaxy-wordmark">AmiVerse<i className="galaxy-brand-star" /></p>
         <p className="galaxy-tagline">Ideas. Code. A little cosmic chaos.</p>
       </div>
 
