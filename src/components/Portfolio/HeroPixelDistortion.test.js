@@ -1,5 +1,4 @@
 import {
-  applyPointerImpulse,
   getObjectFitRect,
   relaxPixelField,
 } from "./HeroPixelDistortion";
@@ -41,43 +40,6 @@ describe("HeroPixelDistortion math", () => {
         objectFit: "cover",
       }),
     ).toEqual({ height: 0, width: 0, x: 0, y: 0 });
-  });
-
-  it("applies pointer velocity only to nearby grid cells", () => {
-    const field = new Float32Array(15 * 15 * 2);
-    const strongestOffset = applyPointerImpulse({
-      field,
-      height: 300,
-      pointerX: 300,
-      pointerY: 150,
-      velocityX: 12,
-      velocityY: -6,
-      width: 600,
-    });
-    const centerCell = (7 * 15 + 7) * 2;
-
-    expect(strongestOffset).toBeGreaterThan(0);
-    expect(field[centerCell]).toBeGreaterThan(0);
-    expect(field[centerCell + 1]).toBeLessThan(0);
-    expect(field[0]).toBe(0);
-    expect(field[1]).toBe(0);
-  });
-
-  it("bounds strong impulses to the portrait dimensions", () => {
-    const field = new Float32Array(15 * 15 * 2);
-
-    applyPointerImpulse({
-      field,
-      height: 100,
-      pointerX: 50,
-      pointerY: 50,
-      velocityX: 1000,
-      velocityY: -1000,
-      width: 100,
-    });
-
-    expect(Math.max(...field)).toBeLessThanOrEqual(14);
-    expect(Math.min(...field)).toBeGreaterThanOrEqual(-14);
   });
 
   it("relaxes displacement at a frame-rate-independent rate", () => {

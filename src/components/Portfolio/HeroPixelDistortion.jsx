@@ -1,8 +1,6 @@
 import { useEffect, useRef } from "react";
 
 const GRID_SIZE = 15;
-const POINTER_RADIUS = 0.13;
-const POINTER_STRENGTH = 0.15;
 const RELAXATION = 0.9;
 const MAX_DEVICE_PIXEL_RATIO = 2;
 const FRAME_DURATION_MS = 1000 / 60;
@@ -100,65 +98,6 @@ export const getObjectFitRect = ({
   };
 };
 
-export const applyPointerImpulse = ({
-  field,
-  gridSize = GRID_SIZE,
-  height,
-  pointerX,
-  pointerY,
-  radius = POINTER_RADIUS,
-  strength = POINTER_STRENGTH,
-  velocityX,
-  velocityY,
-  width,
-}) => {
-  if (!field || width <= 0 || height <= 0) return 0;
-
-  const gridPointerX = (pointerX / width) * gridSize;
-  const gridPointerY = (pointerY / height) * gridSize;
-  const maximumDistance = gridSize * radius;
-  const maximumDistanceSquared = maximumDistance ** 2;
-  const aspect = height / width;
-  const maximumOffset = Math.min(width, height) * 0.14;
-  let strongestOffset = 0;
-
-  for (let row = 0; row < gridSize; row += 1) {
-    for (let column = 0; column < gridSize; column += 1) {
-      const deltaX = gridPointerX - (column + 0.5);
-      const deltaY = gridPointerY - (row + 0.5);
-      const distanceSquared = deltaX ** 2 / aspect + deltaY ** 2;
-
-      if (distanceSquared >= maximumDistanceSquared) continue;
-
-      const fieldIndex = (row * gridSize + column) * 2;
-      const power = clamp(
-        maximumDistance / Math.sqrt(Math.max(distanceSquared, 0.01)),
-        0,
-        10,
-      );
-      const impulseScale = strength * 2 * power;
-
-      field[fieldIndex] = clamp(
-        field[fieldIndex] + velocityX * impulseScale,
-        -maximumOffset,
-        maximumOffset,
-      );
-      field[fieldIndex + 1] = clamp(
-        field[fieldIndex + 1] + velocityY * impulseScale,
-        -maximumOffset,
-        maximumOffset,
-      );
-      strongestOffset = Math.max(
-        strongestOffset,
-        Math.abs(field[fieldIndex]),
-        Math.abs(field[fieldIndex + 1]),
-      );
-    }
-  }
-
-  return strongestOffset;
-};
-
 export const relaxPixelField = (
   field,
   frameScale = 1,
@@ -221,9 +160,6 @@ const HeroPixelDistortion = ({
     let animationFrame = null;
     let resizeFrame = null;
     let lastFrameTime = null;
-    let previousPointer = null;
-    let canvasWidth = 0;
-    let canvasHeight = 0;
     let devicePixelRatio = 1;
     let compositionSignature = "";
     let effectIsVisible = true;
@@ -339,8 +275,6 @@ const HeroPixelDistortion = ({
         return;
       }
 
-      canvasWidth = width;
-      canvasHeight = height;
       devicePixelRatio = nextDevicePixelRatio;
       compositionSignature = nextCompositionSignature;
 
@@ -393,76 +327,6 @@ const HeroPixelDistortion = ({
       });
     };
 
-    const handlePointerMove = (event) => {
-      if (
-        !finePointerQuery.matches ||
-        event.pointerType === "touch" ||
-        canvasWidth <= 0 ||
-        canvasHeight <= 0
-      ) {
-        previousPointer = null;
-        return;
-      }
-
-      const canvasRect = canvas.getBoundingClientRect();
-      const pointerX = event.clientX - canvasRect.left;
-      const pointerY = event.clientY - canvasRect.top;
-
-      if (
-        pointerX < 0 ||
-        pointerX > canvasRect.width ||
-        pointerY < 0 ||
-        pointerY > canvasRect.height
-      ) {
-        previousPointer = null;
-        return;
-      }
-
-      if (!previousPointer) {
-        previousPointer = { x: pointerX, y: pointerY };
-        return;
-      }
-
-      const scaleX = canvasWidth / canvasRect.width;
-      const scaleY = canvasHeight / canvasRect.height;
-      const velocityX = clamp(
-        (pointerX - previousPointer.x) * scaleX,
-        -48,
-        48,
-      );
-      const velocityY = clamp(
-        (pointerY - previousPointer.y) * scaleY,
-        -48,
-        48,
-      );
-      previousPointer = { x: pointerX, y: pointerY };
-
-      const strongestOffset = applyPointerImpulse({
-        field,
-        height: canvasHeight,
-        pointerX: pointerX * scaleX,
-        pointerY: pointerY * scaleY,
-        velocityX,
-        velocityY,
-        width: canvasWidth,
-      });
-
-      if (strongestOffset > SETTLED_OFFSET_PX) {
-        lastFrameTime = null;
-        setEffectActive(true);
-        queueAnimation();
-      }
-    };
-
-    const resetPointer = () => {
-      previousPointer = null;
-    };
-
-    const handlePointerSupportChange = () => {
-      if (!finePointerQuery.matches) resetPointer();
-      queueResize();
-    };
-
     const handleVisibilityChange = () => {
       if (document.hidden) {
         if (animationFrame !== null) {
@@ -503,17 +367,13 @@ const HeroPixelDistortion = ({
       intersectionObserver?.observe(container);
     };
 
-    container.addEventListener("pointermove", handlePointerMove, {
-      passive: true,
-    });
-    container.addEventListener("pointerleave", resetPointer);
     document.addEventListener("visibilitychange", handleVisibilityChange);
     window.addEventListener("resize", queueResize, { passive: true });
 
     if (finePointerQuery.addEventListener) {
-      finePointerQuery.addEventListener("change", handlePointerSupportChange);
+      finePointerQuery.addEventListener("change", queueResize);
     } else {
-      finePointerQuery.addListener(handlePointerSupportChange);
+      finePointerQuery.addListener(queueResize);
     }
 
     if (image.complete && image.naturalWidth > 0) {
@@ -524,8 +384,6 @@ const HeroPixelDistortion = ({
 
     return () => {
       disposed = true;
-      container.removeEventListener("pointermove", handlePointerMove);
-      container.removeEventListener("pointerleave", resetPointer);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       window.removeEventListener("resize", queueResize);
       image.removeEventListener("load", initialize);
@@ -533,12 +391,9 @@ const HeroPixelDistortion = ({
       intersectionObserver?.disconnect();
 
       if (finePointerQuery.removeEventListener) {
-        finePointerQuery.removeEventListener(
-          "change",
-          handlePointerSupportChange,
-        );
+        finePointerQuery.removeEventListener("change", queueResize);
       } else {
-        finePointerQuery.removeListener(handlePointerSupportChange);
+        finePointerQuery.removeListener(queueResize);
       }
 
       if (animationFrame !== null) {
