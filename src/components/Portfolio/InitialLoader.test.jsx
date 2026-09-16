@@ -1,6 +1,9 @@
 import { Profiler } from "react";
 import { act, render, screen } from "@testing-library/react";
 import InitialLoader, {
+  beginInitialLoaderCycle,
+  completeInitialLoaderCycle,
+  getInitialLoaderElapsedMs,
   INITIAL_LOADER_CREDIT,
   INITIAL_LOADER_MIN_DURATION_MS,
 } from "./InitialLoader";
@@ -56,18 +59,42 @@ const installMatchMedia = (matchesQuery = () => false) => {
 };
 
 beforeEach(() => {
+  completeInitialLoaderCycle();
   setNavigatorValue("deviceMemory", 8);
   setNavigatorValue("hardwareConcurrency", 8);
   setNavigatorValue("connection", { saveData: false });
 });
 
 afterEach(() => {
+  completeInitialLoaderCycle();
   jest.useRealTimers();
   jest.restoreAllMocks();
   window.matchMedia = originalMatchMedia;
   restoreNavigatorValue("deviceMemory", originalDeviceMemory);
   restoreNavigatorValue("hardwareConcurrency", originalHardwareConcurrency);
   restoreNavigatorValue("connection", originalConnection);
+});
+
+test("counts visible bootstrap time without counting a slow HTML response", () => {
+  const now = jest.spyOn(performance, "now").mockReturnValue(2100);
+  window.__amiverseInitialLoaderStartedAt = 2000;
+
+  expect(beginInitialLoaderCycle()).toBe(100);
+  now.mockReturnValue(3499);
+  expect(getInitialLoaderElapsedMs()).toBe(1499);
+  now.mockReturnValue(3500);
+  expect(getInitialLoaderElapsedMs()).toBe(1500);
+
+  completeInitialLoaderCycle();
+  expect(window.__amiverseInitialLoaderStartedAt).toBeUndefined();
+  now.mockReturnValue(8000);
+  expect(beginInitialLoaderCycle()).toBe(0);
+});
+
+test("starts the minimum at mount when there is no bootstrap timestamp", () => {
+  jest.spyOn(performance, "now").mockReturnValue(5000);
+
+  expect(beginInitialLoaderCycle()).toBe(0);
 });
 
 test("always shows the written and directed credit in showcase mode", () => {

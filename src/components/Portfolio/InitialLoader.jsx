@@ -1,10 +1,9 @@
 import React, { memo, useEffect, useState } from "react";
-import InitialLoaderScene from "./InitialLoaderScene";
+import InitialLoaderScene, { INITIAL_LOADER_MIN_DURATION_MS } from "./InitialLoaderScene";
 import "./InitialLoader.css";
 
-export { INITIAL_LOADER_CREDIT } from "./InitialLoaderScene";
+export { INITIAL_LOADER_CREDIT, INITIAL_LOADER_MIN_DURATION_MS } from "./InitialLoaderScene";
 
-export const INITIAL_LOADER_MIN_DURATION_MS = 600;
 export const INITIAL_LOADER_EXIT_DURATION_MS = 220;
 
 const queryMatches = (query) => {
@@ -76,14 +75,19 @@ const getPerformanceNow = () => {
   return Number.isFinite(now) ? Math.max(0, now) : 0;
 };
 
-let initialLoaderStartedAtMs =
-  typeof window !== "undefined" && window.location?.pathname === "/" ? 0 : null;
+let initialLoaderStartedAtMs = null;
 
 export const beginInitialLoaderCycle = () => {
   const now = getPerformanceNow();
 
   if (initialLoaderStartedAtMs === null) {
-    initialLoaderStartedAtMs = now;
+    const bootstrapStartedAt = typeof window !== "undefined" &&
+      window.location?.pathname === "/"
+      ? window.__amiverseInitialLoaderStartedAt
+      : undefined;
+    initialLoaderStartedAtMs = Number.isFinite(bootstrapStartedAt)
+      ? Math.min(now, Math.max(0, bootstrapStartedAt))
+      : now;
   }
 
   return Math.max(0, now - initialLoaderStartedAtMs);
@@ -93,6 +97,9 @@ export const getInitialLoaderElapsedMs = () => beginInitialLoaderCycle();
 
 export const completeInitialLoaderCycle = () => {
   initialLoaderStartedAtMs = null;
+  if (typeof window !== "undefined") {
+    delete window.__amiverseInitialLoaderStartedAt;
+  }
 };
 
 const InitialLoader = ({ mode = "showcase", durationMs, phase = "visible" }) => {

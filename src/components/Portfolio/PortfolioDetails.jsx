@@ -259,7 +259,6 @@ const sectionMeta = [
   { id: "education", label: "Education" },
   { id: "contact", label: "Contact" },
 ];
-const MAX_LOADER_DURATION_MS = 3200;
 const THEME_CHANGE_EVENT = "amiverse-theme-change";
 const resumeUrl = assetUrl("/images/Resume.pdf");
 const publicAsset = (path) => `${process.env.PUBLIC_URL || ""}${path}`;
@@ -382,9 +381,6 @@ export default function PortfolioDetails() {
   const [minimumLoaderElapsed, setMinimumLoaderElapsed] = useState(
     () => initialLoaderElapsedMs >= INITIAL_LOADER_MIN_DURATION_MS,
   );
-  const [loaderDeadlineElapsed, setLoaderDeadlineElapsed] = useState(
-    () => initialLoaderElapsedMs >= MAX_LOADER_DURATION_MS,
-  );
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [hasOpenedGallery, setHasOpenedGallery] = useState(false);
   const [isDark, setIsDark] = useState(() => {
@@ -400,6 +396,7 @@ export default function PortfolioDetails() {
     }
   });
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageFailed, setImageFailed] = useState(false);
   const [backgroundImageLoaded, setBackgroundImageLoaded] = useState(
     shouldSkipDecorativeBackground,
   );
@@ -587,20 +584,12 @@ export default function PortfolioDetails() {
       0,
       INITIAL_LOADER_MIN_DURATION_MS - initialLoaderElapsedMs,
     );
-    const deadlineDelay = Math.max(
-      0,
-      MAX_LOADER_DURATION_MS - initialLoaderElapsedMs,
-    );
     const minimumTimer = minimumDelay
       ? window.setTimeout(() => setMinimumLoaderElapsed(true), minimumDelay)
-      : null;
-    const deadlineTimer = deadlineDelay
-      ? window.setTimeout(() => setLoaderDeadlineElapsed(true), deadlineDelay)
       : null;
 
     return () => {
       if (minimumTimer !== null) window.clearTimeout(minimumTimer);
-      if (deadlineTimer !== null) window.clearTimeout(deadlineTimer);
     };
   }, [initialLoaderElapsedMs, loading]);
 
@@ -755,7 +744,7 @@ export default function PortfolioDetails() {
 
       if (
         image.dataset.fallbackApplied !== "true" &&
-        image.src !== fallbackUrl
+        image.src !== new URL(fallbackUrl, document.baseURI).href
       ) {
         image.dataset.fallbackApplied = "true";
         setHeroMedia({ height: 1317, url: fallbackUrl, width: 1477 });
@@ -763,9 +752,21 @@ export default function PortfolioDetails() {
         return;
       }
 
+      // The profile text remains usable even if both portrait sources fail.
+      setImageFailed(true);
     },
     [data.photoUrl],
   );
+
+  useEffect(() => {
+    const image = heroImageRef.current;
+    if (!image?.complete || !heroImageUrl) return;
+
+    // A cached image may finish before React attaches its load/error handlers.
+    const event = { currentTarget: image };
+    if (image.naturalWidth > 0) handleHeroImageLoad(event);
+    else handleHeroImageError(event);
+  }, [handleHeroImageError, handleHeroImageLoad, heroImageUrl]);
 
   useEffect(() => {
     if (!requestedHeroMedia.url) {
@@ -784,7 +785,7 @@ export default function PortfolioDetails() {
         markHeroImageLoaded();
       })
       .catch(() => {
-        // The rendered image fallback and bounded loader deadline own recovery.
+        // Keep the rendered portrait while an alternate source is unavailable.
       });
 
     return () => {
@@ -796,7 +797,7 @@ export default function PortfolioDetails() {
     if (
       loaderPhase !== "visible" ||
       !minimumLoaderElapsed ||
-      (!imageLoaded && !loaderDeadlineElapsed)
+      (!imageLoaded && !imageFailed)
     ) {
       return undefined;
     }
@@ -819,7 +820,7 @@ export default function PortfolioDetails() {
     };
   }, [
     imageLoaded,
-    loaderDeadlineElapsed,
+    imageFailed,
     loaderPhase,
     minimumLoaderElapsed,
   ]);
