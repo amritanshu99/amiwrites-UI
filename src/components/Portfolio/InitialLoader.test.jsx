@@ -80,10 +80,10 @@ test("counts visible bootstrap time without counting a slow HTML response", () =
   window.__amiverseInitialLoaderStartedAt = 2000;
 
   expect(beginInitialLoaderCycle()).toBe(100);
-  now.mockReturnValue(3499);
-  expect(getInitialLoaderElapsedMs()).toBe(1499);
-  now.mockReturnValue(3500);
-  expect(getInitialLoaderElapsedMs()).toBe(1500);
+  now.mockReturnValue(3199);
+  expect(getInitialLoaderElapsedMs()).toBe(1199);
+  now.mockReturnValue(3200);
+  expect(getInitialLoaderElapsedMs()).toBe(1200);
 
   completeInitialLoaderCycle();
   expect(window.__amiverseInitialLoaderStartedAt).toBeUndefined();

@@ -1,7 +1,7 @@
 import React from "react";
 
 export const INITIAL_LOADER_CREDIT = "Written & Directed by Amritanshu Mishra";
-export const INITIAL_LOADER_MIN_DURATION_MS = 1500;
+export const INITIAL_LOADER_MIN_DURATION_MS = 1200;
 
 // Kept pure so the first HTML paint can be generated from this exact scene.
 export default function InitialLoaderScene({

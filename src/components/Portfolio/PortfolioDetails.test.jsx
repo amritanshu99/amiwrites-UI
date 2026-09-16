@@ -439,7 +439,7 @@ describe("PortfolioDetails startup experience", () => {
     });
   });
 
-  it("keeps a ready profile covered for at least 1.5 seconds", async () => {
+  it("keeps a ready profile covered for at least 1.2 seconds", async () => {
     axios.get.mockImplementationOnce(() => new Promise(() => {}));
 
     const { container } = renderPortfolio();
@@ -447,7 +447,7 @@ describe("PortfolioDetails startup experience", () => {
     markInitialHeroReady();
 
     act(() => {
-      jest.advanceTimersByTime(1499);
+      jest.advanceTimersByTime(1199);
     });
 
     expect(
@@ -505,7 +505,7 @@ describe("PortfolioDetails startup experience", () => {
     const page = container.querySelector("article");
 
     await act(async () => {
-      jest.advanceTimersByTime(1499);
+      jest.advanceTimersByTime(1199);
       await Promise.resolve();
     });
 

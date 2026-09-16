@@ -38,7 +38,7 @@ test("homepage bootstrap retains the scene and SEO metadata without waiting joke
     const scene = document.getElementById("app-bootstrap-loader");
     assert.ok(scene?.hasAttribute("data-loader-root"));
     assert.equal(document.documentElement.dataset.bootstrapLoader, "showcase");
-    assert.equal(scene.style.getPropertyValue("--loader-progress-duration"), "1500ms");
+    assert.equal(scene.style.getPropertyValue("--loader-progress-duration"), "1200ms");
     assert.equal(scene.querySelector("[data-bootstrap-quip]"), null);
     assert.ok(document.querySelector('meta[name="description"]').content);
     assert.ok(JSON.parse(document.getElementById("seo-structured-data").textContent)["@graph"]);
