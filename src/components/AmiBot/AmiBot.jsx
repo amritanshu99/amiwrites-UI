@@ -109,8 +109,9 @@ function randomGreeting() {
 
 function getBotResponsePayload(data = {}) {
   const botResponse = data.botResponse || {};
+  const text = data.response || botResponse.response;
   return {
-    text: data.response || botResponse.response || "",
+    text: typeof text === "string" ? text.trim() : "",
     metadata: {
       answeredFromKnowledge:
         data.answeredFromKnowledge ?? botResponse.answeredFromKnowledge ?? null,
@@ -119,6 +120,21 @@ function getBotResponsePayload(data = {}) {
       sources: data.sources || botResponse.sources || [],
     },
   };
+}
+
+async function readApiResponse(response, fallbackMessage) {
+  const data = await response.json().catch((error) => {
+    if (error.name === "AbortError") throw error;
+    return null;
+  });
+  if (!response.ok) {
+    const message = data?.error || data?.message;
+    throw new Error(typeof message === "string" ? message : fallbackMessage);
+  }
+  if (!data || typeof data !== "object" || Array.isArray(data)) {
+    throw new Error(fallbackMessage);
+  }
+  return data;
 }
 
 const markdownComponents = {
@@ -348,9 +364,11 @@ const AmiBot = () => {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [historyLoading, setHistoryLoading] = useState(false);
+  const [historyClearing, setHistoryClearing] = useState(false);
   const [historyError, setHistoryError] = useState("");
   const [requestStatus, setRequestStatus] = useState("");
-  const [isAuthenticated, setIsAuthenticated] = useState(() => Boolean(getAuthToken()));
+  const [authToken, setAuthToken] = useState(getAuthToken);
+  const isAuthenticated = Boolean(authToken);
   const messagesContainerRef = useRef(null);
   const inputRef = useRef(null);
   const formRef = useRef(null);
@@ -360,7 +378,7 @@ const AmiBot = () => {
   const forceScrollRef = useRef(true);
 
   const refreshAuthState = useCallback(() => {
-    setIsAuthenticated(Boolean(getAuthToken()));
+    setAuthToken(getAuthToken());
   }, []);
 
   const isMessagePaneNearBottom = useCallback(() => {
@@ -435,9 +453,15 @@ const AmiBot = () => {
   }, []);
 
   useEffect(() => {
-    const token = getAuthToken();
+    const token = authToken;
+    activeRequestRef.current?.abort();
+    activeRequestRef.current = null;
+    setLoading(false);
+    setHistoryClearing(false);
+    setRequestStatus("");
 
     if (!token) {
+      setHistoryLoading(false);
       setHistoryError("");
       forceScrollRef.current = true;
       shouldAutoScrollRef.current = true;
@@ -458,11 +482,8 @@ const AmiBot = () => {
           },
           signal: controller.signal,
         });
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.error || data.message || "Unable to load chat history");
-        }
+        const data = await readApiResponse(response, "Unable to load chat history");
+        if (controller.signal.aborted) return;
 
         const historyMessages = Array.isArray(data.messages)
           ? data.messages.map((message) => ({
@@ -476,20 +497,20 @@ const AmiBot = () => {
         shouldAutoScrollRef.current = true;
         setMessages(historyMessages.length ? historyMessages : [randomGreeting()]);
       } catch (error) {
-        if (error.name === "AbortError") return;
+        if (controller.signal.aborted || error.name === "AbortError") return;
         setHistoryError(error.message || "Unable to load chat history");
         forceScrollRef.current = true;
         shouldAutoScrollRef.current = true;
         setMessages([randomGreeting()]);
       } finally {
-        setHistoryLoading(false);
+        if (!controller.signal.aborted) setHistoryLoading(false);
       }
     }
 
     loadHistory();
 
     return () => controller.abort();
-  }, [isAuthenticated]);
+  }, [authToken]);
 
   const handleSuggestionClick = useCallback((prompt) => {
     setInput(prompt);
@@ -502,8 +523,9 @@ const AmiBot = () => {
 
   const handleClearHistory = useCallback(async () => {
     const token = getAuthToken();
-    if (!token || loading) return;
+    if (!token || loading || historyLoading || historyClearing) return;
 
+    setHistoryClearing(true);
     setHistoryError("");
 
     try {
@@ -513,15 +535,17 @@ const AmiBot = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || data.message || "Unable to clear history");
+      await readApiResponse(response, "Unable to clear history");
+      if (getAuthToken() !== token) return;
       forceScrollRef.current = true;
       shouldAutoScrollRef.current = true;
       setMessages([randomGreeting()]);
     } catch (error) {
-      setHistoryError(error.message || "Unable to clear history");
+      if (getAuthToken() === token) setHistoryError(error.message || "Unable to clear history");
+    } finally {
+      if (getAuthToken() === token) setHistoryClearing(false);
     }
-  }, [loading]);
+  }, [historyClearing, historyLoading, loading]);
 
   const handleStopResponse = useCallback(() => {
     activeRequestRef.current?.abort();
@@ -531,7 +555,7 @@ const AmiBot = () => {
     event.preventDefault();
 
     const query = input.trim();
-    if (!query || loading) return;
+    if (!query || loading || historyLoading || historyClearing || activeRequestRef.current) return;
 
     const token = getAuthToken();
     const userMessage = { sender: "user", text: query, metadata: {} };
@@ -540,6 +564,7 @@ const AmiBot = () => {
         (message) =>
           message?.text &&
           !message.metadata?.isGreeting &&
+          !message.metadata?.isError &&
           ["user", "bot"].includes(message.sender)
       )
       .slice(-MAX_REQUEST_HISTORY)
@@ -568,18 +593,15 @@ const AmiBot = () => {
         }
       );
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        if (response.status === 401) {
-          localStorage.removeItem("token");
-          window.dispatchEvent(new Event("tokenChanged"));
-        }
-        throw new Error(data.error || data.message || "AmiBot could not answer right now");
+      if (response.status === 401 && getAuthToken() === token) {
+        localStorage.removeItem("token");
+        window.dispatchEvent(new Event("tokenChanged"));
       }
+      const data = await readApiResponse(response, "AmiBot could not answer right now. Please try again.");
+      if (controller.signal.aborted || getAuthToken() !== token) return;
 
       const payload = getBotResponsePayload(data);
-      const botReply = payload.text || "I do not have this answer in the uploaded AmiBot knowledge yet.";
+      if (!payload.text) throw new Error("AmiBot returned an empty answer. Please try again.");
 
       forceScrollRef.current = true;
       shouldAutoScrollRef.current = true;
@@ -587,11 +609,12 @@ const AmiBot = () => {
         ...prev,
         {
           sender: "bot",
-          text: botReply,
+          text: payload.text,
           metadata: payload.metadata,
         },
       ]);
     } catch (error) {
+      if (activeRequestRef.current !== controller || getAuthToken() !== token) return;
       if (error.name === "AbortError") {
         setRequestStatus("Response stopped");
         return;
@@ -605,7 +628,7 @@ const AmiBot = () => {
         {
           sender: "bot",
           text: error.message || "Sorry, something went wrong. Please try again later.",
-          metadata: { answeredFromKnowledge: false },
+          metadata: { answeredFromKnowledge: false, isError: true },
         },
       ]);
     } finally {
@@ -617,7 +640,7 @@ const AmiBot = () => {
         }
       }
     }
-  }, [input, loading, messages]);
+  }, [historyClearing, historyLoading, input, loading, messages]);
 
   const handleInputKeyDown = useCallback((event) => {
     if (isCoarseInputDevice()) return;
@@ -632,14 +655,17 @@ const AmiBot = () => {
     }
   }, []);
 
-  const canSend = useMemo(() => input.trim().length > 0 && !loading, [input, loading]);
+  const canSend = useMemo(
+    () => input.trim().length > 0 && !loading && !historyLoading && !historyClearing,
+    [historyClearing, historyLoading, input, loading]
+  );
 
   const authAction = isAuthenticated ? (
     <button
       type="button"
       onClick={handleClearHistory}
       className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm font-semibold text-slate-800 shadow-sm transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-cyan-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/10 dark:bg-white/[0.06] dark:text-zinc-100 dark:hover:bg-white/[0.1] dark:focus-visible:ring-cyan-300/10"
-      disabled={loading || historyLoading}
+      disabled={loading || historyLoading || historyClearing}
       aria-label="Clear AmiBot history"
     >
       <Trash2 className="h-4 w-4" />
