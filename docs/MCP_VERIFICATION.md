@@ -33,11 +33,11 @@ The maximum upstream timeout is now 10 seconds (default remains 8), and the body
 
 ## Remaining release steps
 
-1. The implementation is committed and pushed to codex/amiverse-mcp-release (3b48f9e). Its first Vercel preview failed; diagnose the build logs and obtain a successful preview, then run the smoke command against its /api/mcp endpoint. Verify real Vercel routing and function packaging there; local tests do not prove platform deployment behavior.
+1. The implementation is committed and pushed to codex/amiverse-mcp-release (3b48f9e). The subsequent preview of f3a9eb3 succeeded after preserving .env.production in upload exclusions. Its endpoint is protected by Vercel SSO; obtain authorized access, then run the smoke command against its /api/mcp endpoint. Verify real Vercel routing and function packaging there; local tests do not prove platform deployment behavior.
 2. Promote the verified deployment and configure the documented edge rate limit. Keep the existing Render content API responsive.
 3. Connect the production HTTPS endpoint in ChatGPT developer mode and record actual conversational tests from amiverse-plugin-review.json.
 4. Complete OpenAI publisher/domain verification, review listing and privacy/support material, scan tools and submit. Publish after approval.
 
 See [AMIVERSE_MCP.md](./AMIVERSE_MCP.md) for exact commands, configuration and official links.
 
-Not completed: a successful Vercel preview or production deployment, a real ChatGPT conversation/tool-selection evaluation, OpenAI identity/domain verification, submission, approval or publication. These require the deployed endpoint and the owner's publishing/account context. The failed preview, account access checks and publisher identity requirement are recorded in MCP_RELEASE_STATUS.md. Health is liveness only; use the smoke command to test content readiness.
+Not completed: deployed-preview endpoint verification or production deployment, a real ChatGPT conversation/tool-selection evaluation, OpenAI identity/domain verification, submission, approval or publication. These require the deployed endpoint and the owner's publishing/account context. The successful preview, account access checks and publisher identity requirement are recorded in MCP_RELEASE_STATUS.md. Health is liveness only; use the smoke command to test content readiness.
