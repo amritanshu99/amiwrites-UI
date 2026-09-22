@@ -9,5 +9,7 @@ build
 coverage
 .env
 .env.*
+# Keep the tracked public frontend configuration and CRA build options.
+!.env.production
 *.log
 plan.md
