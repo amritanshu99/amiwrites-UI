@@ -3,7 +3,7 @@ export const legalDocuments = {
     title: "Privacy Policy",
     summary:
       "This policy explains what information we collect, why we collect it, and the choices you have when using Amiverse.",
-    lastUpdated: "April 6, 2026",
+    lastUpdated: "September 21, 2026",
     sections: [
       {
         heading: "1. Information We Collect",
@@ -35,6 +35,15 @@ export const legalDocuments = {
           "We keep personal information only for as long as needed for service operations, legal compliance, dispute resolution, and contract enforcement.",
           "Depending on your location, you may have rights to access, correct, delete, or export your data, or to object to certain processing.",
           "To submit a privacy request, email amritanshu99@gmail.com. We may verify your identity before processing your request.",
+        ],
+      },
+      {
+        heading: "5. Amiverse MCP and ChatGPT",
+        paragraphs: [
+          "The Amiverse MCP integration provides read-only access to public projects, published articles, and professional profile information. It does not require an Amiverse login or provide access to private account records, tasks, or chat histories.",
+          "When you use the integration, ChatGPT sends tool arguments such as search terms, filters, and article identifiers to Amiverse. We process those arguments to return public content and source links. Do not include passwords, payment information, or other sensitive information in tool requests.",
+          "The MCP application's operational logs record a generated request identifier, tool name, elapsed time, success or failure, partial-result status, and result count. These application logs do not record tool arguments or article bodies. Our hosting providers may separately maintain access and security logs under their service settings and policies.",
+          "The integration may cache its public article index for up to five minutes per server instance. This cache does not store your conversation. OpenAI processes your ChatGPT conversations and account information under its own policies. Contact us using the privacy-request address above with questions about Amiverse's processing.",
         ],
       },
     ],

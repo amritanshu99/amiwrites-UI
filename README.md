@@ -1,3 +1,7 @@
+# Amiverse
+
+Read-only ChatGPT/Codex MCP integration: [architecture, tools, local testing, deployment and publishing](docs/AMIVERSE_MCP.md). Run `npm run mcp:dev` to serve it locally, and `npm run mcp:smoke` in a second terminal to exercise all seven tools against real Amiverse content.
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).

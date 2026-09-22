@@ -1,0 +1,13 @@
+# Exclude local credentials, caches, logs and unrelated working notes from uploads.
+.git
+.codex
+.agents
+.codex-tmp
+.vercel
+node_modules
+build
+coverage
+.env
+.env.*
+*.log
+plan.md

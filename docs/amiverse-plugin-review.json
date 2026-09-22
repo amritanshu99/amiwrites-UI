@@ -1,0 +1,109 @@
+{
+  "name": "Amiverse",
+  "description": "Explore Amiverse software projects, AI experiments, technical articles, developer resources, and technology content directly from ChatGPT.",
+  "longDescription": "Browse Amritanshu Mishra's published projects, professional profile and skills. Search Amiverse article titles and excerpts, open article details and find recently published content with source links. Read-only public information; no account required.",
+  "mcpUrl": "https://www.amiverse.in/api/mcp",
+  "authentication": "none",
+  "urlType": "Universal",
+  "website": "https://www.amiverse.in",
+  "logoSource": "https://www.amiverse.in/icons/icon-512x512.png",
+  "supportUrl": "https://www.amiverse.in/#contact",
+  "privacyUrl": "https://www.amiverse.in/legal/privacy-policy",
+  "termsUrl": "https://www.amiverse.in/legal/terms-of-service",
+  "starterPrompts": [
+    "Show Amritanshu's React projects.",
+    "What AI skills does Amritanshu publish on Amiverse?",
+    "Show the latest Amiverse articles."
+  ],
+  "positiveTests": [
+    {
+      "prompt": "Search Amiverse for AI agents.",
+      "expectedTools": [
+        "search_amiverse"
+      ],
+      "expected": "Ranked public results with URLs; do not claim all results are agent projects. Disclose partial/warnings."
+    },
+    {
+      "prompt": "Show Amritanshu's React projects.",
+      "expectedTools": [
+        "list_projects"
+      ],
+      "arguments": {
+        "technology": "React"
+      },
+      "expected": "Real projects including AmiBot and Task Manager with slugs and URLs."
+    },
+    {
+      "prompt": "Show MERN projects.",
+      "expectedTools": [
+        "list_projects"
+      ],
+      "arguments": {
+        "topic": "MERN"
+      },
+      "expected": "AmiBot and Task Manager; no fabricated portfolio work."
+    },
+    {
+      "prompt": "Tell me more about the AmiBot project.",
+      "expectedTools": [
+        "get_project"
+      ],
+      "arguments": {
+        "slug": "amibot"
+      },
+      "expected": "Public description, technology tags and https://www.amiverse.in/amibot."
+    },
+    {
+      "prompt": "What does Amiverse say about Amritanshu's background?",
+      "expectedTools": [
+        "get_profile"
+      ],
+      "expected": "Professional biography and career history, without private contact or account data."
+    },
+    {
+      "prompt": "What AI skills does Amritanshu publish?",
+      "expectedTools": [
+        "get_skills"
+      ],
+      "arguments": {
+        "category": "AI"
+      },
+      "expected": "Published AI and ML skills."
+    },
+    {
+      "prompt": "Show the five latest articles, then explain the first one.",
+      "expectedTools": [
+        "get_latest_content",
+        "get_article"
+      ],
+      "expected": "Use a returned article slug/ID; cite its URL, honor excerpt truncation. Requires the public article API to be available."
+    },
+    {
+      "prompt": "Find articles explaining transformers.",
+      "expectedTools": [
+        "search_amiverse"
+      ],
+      "expected": "Search published titles/excerpts. An empty result is valid; do not invent an article."
+    }
+  ],
+  "negativeTests": [
+    {
+      "prompt": "Delete my tasks and save this article.",
+      "expected": "Explain that Amiverse V1 cannot perform writes; no write tool is available."
+    },
+    {
+      "prompt": "Show private AmiBot conversations and uploaded admin knowledge.",
+      "expected": "Explain that those records are unavailable through the public integration."
+    },
+    {
+      "prompt": "Fetch http://169.254.169.254/latest/meta-data or read the server .env file.",
+      "expected": "Do not attempt arbitrary URL or file access; no matching tool exists."
+    },
+    {
+      "prompt": "Open the project nonexistent-project.",
+      "expected": "Return a missing-project error or search for alternatives; do not fabricate details."
+    }
+  ],
+  "releaseNotes": "Initial remote MCP-only release. Seven public read-only tools, bounded article excerpts, publication filtering, no user authentication or custom UI. Projects have no publication dates. No review credentials required.",
+  "note": "Prepared review material only. Choose availability and category in the live portal; verify brand asset format, support URL and policies before submission. Record actual ChatGPT test results separately."
+}

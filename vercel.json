@@ -26,6 +26,22 @@
   ],
   "rewrites": [
     {
+      "source": "/.well-known/openai-apps-challenge",
+      "destination": "/api/mcp-verification"
+    },
+    {
+      "source": "/api/mcp",
+      "destination": "/api/mcp"
+    },
+    {
+      "source": "/api/mcp-health",
+      "destination": "/api/mcp-health"
+    },
+    {
+      "source": "/health",
+      "destination": "/api/mcp-health"
+    },
+    {
       "source": "/(.*)",
       "destination": "/"
     }
@@ -105,5 +121,13 @@
         }
       ]
     }
-  ]
+  ],
+  "functions": {
+    "api/mcp.js": {
+      "maxDuration": 30
+    },
+    "api/mcp-health.js": {
+      "maxDuration": 10
+    }
+  }
 }

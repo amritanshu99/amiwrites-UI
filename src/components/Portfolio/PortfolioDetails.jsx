@@ -49,6 +49,7 @@ import AmiversePulseWidget from "../AmiversePulseWidget";
 import { FaCalendarAlt } from "react-icons/fa";
 import { apiUrl, assetUrl } from "../../config/api";
 import portfolioFallback from "../../data/portfolioFallback";
+import featuredProjects from "../../data/featuredProjects.json";
 
 const MemoryLaneGallery = React.lazy(() => import("./MemoryLaneGallery"));
 
@@ -343,35 +344,7 @@ const proofPoints = [
   { value: "AI focused", label: "Practical innovation" },
 ];
 
-const featuredProjects = [
-  {
-    title: "AmiBot",
-    label: "AI assistant",
-    description:
-      "A context-aware assistant built to turn questions into clear, useful actions across the AmiVerse ecosystem.",
-    result: "Conversational AI · Admin controls · Responsive UX",
-    stack: ["React", "Node.js", "AI"],
-    to: "/amibot",
-  },
-  {
-    title: "Task Manager",
-    label: "Productivity system",
-    description:
-      "A professional Kanban workspace that combines focused task execution with useful productivity analytics.",
-    result: "Drag-and-drop workflow · Analytics · Mobile ready",
-    stack: ["React", "Node.js", "Analytics"],
-    to: "/task-manager",
-  },
-  {
-    title: "AI Tools",
-    label: "Applied AI lab",
-    description:
-      "A collection of approachable AI utilities that solve focused problems without adding unnecessary complexity.",
-    result: "Multiple tools · Clear workflows · Fast discovery",
-    stack: ["AI", "ML", "JavaScript"],
-    to: "/ai-tools",
-  },
-];
+
 
 /* ================= MAIN ================= */
 export default function PortfolioDetails() {

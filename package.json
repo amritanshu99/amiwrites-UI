@@ -6,6 +6,7 @@
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
+    "@modelcontextprotocol/server": "2.0.0",
     "@tensorflow/tfjs": "^4.22.0",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
@@ -28,7 +29,8 @@
     "recharts": "^3.0.0",
     "remark-gfm": "^4.0.1",
     "sitemap": "^8.0.0",
-    "web-vitals": "^2.1.4"
+    "web-vitals": "^2.1.4",
+    "zod": "4.6.5"
   },
   "scripts": {
     "generate:loader": "node scripts/generate-initial-loader.js",
@@ -41,7 +43,14 @@
     "test": "react-scripts test",
     "test:loader": "node --test scripts/generate-initial-loader.test.js",
     "test:seo": "node --test server/seoContent.test.js scripts/generate-seo-pages.test.js",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "mcp:dev": "node --env-file-if-exists=.env --env-file-if-exists=.env.local server/mcp/local.js",
+    "mcp:inspect": "npx --yes @modelcontextprotocol/inspector@2.7.0 --web",
+    "mcp:smoke": "node scripts/mcp-smoke.js",
+    "test:mcp": "node --test server/mcp/tests/*.test.js",
+    "lint:mcp": "eslint server/mcp api/mcp.js api/mcp-health.js api/mcp-verification.js scripts/mcp-smoke.js",
+    "lint": "eslint src server api scripts --ext .js,.jsx --ignore-pattern **/*.test.*",
+    "lint:all": "eslint src server api scripts --ext .js,.jsx"
   },
   "eslintConfig": {
     "extends": [
@@ -62,8 +71,12 @@
     ]
   },
   "devDependencies": {
+    "@modelcontextprotocol/client": "2.0.0",
     "autoprefixer": "^10.4.21",
     "postcss": "^8.5.4",
     "tailwindcss": "^3.4.17"
+  },
+  "engines": {
+    "node": "24.x"
   }
 }
