@@ -148,7 +148,7 @@ export function TaskCardSurface({ task, overlay = false, onEdit, dragHandleProps
         ) : (
           <span className="inline-flex items-center gap-1.5 text-slate-500 dark:text-zinc-400">
             <Clock3 size={13} />
-            No due date
+            {task.boardType === "daily" ? "No deadline" : "No due date"}
           </span>
         )}
 

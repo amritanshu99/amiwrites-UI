@@ -226,7 +226,7 @@ export default function TaskModal({
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="block">
                 <span className="mb-2 flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-zinc-200">
-                  <CalendarDays size={15} /> Due date
+                  <CalendarDays size={15} /> {form.boardType === "daily" ? "Deadline (optional)" : "Due date"}
                 </span>
                 <input
                   type="date"
@@ -266,7 +266,13 @@ export default function TaskModal({
                 </button>
               )}
               {task && confirmDelete && (
-                <div className="flex items-center gap-2">
+                <div>
+                  {task.boardType !== "daily" && task.dailyProgress?.total > 0 && (
+                    <p className="mb-2 text-xs leading-5 text-slate-500 dark:text-zinc-400">
+                      Linked daily tasks will be kept and unlinked from this goal.
+                    </p>
+                  )}
+                  <div className="flex items-center gap-2">
                   <button
                     type="button"
                     onClick={() => onDelete(task)}
@@ -283,6 +289,7 @@ export default function TaskModal({
                   >
                     Keep it
                   </button>
+                  </div>
                 </div>
               )}
             </div>
