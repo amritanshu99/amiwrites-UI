@@ -6,6 +6,7 @@ import {
   Layers3,
   Save,
   Tag,
+  Target,
   Trash2,
   X,
 } from "lucide-react";
@@ -14,14 +15,23 @@ import {
   TASK_PRIORITIES,
   TASK_STATUSES,
   toDateInputValue,
+  planningDate,
 } from "./taskManagerConfig";
 import useDialogFocus from "./useDialogFocus";
 
-function toFormTask(task, initialStatus) {
-  if (!task) return { ...EMPTY_TASK, status: initialStatus || "backlog" };
+function toFormTask(task, initialStatus, boardType, initialPlannedDate) {
+  if (!task) return {
+    ...EMPTY_TASK,
+    status: initialStatus || "backlog",
+    boardType,
+    plannedDate: boardType === "daily" ? initialPlannedDate || planningDate() : "",
+  };
 
   return {
     title: task.title || "",
+    boardType: task.boardType || "goals",
+    plannedDate: toDateInputValue(task.plannedDate),
+    linkedGoalId: task.linkedGoalId || "",
     description: task.description || "",
     status: task.status || "todo",
     priority: task.priority || "medium",
@@ -34,12 +44,15 @@ export default function TaskModal({
   open,
   task,
   initialStatus,
+  boardType = "goals",
+  initialPlannedDate,
+  goals = [],
   onClose,
   onSave,
   onDelete,
   isSaving,
 }) {
-  const [form, setForm] = useState(() => toFormTask(task, initialStatus));
+  const [form, setForm] = useState(() => toFormTask(task, initialStatus, boardType, initialPlannedDate));
   const [labelInput, setLabelInput] = useState("");
   const [confirmDelete, setConfirmDelete] = useState(false);
   const titleRef = useRef(null);
@@ -53,11 +66,11 @@ export default function TaskModal({
   useEffect(() => {
     if (!open) return undefined;
 
-    setForm(toFormTask(task, initialStatus));
+    setForm(toFormTask(task, initialStatus, boardType, initialPlannedDate));
     setLabelInput(Array.isArray(task?.labels) ? task.labels.join(", ") : "");
     setConfirmDelete(false);
     return undefined;
-  }, [open, task, initialStatus]);
+  }, [open, task, initialStatus, boardType, initialPlannedDate]);
 
   if (!open) return null;
 
@@ -79,6 +92,8 @@ export default function TaskModal({
       title: form.title.trim(),
       description: form.description.trim(),
       dueDate: form.dueDate || null,
+      plannedDate: form.boardType === "daily" ? form.plannedDate : null,
+      linkedGoalId: form.boardType === "daily" ? form.linkedGoalId || null : null,
       labels,
     });
   };
@@ -100,10 +115,10 @@ export default function TaskModal({
         <div className="z-10 flex shrink-0 items-start justify-between gap-4 border-b border-slate-200/80 bg-white/95 px-5 py-4 backdrop-blur-xl sm:px-6 dark:border-zinc-800 dark:bg-zinc-950/95">
           <div>
             <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-indigo-600 dark:text-indigo-400">
-              {task ? "Task details" : "New work item"}
+              {form.boardType === "daily" ? "Daily planner" : "Long-term goals"}
             </p>
             <h2 id="task-modal-title" className="mt-1 text-xl font-extrabold text-slate-950 dark:text-white">
-              {task ? "Edit task" : "Create a task"}
+              {task ? "Edit task" : form.boardType === "daily" ? "Plan a daily task" : "Create a task"}
             </h2>
           </div>
           <button
@@ -119,6 +134,34 @@ export default function TaskModal({
 
         <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
           <div className="space-y-5 overflow-y-auto overscroll-contain p-5 sm:p-6">
+            {form.boardType === "daily" && (
+              <div className="space-y-4 rounded-xl border border-indigo-100 bg-indigo-50/60 p-4 dark:border-indigo-900 dark:bg-indigo-950/25">
+                <label className="block">
+                  <span className="mb-2 flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-zinc-200"><CalendarDays size={15} /> Planned date</span>
+                  <input type="date" required value={form.plannedDate}
+                    onChange={(event) => setForm((current) => ({ ...current, plannedDate: event.target.value }))}
+                    className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 text-sm text-slate-900 focus:border-indigo-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:[color-scheme:dark]" />
+                </label>
+                <div className="flex gap-2">
+                  {["Today", "Tomorrow"].map((label, offset) => (
+                    <button key={label} type="button" aria-pressed={form.plannedDate === planningDate(offset)}
+                      onClick={() => setForm((current) => ({ ...current, plannedDate: planningDate(offset) }))}
+                      className="rounded-lg border border-indigo-200 bg-white px-3 py-2 text-xs font-bold text-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 aria-pressed:bg-indigo-600 aria-pressed:text-white dark:border-indigo-800 dark:bg-zinc-900 dark:text-indigo-300 dark:aria-pressed:bg-indigo-600 dark:aria-pressed:text-white">{label}</button>
+                  ))}
+                </div>
+                <label className="block">
+                  <span className="mb-2 flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-zinc-200"><Target size={15} /> Linked goal (optional)</span>
+                  <select value={form.linkedGoalId}
+                    onChange={(event) => setForm((current) => ({ ...current, linkedGoalId: event.target.value }))}
+                    className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 text-sm text-slate-900 focus:border-indigo-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white">
+                    <option value="">No linked goal</option>
+                    {form.linkedGoalId && !goals.some((goal) => goal._id === form.linkedGoalId) && <option value={form.linkedGoalId}>Goal unavailable — choose another or unlink</option>}
+                    {goals.map((goal) => <option key={goal._id} value={goal._id}>{goal.title}{goal.status === "done" ? " (completed)" : ""}</option>)}
+                  </select>
+                </label>
+                <p className="text-xs leading-5 text-slate-500 dark:text-zinc-400">Connect this step to a task on your long-term board, or keep it independent. Completing it leaves the goal's status unchanged.</p>
+              </div>
+            )}
             <label className="block">
               <span className="mb-2 block text-sm font-bold text-slate-700 dark:text-zinc-200">
                 Task title <span className="text-rose-500">*</span>

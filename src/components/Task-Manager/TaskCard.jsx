@@ -8,6 +8,7 @@ import {
   GripVertical,
   Pencil,
   Tag,
+  Target,
 } from "lucide-react";
 import { getPriority, parseTaskDate } from "./taskManagerConfig";
 
@@ -38,6 +39,7 @@ export function TaskCardSurface({ task, overlay = false, onEdit, dragHandleProps
   const priority = getPriority(task.priority);
   const dueDate = getDueDateMeta(task.dueDate, task.status);
   const visibleLabels = task.labels.slice(0, 2);
+  const plannedDate = task.boardType === "daily" ? getDueDateMeta(task.plannedDate, task.status) : null;
 
   return (
     <article
@@ -92,6 +94,22 @@ export function TaskCardSurface({ task, overlay = false, onEdit, dragHandleProps
         <p className="mt-1.5 line-clamp-2 break-words text-sm leading-5 text-slate-500 dark:text-zinc-400">
           {task.description}
         </p>
+      )}
+
+      {plannedDate && (
+        <p className={`mt-3 flex items-center gap-1.5 text-xs font-bold ${plannedDate.overdue ? "text-rose-600 dark:text-rose-400" : "text-indigo-600 dark:text-indigo-300"}`}>
+          <CalendarDays size={13} aria-hidden="true" /> {plannedDate.label.startsWith("Due ") ? plannedDate.label.replace("Due ", "Planned ") : `Planned ${plannedDate.label}`}
+        </p>
+      )}
+      {task.linkedGoalId && (
+        <button type="button" disabled={!task.linkedGoal || !onEdit} onClick={() => onEdit(task.linkedGoal)}
+          className="mt-3 flex w-full items-center gap-1.5 rounded-lg bg-indigo-50 px-2.5 py-2 text-left text-xs font-semibold text-indigo-700 hover:bg-indigo-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 disabled:cursor-default dark:bg-indigo-950/50 dark:text-indigo-300 dark:hover:bg-indigo-950"
+          aria-label={task.linkedGoal ? `Open linked goal: ${task.linkedGoal.title}` : "Linked goal unavailable"}>
+          <Target size={13} className="shrink-0" aria-hidden="true" /><span className="truncate">{task.linkedGoal?.title || "Goal unavailable"}</span>
+        </button>
+      )}
+      {task.dailyProgress && (
+        <p className="mt-3 flex items-center gap-1.5 text-xs font-semibold text-indigo-600 dark:text-indigo-300"><CheckCircle2 size={13} aria-hidden="true" />{task.dailyProgress.done}/{task.dailyProgress.total} daily tasks complete</p>
       )}
 
       {task.labels.length > 0 && (

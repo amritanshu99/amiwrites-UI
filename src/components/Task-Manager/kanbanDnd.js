@@ -7,6 +7,15 @@ function taskId(task) {
   return String(task._id);
 }
 
+function taskBoard(task) {
+  return task.boardType || "goals";
+}
+
+function mergeBoard(allTasks, boardTasks) {
+  const byId = new Map(boardTasks.map((task) => [taskId(task), task]));
+  return allTasks.map((task) => byId.get(taskId(task)) || task);
+}
+
 function boardLayout(tasks) {
   return TASK_STATUSES.flatMap((status) =>
     tasks
@@ -55,6 +64,13 @@ export function moveTaskOnBoard(
 
   if (!currentTask || !target || normalizedActiveId === String(overId)) {
     return tasks;
+  }
+
+  if (target.task && taskBoard(target.task) !== taskBoard(currentTask)) return tasks;
+  const boardTasks = tasks.filter((task) => taskBoard(task) === taskBoard(currentTask));
+  if (boardTasks.length !== tasks.length) {
+    const moved = moveTaskOnBoard(boardTasks, { activeId, overId, insertAfter, movedAt });
+    return moved === boardTasks ? tasks : mergeBoard(tasks, moved);
   }
 
   // The mobile stage picker changes columns, but dropping back on the current
@@ -127,6 +143,16 @@ export function restoreTaskMoveOnLatestBoard(
   );
 
   if (!latestTask || !previousTask || !movedTask) return latestTasks;
+  const boardTasks = latestTasks.filter((task) => taskBoard(task) === taskBoard(latestTask));
+  if (boardTasks.length !== latestTasks.length) {
+    const restored = restoreTaskMoveOnLatestBoard(
+      boardTasks,
+      previousTasks.filter((task) => taskBoard(task) === taskBoard(latestTask)),
+      movedTasks.filter((task) => taskBoard(task) === taskBoard(latestTask)),
+      activeId
+    );
+    return restored === boardTasks ? latestTasks : mergeBoard(latestTasks, restored);
+  }
   if (latestTask.status !== movedTask.status) return latestTasks;
 
   // A newer completion of the same task must not be undone by an older toast.
