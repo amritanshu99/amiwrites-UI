@@ -67,6 +67,9 @@ export const TASK_PRIORITIES = [
 export const STATUS_IDS = TASK_STATUSES.map((status) => status.id);
 
 export const EMPTY_TASK = {
+  boardType: "goals",
+  plannedDate: "",
+  linkedGoalId: "",
   title: "",
   description: "",
   status: "backlog",
@@ -114,6 +117,18 @@ export function getStatus(statusId) {
   return TASK_STATUSES.find((status) => status.id === statusId) || TASK_STATUSES[1];
 }
 
+export function planningDate(offset = 0, now = new Date()) {
+  const day = new Date(now);
+  day.setDate(day.getDate() + offset);
+  return toDateInputValue(day);
+}
+
+export function matchesPlanningDate(task, filter, today = planningDate()) {
+  if (filter === "all") return true;
+  if (filter === "overdue") return Boolean(task.plannedDate && task.plannedDate < today && task.status !== "done");
+  return task.plannedDate === (filter === "tomorrow" ? planningDate(1, parseTaskDate(today)) : today);
+}
+
 export function getPriority(priorityId) {
   return TASK_PRIORITIES.find((priority) => priority.id === priorityId) || TASK_PRIORITIES[1];
 }
@@ -127,6 +142,9 @@ export function normalizeTask(task) {
 
   return {
     ...task,
+    boardType: task.boardType === "daily" ? "daily" : "goals",
+    plannedDate: toDateInputValue(task.plannedDate),
+    linkedGoalId: task.linkedGoalId || "",
     status,
     priority: TASK_PRIORITIES.some((priority) => priority.id === task.priority)
       ? task.priority

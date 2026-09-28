@@ -19,6 +19,7 @@ import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import {
   AlertTriangle,
   BarChart3,
+  CalendarDays,
   CheckCircle2,
   ChevronDown,
   CircleDot,
@@ -32,6 +33,7 @@ import {
   Search,
   Sparkles,
   Trophy,
+  Target,
   UserPlus,
   X,
 } from "lucide-react";
@@ -46,6 +48,8 @@ import {
   getPriority,
   normalizeTask,
   parseTaskDate,
+  planningDate,
+  matchesPlanningDate,
 } from "./taskManagerConfig";
 import {
   moveTaskOnBoard,
@@ -169,7 +173,7 @@ function BoardSkeleton() {
   );
 }
 
-function buildStats(tasks) {
+function buildStats(tasks, date = planningDate()) {
   const statusCounts = TASK_STATUSES.reduce(
     (counts, status) => ({ ...counts, [status.id]: 0 }),
     {}
@@ -179,7 +183,7 @@ function buildStats(tasks) {
     statusCounts[task.status] = (statusCounts[task.status] || 0) + 1;
   });
 
-  const now = new Date();
+  const now = parseTaskDate(date);
   const today = new Date(now);
   today.setHours(0, 0, 0, 0);
   const nextWeek = new Date(today);
@@ -330,6 +334,10 @@ export default function TaskManager() {
   const [token, setToken] = useState(initialToken);
   const [isAuthenticated, setIsAuthenticated] = useState(Boolean(initialToken));
   const [tasks, setTasks] = useState([]);
+  const [boardType, setBoardType] = useState("goals");
+  const boardTypeRef = useRef("goals");
+  const [dateFilter, setDateFilter] = useState("all");
+  const [today, setToday] = useState(() => planningDate());
   const [loading, setLoading] = useState(Boolean(initialToken));
   const [loadError, setLoadError] = useState("");
   const [saving, setSaving] = useState(false);
@@ -482,7 +490,7 @@ export default function TaskManager() {
       setTasksAndRef(nextTasks);
 
       const firstPopulatedStatus = TASK_STATUSES.find((status) =>
-        nextTasks.some((task) => task.status === status.id)
+        nextTasks.some((task) => task.boardType === boardTypeRef.current && task.status === status.id)
       );
       setMobileStatus(firstPopulatedStatus?.id || "backlog");
     } catch (error) {
@@ -540,16 +548,45 @@ export default function TaskManager() {
     scrollContainer?.scrollTo({ top: 0, behavior: "smooth" });
   }, [pathname]);
 
-  const stats = useMemo(() => buildStats(tasks), [tasks]);
+  useEffect(() => {
+    const refreshDate = () => setToday(planningDate());
+    const interval = window.setInterval(refreshDate, 60000);
+    window.addEventListener("focus", refreshDate);
+    return () => {
+      window.clearInterval(interval);
+      window.removeEventListener("focus", refreshDate);
+    };
+  }, []);
+
+  const goals = useMemo(() => tasks.filter((task) => task.boardType === "goals"), [tasks]);
+  const boardTasks = useMemo(() => {
+    const goalsById = new Map(goals.map((goal) => [goal._id, goal]));
+    const progressByGoal = new Map();
+    tasks.forEach((task) => {
+      if (task.boardType !== "daily" || !task.linkedGoalId) return;
+      const progress = progressByGoal.get(task.linkedGoalId) || { total: 0, done: 0 };
+      progress.total += 1;
+      if (task.status === "done") progress.done += 1;
+      progressByGoal.set(task.linkedGoalId, progress);
+    });
+    return tasks.filter((task) => task.boardType === boardType).map((task) => ({
+      ...task,
+      linkedGoal: goalsById.get(task.linkedGoalId),
+      dailyProgress: progressByGoal.get(task._id),
+    }));
+  }, [tasks, goals, boardType]);
+  const stats = useMemo(() => buildStats(boardTasks.map((task) => (
+    task.boardType === "daily" ? { ...task, dueDate: task.plannedDate } : task
+  )), today), [boardTasks, today]);
 
   const labels = useMemo(
-    () => [...new Set(tasks.flatMap((task) => task.labels))].sort((a, b) => a.localeCompare(b)),
-    [tasks]
+    () => [...new Set(boardTasks.flatMap((task) => task.labels))].sort((a, b) => a.localeCompare(b)),
+    [boardTasks]
   );
 
   const filteredTasks = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
-    const matches = tasks.filter((task) => {
+    const matches = boardTasks.filter((task) => {
       const matchesSearch =
         !query ||
         task.title.toLowerCase().includes(query) ||
@@ -557,43 +594,46 @@ export default function TaskManager() {
         task.labels.some((label) => label.toLowerCase().includes(query));
       const matchesPriority = priorityFilter === "all" || task.priority === priorityFilter;
       const matchesLabel = labelFilter === "all" || task.labels.includes(labelFilter);
-      return matchesSearch && matchesPriority && matchesLabel;
+      const matchesDate = boardType !== "daily" || matchesPlanningDate(task, dateFilter, today);
+      return matchesSearch && matchesPriority && matchesLabel && matchesDate;
     });
 
     return [...matches].sort((a, b) => {
       if (sortMode === "priority") return getPriority(b.priority).rank - getPriority(a.priority).rank;
       if (sortMode === "newest") return new Date(b.createdAt) - new Date(a.createdAt);
       if (sortMode === "due") {
-        if (!a.dueDate) return 1;
-        if (!b.dueDate) return -1;
-        const aDate = parseTaskDate(a.dueDate);
-        const bDate = parseTaskDate(b.dueDate);
+        const aDate = parseTaskDate(boardType === "daily" ? a.plannedDate : a.dueDate);
+        const bDate = parseTaskDate(boardType === "daily" ? b.plannedDate : b.dueDate);
+        if (!aDate && !bDate) return 0;
         if (!aDate) return 1;
         if (!bDate) return -1;
         return aDate - bDate;
       }
       return a.position - b.position;
     });
-  }, [tasks, searchQuery, priorityFilter, labelFilter, sortMode]);
+  }, [boardTasks, boardType, dateFilter, today, searchQuery, priorityFilter, labelFilter, sortMode]);
 
   const activeFilters = [
     Boolean(searchQuery.trim()),
     priorityFilter !== "all",
     labelFilter !== "all",
     sortMode !== "board",
+    boardType === "daily" && dateFilter !== "all",
   ].filter(Boolean).length;
-  const dragDisabled = activeFilters > 0 || saving || isReordering;
-  const activeTask = tasks.find((task) => task._id === activeTaskId);
+  const dateFilterCount = boardType === "daily" && dateFilter !== "all" ? 1 : 0;
+  const dragDisabled = activeFilters > dateFilterCount || saving || isReordering;
+  const activeTask = boardTasks.find((task) => task._id === activeTaskId);
 
   useEffect(() => {
     if (activeFilters === 0 || filteredTasks.length === 0) return;
-    if (filteredTasks.some((task) => task.status === mobileStatus)) return;
-
-    const firstMatchingStatus = TASK_STATUSES.find((status) =>
-      filteredTasks.some((task) => task.status === status.id)
-    );
-    if (firstMatchingStatus) setMobileStatus(firstMatchingStatus.id);
-  }, [activeFilters, filteredTasks, mobileStatus]);
+    setMobileStatus((currentStatus) => {
+      if (filteredTasks.some((task) => task.status === currentStatus)) return currentStatus;
+      const firstMatchingStatus = TASK_STATUSES.find((status) =>
+        filteredTasks.some((task) => task.status === status.id)
+      );
+      return firstMatchingStatus?.id || currentStatus;
+    });
+  }, [activeFilters, filteredTasks]);
 
   const closeTaskModal = useCallback(() => {
     setTaskModal({ open: false, task: null, initialStatus: "backlog" });
@@ -642,7 +682,7 @@ export default function TaskManager() {
         });
 
         if (!updatedTask) return;
-        setMobileStatus(updatedTask.status);
+        if (updatedTask.boardType === boardType) setMobileStatus(updatedTask.status);
         toast.success("Task updated");
       } else {
         const createdTask = await enqueueTaskMutation(async () => {
@@ -654,7 +694,7 @@ export default function TaskManager() {
           }
 
           const statusTasks = tasksRef.current.filter(
-            (task) => task.status === form.status
+            (task) => task.status === form.status && task.boardType === form.boardType
           );
           const maxPosition = statusTasks.reduce(
             (max, task) => Math.max(max, Number(task.position) || 0),
@@ -681,6 +721,7 @@ export default function TaskManager() {
         toast.success("Task created");
       }
 
+      if (form.boardType === "daily" && !matchesPlanningDate(form, dateFilter, today)) setDateFilter("all");
       closeTaskModal();
     } catch (error) {
       if (
@@ -717,7 +758,9 @@ export default function TaskManager() {
 
         invalidateTaskMove(task._id);
         setTasksAndRef((current) =>
-          current.filter((item) => item._id !== task._id)
+          current.filter((item) => item._id !== task._id).map((item) =>
+            item.linkedGoalId === task._id ? { ...item, linkedGoalId: "" } : item
+          )
         );
         return true;
       });
@@ -791,7 +834,7 @@ export default function TaskManager() {
       active.id
     );
     const completedCount = nextTasks.filter(
-      (task) => task.status === "done"
+      (task) => task.boardType === movedTask.boardType && task.status === "done"
     ).length;
     const normalizedTaskId = String(movedTask._id);
     dismissTaskMoveToasts();
@@ -810,7 +853,7 @@ export default function TaskManager() {
           return false;
         }
 
-        await persistBoardOrder(nextTasks);
+        await persistBoardOrder(nextTasks.filter((task) => task.boardType === movedTask.boardType));
         return (
           isMountedRef.current &&
           boardSessionVersionRef.current === mutationSessionVersion
@@ -867,7 +910,7 @@ export default function TaskManager() {
             setTasksAndRef(restoredTasks);
 
             try {
-              await persistBoardOrder(restoredTasks);
+              await persistBoardOrder(restoredTasks.filter((task) => task.boardType === movedTask.boardType));
             } catch (error) {
               if (tasksRef.current === restoredTasks) {
                 setTasksAndRef(latestTasks);
@@ -892,7 +935,7 @@ export default function TaskManager() {
       if (movedIntoDone) {
         const achievement = getTaskCompletionAchievement(
           completedCount,
-          nextTasks.length
+          nextTasks.filter((task) => task.boardType === movedTask.boardType).length
         );
 
         toast.success(
@@ -978,6 +1021,7 @@ export default function TaskManager() {
   };
 
   const clearFilters = () => {
+    setDateFilter("all");
     setSearchQuery("");
     setPriorityFilter("all");
     setLabelFilter("all");
@@ -1042,7 +1086,7 @@ export default function TaskManager() {
               </button>
               <button
                 type="button"
-                onClick={() => openNewTask("backlog")}
+                onClick={() => openNewTask(boardType === "daily" ? "todo" : "backlog")}
                 disabled={saving || isReordering}
                 className="inline-flex min-h-10 flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-indigo-600 px-3 py-2.5 text-xs font-extrabold text-white shadow-lg shadow-indigo-500/20 transition hover:-translate-y-0.5 hover:bg-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 sm:flex-none sm:px-4 sm:text-sm dark:focus-visible:ring-offset-black"
               >
@@ -1080,6 +1124,34 @@ export default function TaskManager() {
           </section>
         ) : (
           <>
+            <section aria-label="Task boards" className="mb-4 rounded-2xl border border-white/70 bg-white/80 p-3 sm:p-4 dark:border-zinc-800 dark:bg-zinc-950/75">
+              <nav aria-label="Choose task board" className="flex gap-2">
+                {[{ id: "goals", label: "Long-term goals", icon: Target }, { id: "daily", label: "Daily planner", icon: CalendarDays }].map(({ id, label, icon: Icon }) => (
+                  <button key={id} type="button" aria-pressed={boardType === id} disabled={saving || isReordering || Boolean(activeTaskId)}
+                    onClick={() => {
+                      boardTypeRef.current = id;
+                      setBoardType(id);
+                      clearFilters();
+                      const firstStatus = TASK_STATUSES.find((status) => tasks.some((task) => task.boardType === id && task.status === status.id));
+                      setMobileStatus(firstStatus?.id || (id === "daily" ? "todo" : "backlog"));
+                    }}
+                    className={`inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-extrabold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 disabled:opacity-50 sm:flex-none ${boardType === id ? "bg-indigo-600 text-white shadow-sm" : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"}`}>
+                    <Icon size={17} className="hidden sm:block" aria-hidden="true" />{label}
+                  </button>
+                ))}
+              </nav>
+              <p className="mt-3 text-sm text-slate-500 dark:text-zinc-400">{boardType === "daily"
+                ? "Make room for today and tomorrow. Link small steps to a bigger goal whenever it helps."
+                : "Your existing board for bigger goals. Linked daily tasks show the small steps along the way."}</p>
+              {boardType === "daily" && (
+                <div role="group" aria-label="Filter planned day" className="mt-3 flex flex-wrap gap-2">
+                  {[{ id: "all", label: "All dates" }, { id: "today", label: "Today" }, { id: "tomorrow", label: "Tomorrow" }, { id: "overdue", label: "Overdue" }].map(({ id, label }) => (
+                    <button key={id} type="button" aria-pressed={dateFilter === id} onClick={() => setDateFilter(id)}
+                      className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-slate-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 aria-pressed:border-indigo-600 aria-pressed:bg-indigo-50 aria-pressed:text-indigo-700 dark:border-zinc-700 dark:text-zinc-400 dark:aria-pressed:bg-indigo-950 dark:aria-pressed:text-indigo-300">{label}</button>
+                  ))}
+                </div>
+              )}
+            </section>
             <section className="task-manager-metrics-strip -mx-3 mb-4 flex snap-x snap-mandatory gap-2.5 overflow-x-auto px-3 pb-1 sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-3 sm:px-0 sm:pb-0 lg:grid-cols-4">
               <SummaryCard
                 icon={FolderKanban}
@@ -1097,7 +1169,7 @@ export default function TaskManager() {
               />
               <SummaryCard
                 icon={AlertTriangle}
-                label="Due soon"
+                label={boardType === "daily" ? "Planned soon" : "Due soon"}
                 value={stats.dueSoon}
                 helper={stats.overdue ? `${stats.overdue} already overdue` : "Nothing overdue"}
                 iconClass="bg-rose-50 text-rose-600 dark:bg-rose-950/60 dark:text-rose-300"
@@ -1196,7 +1268,7 @@ export default function TaskManager() {
                     >
                       <option value="board">Board order</option>
                       <option value="priority">Highest priority</option>
-                      <option value="due">Due date</option>
+                      <option value="due">{boardType === "daily" ? "Planned date" : "Due date"}</option>
                       <option value="newest">Recently created</option>
                     </select>
                     <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
@@ -1225,7 +1297,7 @@ export default function TaskManager() {
                 </span>
               </div>
               <span className="shrink-0 text-xs font-semibold text-slate-500 dark:text-zinc-400">
-                {filteredTasks.length} of {tasks.length} shown
+                {filteredTasks.length} of {boardTasks.length} shown
               </span>
             </div>
 
@@ -1300,7 +1372,7 @@ export default function TaskManager() {
               </DndContext>
             )}
 
-            {!loading && tasks.length > 0 && filteredTasks.length === 0 && (
+            {!loading && !loadError && boardTasks.length > 0 && filteredTasks.length === 0 && (
               <div className="mt-4 rounded-2xl border border-dashed border-slate-300 bg-white/60 p-8 text-center dark:border-zinc-700 dark:bg-zinc-950/60">
                 <p className="text-sm font-extrabold text-slate-800 dark:text-zinc-200">No matching tasks</p>
                 <p className="mt-1 text-sm text-slate-500 dark:text-zinc-500">Try a different search or clear your filters.</p>
@@ -1317,6 +1389,9 @@ export default function TaskManager() {
         open={taskModal.open}
         task={taskModal.task}
         initialStatus={taskModal.initialStatus}
+        boardType={boardType}
+        initialPlannedDate={dateFilter === "tomorrow" ? planningDate(1, parseTaskDate(today)) : today}
+        goals={goals}
         onClose={closeTaskModal}
         onSave={handleSaveTask}
         onDelete={handleDeleteTask}

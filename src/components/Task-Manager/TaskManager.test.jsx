@@ -5,6 +5,7 @@ import axios from "axios";
 import TaskManager from "./TaskManager";
 import { verifyToken } from "../../utils/authApi";
 import { ADMIN_USERNAME } from "../../config/auth";
+import { planningDate } from "./taskManagerConfig";
 
 jest.mock("../../utils/authApi", () => ({ verifyToken: jest.fn() }));
 
@@ -140,6 +141,135 @@ beforeEach(() => {
 
 afterEach(() => {
   localStorage.clear();
+});
+
+function dailyTask(overrides = {}) {
+  return { ...tasks[0], _id: "daily-1", title: "Draft the launch email", boardType: "daily", status: "todo", plannedDate: planningDate(), linkedGoalId: "task-1", ...overrides };
+}
+
+test("separates daily work, filters calendar days, and opens its linked goal", async () => {
+  axios.get.mockResolvedValue({ data: [...tasks, dailyTask(), dailyTask({ _id: "daily-2", title: "Review tomorrow", plannedDate: planningDate(1), linkedGoalId: null })] });
+  renderTaskManager();
+  await screen.findByText("Plan launch");
+  expect(screen.queryByText("Draft the launch email")).not.toBeInTheDocument();
+  expect(screen.getByText("0/1 daily tasks complete")).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "Show In Progress tasks" })).toHaveAttribute("aria-pressed", "true");
+  await userEvent.click(screen.getByRole("button", { name: "Daily planner", exact: true }));
+  expect(screen.getByText("2 of 2 shown")).toBeInTheDocument();
+  expect(screen.queryByText("Legacy completed task")).not.toBeInTheDocument();
+  await userEvent.click(screen.getByRole("button", { name: "Today", exact: true }));
+  expect(screen.getByText("Draft the launch email")).toBeInTheDocument();
+  expect(screen.queryByText("Review tomorrow")).not.toBeInTheDocument();
+  await userEvent.click(screen.getByRole("button", { name: "Open linked goal: Plan launch" }));
+  expect(screen.getByRole("textbox", { name: /Task title/ })).toHaveValue("Plan launch");
+  expect(screen.queryByLabelText("Planned date")).not.toBeInTheDocument();
+  await userEvent.click(screen.getByRole("button", { name: "Close task editor" }));
+  await userEvent.click(screen.getByRole("button", { name: "Tomorrow", exact: true }));
+  expect(screen.getByText("Review tomorrow")).toBeInTheDocument();
+  expect(screen.queryByText("Draft the launch email")).not.toBeInTheDocument();
+});
+
+test.each(["task-1", ""])("creates and reloads tomorrow's daily task with optional link %s", async (linkedGoalId) => {
+  let created;
+  mockApiClient.post.mockImplementation(async (_, form) => {
+    created = { ...form, _id: "new-daily" };
+    return { data: created };
+  });
+  const view = renderTaskManager();
+  await screen.findByText("Plan launch");
+  await userEvent.click(screen.getByRole("button", { name: "Daily planner", exact: true }));
+  await userEvent.click(screen.getByRole("button", { name: "Tomorrow", exact: true }));
+  await userEvent.click(screen.getByRole("button", { name: "New task" }));
+  expect(screen.getByLabelText("Planned date")).toHaveValue(planningDate(1));
+  expect(screen.getByRole("combobox", { name: "Status" })).toHaveValue("todo");
+  await userEvent.type(screen.getByRole("textbox", { name: /Task title/ }), "Write introduction");
+  await userEvent.selectOptions(screen.getByRole("combobox", { name: "Linked goal (optional)" }), linkedGoalId);
+  await userEvent.click(screen.getByRole("button", { name: "Create task", exact: true }));
+  await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+  expect(mockApiClient.post).toHaveBeenCalledWith("/", expect.objectContaining({ boardType: "daily", plannedDate: planningDate(1), linkedGoalId: linkedGoalId || null, status: "todo" }));
+  expect(screen.getByText("Write introduction")).toBeInTheDocument();
+  view.unmount();
+  axios.get.mockResolvedValue({ data: [...tasks, created] });
+  renderTaskManager();
+  await screen.findByText("Plan launch");
+  await userEvent.click(screen.getByRole("button", { name: "Daily planner", exact: true }));
+  await userEvent.click(screen.getByRole("button", { name: "Edit Write introduction" }));
+  expect(screen.getByLabelText("Planned date")).toHaveValue(planningDate(1));
+  expect(screen.getByRole("combobox", { name: "Linked goal (optional)" })).toHaveValue(linkedGoalId);
+});
+
+test("reschedules and unlinks daily work without hiding the saved task", async () => {
+  axios.get.mockResolvedValue({ data: [...tasks, dailyTask()] });
+  mockApiClient.put.mockImplementation(async (_, form) => ({ data: dailyTask(form) }));
+  renderTaskManager();
+  await screen.findByText("Plan launch");
+  await userEvent.click(screen.getByRole("button", { name: "Daily planner", exact: true }));
+  await userEvent.click(screen.getByRole("button", { name: "Today", exact: true }));
+  await userEvent.click(screen.getByRole("button", { name: "Edit Draft the launch email" }));
+  const dialog = screen.getByRole("dialog", { name: "Edit task" });
+  await userEvent.click(within(dialog).getByRole("button", { name: "Tomorrow", exact: true }));
+  await userEvent.selectOptions(within(dialog).getByRole("combobox", { name: "Linked goal (optional)" }), "");
+  await userEvent.click(within(dialog).getByRole("button", { name: "Save changes" }));
+  await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+  expect(mockApiClient.put).toHaveBeenCalledWith("/daily-1", expect.objectContaining({ plannedDate: planningDate(1), linkedGoalId: null }));
+  expect(screen.getByText("Draft the launch email")).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "All dates" })).toHaveAttribute("aria-pressed", "true");
+  expect(screen.queryByRole("button", { name: "Open linked goal: Plan launch" })).not.toBeInTheDocument();
+});
+
+test("allows choosing an empty mobile column while filtering daily tasks", async () => {
+  axios.get.mockResolvedValue({ data: [...tasks, dailyTask()] });
+  renderTaskManager();
+  await screen.findByText("Plan launch");
+  await userEvent.click(screen.getByRole("button", { name: "Daily planner", exact: true }));
+  await userEvent.click(screen.getByRole("button", { name: "Today", exact: true }));
+  await userEvent.click(screen.getByRole("button", { name: "Show In Progress tasks" }));
+  expect(screen.getByRole("button", { name: "Show In Progress tasks" })).toHaveAttribute("aria-pressed", "true");
+});
+
+test("editing a linked goal preserves the daily board's selected mobile column", async () => {
+  axios.get.mockResolvedValue({ data: [...tasks, dailyTask()] });
+  mockApiClient.put.mockImplementation(async (_, form) => ({ data: { ...tasks[0], ...form } }));
+  renderTaskManager();
+  await screen.findByText("Plan launch");
+  await userEvent.click(screen.getByRole("button", { name: "Daily planner", exact: true }));
+  await userEvent.click(screen.getByRole("button", { name: "Open linked goal: Plan launch" }));
+  await userEvent.click(screen.getByRole("button", { name: "Save changes" }));
+  await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+  expect(screen.getByRole("button", { name: "Show To Do tasks" })).toHaveAttribute("aria-pressed", "true");
+});
+
+test("daily completion and Undo never reorder or complete long-term goals", async () => {
+  axios.get.mockResolvedValue({ data: [...tasks, dailyTask()] });
+  renderTaskManager();
+  await screen.findByText("Plan launch");
+  await userEvent.click(screen.getByRole("button", { name: "Daily planner", exact: true }));
+  await userEvent.click(screen.getByRole("button", { name: "Today", exact: true }));
+  expect(screen.getByRole("button", { name: "Move Draft the launch email" })).toBeInTheDocument();
+  await act(async () => { await dragTask("daily-1", "column:done"); });
+  expect(mockApiClient.put.mock.calls[0][1].items).toEqual([expect.objectContaining({ id: "daily-1", status: "done" })]);
+  await userEvent.click(screen.getByRole("button", { name: "Long-term goals", exact: true }));
+  expect(screen.getByRole("region", { name: "In Progress column" })).toHaveTextContent("Plan launch");
+  expect(screen.getByText("1/1 daily tasks complete")).toBeInTheDocument();
+  const [renderAchievement] = require("react-toastify").toast.success.mock.calls.find(([content]) => typeof content === "function");
+  const notice = render(renderAchievement({ closeToast: jest.fn() }));
+  await userEvent.click(within(notice.container).getByRole("button", { name: "Undo completing Draft the launch email" }));
+  await waitFor(() => expect(mockApiClient.put).toHaveBeenCalledTimes(2));
+  expect(mockApiClient.put.mock.calls[1][1].items).toEqual([expect.objectContaining({ id: "daily-1", status: "todo" })]);
+  expect(screen.getByText("0/1 daily tasks complete")).toBeInTheDocument();
+});
+
+test("deleting a goal preserves its daily tasks and removes the link", async () => {
+  axios.get.mockResolvedValue({ data: [...tasks, dailyTask()] });
+  renderTaskManager();
+  await screen.findByText("Plan launch");
+  await userEvent.click(screen.getByRole("button", { name: "Edit Plan launch" }));
+  await userEvent.click(screen.getByRole("button", { name: "Delete task" }));
+  await userEvent.click(screen.getByRole("button", { name: "Confirm delete" }));
+  await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+  await userEvent.click(screen.getByRole("button", { name: "Daily planner", exact: true }));
+  expect(screen.getByText("Draft the launch email")).toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: /Open linked goal/ })).not.toBeInTheDocument();
 });
 
 test("renders the professional board and safely maps legacy completed tasks", async () => {
