@@ -20,6 +20,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { apiUrl } from "../../config/api";
+import AmiBotVoiceSetup from "./AmiBotVoiceSetup";
 
 const panelClassName =
   "rounded-2xl border border-white/80 bg-white/88 p-4 shadow-[0_22px_60px_-42px_rgba(15,23,42,0.42)] ring-1 ring-white/70 backdrop-blur-2xl dark:border-zinc-800 dark:bg-black/88 dark:ring-white/[0.06] sm:p-5";
@@ -418,6 +419,8 @@ export default function AmiBotAdmin() {
 
         {error ? <Notice type="error">{error}</Notice> : null}
         {success ? <Notice type="success">{success}</Notice> : null}
+
+        <AmiBotVoiceSetup />
 
         <div className="grid gap-4 xl:grid-cols-[minmax(20rem,0.82fr)_minmax(0,1.5fr)]">
           <section className={`${panelClassName} min-w-0`}>
