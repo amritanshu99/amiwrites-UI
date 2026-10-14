@@ -8,7 +8,9 @@ export function recordingName(type = "") {
   return `recording.${type.includes("mp4") ? "m4a" : type.includes("ogg") ? "ogg" : "webm"}`;
 }
 
-export function speechChunks(markdown, maxCharacters = 400) {
+export function speechChunks(markdown, maxCharacters = 400, firstChunkCharacters = maxCharacters) {
+  const limit = Number.isFinite(maxCharacters) ? Math.max(1, Math.floor(maxCharacters)) : 400;
+  const firstLimit = Number.isFinite(firstChunkCharacters) ? Math.max(1, Math.min(limit, Math.floor(firstChunkCharacters))) : limit;
   const text = markdown
     .replace(/```[\s\S]*?```/g, " See the code in the chat. ")
     .replace(/!\[[^\]]*\]\([^)]*\)/g, "")
@@ -18,21 +20,33 @@ export function speechChunks(markdown, maxCharacters = 400) {
     .replace(/\s+/g, " ").trim();
   const sentences = text.match(/[^.!?।]+[.!?।]*\s*/g) || [];
   const chunks = [];
+  let chunk = "";
+  const chunkLimit = () => chunks.length ? limit : firstLimit;
+  const flush = () => { if (chunk) chunks.push(chunk); chunk = ""; };
   for (const sentence of sentences) {
     for (const word of sentence.trim().split(/\s+/)) {
-      if (!word) continue;
-      // A hard limit also covers long unbroken strings.
-      for (let offset = 0; offset < word.length; offset += maxCharacters) {
-        const part = word.slice(offset, offset + maxCharacters);
-        const last = chunks.length - 1;
-        if (last >= 0 && chunks[last].length + part.length + 1 <= maxCharacters) chunks[last] += ` ${part}`;
-        else chunks.push(part);
+      let remaining = word;
+      while (remaining) {
+        const space = chunk ? " " : "";
+        if (chunk.length + space.length + remaining.length <= chunkLimit()) {
+          chunk += space + remaining;
+          remaining = "";
+        } else if (chunk) {
+          flush();
+        } else {
+          // Preserve every character even when an unbroken word exceeds the limit.
+          const size = chunkLimit();
+          chunk = remaining.slice(0, size);
+          remaining = remaining.slice(size);
+          if (remaining) flush();
+        }
       }
     }
-    // Start a new request at sentence boundaries once enough speech is available.
-    if (chunks.at(-1)?.length >= 100) chunks.push("");
+    // A complete opening sentence can start playing while later speech is prepared.
+    if ((!chunks.length && firstLimit < limit) || chunk.length >= 100) flush();
   }
-  return chunks.map((chunk) => chunk.trim()).filter(Boolean);
+  flush();
+  return chunks;
 }
 
 export async function readVoiceJson(response) {

@@ -1,6 +1,6 @@
 # AmiBot browser voice
 
-AmiBot uses Chatterbox ONNX for the owner's cloned voice and Whisper tiny.en for
+AmiBot uses Chatterbox ONNX for the owner's cloned voice and Whisper base.en for
 speech recognition, through pinned Transformers.js 4.3.1. Both run in a dedicated
 Web Worker on the visitor's device. The existing AmiBot text endpoint still
 answers questions using the existing knowledge and history. It retains its current
@@ -32,6 +32,12 @@ consents; no demo voice is shipped as the owner's voice.
   Browser caching avoids repeat downloads when storage permits; clearing storage
   or browser eviction requires another download. Model files come from Hugging Face;
   ONNX WASM runtime files come from the versioned Transformers.js CDN dependency.
+- Weight downloads recover from stalled transfers after 45 seconds without data,
+  with up to two retries from the received byte offset. A resumed response must
+  match the expected range and file identity; mismatches fail safely. Only complete
+  files are cached. Progress includes aggregate percentages and recovery notices.
+- Recognition uses quantized Whisper base.en (about 77 MB of weights, roughly
+  36 MB more than the previous tiny.en model). It remains local and English-only.
 - English only. A recent desktop Chrome/Edge with enough free memory is preferred.
   WebGPU is used when available, otherwise CPU/WASM. Weak devices can be too slow
   or run out of memory. This is turn-based speech, not guaranteed real-time audio.
@@ -39,10 +45,14 @@ consents; no demo voice is shipped as the owner's voice.
   sent to the existing AmiBot API and follows its existing history rules.
 - Turns stop after a short pause, **Send now**, or 55 seconds. The microphone pauses
   during replies. Interrupt cancels queued speech and resumes listening.
+- Replies start with a complete opening sentence when possible, capped at 96
+  characters, while later chunks of up to 160 characters prepare during playback.
 - The orb/waveform follow measured input and playback amplitude. Downloading,
   transcribing, thinking, preparing, speaking, and paused states are distinct.
 - End cancels active work; closing the panel also releases the model worker.
-  Hiding the page stops microphone capture. No browser/system voice substitutes
+  Switching tabs preserves a model download but stops microphone capture. If setup
+  completes in the background, return and start the conversation to enable the mic.
+  No browser/system voice substitutes
   for the owner's recording if inference fails.
 
 ## Verification

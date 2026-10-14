@@ -17,3 +17,25 @@ test("browser voice uses shorter chunks without dropping long words", () => {
   expect(chunks.every((chunk) => chunk.length <= 160 && chunk.length > 0)).toBe(true);
   expect(chunks.join("").match(/x/g)).toHaveLength(350);
 });
+
+test("browser speech starts with the complete opening sentence before preparing the longer answer", () => {
+  const reply = "Yes, I can help. Here is a longer explanation of how your voice conversation works, with the details you asked for.";
+  const chunks = speechChunks(reply, 160, 96);
+  expect(chunks[0]).toBe("Yes, I can help.");
+  expect(chunks.join(" ")).toBe(reply);
+  expect(chunks.slice(1).some((chunk) => chunk.length > 96)).toBe(true);
+});
+
+test("a long opening sentence fits the smaller first request without losing words", () => {
+  const reply = "AmiBot explains how voice conversations work using the voice you recorded and generating each spoken answer directly on your device. Then it listens for your next question.";
+  const chunks = speechChunks(reply, 160, 96);
+  expect(chunks[0].length).toBeLessThanOrEqual(96);
+  expect(chunks.every((chunk) => chunk.length <= 160 && chunk.length > 0)).toBe(true);
+  expect(chunks.join(" ")).toBe(reply);
+});
+
+test("a smaller opening request preserves long unbroken text", () => {
+  const chunks = speechChunks("x".repeat(450), 160, 96);
+  expect(chunks.map((chunk) => chunk.length)).toEqual([96, 160, 160, 34]);
+  expect(chunks.join("")).toBe("x".repeat(450));
+});
