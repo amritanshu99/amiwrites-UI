@@ -8,7 +8,7 @@ export function recordingName(type = "") {
   return `recording.${type.includes("mp4") ? "m4a" : type.includes("ogg") ? "ogg" : "webm"}`;
 }
 
-export function speechChunks(markdown) {
+export function speechChunks(markdown, maxCharacters = 400) {
   const text = markdown
     .replace(/```[\s\S]*?```/g, " See the code in the chat. ")
     .replace(/!\[[^\]]*\]\([^)]*\)/g, "")
@@ -22,10 +22,10 @@ export function speechChunks(markdown) {
     for (const word of sentence.trim().split(/\s+/)) {
       if (!word) continue;
       // A hard limit also covers long unbroken strings.
-      for (let offset = 0; offset < word.length; offset += 400) {
-        const part = word.slice(offset, offset + 400);
+      for (let offset = 0; offset < word.length; offset += maxCharacters) {
+        const part = word.slice(offset, offset + maxCharacters);
         const last = chunks.length - 1;
-        if (last >= 0 && chunks[last].length + part.length + 1 <= 400) chunks[last] += ` ${part}`;
+        if (last >= 0 && chunks[last].length + part.length + 1 <= maxCharacters) chunks[last] += ` ${part}`;
         else chunks.push(part);
       }
     }

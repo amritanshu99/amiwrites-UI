@@ -11,3 +11,9 @@ test("long replies including unbroken strings respect the speech API limit", () 
   expect(chunks.every((chunk) => chunk.length <= 400 && chunk.length > 0)).toBe(true);
   expect(chunks.join("").match(/x/g)).toHaveLength(900);
 });
+
+test("browser voice uses shorter chunks without dropping long words", () => {
+  const chunks = speechChunks(`${"AmiBot can speak. ".repeat(30)}${"x".repeat(350)}`, 160);
+  expect(chunks.every((chunk) => chunk.length <= 160 && chunk.length > 0)).toBe(true);
+  expect(chunks.join("").match(/x/g)).toHaveLength(350);
+});

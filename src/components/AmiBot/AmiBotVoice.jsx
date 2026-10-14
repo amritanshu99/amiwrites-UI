@@ -6,6 +6,7 @@ import "./AmiBotVoice.css";
 const phases = {
   idle: ["A little more human.", "Speak naturally. AmiBot will reply in Amritanshu’s AI voice."],
   connecting: ["Getting ready", "Connecting your microphone…"],
+  loading: ["Making room for your voice", "Keep this tab open while the voice models load."],
   listening: ["I’m listening", "Take your time. A short pause sends your message."],
   transcribing: ["Got it", "Listening back to what you said…"],
   thinking: ["Let me think", "Finding an answer in AmiVerse knowledge…"],
@@ -16,11 +17,12 @@ const phases = {
 };
 
 export default function AmiBotVoice({ onClose, onTurn, token }) {
-  const [language, setLanguage] = useState("auto");
+  const [downloadAccepted, setDownloadAccepted] = useState(false);
   const [tone, setTone] = useState("natural");
-  const voice = useAmiBotVoice({ onTurn, token, language, tone });
+  const voice = useAmiBotVoice({ onTurn, token, tone });
   const closeRef = useRef(null);
   const [title, description] = phases[voice.phase];
+  const starting = voice.phase === "connecting" || voice.phase === "loading";
 
   useEffect(() => {
     closeRef.current?.focus();
@@ -54,14 +56,20 @@ export default function AmiBotVoice({ onClose, onTurn, token }) {
 
         {!voice.active && (
           <div className="amibot-voice-options">
-            <label>Conversation language<select value={language} onChange={(event) => setLanguage(event.target.value)}>
-              <option value="auto">Auto · English / Hindi</option><option value="en">English</option><option value="hi">Hindi</option>
-            </select></label>
             <label>Speaking tone<select value={tone} onChange={(event) => setTone(event.target.value)}>
               <option value="natural">Natural</option><option value="calm">Calm</option><option value="expressive">Expressive</option>
             </select></label>
           </div>
         )}
+
+        {!voice.active && !voice.modelReady && (
+          <label className="amibot-voice-download">
+            <input type="checkbox" checked={downloadAccepted} onChange={(event) => setDownloadAccepted(event.target.checked)} />
+            <span>Download about 1.6 GB of voice models to this browser. English only; best on a recent laptop or desktop. Replies can take a while on slower devices. Models are cached when storage is available.</span>
+          </label>
+        )}
+        {voice.phase === "loading" && <p className="amibot-voice-progress" role="status">{voice.progress}</p>}
+        {voice.active && voice.device === "wasm" && <p className="amibot-voice-description">Your device is using its CPU. Voice replies may be slow.</p>}
 
         {voice.transcript && <div className="amibot-voice-caption"><span>YOU</span><p>{voice.transcript}</p></div>}
         {voice.reply && <div className="amibot-voice-caption"><span>AMIBOT</span><p>{voice.reply}</p></div>}
@@ -78,20 +86,20 @@ export default function AmiBotVoice({ onClose, onTurn, token }) {
       <div className="amibot-voice-bottom">
         {voice.active ? (
           <div className="amibot-voice-controls">
-            <button type="button" disabled={voice.phase === "connecting"} className="amibot-voice-control" onClick={voice.toggleMute} aria-label={voice.muted ? "Resume microphone" : "Pause microphone"} aria-pressed={voice.muted}>{voice.muted ? <MicOff size={21} /> : <Mic size={21} />}</button>
+            <button type="button" disabled={starting} className="amibot-voice-control" onClick={voice.toggleMute} aria-label={voice.muted ? "Resume microphone" : "Pause microphone"} aria-pressed={voice.muted}>{voice.muted ? <MicOff size={21} /> : <Mic size={21} />}</button>
             {voice.phase === "listening" ? (
               <button type="button" className="amibot-voice-primary" onClick={voice.sendNow}><SendHorizontal size={17} /> Send now</button>
             ) : voice.phase === "paused" ? (
               <button type="button" className="amibot-voice-primary" onClick={voice.toggleMute}><Mic size={17} /> Resume</button>
             ) : (
-              <button type="button" disabled={voice.phase === "connecting"} className="amibot-voice-primary" onClick={voice.interrupt}><Mic size={17} /> Interrupt</button>
+              <button type="button" disabled={starting} className="amibot-voice-primary" onClick={voice.interrupt}><Mic size={17} /> Interrupt</button>
             )}
             <button type="button" className="amibot-voice-control amibot-voice-end" onClick={voice.stop} aria-label="End voice conversation"><PhoneOff size={21} /></button>
           </div>
         ) : (
-          <button type="button" className="amibot-voice-primary" onClick={voice.start} disabled={!voice.supported || !voice.status?.ready}><Mic size={19} /> Start conversation</button>
+          <button type="button" className="amibot-voice-primary" onClick={voice.start} disabled={!voice.supported || !voice.status?.ready || (!voice.modelReady && !downloadAccepted)}><Mic size={19} /> {voice.modelReady ? "Start conversation" : "Download & start"}</button>
         )}
-        <p>AI-generated voice · {voice.active ? "Microphone pauses during replies" : "Microphone starts only when you do"}</p>
+        <p>AI-generated voice · English · {voice.active ? "Microphone pauses during replies" : "Audio stays on your device; text goes to AmiBot"}</p>
       </div>
     </section>
   );
