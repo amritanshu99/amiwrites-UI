@@ -2,6 +2,8 @@ import React from "react";
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import AmiBot from "./AmiBot";
 
+jest.mock("./createVoiceWorker", () => jest.fn());
+
 jest.mock("react-markdown", () => ({
   __esModule: true,
   default: ({ children }) => {

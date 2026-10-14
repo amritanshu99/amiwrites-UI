@@ -22,6 +22,10 @@
 .amibot-voice-options { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-top: 18px; }
 .amibot-voice-options label { display: flex; flex-direction: column; text-align: left; gap: 7px; color: #9bb3c3; font-size: 10px; }
 .amibot-voice-options select { background: #182c3a; border: 1px solid #ffffff14; border-radius: 10px; padding: 10px 12px; color: #d4e9f1; font-size: 12px; }
+.amibot-voice-download { display: flex; align-items: flex-start; gap: 10px; max-width: 420px; margin-top: 16px; text-align: left; font-size: 12px; line-height: 1.6; color: #adc5d0; }
+.amibot-voice-download input { margin-top: 4px; flex-shrink: 0; accent-color: #7de5ee; }
+.amibot-voice-progress { margin-top: 18px; color: #a5edf0; font-size: 12px; line-height: 1.7; }
+.amibot-voice[data-phase="loading"] .amibot-voice-ring-one { border-top-color: #b7e4f2; animation: amibot-orb-turn 3s linear infinite; }
 .amibot-voice-caption { max-width: 510px; width: 100%; margin-top: 18px; text-align: left; border-left: 2px solid #80dbe142; padding-left: 14px; }
 .amibot-voice-caption span { color: #83bdc9; font-size: 9px; letter-spacing: .13em; }
 .amibot-voice-caption p { color: #dae7ee; font-size: 13px; line-height: 1.65; margin-top: 5px; overflow-wrap: anywhere; }
