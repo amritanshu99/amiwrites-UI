@@ -78,7 +78,8 @@ export default function useAmiBotVoice({ onTurn, token, tone }) {
     runtime.current.engine?.dispose();
   }, [cleanup]);
   useEffect(() => {
-    const hide = () => { if (document.hidden) stop(); };
+    // Model downloads may continue in the background, but microphone capture may not.
+    const hide = () => { if (document.hidden && runtime.current.stream) stop(); };
     document.addEventListener("visibilitychange", hide);
     return () => document.removeEventListener("visibilitychange", hide);
   }, [stop]);
@@ -190,7 +191,7 @@ export default function useAmiBotVoice({ onTurn, token, tone }) {
         if (!reply) throw new Error("AmiBot could not prepare a reply. Please try again.");
         update({ phase: "preparing", reply });
         if (/[\u0900-\u097F]/.test(reply)) throw new Error("This voice model speaks English. Please ask for an English answer; your full reply is in the chat.");
-        const parts = speechChunks(reply, 160);
+        const parts = speechChunks(reply, 160, 96);
         if (!parts.length) throw new Error("There is no spoken text in this reply. You can read it in the chat.");
         const fetchSpeech = async (text) => {
           const result = await r.engine.request("speak", { text, tone: latest.current.tone }, { signal: controller.signal });
@@ -218,6 +219,7 @@ export default function useAmiBotVoice({ onTurn, token, tone }) {
     }
 
     r.listen = listen;
+    let loadingTimedOut = false;
     try {
       const AudioContext = window.AudioContext || window.webkitAudioContext;
       r.context = new AudioContext();
@@ -225,9 +227,18 @@ export default function useAmiBotVoice({ onTurn, token, tone }) {
       if (!isCurrent(session)) return;
       const controller = new AbortController();
       r.controller = controller;
-      const timeout = window.setTimeout(() => controller.abort(), 20 * 60 * 1000);
+      const timeout = window.setTimeout(() => { loadingTimedOut = true; controller.abort(); }, 20 * 60 * 1000);
+      let progressNotice;
+      const loadingProgress = (progress) => {
+        window.clearTimeout(progressNotice);
+        update({ progress });
+        progressNotice = window.setTimeout(() => {
+          if (isCurrent(session)) update({ progress: `${progress} First-time setup can take several minutes. Keep this tab open.` });
+        }, 60000);
+      };
       try {
-        update({ phase: "loading", progress: "Getting AmiBot’s voice recording…" });
+        update({ phase: "loading" });
+        loadingProgress("Getting AmiBot’s voice recording…");
         const response = await fetch(apiUrl("/api/amibot/voice/browser/reference"), { signal: controller.signal });
         if (!response.ok) await readVoiceJson(response);
         const reference = await response.blob();
@@ -235,21 +246,38 @@ export default function useAmiBotVoice({ onTurn, token, tone }) {
         const audio = await decodeMono(reference, r.context, 24000, 30);
         if (!isCurrent(session)) return;
         if (!r.engine?.worker) r.engine = new BrowserVoiceEngine();
-        update({ progress: "Loading voice models. The first download is about 1.6 GB…" });
+        loadingProgress("Loading voice models. The first download is about 1.6 GB…");
+        const aggregateModels = new Set();
         const loaded = await r.engine.load({ signal: controller.signal, onProgress: (progress) => {
           if (!isCurrent(session)) return;
-          const percent = Number.isFinite(progress.progress) ? ` ${Math.round(progress.progress)}% of this file` : "";
-          update({ progress: progress.message || (progress.status === "progress" ? `Downloading voice models…${percent}` : "Preparing voice models on your device…") });
+          if (progress.message) { loadingProgress(progress.message); return; }
+          const model = progress.name || "voice";
+          const label = model.includes("whisper") ? "speech recognition model" : "voice model";
+          const percent = Number.isFinite(progress.progress) ? Math.max(0, Math.min(100, Math.round(progress.progress))) : null;
+          if (progress.status === "progress_total" && percent !== null) {
+            aggregateModels.add(model);
+            loadingProgress(percent === 100 ? `Preparing the ${label} on your device…`
+              : `Downloading the ${label}: ${percent}% across its files…`);
+          } else if (!aggregateModels.has(model)) {
+            loadingProgress(progress.status === "progress" && percent !== null
+              ? `Downloading the ${label}: ${percent}% of this file…` : `Preparing the ${label} on your device…`);
+          }
         } });
         if (!isCurrent(session)) return;
-        update({ progress: "Preparing Amritanshu’s voice…", device: loaded.device });
+        update({ device: loaded.device });
+        loadingProgress("Preparing Amritanshu’s voice…");
         await r.engine.request("reference", { audio }, { signal: controller.signal });
         if (!isCurrent(session)) return;
         setModelReady(true);
-      } finally { window.clearTimeout(timeout); }
+      } finally { window.clearTimeout(timeout); window.clearTimeout(progressNotice); }
+      if (document.hidden) { stop(); return; }
       update({ phase: "connecting", progress: "" });
       const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }, video: false });
-      if (!isCurrent(session)) { stream.getTracks().forEach((track) => track.stop()); return; }
+      if (!isCurrent(session) || document.hidden) {
+        stream.getTracks().forEach((track) => track.stop());
+        if (isCurrent(session)) stop();
+        return;
+      }
       r.stream = stream;
       stream.getAudioTracks().forEach((track) => { track.onended = () => { if (r.active) fail(new Error("The microphone disconnected. Reconnect it and start again.")); }; });
       r.analyser = r.context.createAnalyser();
@@ -257,8 +285,11 @@ export default function useAmiBotVoice({ onTurn, token, tone }) {
       r.mic = r.context.createMediaStreamSource(stream);
       r.mic.connect(r.analyser);
       listen();
-    } catch (error) { if (isCurrent(session)) fail(error); }
-  }, [cleanup, fail, status, supported]);
+    } catch (error) {
+      if (isCurrent(session)) fail(loadingTimedOut && error.name === "AbortError"
+        ? new Error("Voice setup timed out. Keep this tab open and try again on a stable connection.") : error);
+    }
+  }, [cleanup, fail, status, stop, supported]);
 
   const interrupt = useCallback(() => {
     const r = runtime.current;

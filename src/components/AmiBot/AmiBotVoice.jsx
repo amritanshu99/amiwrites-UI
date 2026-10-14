@@ -21,7 +21,8 @@ export default function AmiBotVoice({ onClose, onTurn, token }) {
   const [tone, setTone] = useState("natural");
   const voice = useAmiBotVoice({ onTurn, token, tone });
   const closeRef = useRef(null);
-  const [title, description] = phases[voice.phase];
+  const [title, description] = voice.phase === "idle" && voice.modelReady
+    ? ["Ready to talk", "Start to turn on your microphone and continue."] : phases[voice.phase];
   const starting = voice.phase === "connecting" || voice.phase === "loading";
 
   useEffect(() => {

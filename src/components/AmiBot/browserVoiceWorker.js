@@ -1,11 +1,16 @@
 /* eslint-env worker */
 /* global globalThis */
 import { AutoProcessor, ChatterboxModel, Tensor, pipeline, env, InterruptableStoppingCriteria } from "@huggingface/transformers";
+import { createResumableModelFetch } from "./browserVoiceDownload";
 
 // No model requests occur until the visitor explicitly starts voice mode.
 env.allowLocalModels = false;
 env.backends.onnx.wasm.numThreads = 1;
 env.backends.onnx.wasm.proxy = false;
+let reportDownload;
+env.fetch = createResumableModelFetch(env.fetch, {
+  onRetry: () => reportDownload?.({ status: "stage", message: "The connection paused. Resuming your model download…" }),
+});
 let model, processor, transcriber, speaker;
 let queue = Promise.resolve();
 let running;
@@ -14,6 +19,7 @@ const canceled = new Set();
 async function execute({ id, type, data }) {
   const progress = (value) => globalThis.postMessage({ id, type: "progress", data: value });
   if (type === "load") {
+    reportDownload = progress;
     const adapter = await navigator.gpu?.requestAdapter().catch(() => null);
     const device = adapter ? "webgpu" : "wasm";
     const dtype = { embed_tokens: "fp32", speech_encoder: "fp32", conditional_decoder: "fp32",
@@ -21,7 +27,7 @@ async function execute({ id, type, data }) {
     processor ||= await AutoProcessor.from_pretrained("onnx-community/chatterbox-ONNX");
     model ||= await ChatterboxModel.from_pretrained("onnx-community/chatterbox-ONNX", { device, dtype, progress_callback: progress });
     progress({ status: "stage", message: "Loading speech recognition…" });
-    transcriber ||= await pipeline("automatic-speech-recognition", "onnx-community/whisper-tiny.en", { device: "wasm", dtype: "q8", progress_callback: progress });
+    transcriber ||= await pipeline("automatic-speech-recognition", "onnx-community/whisper-base.en", { device: "wasm", dtype: "q8", progress_callback: progress });
     return { device };
   }
   if (!model || !transcriber) throw new Error("Download the voice models first.");
@@ -72,6 +78,6 @@ globalThis.onmessage = ({ data: message }) => {
       if (!canceled.has(message.id)) globalThis.postMessage({ id: message.id, type: "result", data }, data.audio ? [data.audio.buffer] : []);
     } catch (error) {
       globalThis.postMessage({ id: message.id, type: "error", message: error.message || "This device could not run the voice model." });
-    } finally { canceled.delete(message.id); if (running?.id === message.id) running = null; }
+    } finally { canceled.delete(message.id); if (running?.id === message.id) running = null; if (message.type === "load") reportDownload = null; }
   });
 };

@@ -40,6 +40,7 @@ class Context {
 }
 
 beforeEach(() => {
+  jest.spyOn(document, "hidden", "get").mockReturnValue(false);
   tracks = [{ stop: jest.fn(), enabled: true }];
   contexts = []; sources = []; rms = 0.1;
   mic = jest.fn(async () => ({ getTracks: () => tracks, getAudioTracks: () => tracks }));
@@ -58,9 +59,9 @@ beforeEach(() => {
 afterEach(() => { jest.useRealTimers(); jest.restoreAllMocks(); });
 
 async function setup(onTurn = jest.fn(async () => "Hello from AmiBot.")) {
-  const hook = renderHook(() => useAmiBotVoice({ onTurn, token: "", language: "auto", tone: "natural" }));
-  await waitFor(() => expect(hook.result.current.status?.ready).toBe(true));
-  return hook;
+  const view = renderHook(() => useAmiBotVoice({ onTurn, token: "", tone: "natural" }));
+  await waitFor(() => expect(view.result.current.status?.ready).toBe(true));
+  return view;
 }
 
 test("a pause after speech sends the turn, plays the reply, then resumes listening", async () => {
@@ -152,5 +153,129 @@ test("stopping during model loading never asks for microphone permission or resu
   expect(result.current.phase).toBe("idle");
   expect(mic).not.toHaveBeenCalled();
   expect(engine.request).not.toHaveBeenCalled();
+  unmount();
+});
+
+test("the opening sentence plays while the next chunk is still being generated", async () => {
+  const reply = "Yes, I can help. Here is a longer explanation of how your voice conversation works, with the details you asked for.";
+  let finishNext;
+  engine.request.mockImplementation(async (type, data) => {
+    if (type === "transcribe") return { text: "Help me", language: "en" };
+    if (type === "speak" && data.text !== "Yes, I can help.") return new Promise((resolve) => { finishNext = resolve; });
+    return type === "speak" ? { audio: new Float32Array(24000), sampleRate: 24000 } : { ready: true };
+  });
+  const { result, unmount } = await setup(jest.fn(async () => reply));
+  jest.useFakeTimers();
+  await act(async () => { await result.current.start(); jest.advanceTimersByTime(200); result.current.sendNow(); });
+  const spoken = engine.request.mock.calls.filter(([type]) => type === "speak");
+  expect(spoken.map(([, data]) => data.text).join(" ")).toBe(reply);
+  expect(spoken[0][1].text).toBe("Yes, I can help.");
+  expect(result.current.phase).toBe("speaking");
+  expect(sources[0].start).toHaveBeenCalledTimes(1);
+  expect(finishNext).toBeDefined();
+  unmount();
+  await act(async () => { finishNext({ audio: new Float32Array(24000), sampleRate: 24000 }); });
+  expect(sources).toHaveLength(1);
+});
+
+test("aggregate download progress stays visible and quiet loading shows a helpful notice", async () => {
+  let finishLoad;
+  engine.load.mockImplementationOnce(() => new Promise((resolve) => { finishLoad = resolve; }));
+  const { result, unmount } = await setup();
+  jest.useFakeTimers();
+  let starting;
+  await act(async () => { starting = result.current.start(); });
+  const { onProgress } = engine.load.mock.calls[0][0];
+  act(() => {
+    onProgress({ status: "progress_total", name: "onnx-community/chatterbox-ONNX", progress: 42 });
+    onProgress({ status: "progress", name: "onnx-community/chatterbox-ONNX", progress: 90 });
+  });
+  expect(result.current.progress).toMatch(/42% across its files/);
+  act(() => jest.advanceTimersByTime(60000));
+  expect(result.current.progress).toMatch(/keep this tab open/i);
+  act(() => onProgress({ status: "stage", message: "Reconnecting to finish the model download…" }));
+  expect(result.current.progress).toBe("Reconnecting to finish the model download…");
+  act(() => result.current.stop());
+  act(() => onProgress({ status: "stage", message: "A stale update" }));
+  expect(result.current.progress).not.toBe("A stale update");
+  await act(async () => { finishLoad({ device: "wasm" }); await starting; });
+  unmount();
+  expect(mic).not.toHaveBeenCalled();
+});
+
+test("model setup timeout explains how to retry and does not request the microphone", async () => {
+  engine.load.mockImplementationOnce(({ signal }) => new Promise((resolve, reject) => {
+    signal.addEventListener("abort", () => reject(Object.assign(new Error("aborted"), { name: "AbortError" })), { once: true });
+  }));
+  const { result, unmount } = await setup();
+  jest.useFakeTimers();
+  let starting;
+  await act(async () => { starting = result.current.start(); });
+  await act(async () => { jest.advanceTimersByTime(20 * 60 * 1000); await starting; });
+  expect(result.current.phase).toBe("error");
+  expect(result.current.error).toMatch(/voice setup timed out.*stable connection/i);
+  expect(result.current.active).toBe(false);
+  expect(mic).not.toHaveBeenCalled();
+  expect(engine.dispose).toHaveBeenCalled();
+  unmount();
+});
+
+test("switching tabs keeps downloading but requires returning before microphone capture", async () => {
+  let finishLoad;
+  engine.load.mockImplementationOnce(() => new Promise((resolve) => { finishLoad = resolve; }));
+  const { result, unmount } = await setup();
+  let starting;
+  await act(async () => { starting = result.current.start(); });
+  const signal = engine.load.mock.calls[0][0].signal;
+  act(() => {
+    jest.spyOn(document, "hidden", "get").mockReturnValue(true);
+    document.dispatchEvent(new Event("visibilitychange"));
+  });
+  expect(signal.aborted).toBe(false);
+  expect(result.current.phase).toBe("loading");
+  await act(async () => { finishLoad({ device: "wasm" }); await starting; });
+  expect(result.current.phase).toBe("idle");
+  expect(result.current.modelReady).toBe(true);
+  expect(mic).not.toHaveBeenCalled();
+  expect(engine.dispose).not.toHaveBeenCalled();
+  jest.spyOn(document, "hidden", "get").mockReturnValue(false);
+  await act(async () => { await result.current.start(); });
+  expect(result.current.phase).toBe("listening");
+  expect(mic).toHaveBeenCalledTimes(1);
+  unmount();
+});
+
+test("hiding a live conversation releases the microphone and does not restart it", async () => {
+  const { result, unmount } = await setup();
+  await act(async () => { await result.current.start(); });
+  act(() => {
+    jest.spyOn(document, "hidden", "get").mockReturnValue(true);
+    document.dispatchEvent(new Event("visibilitychange"));
+  });
+  expect(tracks[0].stop).toHaveBeenCalled();
+  expect(result.current.active).toBe(false);
+  act(() => {
+    jest.spyOn(document, "hidden", "get").mockReturnValue(false);
+    document.dispatchEvent(new Event("visibilitychange"));
+  });
+  expect(mic).toHaveBeenCalledTimes(1);
+  expect(result.current.phase).toBe("idle");
+  unmount();
+});
+
+test("microphone permission granted after hiding the page never starts capture", async () => {
+  let allowMic;
+  mic.mockImplementationOnce(() => new Promise((resolve) => { allowMic = resolve; }));
+  const { result, unmount } = await setup();
+  let starting;
+  await act(async () => { starting = result.current.start(); });
+  act(() => {
+    jest.spyOn(document, "hidden", "get").mockReturnValue(true);
+    document.dispatchEvent(new Event("visibilitychange"));
+  });
+  await act(async () => { allowMic({ getTracks: () => tracks, getAudioTracks: () => tracks }); await starting; });
+  expect(tracks[0].stop).toHaveBeenCalled();
+  expect(result.current.phase).toBe("idle");
+  expect(result.current.active).toBe(false);
   unmount();
 });
