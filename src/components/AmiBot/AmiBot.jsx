@@ -10,6 +10,7 @@ import {
   LoaderCircle,
   LogIn,
   MessageSquareText,
+  Mic,
   SendHorizontal,
   ShieldCheck,
   Sparkles,
@@ -20,6 +21,7 @@ import {
 import ReactMarkdown from "react-markdown";
 import { useLocation } from "react-router-dom";
 import { apiUrl } from "../../config/api";
+import AmiBotVoice from "./AmiBotVoice";
 
 const GREETINGS = [
   {
@@ -368,6 +370,7 @@ const AmiBot = () => {
   const [historyError, setHistoryError] = useState("");
   const [requestStatus, setRequestStatus] = useState("");
   const [authToken, setAuthToken] = useState(getAuthToken);
+  const [voiceOpen, setVoiceOpen] = useState(false);
   const isAuthenticated = Boolean(authToken);
   const messagesContainerRef = useRef(null);
   const inputRef = useRef(null);
@@ -551,10 +554,8 @@ const AmiBot = () => {
     activeRequestRef.current?.abort();
   }, []);
 
-  const handleSubmit = useCallback(async (event) => {
-    event.preventDefault();
-
-    const query = input.trim();
+  const sendQuery = useCallback(async (text, voiceOptions = {}) => {
+    const query = text.trim();
     if (!query || loading || historyLoading || historyClearing || activeRequestRef.current) return;
 
     const token = getAuthToken();
@@ -570,6 +571,9 @@ const AmiBot = () => {
       .slice(-MAX_REQUEST_HISTORY)
       .map(({ sender, text }) => ({ sender, text }));
     const controller = new AbortController();
+    const abortVoiceTurn = () => controller.abort();
+    voiceOptions.signal?.addEventListener("abort", abortVoiceTurn, { once: true });
+    if (voiceOptions.signal?.aborted) { controller.abort(); return; }
     activeRequestRef.current = controller;
     forceScrollRef.current = true;
     shouldAutoScrollRef.current = true;
@@ -588,7 +592,7 @@ const AmiBot = () => {
             "Content-Type": "application/json",
             ...(token ? { Authorization: `Bearer ${token}` } : {}),
           },
-          body: JSON.stringify({ query, history: conversationHistory }),
+          body: JSON.stringify({ query, history: conversationHistory, ...(voiceOptions.signal ? { voiceMode: true, language: voiceOptions.language } : {}) }),
           signal: controller.signal,
         }
       );
@@ -613,6 +617,7 @@ const AmiBot = () => {
           metadata: payload.metadata,
         },
       ]);
+      return payload.text;
     } catch (error) {
       if (activeRequestRef.current !== controller || getAuthToken() !== token) return;
       if (error.name === "AbortError") {
@@ -632,15 +637,25 @@ const AmiBot = () => {
         },
       ]);
     } finally {
+      voiceOptions.signal?.removeEventListener("abort", abortVoiceTurn);
       if (activeRequestRef.current === controller) {
         activeRequestRef.current = null;
         setLoading(false);
-        if (!isCoarseInputDevice()) {
+        if (!voiceOptions.signal && !isCoarseInputDevice()) {
           inputRef.current?.focus();
         }
       }
     }
-  }, [historyClearing, historyLoading, input, loading, messages]);
+  }, [historyClearing, historyLoading, loading, messages]);
+
+  const handleSubmit = useCallback((event) => {
+    event.preventDefault();
+    return sendQuery(input);
+  }, [input, sendQuery]);
+  const closeVoice = useCallback(() => {
+    setVoiceOpen(false);
+    window.requestAnimationFrame(() => inputRef.current?.focus());
+  }, []);
 
   const handleInputKeyDown = useCallback((event) => {
     if (isCoarseInputDevice()) return;
@@ -754,7 +769,9 @@ const AmiBot = () => {
           </div>
         </aside>
 
-        <section className={`flex h-full min-h-0 w-full min-w-0 max-w-full flex-col overflow-hidden ${surfaceClassName}`}>
+        <section className={`relative flex h-full min-h-0 w-full min-w-0 max-w-full flex-col overflow-hidden ${surfaceClassName}`}>
+          {voiceOpen && <AmiBotVoice onClose={closeVoice} onTurn={sendQuery} token={authToken} />}
+          <div className="flex min-h-0 flex-1 flex-col" inert={voiceOpen ? true : undefined} aria-hidden={voiceOpen ? true : undefined}>
           <header className="amibot-chat-header border-b border-slate-200 bg-white/[0.94] px-3 py-3 dark:border-white/10 dark:bg-white/[0.04] sm:px-5 sm:py-4">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
               <div className="flex min-w-0 items-center gap-3">
@@ -850,6 +867,14 @@ const AmiBot = () => {
               />
 
               <button
+                type="button"
+                aria-label="Open voice conversation"
+                title="Talk to AmiBot"
+                disabled={loading || historyLoading || historyClearing}
+                onClick={() => setVoiceOpen(true)}
+                className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border border-cyan-200 bg-cyan-50 text-cyan-800 transition hover:bg-cyan-100 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-cyan-100 disabled:opacity-50 dark:border-cyan-300/20 dark:bg-cyan-300/10 dark:text-cyan-200"
+              ><Mic className="h-5 w-5" /></button>
+              <button
                 aria-label={loading ? "Stop response" : "Send message"}
                 className="inline-flex h-12 w-12 shrink-0 items-center justify-center gap-2 rounded-lg bg-slate-950 px-0 text-white shadow-[0_16px_28px_-20px_rgba(15,23,42,0.95)] transition-colors hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-cyan-100 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-cyan-300 dark:text-slate-950 dark:hover:bg-cyan-200 dark:focus-visible:ring-cyan-300/10"
                 disabled={!loading && !canSend}
@@ -874,6 +899,7 @@ const AmiBot = () => {
               </span>
               <span>{input.length}/2000</span>
             </div>
+          </div>
           </div>
         </section>
       </div>
