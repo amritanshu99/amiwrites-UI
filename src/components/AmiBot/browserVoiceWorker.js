@@ -11,7 +11,7 @@ let reportDownload;
 env.fetch = createResumableModelFetch(env.fetch, {
   onRetry: () => reportDownload?.({ status: "stage", message: "The connection paused. Resuming your model download…" }),
 });
-let model, processor, transcriber, speaker;
+let model, processor, transcriber, speaker, recognitionDevice;
 let queue = Promise.resolve();
 let running;
 const canceled = new Set();
@@ -22,13 +22,35 @@ async function execute({ id, type, data }) {
     reportDownload = progress;
     const adapter = await navigator.gpu?.requestAdapter().catch(() => null);
     const device = adapter ? "webgpu" : "wasm";
-    const dtype = { embed_tokens: "fp32", speech_encoder: "fp32", conditional_decoder: "fp32",
-      language_model: adapter?.features.has("shader-f16") ? "q4f16" : "q4" };
-    processor ||= await AutoProcessor.from_pretrained("onnx-community/chatterbox-ONNX");
-    model ||= await ChatterboxModel.from_pretrained("onnx-community/chatterbox-ONNX", { device, dtype, progress_callback: progress });
+    // Keep the voice encoder/vocoder in higher precision; aggressive quantization
+    // can lose words and voice detail. Only the autoregressive model uses 4-bit weights.
+    const half = adapter?.features.has("shader-f16");
+    const dtype = { embed_tokens: half ? "fp16" : "fp32", speech_encoder: half ? "fp16" : "q8",
+      conditional_decoder: half ? "fp16" : "q8", language_model: half ? "q4f16" : "q4" };
+    processor ||= await AutoProcessor.from_pretrained("ResembleAI/chatterbox-turbo-ONNX");
+    model ||= await ChatterboxModel.from_pretrained("ResembleAI/chatterbox-turbo-ONNX", { device, dtype, progress_callback: progress });
     progress({ status: "stage", message: "Loading speech recognition…" });
-    transcriber ||= await pipeline("automatic-speech-recognition", "onnx-community/whisper-base.en", { device: "wasm", dtype: "q8", progress_callback: progress });
-    return { device };
+    if (!transcriber) {
+      recognitionDevice = device;
+      const recognize = async (target) => {
+        const recognizer = await pipeline("automatic-speech-recognition", "onnx-community/whisper-base.en", {
+          device: target, dtype: target === "webgpu" ? { encoder_model: "fp32", decoder_model_merged: "q4" } : "q8", progress_callback: progress,
+        });
+        try {
+          progress({ status: "stage", message: "Warming up speech recognition for faster replies…" });
+          await recognizer(new Float32Array(16000), { max_new_tokens: 1 });
+          return recognizer;
+        } catch (error) { await recognizer.dispose(); throw error; }
+      };
+      try { transcriber = await recognize(device); }
+      catch (error) {
+        if (device === "wasm") throw error;
+        progress({ status: "stage", message: "Using CPU speech recognition on this device…" });
+        recognitionDevice = "wasm";
+        transcriber = await recognize("wasm");
+      }
+    }
+    return { device, recognitionDevice };
   }
   if (!model || !transcriber) throw new Error("Download the voice models first.");
   if (type === "reference") {
@@ -52,7 +74,6 @@ async function execute({ id, type, data }) {
     let waveform;
     try {
       waveform = await model.generate({ ...inputs, ...speaker,
-        exaggeration: { natural: 0.5, calm: 0.3, expressive: 0.7 }[data.tone] ?? 0.5,
         max_new_tokens: 512, stopping_criteria: [criteria] });
       const audio = new Float32Array(waveform.data);
       return { audio, sampleRate: 24000 };

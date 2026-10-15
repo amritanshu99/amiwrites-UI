@@ -24,9 +24,9 @@ test("canceling inference discards late audio without closing the loaded worker"
   const engine = new BrowserVoiceEngine();
   const controller = new AbortController();
   const pending = engine.request("speak", { text: "Hello" }, { signal: controller.signal });
-  const rejected = expect(pending).rejects.toHaveProperty("name", "AbortError");
+  const rejected = pending.catch((error) => error);
   controller.abort();
-  await rejected;
+  await expect(rejected).resolves.toHaveProperty("name", "AbortError");
   expect(worker.postMessage).toHaveBeenLastCalledWith({ type: "cancel", id: 1 });
   worker.onmessage({ data: { id: 1, type: "result", data: { audio: new Float32Array(1) } } });
   expect(engine.pending.size).toBe(0);
@@ -38,9 +38,9 @@ test("canceling a model download terminates the worker and rejects all pending w
   const controller = new AbortController();
   const loading = engine.load({ signal: controller.signal });
   const reference = engine.request("reference", { audio: new Float32Array(120000) });
-  const checks = [expect(loading).rejects.toHaveProperty("name", "AbortError"), expect(reference).rejects.toHaveProperty("name", "AbortError")];
+  const checks = [loading, reference].map((pending) => pending.catch((error) => error));
   controller.abort();
-  await Promise.all(checks);
+  for (const check of checks) await expect(check).resolves.toHaveProperty("name", "AbortError");
   expect(worker.terminate).toHaveBeenCalledTimes(1);
   expect(engine.worker).toBeNull();
   expect(engine.pending.size).toBe(0);
@@ -52,4 +52,51 @@ test("worker errors release resources and give an actionable device message", as
   worker.onerror({ preventDefault: jest.fn() });
   await expect(request).rejects.toThrow(/free memory/);
   expect(engine.worker).toBeNull();
+});
+
+test("repeated speech uses a private copy of cached audio without another inference", async () => {
+  const engine = new BrowserVoiceEngine();
+  const first = engine.request("speak", { text: "Hello" });
+  worker.onmessage({ data: { id: 1, type: "result", data: { audio: new Float32Array([0.1, 0.2]), sampleRate: 24000 } } });
+  (await first).audio.fill(0);
+  const second = await engine.request("speak", { text: "Hello" });
+  expect(second.audio[0]).toBeCloseTo(0.1);
+  second.audio.fill(0);
+  expect((await engine.request("speak", { text: "Hello" })).audio[0]).toBeCloseTo(0.1);
+  expect(worker.postMessage).toHaveBeenCalledTimes(1);
+  const controller = new AbortController();
+  controller.abort();
+  await expect(engine.request("speak", { text: "Hello" }, { signal: controller.signal })).rejects.toHaveProperty("name", "AbortError");
+  engine.dispose();
+  expect(engine.cachedBytes).toBe(0);
+});
+
+test("changing the voice clears cached speech and excludes late results from the previous voice", async () => {
+  const engine = new BrowserVoiceEngine();
+  const old = engine.request("speak", { text: "Hello" });
+  const reference = engine.request("reference", { audio: new Float32Array(120000) });
+  worker.onmessage({ data: { id: 1, type: "result", data: { audio: new Float32Array(10), sampleRate: 24000 } } });
+  worker.onmessage({ data: { id: 2, type: "result", data: { ready: true } } });
+  await Promise.all([old, reference]);
+  expect(engine.cachedBytes).toBe(0);
+  const next = engine.request("speak", { text: "Hello" });
+  worker.onmessage({ data: { id: 3, type: "result", data: { audio: new Float32Array(10), sampleRate: 24000 } } });
+  await next;
+  expect(worker.postMessage).toHaveBeenCalledTimes(3);
+  expect(engine.cachedBytes).toBe(40);
+});
+
+test("speech cache is bounded and duplicate queued results do not inflate its byte count", async () => {
+  const engine = new BrowserVoiceEngine();
+  const requests = [engine.request("speak", { text: "Same" }), engine.request("speak", { text: "Same" })];
+  for (let id = 1; id <= 2; id++) worker.onmessage({ data: { id, type: "result", data: { audio: new Float32Array(1024 * 1024), sampleRate: 24000 } } });
+  await Promise.all(requests);
+  expect(engine.cachedBytes).toBe(4 * 1024 * 1024);
+  for (const text of ["Second", "Third"]) {
+    const pending = engine.request("speak", { text });
+    worker.onmessage({ data: { id: engine.sequence, type: "result", data: { audio: new Float32Array(1024 * 1024), sampleRate: 24000 } } });
+    await pending;
+  }
+  expect(engine.cachedBytes).toBe(8 * 1024 * 1024);
+  expect([...engine.speechCache.keys()]).toEqual(["Second", "Third"]);
 });
