@@ -6,13 +6,13 @@ import { decodeMono } from "./browserVoiceAudio";
 
 const quietState = { phase: "idle", level: 0, error: "", transcript: "", reply: "", active: false, muted: false, progress: "", device: "" };
 
-export default function useAmiBotVoice({ onTurn, token, tone }) {
+export default function useAmiBotVoice({ onTurn, token }) {
   const [state, setState] = useState(quietState);
   const [status, setStatus] = useState(null);
   const [modelReady, setModelReady] = useState(false);
   const runtime = useRef({ generation: 0 });
-  const latest = useRef({ onTurn, tone });
-  latest.current = { onTurn, tone };
+  const latest = useRef({ onTurn });
+  latest.current = { onTurn };
   const supported = Boolean(navigator.mediaDevices?.getUserMedia && window.MediaRecorder && window.Worker && (window.AudioContext || window.webkitAudioContext) && (window.OfflineAudioContext || window.webkitOfflineAudioContext));
 
   const cleanup = useCallback(() => {
@@ -48,9 +48,10 @@ export default function useAmiBotVoice({ onTurn, token, tone }) {
 
   const fail = useCallback((error) => {
     cleanup();
-    runtime.current.engine?.dispose();
-    runtime.current.engine = null;
-    setModelReady(false);
+    // A chat/API or microphone failure must not force another costly model setup.
+    const ready = Boolean(runtime.current.engine?.ready && runtime.current.engine?.worker);
+    if (!ready) { runtime.current.engine?.dispose(); runtime.current.engine = null; }
+    setModelReady(ready);
     const message = error.name === "NotAllowedError" ? "Microphone access was denied. Allow it in your browser’s site settings and try again."
       : error.name === "NotFoundError" ? "No microphone was found. Connect one and try again."
         : error.message || "Voice mode stopped. Please try again.";
@@ -194,7 +195,7 @@ export default function useAmiBotVoice({ onTurn, token, tone }) {
         const parts = speechChunks(reply, 160, 96);
         if (!parts.length) throw new Error("There is no spoken text in this reply. You can read it in the chat.");
         const fetchSpeech = async (text) => {
-          const result = await r.engine.request("speak", { text, tone: latest.current.tone }, { signal: controller.signal });
+          const result = await r.engine.request("speak", { text }, { signal: controller.signal });
           if (!isCurrent(generation)) return null;
           if (!result.audio?.length) throw new Error("No speech was generated. Please try again.");
           const buffer = r.context.createBuffer(1, result.audio.length, result.sampleRate);
@@ -246,7 +247,7 @@ export default function useAmiBotVoice({ onTurn, token, tone }) {
         const audio = await decodeMono(reference, r.context, 24000, 30);
         if (!isCurrent(session)) return;
         if (!r.engine?.worker) r.engine = new BrowserVoiceEngine();
-        loadingProgress("Loading voice models. The first download is about 1.6 GB…");
+        loadingProgress("Loading faster voice models. The first download is about 1.2–1.5 GB…");
         const aggregateModels = new Set();
         const loaded = await r.engine.load({ signal: controller.signal, onProgress: (progress) => {
           if (!isCurrent(session)) return;

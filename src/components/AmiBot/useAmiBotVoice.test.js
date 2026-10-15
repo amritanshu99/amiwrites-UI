@@ -95,6 +95,21 @@ test("microphone denial is actionable and closes the audio context", async () =>
   expect(contexts[0].close).toHaveBeenCalled();
 });
 
+test("a failed chat request keeps loaded voice models for the next attempt", async () => {
+  engine.ready = true;
+  const { result, unmount } = await setup(jest.fn(async () => { throw new Error("Chat is temporarily unavailable"); }));
+  jest.useFakeTimers();
+  await act(async () => { await result.current.start(); jest.advanceTimersByTime(200); result.current.sendNow(); });
+  expect(result.current.phase).toBe("error");
+  expect(result.current.error).toMatch(/temporarily unavailable/);
+  expect(result.current.modelReady).toBe(true);
+  expect(engine.dispose).not.toHaveBeenCalled();
+  await act(async () => { await result.current.start(); });
+  expect(result.current.phase).toBe("listening");
+  expect(engine.dispose).not.toHaveBeenCalled();
+  unmount();
+});
+
 test("closing while permission is pending releases any stream returned later", async () => {
   let allowMic;
   mic.mockImplementationOnce(() => new Promise((resolve) => { allowMic = resolve; }));

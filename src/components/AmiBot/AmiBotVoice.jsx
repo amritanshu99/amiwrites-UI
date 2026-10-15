@@ -18,8 +18,7 @@ const phases = {
 
 export default function AmiBotVoice({ onClose, onTurn, token }) {
   const [downloadAccepted, setDownloadAccepted] = useState(false);
-  const [tone, setTone] = useState("natural");
-  const voice = useAmiBotVoice({ onTurn, token, tone });
+  const voice = useAmiBotVoice({ onTurn, token });
   const closeRef = useRef(null);
   const [title, description] = voice.phase === "idle" && voice.modelReady
     ? ["Ready to talk", "Start to turn on your microphone and continue."] : phases[voice.phase];
@@ -55,18 +54,10 @@ export default function AmiBotVoice({ onClose, onTurn, token }) {
         <h3 aria-live="polite">{title}</h3>
         <p className="amibot-voice-description">{description}</p>
 
-        {!voice.active && (
-          <div className="amibot-voice-options">
-            <label>Speaking tone<select value={tone} onChange={(event) => setTone(event.target.value)}>
-              <option value="natural">Natural</option><option value="calm">Calm</option><option value="expressive">Expressive</option>
-            </select></label>
-          </div>
-        )}
-
         {!voice.active && !voice.modelReady && (
           <label className="amibot-voice-download">
             <input type="checkbox" checked={downloadAccepted} onChange={(event) => setDownloadAccepted(event.target.checked)} />
-            <span>Download about 1.6 GB of voice models to this browser. English only; best on a recent laptop or desktop. Replies can take a while on slower devices. Models are cached when storage is available.</span>
+            <span>Download about 1.2–1.5 GB for faster cloned voice replies. English only; best on a recent laptop or desktop. Models are cached when storage is available. This upgrade needs a new download.</span>
           </label>
         )}
         {voice.phase === "loading" && <p className="amibot-voice-progress" role="status">{voice.progress}</p>}
