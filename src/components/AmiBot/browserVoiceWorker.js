@@ -2,6 +2,7 @@
 /* global globalThis */
 import { AutoProcessor, ChatterboxModel, Tensor, pipeline, env, InterruptableStoppingCriteria } from "@huggingface/transformers";
 import { createResumableModelFetch } from "./browserVoiceDownload";
+import { speechTokenPenalty } from "./browserVoiceSampling";
 
 // No model requests occur until the visitor explicitly starts voice mode.
 env.allowLocalModels = false;
@@ -14,6 +15,7 @@ env.fetch = createResumableModelFetch(env.fetch, {
 let model, processor, transcriber, speaker, recognitionDevice;
 let queue = Promise.resolve();
 let running;
+let warmed = false;
 const canceled = new Set();
 
 async function execute({ id, type, data }) {
@@ -22,11 +24,11 @@ async function execute({ id, type, data }) {
     reportDownload = progress;
     const adapter = await navigator.gpu?.requestAdapter().catch(() => null);
     const device = adapter ? "webgpu" : "wasm";
-    // Keep the voice encoder/vocoder in higher precision; aggressive quantization
-    // can lose words and voice detail. Only the autoregressive model uses 4-bit weights.
+    // The waveform decoder must stay fp32: fp16/q8 can silently drop spoken
+    // words on WebGPU. Keep the faster 4-bit autoregressive model.
     const half = adapter?.features.has("shader-f16");
     const dtype = { embed_tokens: half ? "fp16" : "fp32", speech_encoder: half ? "fp16" : "q8",
-      conditional_decoder: half ? "fp16" : "q8", language_model: half ? "q4f16" : "q4" };
+      conditional_decoder: "fp32", language_model: half ? "q4f16" : "q4" };
     processor ||= await AutoProcessor.from_pretrained("ResembleAI/chatterbox-turbo-ONNX");
     model ||= await ChatterboxModel.from_pretrained("ResembleAI/chatterbox-turbo-ONNX", { device, dtype, progress_callback: progress });
     progress({ status: "stage", message: "Loading speech recognition…" });
@@ -60,6 +62,7 @@ async function execute({ id, type, data }) {
     try { speaker = await model.encode_speech(audio); } finally { audio.dispose(); }
     return { ready: true };
   }
+  if (type === "warmup" && warmed) return { ready: true };
   const criteria = new InterruptableStoppingCriteria();
   running = { id, criteria };
   if (type === "transcribe") {
@@ -67,14 +70,19 @@ async function execute({ id, type, data }) {
     const result = await transcriber(data.audio, { chunk_length_s: 20, stride_length_s: 3, stopping_criteria: [criteria] });
     return { text: result.text.trim(), language: "en" };
   }
-  if (type === "speak") {
+  if (type === "speak" || type === "warmup") {
     if (!speaker) throw new Error("AmiBot’s voice reference is missing.");
-    if (!data.text?.trim() || data.text.length > 220) throw new Error("Please use a shorter sentence.");
-    const inputs = await processor(data.text);
+    const text = type === "warmup" ? "Hi! I am AmiBot." : data.text;
+    if (!text?.trim() || text.length > 220) throw new Error("Please use a shorter sentence.");
+    const inputs = await processor(text);
     let waveform;
     try {
       waveform = await model.generate({ ...inputs, ...speaker,
+        repetition_penalty: 1.0,
+        logits_processor: [speechTokenPenalty(inputs.input_ids.dims[1])],
         max_new_tokens: 512, stopping_criteria: [criteria] });
+      if (!canceled.has(id)) warmed = true;
+      if (type === "warmup") return { ready: true };
       const audio = new Float32Array(waveform.data);
       return { audio, sampleRate: 24000 };
     } finally {

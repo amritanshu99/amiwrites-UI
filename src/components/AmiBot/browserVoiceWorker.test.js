@@ -21,10 +21,10 @@ beforeEach(() => {
   originalMessage = global.onmessage;
   Object.defineProperty(global, "navigator", { configurable: true, value: { gpu: { requestAdapter: jest.fn(async () => ({ features: new Set(["shader-f16"]) })) } } });
   let sequence = 0;
-  send = (type) => new Promise((resolve) => {
+  send = (type, data = {}) => new Promise((resolve) => {
     const id = ++sequence;
     global.postMessage = jest.fn((message) => { if (message.id === id && message.type !== "progress") resolve(message); });
-    global.onmessage({ data: { id, type, data: {} } });
+    global.onmessage({ data: { id, type, data } });
   });
   require("./browserVoiceWorker");
 });
@@ -38,7 +38,7 @@ afterEach(() => {
 test("uses Turbo, GPU recognition and one-time warm-up while preserving voice precision", async () => {
   expect((await send("load")).data).toEqual({ device: "webgpu", recognitionDevice: "webgpu" });
   expect(library.ChatterboxModel.from_pretrained).toHaveBeenCalledWith("ResembleAI/chatterbox-turbo-ONNX", expect.objectContaining({
-    device: "webgpu", dtype: { embed_tokens: "fp16", speech_encoder: "fp16", conditional_decoder: "fp16", language_model: "q4f16" },
+    device: "webgpu", dtype: { embed_tokens: "fp16", speech_encoder: "fp16", conditional_decoder: "fp32", language_model: "q4f16" },
   }));
   expect(library.pipeline).toHaveBeenCalledWith("automatic-speech-recognition", "onnx-community/whisper-base.en", expect.objectContaining({ device: "webgpu" }));
   expect(recognizer).toHaveBeenCalledWith(expect.any(Float32Array), { max_new_tokens: 1 });
@@ -59,7 +59,7 @@ test("devices without WebGPU load the CPU-compatible models", async () => {
   navigator.gpu.requestAdapter.mockResolvedValue(null);
   expect((await send("load")).data).toEqual({ device: "wasm", recognitionDevice: "wasm" });
   expect(library.ChatterboxModel.from_pretrained).toHaveBeenCalledWith(expect.any(String), expect.objectContaining({
-    device: "wasm", dtype: { embed_tokens: "fp32", speech_encoder: "q8", conditional_decoder: "q8", language_model: "q4" },
+    device: "wasm", dtype: { embed_tokens: "fp32", speech_encoder: "q8", conditional_decoder: "fp32", language_model: "q4" },
   }));
 });
 
@@ -68,4 +68,21 @@ test("a failed CPU warm-up is reported instead of pretending setup succeeded", a
   recognizer.mockRejectedValueOnce(new Error("Not enough memory"));
   expect(await send("load")).toMatchObject({ type: "error", message: "Not enough memory" });
   expect(recognizer.dispose).toHaveBeenCalledTimes(1);
+});
+
+
+test("speech warm-up runs once, releases its audio and never returns audible output", async () => {
+  const input = { dims: [1, 5], dispose: jest.fn() };
+  const waveform = { data: new Float32Array(2400), dispose: jest.fn() };
+  const model = { encode_speech: jest.fn(async () => ({})), generate: jest.fn(async () => waveform) };
+  library.ChatterboxModel.from_pretrained.mockResolvedValue(model);
+  library.AutoProcessor.from_pretrained.mockResolvedValue(jest.fn(async () => ({ input_ids: input })));
+  library.Tensor.mockImplementation(() => ({ dispose: jest.fn() }));
+  await send("load");
+  await send("reference", { audio: new Float32Array(120000) });
+  expect((await send("warmup")).data).toEqual({ ready: true });
+  expect((await send("warmup")).data).toEqual({ ready: true });
+  expect(model.generate).toHaveBeenCalledTimes(1);
+  expect(waveform.dispose).toHaveBeenCalledTimes(1);
+  expect(input.dispose).toHaveBeenCalledTimes(1);
 });

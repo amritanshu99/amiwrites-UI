@@ -247,7 +247,7 @@ export default function useAmiBotVoice({ onTurn, token }) {
         const audio = await decodeMono(reference, r.context, 24000, 30);
         if (!isCurrent(session)) return;
         if (!r.engine?.worker) r.engine = new BrowserVoiceEngine();
-        loadingProgress("Loading faster voice models. The first download is about 1.2–1.5 GB…");
+        loadingProgress("Loading faster voice models. The first download is about 1.6–1.9 GB…");
         const aggregateModels = new Set();
         const loaded = await r.engine.load({ signal: controller.signal, onProgress: (progress) => {
           if (!isCurrent(session)) return;
@@ -268,6 +268,9 @@ export default function useAmiBotVoice({ onTurn, token }) {
         update({ device: loaded.device });
         loadingProgress("Preparing Amritanshu’s voice…");
         await r.engine.request("reference", { audio }, { signal: controller.signal });
+        if (!isCurrent(session)) return;
+        loadingProgress("Warming up your first reply...");
+        await r.engine.request("warmup", {}, { signal: controller.signal });
         if (!isCurrent(session)) return;
         setModelReady(true);
       } finally { window.clearTimeout(timeout); window.clearTimeout(progressNotice); }
