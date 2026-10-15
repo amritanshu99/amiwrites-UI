@@ -57,7 +57,7 @@ export default function AmiBotVoice({ onClose, onTurn, token }) {
         {!voice.active && !voice.modelReady && (
           <label className="amibot-voice-download">
             <input type="checkbox" checked={downloadAccepted} onChange={(event) => setDownloadAccepted(event.target.checked)} />
-            <span>Download about 1.2–1.5 GB for faster cloned voice replies. English only; best on a recent laptop or desktop. Models are cached when storage is available. This upgrade needs a new download.</span>
+            <span>Download about 1.6–1.9 GB for faster cloned voice replies. English only; best on a recent laptop or desktop. Models are cached when storage is available. This upgrade needs a new download.</span>
           </label>
         )}
         {voice.phase === "loading" && <p className="amibot-voice-progress" role="status">{voice.progress}</p>}

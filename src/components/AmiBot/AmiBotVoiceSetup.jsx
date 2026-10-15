@@ -118,7 +118,7 @@ export default function AmiBotVoiceSetup() {
   return (
     <section className="mb-4 rounded-2xl border border-slate-200 bg-white/90 p-5 dark:border-zinc-800 dark:bg-zinc-950" aria-label="AmiBot voice setup">
       <h2 className="flex items-center gap-2 text-lg font-bold"><Mic className="h-5 w-5 text-cyan-600" /> Your voice, in AmiBot</h2>
-      <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600 dark:text-zinc-300">Record 5–30 seconds of clear English in your usual tone. AmiBot generates the cloned voice in each visitor’s browser, with no paid voice service or extra hosting. Each device downloads about 1.2–1.5 GB of models the first time.</p>
+      <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600 dark:text-zinc-300">Record 5–30 seconds of clear English in your usual tone. AmiBot generates the cloned voice in each visitor’s browser, with no paid voice service or extra hosting. Each device downloads about 1.6–1.9 GB of models the first time.</p>
       {saved !== null && <p className="mt-2 text-sm text-cyan-700 dark:text-cyan-300" role="status">{saved ? "Browser voice is set up. Saving again replaces the recording." : "Save your voice below to enable browser voice mode."}</p>}
       <blockquote className="my-4 border-l-2 border-cyan-300 pl-4 text-sm leading-6 text-slate-500 dark:text-zinc-400">“Hi, I’m Amritanshu. Welcome to AmiVerse. I enjoy building things, sharing ideas, and learning something new every day. Ask me about my projects, my writing, or what I’m working on. Let’s talk.”</blockquote>
       <div className="flex flex-wrap items-center gap-3">

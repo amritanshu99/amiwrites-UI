@@ -294,3 +294,21 @@ test("microphone permission granted after hiding the page never starts capture",
   expect(result.current.active).toBe(false);
   unmount();
 });
+
+
+test("first reply warm-up completes before opening the microphone", async () => {
+  let finishWarmup;
+  const original = engine.request.getMockImplementation();
+  engine.request.mockImplementation((type, ...args) => type === "warmup"
+    ? new Promise((resolve) => { finishWarmup = resolve; }) : original(type, ...args));
+  const { result, unmount } = await setup();
+  let starting;
+  await act(async () => { starting = result.current.start(); });
+  expect(result.current.phase).toBe("loading");
+  expect(result.current.progress).toMatch(/first reply/);
+  expect(mic).not.toHaveBeenCalled();
+  await act(async () => { finishWarmup({ ready: true }); await starting; });
+  expect(mic).toHaveBeenCalledTimes(1);
+  expect(result.current.phase).toBe("listening");
+  unmount();
+});

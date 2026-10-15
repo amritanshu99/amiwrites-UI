@@ -28,7 +28,7 @@ consents; no demo voice is shipped as the owner's voice.
 
 ## Visitor behavior and limits
 
-- Explicit download acknowledgement before loading models (about 1.2–1.5 GB initially).
+- Explicit download acknowledgement before loading models (about 1.6–1.9 GB initially).
   Browser caching avoids repeat downloads when storage permits; clearing storage
   or browser eviction requires another download. Model files come from Hugging Face;
   ONNX WASM runtime files come from the versioned Transformers.js CDN dependency.
@@ -36,15 +36,18 @@ consents; no demo voice is shipped as the owner's voice.
   with up to two retries from the received byte offset. A resumed response must
   match the expected range and file identity; mismatches fail safely. Only complete
   files are cached. Progress includes aggregate percentages and recovery notices.
-- Turbo uses a 4-bit language model, with higher precision for the voice encoder
-  and waveform decoder. The old model's exaggeration selector is removed because
+- Turbo uses a 4-bit language model, with an fp16 voice encoder where supported
+  and an fp32 waveform decoder. Reduced-precision waveform decoders lost words in
+  real browser tests, so the decoder stays fp32 on all devices. Repetition penalties
+  apply only to generated speech tokens, not unrelated text-token IDs. The old model's exaggeration selector is removed because
   Turbo does not support that control; the saved owner recording still defines the voice.
   Existing visitors need to download the new model files once.
 - Recognition uses Whisper base.en on WebGPU when available (fp32 encoder and q4
   decoder, about 206 MB). CPU fallback uses q8 weights (about 77 MB). A short silent
   warm-up during setup prepares recognition before the microphone opens. Failed GPU
   recognition initialization or warm-up falls back to CPU and releases the failed session.
-  Recognition remains local and English-only.
+  Recognition remains local and English-only. A silent speech-generation warm-up
+  also completes before microphone capture, once per worker, to prepare the first reply.
 - English only. A recent desktop Chrome/Edge with enough free memory is preferred.
   WebGPU is used when available, otherwise CPU/WASM. Weak devices can be too slow
   or run out of memory. This is turn-based speech, not guaranteed real-time audio.
@@ -75,6 +78,12 @@ for upload authorization, both consents, WAV boundaries, storage round trip, pub
 status/reference behavior, and safe database errors. A browser/device inference
 check and listening comparison with the owner's actual recording are also needed;
 mocked unit tests cannot establish voice similarity or latency.
+
+A local Chrome/WebGPU check using the model's public demo recording verified both
+"Hello. Welcome to AmiVerse." and "I can help you explore my projects." by transcribing
+the generated audio. Warm generation took about 6 seconds for a 2-second phrase;
+recognition took about 1.6 seconds on the test computer. These are device-specific
+measurements, not a real-time guarantee or an owner-voice listening evaluation.
 
 Model source: https://huggingface.co/ResembleAI/chatterbox-turbo-ONNX
 
