@@ -45,6 +45,7 @@ import InitialLoader, {
 import HeroPixelDistortion from "./HeroPixelDistortion";
 import MemoryLaneCta from "./MemoryLaneCta";
 import CareerJourney from "./CareerJourney";
+import NewspaperFeature from "./NewspaperFeature";
 import AmiversePulseWidget from "../AmiversePulseWidget";
 import { FaCalendarAlt } from "react-icons/fa";
 import { apiUrl, assetUrl } from "../../config/api";
@@ -259,6 +260,7 @@ const sectionMeta = [
   { id: "experience", label: "Experience" },
   { id: "education", label: "Education" },
   { id: "contact", label: "Contact" },
+  { id: "origin-story", label: "Origin" },
 ];
 const THEME_CHANGE_EVENT = "amiverse-theme-change";
 const resumeUrl = assetUrl("/images/Resume.pdf");
@@ -1483,7 +1485,7 @@ export default function PortfolioDetails() {
             sectionRefs.current.contact = el;
           }}
           aria-labelledby="contact-heading"
-          className="portfolio-section-surface bg-white/[0.76] px-5 py-14 pb-40 dark:bg-black/[0.84] sm:px-8 md:py-20 md:pb-44 lg:px-12"
+          className="portfolio-section-surface bg-white/[0.76] px-5 py-14 dark:bg-black/[0.84] sm:px-8 md:py-20 lg:px-12"
         >
           <FadeRow reduceMotion={prefersReducedMotion}>
             <div className="mx-auto max-w-7xl">
@@ -1568,6 +1570,11 @@ export default function PortfolioDetails() {
             </div>
           </FadeRow>
         </section>
+        <NewspaperFeature
+          sectionRef={(el) => {
+            sectionRefs.current["origin-story"] = el;
+          }}
+        />
       </div>
 
       </article>
