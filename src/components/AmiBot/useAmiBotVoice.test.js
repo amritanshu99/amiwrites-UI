@@ -312,3 +312,31 @@ test("first reply warm-up completes before opening the microphone", async () => 
   expect(result.current.phase).toBe("listening");
   unmount();
 });
+
+
+test("a fifty-word reply starts playing after its small opening chunk without waiting for the rest", async () => {
+  const reply = "Amritanshu builds useful web applications with React and Node.js. He also works with artificial intelligence, natural language processing, and modern databases. His projects focus on practical features, reliable performance, and clear interfaces that help people solve everyday problems while learning about new tools and ideas in software engineering and development.";
+  let finishRest;
+  const requests = [];
+  engine.device = "webgpu";
+  engine.request.mockImplementation(async (type, data) => {
+    if (type === "transcribe") return { text: "Tell me about his skills", language: "en" };
+    if (type === "speak") {
+      requests.push(data.text);
+      if (requests.length > 1) return new Promise(resolve => { finishRest = resolve; });
+      return { audio: new Float32Array(24000), sampleRate: 24000 };
+    }
+    return { ready: true };
+  });
+  const { result, unmount } = await setup(jest.fn(async () => reply));
+  jest.useFakeTimers();
+  await act(async () => { await result.current.start(); jest.advanceTimersByTime(200); result.current.sendNow(); });
+  expect(requests[0].length).toBeLessThanOrEqual(32);
+  expect(reply.startsWith(requests[0])).toBe(true);
+  expect(result.current.phase).toBe("speaking");
+  expect(result.current.responseMs).not.toBeNull();
+  expect(sources[0].start).toHaveBeenCalledTimes(1);
+  expect(finishRest).toBeDefined();
+  unmount();
+  await act(async () => finishRest({ audio: new Float32Array(24000), sampleRate: 24000 }));
+});

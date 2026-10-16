@@ -64,6 +64,7 @@ export default function AmiBotVoice({ onClose, onTurn, token }) {
         {voice.active && voice.device === "wasm" && <p className="amibot-voice-description">Your device is using its CPU. Voice replies may be slow.</p>}
 
         {voice.transcript && <div className="amibot-voice-caption"><span>YOU</span><p>{voice.transcript}</p></div>}
+        {voice.responseMs != null && <p className="amibot-voice-description">Reply started in {(voice.responseMs / 1000).toFixed(1)} seconds</p>}
         {voice.reply && <div className="amibot-voice-caption"><span>AMIBOT</span><p>{voice.reply}</p></div>}
         {voice.error && <p className="amibot-voice-notice" role="alert">{voice.error}</p>}
         {!voice.supported && <p className="amibot-voice-notice" role="alert">Voice mode needs microphone recording support and a secure connection. Open AmiVerse over HTTPS in a current browser.</p>}

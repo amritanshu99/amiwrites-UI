@@ -55,8 +55,17 @@ consents; no demo voice is shipped as the owner's voice.
   sent to the existing AmiBot API and follows its existing history rules.
 - Turns stop after a short pause, **Send now**, or 55 seconds. The microphone pauses
   during replies. Interrupt cancels queued speech and resumes listening.
-- Replies start with a complete opening sentence when possible, capped at 96
-  characters, while later chunks of up to 160 characters prepare during playback.
+- Replies start with a short opening sentence or phrase, capped at 32 characters
+  on both WebGPU and CPU, while later chunks of up to 160 characters prepare during
+  playback. The complete answer is preserved, including names such as Node.js.
+- Voice answers normally use 10-50 words. The backend disables optional thinking
+  for Gemini 2.5 Flash voice requests and limits output to 384 tokens; other models
+  and ordinary chat retain their existing generation settings. Knowledge grounding
+  and fallback behavior are unchanged.
+- Voice mode displays the time from the last detected user speech to first reply
+  playback, including silence detection, transcription, the answer API, and speech
+  generation. The target is to start within 30 seconds after setup; download, model
+  initialization, slow devices, and a sleeping free backend can take longer.
 - Recently generated speech is reused within the open voice session, bounded to
   12 chunks / 8 MB in memory. Replacing the reference clears the cache; closing the
   worker clears it too. Nothing is written to persistent storage for this cache.
@@ -84,6 +93,17 @@ A local Chrome/WebGPU check using the model's public demo recording verified bot
 the generated audio. Warm generation took about 6 seconds for a 2-second phrase;
 recognition took about 1.6 seconds on the test computer. These are device-specific
 measurements, not a real-time guarantee or an owner-voice listening evaluation.
+
+On 2026-10-16, the production browser worker and live Render answer API were tested
+with requests for about 10, 25, and 50 words. The API returned 12, 24, and 34 words.
+With a 32-character opening limit, reply playback started in **21.78, 21.74, and
+22.47 seconds**. These totals include real Whisper recognition, the live knowledge
+answer, uncached first-chunk synthesis, and the 1.05-second end-of-speech pause
+(simulated; no live microphone capture). Chrome used WebGPU and the public demo
+reference after model setup. Each generated opening was successfully transcribed
+back to its requested words. API time was 2.97-4.37 seconds and synthesis time was
+14.66-15.27 seconds. This validates the measured short-turn path on this computer,
+not a universal deadline for CPU devices, backend cold starts, or initial setup.
 
 Model source: https://huggingface.co/ResembleAI/chatterbox-turbo-ONNX
 

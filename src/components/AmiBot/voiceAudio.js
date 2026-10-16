@@ -18,7 +18,7 @@ export function speechChunks(markdown, maxCharacters = 400, firstChunkCharacters
     .replace(/https?:\/\/\S+/g, "")
     .replace(/[*_`#>|]/g, " ")
     .replace(/\s+/g, " ").trim();
-  const sentences = text.match(/[^.!?।]+[.!?।]*\s*/g) || [];
+  const sentences = text.match(/.+?(?:[.!?।]+(?=\s|$)|$)/g) || [];
   const chunks = [];
   let chunk = "";
   const chunkLimit = () => chunks.length ? limit : firstLimit;

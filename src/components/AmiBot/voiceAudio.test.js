@@ -39,3 +39,12 @@ test("a smaller opening request preserves long unbroken text", () => {
   expect(chunks.map((chunk) => chunk.length)).toEqual([96, 160, 160, 34]);
   expect(chunks.join("")).toBe("x".repeat(450));
 });
+
+
+test.each([32, 48])("small first chunks (%i characters) preserve an entire fifty-word answer", (firstLimit) => {
+  const reply = "Amritanshu builds useful web applications with React and Node.js. He also works with artificial intelligence, natural language processing, and modern databases. His projects focus on practical features, reliable performance, and clear interfaces that help people solve everyday problems while learning about new tools and ideas in software engineering and development.";
+  const chunks = speechChunks(reply, 160, firstLimit);
+  expect(chunks[0].length).toBeLessThanOrEqual(firstLimit);
+  expect(chunks.join(" ")).toBe(reply);
+  expect(chunks.slice(1).some(chunk => chunk.length > firstLimit)).toBe(true);
+});
