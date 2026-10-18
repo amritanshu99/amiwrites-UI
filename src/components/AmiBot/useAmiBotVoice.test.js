@@ -27,6 +27,7 @@ class Recorder {
 
 class Context {
   constructor() { contexts.push(this); this.close = jest.fn(async () => {}); }
+  get currentTime() { return performance.now() / 1000; }
   resume = async () => {};
   createAnalyser = () => ({ fftSize: 256, getFloatTimeDomainData: (samples) => samples.fill(rms), connect: jest.fn(), disconnect: jest.fn() });
   createMediaStreamSource = () => ({ connect: jest.fn(), disconnect: jest.fn() });
@@ -171,26 +172,26 @@ test("stopping during model loading never asks for microphone permission or resu
   unmount();
 });
 
-test("the opening sentence plays while the next chunk is still being generated", async () => {
+test("a normal reply is generated and played as one continuous utterance", async () => {
   const reply = "Yes, I can help. Here is a longer explanation of how your voice conversation works, with the details you asked for.";
-  let finishNext;
-  engine.request.mockImplementation(async (type, data) => {
+  let finishSpeech;
+  engine.request.mockImplementation(async (type) => {
     if (type === "transcribe") return { text: "Help me", language: "en" };
-    if (type === "speak" && data.text !== "Yes, I can help.") return new Promise((resolve) => { finishNext = resolve; });
-    return type === "speak" ? { audio: new Float32Array(24000), sampleRate: 24000 } : { ready: true };
+    if (type === "speak") return new Promise((resolve) => { finishSpeech = resolve; });
+    return { ready: true };
   });
   const { result, unmount } = await setup(jest.fn(async () => reply));
   jest.useFakeTimers();
   await act(async () => { await result.current.start(); jest.advanceTimersByTime(200); result.current.sendNow(); });
   const spoken = engine.request.mock.calls.filter(([type]) => type === "speak");
-  expect(spoken.map(([, data]) => data.text).join(" ")).toBe(reply);
-  expect(spoken[0][1].text).toBe("Yes, I can help.");
+  expect(spoken.map(([, data]) => data.text)).toEqual([reply]);
+  expect(result.current.phase).toBe("preparing");
+  expect(sources).toHaveLength(0);
+  await act(async () => { finishSpeech({ audio: new Float32Array(24000), sampleRate: 24000 }); });
   expect(result.current.phase).toBe("speaking");
-  expect(sources[0].start).toHaveBeenCalledTimes(1);
-  expect(finishNext).toBeDefined();
-  unmount();
-  await act(async () => { finishNext({ audio: new Float32Array(24000), sampleRate: 24000 }); });
   expect(sources).toHaveLength(1);
+  expect(sources[0].start).toHaveBeenCalledTimes(1);
+  unmount();
 });
 
 test("aggregate download progress stays visible and quiet loading shows a helpful notice", async () => {
@@ -314,29 +315,45 @@ test("first reply warm-up completes before opening the microphone", async () => 
 });
 
 
-test("a fifty-word reply starts playing after its small opening chunk without waiting for the rest", async () => {
+test("a fifty-word reply preserves every word and plays without inference gaps", async () => {
   const reply = "Amritanshu builds useful web applications with React and Node.js. He also works with artificial intelligence, natural language processing, and modern databases. His projects focus on practical features, reliable performance, and clear interfaces that help people solve everyday problems while learning about new tools and ideas in software engineering and development.";
+  const { result, unmount } = await setup(jest.fn(async () => reply));
+  jest.useFakeTimers();
+  await act(async () => { await result.current.start(); jest.advanceTimersByTime(200); result.current.sendNow(); });
+  const parts = engine.request.mock.calls.filter(([type]) => type === "speak").map(([, data]) => data.text);
+  expect(parts.join(" ")).toBe(reply);
+  expect(parts.every(text => text.length <= 500)).toBe(true);
+  expect(result.current.phase).toBe("speaking");
+  expect(result.current.responseMs).not.toBeNull();
+  expect(sources).toHaveLength(1);
+  expect(sources[0].start).toHaveBeenCalledTimes(1);
+  unmount();
+});
+
+test.each([false, true])("long replies buffer before playback and can be interrupted (interrupt: %s)", async (interrupt) => {
+  const reply = "A complete sentence with useful details. ".repeat(16).trim();
   let finishRest;
   const requests = [];
-  engine.device = "webgpu";
   engine.request.mockImplementation(async (type, data) => {
-    if (type === "transcribe") return { text: "Tell me about his skills", language: "en" };
+    if (type === "transcribe") return { text: "Tell me more", language: "en" };
     if (type === "speak") {
       requests.push(data.text);
       if (requests.length > 1) return new Promise(resolve => { finishRest = resolve; });
-      return { audio: new Float32Array(24000), sampleRate: 24000 };
+      jest.advanceTimersByTime(2000);
+      return { audio: new Float32Array(24000).fill(0.5), sampleRate: 24000 };
     }
     return { ready: true };
   });
   const { result, unmount } = await setup(jest.fn(async () => reply));
   jest.useFakeTimers();
   await act(async () => { await result.current.start(); jest.advanceTimersByTime(200); result.current.sendNow(); });
-  expect(requests[0].length).toBeLessThanOrEqual(32);
-  expect(reply.startsWith(requests[0])).toBe(true);
-  expect(result.current.phase).toBe("speaking");
-  expect(result.current.responseMs).not.toBeNull();
-  expect(sources[0].start).toHaveBeenCalledTimes(1);
-  expect(finishRest).toBeDefined();
+  expect(requests.join(" ")).toBe(reply);
+  expect(result.current.phase).toBe("preparing");
+  expect(sources).toHaveLength(0);
+  if (interrupt) act(() => result.current.interrupt());
+  await act(async () => finishRest({ audio: new Float32Array(12000).fill(0.5), sampleRate: 24000 }));
+  expect(sources).toHaveLength(interrupt ? 0 : 2);
+  const copies = sources.flatMap(source => source.buffer.copyToChannel.mock.calls);
+  expect(copies.map(([audio]) => audio.length)).toEqual(interrupt ? [] : [24000, 12000]);
   unmount();
-  await act(async () => finishRest({ audio: new Float32Array(24000), sampleRate: 24000 }));
 });

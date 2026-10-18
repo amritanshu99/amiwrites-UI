@@ -42,6 +42,13 @@ test("recovers a truncated response without duplicating bytes", async () => {
   await expect(values(await createResumableModelFetch(fetch)(url))).resolves.toEqual([1, 2, 3, 4]);
 });
 
+test("resumes pinned Pocket model downloads inside the language directory", async () => {
+  const pocketUrl = `https://huggingface.co/spaces/KevinAHM/pocket-tts-web/resolve/${"a".repeat(40)}/onnx/english_2026-04/flow_lm_main_int8.onnx`;
+  const fetch = jest.fn().mockResolvedValueOnce(reply([bytes(1, 2)], { etag: null })).mockResolvedValueOnce(resumed({ etag: null }));
+  await expect(values(await createResumableModelFetch(fetch)(pocketUrl))).resolves.toEqual([1, 2, 3, 4]);
+  expect(fetch.mock.calls[1][1].headers.get("range")).toBe("bytes=2-");
+});
+
 test.each([
   ["ignored range", { status: 200 }],
   ["wrong start", { range: "bytes 1-2/4" }],

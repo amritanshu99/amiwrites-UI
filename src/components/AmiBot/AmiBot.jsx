@@ -22,6 +22,7 @@ import ReactMarkdown from "react-markdown";
 import { useLocation } from "react-router-dom";
 import { apiUrl } from "../../config/api";
 import AmiBotVoice from "./AmiBotVoice";
+import { readVoiceContext, clearVoiceContext, navigateVoicePage } from "./voiceNavigation";
 
 const GREETINGS = [
   {
@@ -362,7 +363,9 @@ function StatusTile({ icon: Icon, label, value }) {
 
 const AmiBot = () => {
   const { pathname } = useLocation();
-  const [messages, setMessages] = useState(() => [randomGreeting()]);
+  const isVoicePage = pathname === "/amibot/voice";
+  const [messages, setMessages] = useState(() => (!getAuthToken() && readVoiceContext()) || [randomGreeting()]);
+  useEffect(() => { clearVoiceContext(); }, []);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [historyLoading, setHistoryLoading] = useState(false);
@@ -370,7 +373,8 @@ const AmiBot = () => {
   const [historyError, setHistoryError] = useState("");
   const [requestStatus, setRequestStatus] = useState("");
   const [authToken, setAuthToken] = useState(getAuthToken);
-  const [voiceOpen, setVoiceOpen] = useState(false);
+  const voiceOpen = isVoicePage;
+  const previousAuth = useRef(authToken);
   const isAuthenticated = Boolean(authToken);
   const messagesContainerRef = useRef(null);
   const inputRef = useRef(null);
@@ -457,6 +461,8 @@ const AmiBot = () => {
 
   useEffect(() => {
     const token = authToken;
+    const wasAuthenticated = Boolean(previousAuth.current);
+    previousAuth.current = token;
     activeRequestRef.current?.abort();
     activeRequestRef.current = null;
     setLoading(false);
@@ -468,7 +474,7 @@ const AmiBot = () => {
       setHistoryError("");
       forceScrollRef.current = true;
       shouldAutoScrollRef.current = true;
-      setMessages([randomGreeting()]);
+      if (wasAuthenticated) setMessages([randomGreeting()]);
       return;
     }
 
@@ -653,9 +659,8 @@ const AmiBot = () => {
     return sendQuery(input);
   }, [input, sendQuery]);
   const closeVoice = useCallback(() => {
-    setVoiceOpen(false);
-    window.requestAnimationFrame(() => inputRef.current?.focus());
-  }, []);
+    navigateVoicePage("/amibot", messages, isAuthenticated);
+  }, [messages, isAuthenticated]);
 
   const handleInputKeyDown = useCallback((event) => {
     if (isCoarseInputDevice()) return;
@@ -700,8 +705,8 @@ const AmiBot = () => {
 
   return (
     <section className="amibot-workspace-padding h-full min-h-0 w-full max-w-full overflow-hidden bg-[linear-gradient(180deg,#f8fafc_0%,#e0f2fe_46%,#ecfdf5_100%)] text-slate-900 dark:bg-[linear-gradient(180deg,#050505_0%,#0b1115_58%,#000000_100%)] dark:text-zinc-100">
-      <div className="mx-auto grid h-full w-full min-w-0 max-w-7xl gap-0 overflow-hidden lg:grid-cols-[20rem_minmax(0,1fr)] lg:gap-5">
-        <aside
+      <div className={`mx-auto grid h-full w-full min-w-0 max-w-7xl gap-0 overflow-hidden ${isVoicePage ? "" : "lg:grid-cols-[20rem_minmax(0,1fr)] lg:gap-5"}`}>
+        {!isVoicePage && <aside
           aria-label="AmiBot workspace overview"
           className={`relative hidden h-full w-full min-w-0 max-w-full overflow-hidden p-4 outline-none sm:p-5 lg:block lg:overflow-x-hidden lg:overflow-y-auto lg:overscroll-contain lg:[scrollbar-gutter:stable] lg:[scrollbar-width:thin] lg:focus-visible:ring-2 lg:focus-visible:ring-cyan-400/50 ${surfaceClassName}`}
           tabIndex={0}
@@ -767,7 +772,7 @@ const AmiBot = () => {
           <div className="mt-4 flex flex-wrap items-center gap-2">
             {authAction}
           </div>
-        </aside>
+        </aside>}
 
         <section className={`relative flex h-full min-h-0 w-full min-w-0 max-w-full flex-col overflow-hidden ${surfaceClassName}`}>
           {voiceOpen && <AmiBotVoice onClose={closeVoice} onTurn={sendQuery} token={authToken} />}
@@ -871,7 +876,7 @@ const AmiBot = () => {
                 aria-label="Open voice conversation"
                 title="Talk to AmiBot"
                 disabled={loading || historyLoading || historyClearing}
-                onClick={() => setVoiceOpen(true)}
+                onClick={() => navigateVoicePage("/amibot/voice", messages, isAuthenticated)}
                 className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border border-cyan-200 bg-cyan-50 text-cyan-800 transition hover:bg-cyan-100 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-cyan-100 disabled:opacity-50 dark:border-cyan-300/20 dark:bg-cyan-300/10 dark:text-cyan-200"
               ><Mic className="h-5 w-5" /></button>
               <button

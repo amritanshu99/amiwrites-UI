@@ -48,3 +48,9 @@ test.each([32, 48])("small first chunks (%i characters) preserve an entire fifty
   expect(chunks.join(" ")).toBe(reply);
   expect(chunks.slice(1).some(chunk => chunk.length > firstLimit)).toBe(true);
 });
+
+
+test("ordinary replies stay together across sentences and preserve Node.js", () => {
+  const text = "I build useful web applications with React and Node.js. I also work with artificial intelligence, natural language processing, and modern databases.";
+  expect(speechChunks(text, 400)).toEqual([text]);
+});

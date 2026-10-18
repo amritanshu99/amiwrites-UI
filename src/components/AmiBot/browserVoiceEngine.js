@@ -14,6 +14,15 @@ export default class BrowserVoiceEngine {
     this.worker.onmessage = ({ data }) => {
       const request = this.pending.get(data.id);
       if (!request) return;
+      if (data.type === "audio") {
+        try { request.onAudio?.(data.data); }
+        catch (error) {
+          this.worker?.postMessage({ type: "cancel", id: data.id });
+          request.finish();
+          request.reject(error);
+        }
+        return;
+      }
       if (data.type === "progress") { request.onProgress?.(data.data); return; }
       request.finish();
       if (data.type === "error") request.reject(new Error(data.message));
@@ -41,7 +50,7 @@ export default class BrowserVoiceEngine {
     };
   }
 
-  request(type, data = {}, { signal, onProgress } = {}) {
+  request(type, data = {}, { signal, onProgress, onAudio } = {}) {
     if (signal?.aborted) return Promise.reject(aborted());
     if (!this.worker) return Promise.reject(new Error("Voice models were closed. Start voice mode again."));
     if (type === "reference") {
@@ -66,7 +75,7 @@ export default class BrowserVoiceEngine {
         reject(aborted());
       };
       const finish = () => { signal?.removeEventListener("abort", cancel); this.pending.delete(id); };
-      this.pending.set(id, { resolve, reject, finish, onProgress, cacheKey, voiceVersion: this.voiceVersion });
+      this.pending.set(id, { resolve, reject, finish, onProgress, onAudio, cacheKey, voiceVersion: this.voiceVersion });
       signal?.addEventListener("abort", cancel, { once: true });
       try { this.worker.postMessage({ id, type, data }, data.audio ? [data.audio.buffer] : []); }
       catch (error) { finish(); reject(error); }

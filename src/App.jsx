@@ -65,6 +65,7 @@ const instantScrollPaths = new Set([
 ]);
 
 const seoRouteAliases = {
+  "/amibot/voice": "/amibot",
   "/blog": "/blogs",
   "/Reinforcement-Learning": "/reinforcement-learning",
   "/beacon-settings": "/ami-pulse-settings",
@@ -166,7 +167,8 @@ const App = () => {
   const [isLoading, setIsLoading] = useState(false);
   const location = useLocation();
   const appShellRef = useRef(null);
-  const isAmiBotWorkspace = location.pathname === "/amibot";
+  const isVoicePage = location.pathname === "/amibot/voice";
+  const isAmiBotWorkspace = location.pathname === "/amibot" || isVoicePage;
   const usesInstantRouteScroll = instantScrollPaths.has(location.pathname);
 
   useEffect(() => {
@@ -210,7 +212,7 @@ const App = () => {
       ref={appShellRef}
       className="amiverse-app-shell relative flex h-screen flex-col overflow-y-scroll"
     >
-      <Header setLoading={setIsLoading} />
+      {!isVoicePage && <Header setLoading={setIsLoading} />}
       <ToastContainer
         className="amiverse-toast-container"
         toastClassName="amiverse-toast"
@@ -238,7 +240,7 @@ const App = () => {
       <main
         id="main"
         className={
-          isAmiBotWorkspace
+          isVoicePage ? "h-full min-h-0 flex-1" : isAmiBotWorkspace
             ? "amiverse-viewport-workspace min-h-0 shrink-0"
             : "flex-1"
         }
@@ -283,6 +285,7 @@ const App = () => {
               element={<EmotionAnalyzerDetails />}
             />
             <Route path="/amibot" element={<AmiBotDetails />} />
+            <Route path="/amibot/voice" element={<AmiBotDetails />} />
             <Route
               path="/amibot-admin"
               element={
@@ -306,8 +309,7 @@ const App = () => {
         </Suspense>
       </main>
 
-      <ContactMeButton />
-      <Footer />
+      {!isVoicePage && <><ContactMeButton /><Footer /></>}
     </div>
   );
 };

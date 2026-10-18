@@ -1,111 +1,114 @@
 # AmiBot browser voice
 
-AmiBot uses Chatterbox Turbo ONNX for the owner's cloned voice and Whisper base.en for
-speech recognition, through pinned Transformers.js 4.3.1. Both run in a dedicated
-Web Worker on the visitor's device. The existing AmiBot text endpoint still
-answers questions using the existing knowledge and history. It retains its current
-provider, limits, and any existing costs; this change adds no paid voice API or host.
+AmiBot uses Pocket TTS for the owner's cloned voice and Whisper base.en for
+speech recognition. Both run in a Web Worker on the visitor's device. The existing
+AmiBot text API answers questions with its knowledge and history. No paid voice
+API, Python host, GPU server, or additional Render service is required. The text
+API retains its existing provider and any existing costs.
 
 ## Owner setup
 
-1. Deploy the matching backend browser-voice routes and this frontend.
-2. Sign in as the existing admin and open `/amibot-admin` (Ami Pulse).
+1. Deploy the backend browser-voice routes and this frontend.
+2. Sign in as admin and open `/amibot-admin` (Ami Pulse).
 3. Under **Your voice, in AmiBot**, record or upload 5–30 seconds of clear English.
-4. Preview it and confirm both ownership and public reference sharing.
-5. Choose **Save AmiBot voice**, then open AmiBot's microphone button.
+   Speak naturally from the beginning; the first ten seconds provide the voice sample.
+4. Preview the recording and confirm ownership and public reference sharing.
+5. Save the voice and open AmiBot's microphone button.
 
-The browser converts the reference to mono 24 kHz PCM16 WAV. Express validates
-its format, duration, and volume and stores it in the existing MongoDB database
-(`AmiBotVoiceProfile`, ID `amibot`). This survives free Render restarts; no upload
-disk, Python process, voice API key, or additional Render service is required.
-Replacement is authenticated and admin-only. A missing recording is reported as
-an incomplete owner setup, rather than a disconnected voice service.
+Existing saved recordings continue to work. The original recording is preserved;
+only the local encoder input is capped at ten seconds to bound WASM memory use.
+The backend validates and stores mono 24 kHz PCM16 WAV in the existing MongoDB
+`AmiBotVoiceProfile` document. It survives free Render restarts. Replacement remains
+authenticated and admin-only. Missing recordings are reported as incomplete setup.
 
-**The reference is public.** Visitors must download it to generate the voice.
-People can save their own copies. Legacy private worker recordings are never
-automatically published. An actual owner recording must be saved with both
-consents; no demo voice is shipped as the owner's voice.
+**The reference is public.** Visitors need it to generate the voice and can save
+their own copies. Both owner consents are required. Private legacy worker recordings
+are never published automatically. No demo or device voice replaces the owner voice.
 
-## Visitor behavior and limits
+## Deployment and runtime
 
-- Explicit download acknowledgement before loading models (about 1.6–1.9 GB initially).
-  Browser caching avoids repeat downloads when storage permits; clearing storage
-  or browser eviction requires another download. Model files come from Hugging Face;
-  ONNX WASM runtime files come from the versioned Transformers.js CDN dependency.
-- Weight downloads recover from stalled transfers after 45 seconds without data,
-  with up to two retries from the received byte offset. A resumed response must
-  match the expected range and file identity; mismatches fail safely. Only complete
-  files are cached. Progress includes aggregate percentages and recovery notices.
-- Turbo uses a 4-bit language model, with an fp16 voice encoder where supported
-  and an fp32 waveform decoder. Reduced-precision waveform decoders lost words in
-  real browser tests, so the decoder stays fp32 on all devices. Repetition penalties
-  apply only to generated speech tokens, not unrelated text-token IDs. The old model's exaggeration selector is removed because
-  Turbo does not support that control; the saved owner recording still defines the voice.
-  Existing visitors need to download the new model files once.
-- Recognition uses Whisper base.en on WebGPU when available (fp32 encoder and q4
-  decoder, about 206 MB). CPU fallback uses q8 weights (about 77 MB). A short silent
-  warm-up during setup prepares recognition before the microphone opens. Failed GPU
-  recognition initialization or warm-up falls back to CPU and releases the failed session.
-  Recognition remains local and English-only. A silent speech-generation warm-up
-  also completes before microphone capture, once per worker, to prepare the first reply.
-- English only. A recent desktop Chrome/Edge with enough free memory is preferred.
-  WebGPU is used when available, otherwise CPU/WASM. Weak devices can be too slow
-  or run out of memory. This is turn-based speech, not guaranteed real-time audio.
-- Microphone audio and generated speech remain on the device. Transcribed text is
-  sent to the existing AmiBot API and follows its existing history rules.
-- Turns stop after a short pause, **Send now**, or 55 seconds. The microphone pauses
-  during replies. Interrupt cancels queued speech and resumes listening.
-- Replies start with a short opening sentence or phrase, capped at 32 characters
-  on both WebGPU and CPU, while later chunks of up to 160 characters prepare during
-  playback. The complete answer is preserved, including names such as Node.js.
-- Voice answers normally use 10-50 words. The backend disables optional thinking
-  for Gemini 2.5 Flash voice requests and limits output to 384 tokens; other models
-  and ordinary chat retain their existing generation settings. Knowledge grounding
-  and fallback behavior are unchanged.
-- Voice mode displays the time from the last detected user speech to first reply
-  playback, including silence detection, transcription, the answer API, and speech
-  generation. The target is to start within 30 seconds after setup; download, model
-  initialization, slow devices, and a sleeping free backend can take longer.
-- Recently generated speech is reused within the open voice session, bounded to
-  12 chunks / 8 MB in memory. Replacing the reference clears the cache; closing the
-  worker clears it too. Nothing is written to persistent storage for this cache.
-- Recoverable chat or microphone errors keep successfully loaded models available
-  for retry, instead of forcing another model download and initialization.
-- The orb/waveform follow measured input and playback amplitude. Downloading,
+- Voice opens with a full navigation to `/amibot/voice`. That document receives
+  `Cross-Origin-Opener-Policy: same-origin` and
+  `Cross-Origin-Embedder-Policy: require-corp`. Static worker assets also receive COEP.
+  This enables up to four WASM threads for Pocket TTS. Check the live response headers
+  and the worker's `wasm-threads` result after deployment; a dev server without these
+  headers runs a slower single-thread fallback.
+- Ordinary pages keep their existing popup-compatible policy. The isolated voice
+  page has a focused layout without the sign-in header. **Back to chat** navigates
+  back to the normal document. Signed-in history remains on the server. Guest context
+  crosses navigation in tab-local session storage (last 24 messages, five-minute
+  expiry), then is removed on arrival.
+- Explicit acknowledgement precedes any model downloads. Pocket weights total about
+  146 MB. Whisper uses about 206 MB on WebGPU or 77 MB for CPU fallback, giving roughly
+  230–360 MB of model downloads. Runtime/tokenizer assets add a few more MB.
+  Browser caching avoids repeat downloads when storage permits. Existing Chatterbox
+  users need the new files once; this release does not erase their other cached data.
+- Pocket's ONNX bundle is pinned to KevinAHM/pocket-tts-web revision
+  `d0c0c79b7712256a32d691c67f20b8ae2e020d00`, `english_2026-04`.
+  ONNX Runtime Web is pinned to 1.20.0. The bundled SentencePiece tokenizer comes
+  from that same revision. Built-in voice embeddings are neither downloaded nor used.
+- Model downloads resume after 45 seconds without data, with at most two retries.
+  Range and file identity must match. Pocket weight byte counts are validated before
+  caching. Storage denial or quota failure permits memory-only loading.
+- Whisper uses Transformers.js 4.3.1, fp32 encoder/q4 decoder on WebGPU or q8 CPU
+  fallback. GPU initialization or warm-up failures release the failed recognizer and
+  retry on CPU. Silent recognition and cloned-speech warm-ups finish before the mic opens.
+
+## Conversation and playback
+
+- English only. A recent desktop Chrome/Edge is preferred. Speech is generated with
+  the saved owner sample; this is a synthetic approximation, not an identical recording.
+- The mic stops after a short pause, **Send now**, or 55 seconds and pauses during
+  replies. Microphone audio and generated speech remain local. Only transcribed text
+  goes to the existing AmiBot API under its existing history rules.
+- Simple voice answers normally use 10–20 words; detail requests can use up to 50.
+  The backend disables optional thinking for Gemini 2.5 Flash voice requests and
+  bounds output tokens. The client preserves the complete answer without word truncation.
+- PCM streams from the worker. Playback waits for a lead based on measured generation
+  speed and estimated reply duration, then schedules chunks on one Web Audio clock.
+  This overlaps generation with playback while reducing buffer underruns. It does not
+  restart the voice for a tiny opening phrase or insert a fade at every PCM boundary.
+  Text requests are bounded to 500 characters; model chunks preserve whole words and
+  sentence boundaries where possible, including names such as Node.js.
+- The orb and waveform use measured microphone/playback amplitude. Loading,
   transcribing, thinking, preparing, speaking, and paused states are distinct.
-- End cancels active work; closing the panel also releases the model worker.
-  Switching tabs preserves a model download but stops microphone capture. If setup
-  completes in the background, return and start the conversation to enable the mic.
-  No browser/system voice substitutes
-  for the owner's recording if inference fails.
+  Response timing includes silence detection, recognition, API time, and initial buffering.
+- Interrupt and mute cancel inference, stop every scheduled audio source, and discard
+  late chunks. The loaded worker can process the next turn. End stops capture/playback;
+  leaving voice mode also releases the model worker. Switching tabs stops the mic but
+  lets downloads continue. No mic opens automatically after setup in a hidden tab.
+- Repeated speech uses a session-only cache bounded to 12 entries / 8 MB. Changing the
+  reference clears it. Recoverable API/microphone failures keep loaded models for retry.
+
+The goal is to start speaking within 30 seconds after setup. It is not a guarantee:
+first downloads, slow devices, single-thread fallback, competing CPU work, and a
+sleeping free backend can take longer. Continuous playback also depends on the device
+maintaining its measured generation speed.
 
 ## Verification
 
-Run `npm.cmd test -- --watchAll=false --runInBand src/components/AmiBot` and
-`npm.cmd exec react-scripts build`. The backend has `test/amibotBrowserVoice.test.js`
-for upload authorization, both consents, WAV boundaries, storage round trip, public
-status/reference behavior, and safe database errors. A browser/device inference
-check and listening comparison with the owner's actual recording are also needed;
-mocked unit tests cannot establish voice similarity or latency.
+Run the AmiBot unit tests and production build. Tests cover stalled/ranged downloads,
+cache failures, streaming, cancellation, audio scheduling, navigation context, worker
+fallbacks, microphone lifecycle, and the chat API integration. The backend tests cover
+upload authorization, consents, WAV validation, storage round trips, and public status.
 
-A local Chrome/WebGPU check using the model's public demo recording verified both
-"Hello. Welcome to AmiVerse." and "I can help you explore my projects." by transcribing
-the generated audio. Warm generation took about 6 seconds for a 2-second phrase;
-recognition took about 1.6 seconds on the test computer. These are device-specific
-measurements, not a real-time guarantee or an owner-voice listening evaluation.
+A release check must also run the production worker with the actual saved owner
+recording, generate full short and 50-word replies, measure first scheduled playback,
+check for scheduling gaps, and transcribe the complete generated speech. Test the live
+answer API and interruption followed by another reply. Mocked tests cannot establish
+latency or voice similarity; transcription checks words, not resemblance to the owner.
 
-On 2026-10-16, the production browser worker and live Render answer API were tested
-with requests for about 10, 25, and 50 words. The API returned 12, 24, and 34 words.
-With a 32-character opening limit, reply playback started in **21.78, 21.74, and
-22.47 seconds**. These totals include real Whisper recognition, the live knowledge
-answer, uncached first-chunk synthesis, and the 1.05-second end-of-speech pause
-(simulated; no live microphone capture). Chrome used WebGPU and the public demo
-reference after model setup. Each generated opening was successfully transcribed
-back to its requested words. API time was 2.97-4.37 seconds and synthesis time was
-14.66-15.27 seconds. This validates the measured short-turn path on this computer,
-not a universal deadline for CPU devices, backend cold starts, or initial setup.
+The October 18, 2026 Chrome laptop check used the production worker, four WASM
+threads, GPU recognition, and the saved 28.02-second owner recording (ten seconds
+encoded locally). After setup, live 12- and 21-word answers began in 17.71 and
+23.72 seconds, including recognition, API time, and a 1.05-second end-of-speech pause.
+A fixed 50-word answer began after 23.30 seconds of synthesis/buffering, while full
+generation took 31.47 seconds; that fixed-text timing excludes the answer API and
+recognition. All five measured replies had zero scheduling gaps. Interruption was
+followed successfully by a new reply in the same worker. Proper names and some
+technical terms differed in automatic transcription; this is not a claim of perfect
+pronunciation or a listening assessment of voice similarity.
 
-Model source: https://huggingface.co/ResembleAI/chatterbox-turbo-ONNX
-
-The optional Python worker remains available for a future separately hosted mode.
-Its Render Blueprint is a paid example and is **not used by browser voice mode**.
+Model/source credits and licenses are linked from the voice page at `/voice/NOTICE.txt`.
+The optional Python worker remains available for separately hosted use; its paid Render
+Blueprint is not used by browser voice mode.

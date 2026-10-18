@@ -11,7 +11,7 @@ export function createResumableModelFetch(fetchImpl, {
     try { url = new URL(input); } catch { return fetchImpl(input, init); }
     const headers = new Headers(init.headers);
     const isWeight = ["huggingface.co", "hf.co"].includes(url.hostname)
-      && /\/resolve\/[^/]+\/onnx\/[^/]+\.onnx(?:_data(?:_\d+)?)?$/.test(url.pathname);
+      && /\/resolve\/[^/]+\/onnx\/(?:[^/]+\/)*[^/]+\.onnx(?:_data(?:_\d+)?)?$/.test(url.pathname);
     if (!isWeight || (init.method && init.method.toUpperCase() !== "GET") || headers.has("Range")) {
       return fetchImpl(input, init);
     }

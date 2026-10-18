@@ -24,6 +24,8 @@ export function speechChunks(markdown, maxCharacters = 400, firstChunkCharacters
   const chunkLimit = () => chunks.length ? limit : firstLimit;
   const flush = () => { if (chunk) chunks.push(chunk); chunk = ""; };
   for (const sentence of sentences) {
+    // Prefer a sentence boundary when the next complete sentence will not fit.
+    if (chunk && sentence.trim().length <= chunkLimit() && chunk.length + sentence.trim().length + 1 > chunkLimit()) flush();
     for (const word of sentence.trim().split(/\s+/)) {
       let remaining = word;
       while (remaining) {
@@ -43,7 +45,7 @@ export function speechChunks(markdown, maxCharacters = 400, firstChunkCharacters
       }
     }
     // A complete opening sentence can start playing while later speech is prepared.
-    if ((!chunks.length && firstLimit < limit) || chunk.length >= 100) flush();
+    if (!chunks.length && firstLimit < limit) flush();
   }
   flush();
   return chunks;

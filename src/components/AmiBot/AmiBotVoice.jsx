@@ -57,11 +57,11 @@ export default function AmiBotVoice({ onClose, onTurn, token }) {
         {!voice.active && !voice.modelReady && (
           <label className="amibot-voice-download">
             <input type="checkbox" checked={downloadAccepted} onChange={(event) => setDownloadAccepted(event.target.checked)} />
-            <span>Download about 1.6–1.9 GB for faster cloned voice replies. English only; best on a recent laptop or desktop. Models are cached when storage is available. This upgrade needs a new download.</span>
+            <span>Download about 230–360 MB for your cloned voice. English only. Models are cached when storage is available. Keep this page open while speaking.</span>
           </label>
         )}
         {voice.phase === "loading" && <p className="amibot-voice-progress" role="status">{voice.progress}</p>}
-        {voice.active && voice.device === "wasm" && <p className="amibot-voice-description">Your device is using its CPU. Voice replies may be slow.</p>}
+        {voice.active && voice.device === "wasm" && <p className="amibot-voice-description">Your browser is using one CPU thread. Longer replies may need more time.</p>}
 
         {voice.transcript && <div className="amibot-voice-caption"><span>YOU</span><p>{voice.transcript}</p></div>}
         {voice.responseMs != null && <p className="amibot-voice-description">Reply started in {(voice.responseMs / 1000).toFixed(1)} seconds</p>}
@@ -92,7 +92,7 @@ export default function AmiBotVoice({ onClose, onTurn, token }) {
         ) : (
           <button type="button" className="amibot-voice-primary" onClick={voice.start} disabled={!voice.supported || !voice.status?.ready || (!voice.modelReady && !downloadAccepted)}><Mic size={19} /> {voice.modelReady ? "Start conversation" : "Download & start"}</button>
         )}
-        <p>AI-generated voice · English · {voice.active ? "Microphone pauses during replies" : "Audio stays on your device; text goes to AmiBot"}</p>
+        <p><a href="/voice/NOTICE.txt" target="_blank" rel="noreferrer">Voice credits</a> · AI-generated voice · English · {voice.active ? "Microphone pauses during replies" : "Audio stays on your device; text goes to AmiBot"}</p>
       </div>
     </section>
   );

@@ -54,6 +54,30 @@ test("worker errors release resources and give an actionable device message", as
   expect(engine.worker).toBeNull();
 });
 
+test("streams audio before completion and drops late chunks after interruption", async () => {
+  const engine = new BrowserVoiceEngine();
+  const controller = new AbortController(), onAudio = jest.fn();
+  const pending = engine.request("speak", { text: "Hello" }, { signal: controller.signal, onAudio });
+  const rejected = pending.catch(error => error);
+  const chunk = { audio: new Float32Array([0.1]), sampleRate: 24000 };
+  worker.onmessage({ data: { id: 1, type: "audio", data: chunk } });
+  expect(onAudio).toHaveBeenCalledWith(chunk);
+  expect(engine.pending.size).toBe(1);
+  controller.abort();
+  worker.onmessage({ data: { id: 1, type: "audio", data: chunk } });
+  expect(onAudio).toHaveBeenCalledTimes(1);
+  await expect(rejected).resolves.toHaveProperty("name", "AbortError");
+});
+
+test("a playback failure cancels generation and rejects the turn", async () => {
+  const engine = new BrowserVoiceEngine();
+  const pending = engine.request("speak", { text: "Hello" }, { onAudio: () => { throw new Error("Audio device closed"); } });
+  worker.onmessage({ data: { id: 1, type: "audio", data: {} } });
+  await expect(pending).rejects.toThrow("Audio device closed");
+  expect(worker.postMessage).toHaveBeenLastCalledWith({ type: "cancel", id: 1 });
+  expect(engine.pending.size).toBe(0);
+});
+
 test("repeated speech uses a private copy of cached audio without another inference", async () => {
   const engine = new BrowserVoiceEngine();
   const first = engine.request("speak", { text: "Hello" });
