@@ -20,6 +20,19 @@ test("loading forwards progress, resolves by request ID, and reuses loaded model
   expect(worker.postMessage).toHaveBeenCalledTimes(1);
 });
 
+test("changing recognition mode loads the needed configuration instead of reusing stale readiness", async () => {
+  const engine = new BrowserVoiceEngine();
+  const local = engine.load();
+  worker.onmessage({ data: { id: 1, type: "result", data: { device: "wasm" } } });
+  await local;
+  const browser = engine.load({ recognition: "browser" });
+  expect(worker.postMessage).toHaveBeenLastCalledWith({ id: 2, type: "load", data: { recognition: "browser" } }, []);
+  worker.onmessage({ data: { id: 2, type: "result", data: { device: "wasm" } } });
+  await browser;
+  await engine.load({ recognition: "browser" });
+  expect(worker.postMessage).toHaveBeenCalledTimes(2);
+});
+
 test("canceling inference discards late audio without closing the loaded worker", async () => {
   const engine = new BrowserVoiceEngine();
   const controller = new AbortController();

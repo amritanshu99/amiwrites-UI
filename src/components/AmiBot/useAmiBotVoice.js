@@ -5,10 +5,11 @@ import VoiceStreamPlayer from "./voiceStreamPlayer";
 import { spokenTechnicalTerms } from "./pocketVoiceText";
 import BrowserVoiceEngine from "./browserVoiceEngine";
 import { decodeMono } from "./browserVoiceAudio";
+import BrowserSpeechInput, { hasBrowserSpeech } from "./browserSpeechInput";
 
 const quietState = { phase: "idle", level: 0, error: "", transcript: "", reply: "", responseMs: null, active: false, muted: false, progress: "", device: "" };
 
-export default function useAmiBotVoice({ onTurn, token }) {
+export default function useAmiBotVoice({ onTurn, token, recognitionMode = "local", speechLanguage = "en-IN", browserSpeechAccepted = false }) {
   const [state, setState] = useState(quietState);
   const [status, setStatus] = useState(null);
   const [modelReady, setModelReady] = useState(false);
@@ -21,6 +22,10 @@ export default function useAmiBotVoice({ onTurn, token }) {
     const r = runtime.current;
     r.generation += 1;
     r.active = false;
+    r.captureReady = false;
+    r.speechInput?.cancel();
+    r.speechInput = null;
+    r.sendRecording = null;
     r.controller?.abort();
     window.clearInterval(r.meter);
     window.clearTimeout(r.restart);
@@ -78,7 +83,7 @@ export default function useAmiBotVoice({ onTurn, token }) {
   }, [cleanup]);
   useEffect(() => {
     // Model downloads may continue in the background, but microphone capture may not.
-    const hide = () => { if (document.hidden && runtime.current.stream) stop(); };
+    const hide = () => { if (document.hidden && runtime.current.captureReady) stop(); };
     document.addEventListener("visibilitychange", hide);
     return () => document.removeEventListener("visibilitychange", hide);
   }, [stop]);
@@ -86,6 +91,9 @@ export default function useAmiBotVoice({ onTurn, token }) {
 
   const start = useCallback(async () => {
     if (!supported || !status?.ready || runtime.current.active) return;
+    // A browser recognition service may receive audio. Never enable it without
+    // the explicit checkbox, including retries with already downloaded models.
+    if (recognitionMode === "browser" && (!browserSpeechAccepted || !hasBrowserSpeech())) return;
     cleanup();
     const r = runtime.current;
     const session = r.generation;
@@ -95,20 +103,54 @@ export default function useAmiBotVoice({ onTurn, token }) {
     const isCurrent = (generation) => r.active && generation === r.generation;
     const update = (patch) => setState((previous) => ({ ...previous, ...patch }));
 
-    function listen() {
+    function listenWithBrowser() {
+      const generation = r.generation;
+      update({ phase: "connecting", transcript: "", reply: "", responseMs: null, error: "", level: 0 });
+      const input = new BrowserSpeechInput({
+        language: speechLanguage,
+        onListening: () => { if (isCurrent(generation)) update({ phase: "listening", muted: false }); },
+        onTranscript: (transcript) => { if (isCurrent(generation)) update({ transcript }); },
+        onComplete: (text, finishedAt) => {
+          if (r.speechInput === input) r.speechInput = null;
+          if (!isCurrent(generation)) return;
+          if (!text) {
+            // Avoid Android's repeated start beeps and silent retry loops.
+            r.muted = true;
+            update({ phase: "paused", muted: true, transcript: "I didn't catch that. Tap Resume and speak again." });
+            return;
+          }
+          processTurn(null, generation, finishedAt, { text, language: "en" });
+        },
+        onError: (error) => { if (isCurrent(generation)) fail(error); },
+      });
+      r.speechInput = input;
+      input.start();
+    }
+
+    async function listen() {
       if (!r.active || r.muted) return;
+      const generation = r.generation;
       try {
+        if (r.context.state === "suspended" || r.context.state === "interrupted") await r.context.resume();
+        if (!isCurrent(generation) || r.muted) return;
+        if (recognitionMode === "browser") { listenWithBrowser(); return; }
         r.stream.getAudioTracks().forEach((track) => { track.enabled = true; });
         const recorder = new window.MediaRecorder(r.stream, getRecordingOptions());
-        const generation = r.generation;
         const chunks = [];
         let size = 0;
         const started = performance.now();
         let lastSpeech = started;
         let speechFrames = 0;
         let heardSpeech = false;
+        let manualSend = false;
+        let peakLevel = 0;
         let noise = 0.006;
         r.recorder = recorder;
+        r.sendRecording = () => {
+          manualSend = true;
+          lastSpeech = performance.now();
+          if (recorder.state === "recording") recorder.stop();
+        };
         recorder.ondataavailable = ({ data }) => {
           if (data.size) { chunks.push(data); size += data.size; }
           if (size > 8 * 1024 * 1024 && recorder.state === "recording") recorder.stop();
@@ -119,7 +161,9 @@ export default function useAmiBotVoice({ onTurn, token }) {
           if (!isCurrent(generation)) return;
           r.stream.getAudioTracks().forEach((track) => { track.enabled = false; });
           update({ level: 0 });
-          if (!heardSpeech) {
+          r.sendRecording = null;
+          if ((!heardSpeech && (!manualSend || peakLevel < 0.001)) || !size) {
+            if (manualSend) update({ transcript: "The microphone was too quiet. Move closer and try again." });
             r.restart = window.setTimeout(listen, 150);
             return;
           }
@@ -131,6 +175,7 @@ export default function useAmiBotVoice({ onTurn, token }) {
         r.meter = window.setInterval(() => {
           if (recorder.state !== "recording") return;
           const rms = audioLevel(r.analyser, samples);
+          peakLevel = Math.max(peakLevel, rms);
           const now = performance.now();
           if (!heardSpeech && rms < 0.035) noise = noise * 0.96 + rms * 0.04;
           const threshold = Math.max(0.012, Math.min(0.05, noise * 2.8));
@@ -140,20 +185,23 @@ export default function useAmiBotVoice({ onTurn, token }) {
             lastSpeech = now;
           } else { speechFrames = 0; }
           update({ level: Math.min(1, rms * 7) });
-          if ((heardSpeech && now - lastSpeech > 1050 && now - started > 800) || now - started > 55000) recorder.stop();
+          if ((heardSpeech && now - lastSpeech > 1600 && now - started > 800) || now - started > 55000) recorder.stop();
         }, 50);
-      } catch (error) { fail(error); }
+      } catch (error) { if (isCurrent(generation)) fail(error); }
     }
 
-    async function processTurn(blob, generation, finishedSpeakingAt) {
+    async function processTurn(blob, generation, finishedSpeakingAt, browserTranscript) {
       const controller = new AbortController();
       r.controller = controller;
       const timeout = window.setTimeout(() => controller.abort(), 180000);
       try {
         update({ phase: "transcribing", transcript: "", reply: "", responseMs: null });
-        const audio = await decodeMono(blob, r.context, 16000);
-        if (!isCurrent(generation)) return;
-        const transcription = await r.engine.request("transcribe", { audio }, { signal: controller.signal });
+        let transcription = browserTranscript;
+        if (!transcription) {
+          const audio = await decodeMono(blob, r.context, 16000);
+          if (!isCurrent(generation)) return;
+          transcription = await r.engine.request("transcribe", { audio }, { signal: controller.signal });
+        }
         if (!isCurrent(generation)) return;
         if (!transcription.text?.trim()) { update({ transcript: "I didn’t catch that. Please try again." }); listen(); return; }
         update({ phase: "thinking", transcript: transcription.text });
@@ -164,6 +212,9 @@ export default function useAmiBotVoice({ onTurn, token }) {
         if (/[\u0900-\u097F]/.test(reply)) throw new Error("This voice model speaks English. Please ask for an English answer; your full reply is in the chat.");
         const parts = speechChunks(reply, 500);
         if (!parts.length) throw new Error("There is no spoken text in this reply. You can read it in the chat.");
+        // Android can suspend playback when the native recognizer takes audio focus.
+        await r.context.resume();
+        if (!isCurrent(generation)) return;
         const player = new VoiceStreamPlayer(r.context, {
           words: spokenTechnicalTerms(parts.join(" ")).split(/\s+/).length,
           onStarted: () => { if (isCurrent(generation)) update({ phase: "speaking", responseMs: Math.round(performance.now() - finishedSpeakingAt) }); },
@@ -219,9 +270,9 @@ export default function useAmiBotVoice({ onTurn, token }) {
         const audio = await decodeMono(reference, r.context, 24000, 30);
         if (!isCurrent(session)) return;
         if (!r.engine?.worker) r.engine = new BrowserVoiceEngine();
-        loadingProgress("Loading faster voice models. The first download is about 230–360 MB…");
+        loadingProgress(`Loading voice models. The first download is about ${recognitionMode === "browser" ? "150–200" : "230–360"} MB…`);
         const aggregateModels = new Set();
-        const loaded = await r.engine.load({ signal: controller.signal, onProgress: (progress) => {
+        const loaded = await r.engine.load({ recognition: recognitionMode, signal: controller.signal, onProgress: (progress) => {
           if (!isCurrent(session)) return;
           if (progress.message) { loadingProgress(progress.message); return; }
           const model = progress.name || "voice";
@@ -248,13 +299,21 @@ export default function useAmiBotVoice({ onTurn, token }) {
       } finally { window.clearTimeout(timeout); window.clearTimeout(progressNotice); }
       if (document.hidden) { stop(); return; }
       update({ phase: "connecting", progress: "" });
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }, video: false });
+      if (recognitionMode === "browser") {
+        // Let Chrome own the mic. A simultaneous MediaRecorder can contend for
+        // Android audio capture and is unnecessary for native recognition.
+        r.captureReady = true;
+        listen();
+        return;
+      }
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: { channelCount: { ideal: 1 }, echoCancellation: true, noiseSuppression: true, autoGainControl: true }, video: false });
       if (!isCurrent(session) || document.hidden) {
         stream.getTracks().forEach((track) => track.stop());
         if (isCurrent(session)) stop();
         return;
       }
       r.stream = stream;
+      r.captureReady = true;
       stream.getAudioTracks().forEach((track) => { track.onended = () => { if (r.active) fail(new Error("The microphone disconnected. Reconnect it and start again.")); }; });
       r.analyser = r.context.createAnalyser();
       r.analyser.fftSize = 512;
@@ -265,12 +324,15 @@ export default function useAmiBotVoice({ onTurn, token }) {
       if (isCurrent(session)) fail(loadingTimedOut && error.name === "AbortError"
         ? new Error("Voice setup timed out. Keep this tab open and try again on a stable connection.") : error);
     }
-  }, [cleanup, fail, status, stop, supported]);
+  }, [browserSpeechAccepted, cleanup, fail, recognitionMode, speechLanguage, status, stop, supported]);
 
   const interrupt = useCallback(() => {
     const r = runtime.current;
-    if (!r.active || !r.stream) return;
+    if (!r.active || !r.captureReady) return;
     r.generation += 1;
+    r.speechInput?.cancel();
+    r.speechInput = null;
+    r.sendRecording = null;
     r.controller?.abort();
     window.clearInterval(r.meter);
     window.clearTimeout(r.restart);
@@ -284,9 +346,12 @@ export default function useAmiBotVoice({ onTurn, token }) {
 
   const toggleMute = useCallback(() => {
     const r = runtime.current;
-    if (!r.active || !r.stream) return;
+    if (!r.active || !r.captureReady) return;
     if (r.muted) { r.muted = false; r.listen?.(); return; }
     r.generation += 1;
+    r.speechInput?.cancel();
+    r.speechInput = null;
+    r.sendRecording = null;
     r.controller?.abort();
     window.clearInterval(r.meter);
     window.clearTimeout(r.restart);
@@ -294,12 +359,13 @@ export default function useAmiBotVoice({ onTurn, token }) {
     r.player?.stop();
     r.player = null;
     r.muted = true;
-    r.stream.getAudioTracks().forEach((track) => { track.enabled = false; });
+    r.stream?.getAudioTracks().forEach((track) => { track.enabled = false; });
     setState((previous) => ({ ...previous, phase: "paused", muted: true, level: 0 }));
   }, []);
 
   const sendNow = useCallback(() => {
-    if (runtime.current.recorder?.state === "recording") runtime.current.recorder.stop();
+    runtime.current.speechInput?.stop();
+    runtime.current.sendRecording?.();
   }, []);
 
   return { ...state, modelReady, status, supported, start, stop, interrupt, toggleMute, sendNow, checkStatus };

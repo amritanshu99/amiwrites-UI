@@ -12,7 +12,7 @@ let reportDownload;
 env.fetch = createResumableModelFetch(env.fetch, {
   onRetry: () => reportDownload?.({ status: "stage", message: "The connection paused. Resuming your model download…" }),
 });
-let transcriber, recognitionDevice, voiceReady = false;
+let transcriber, recognitionDevice, loaded = false, voiceReady = false;
 let queue = Promise.resolve();
 let running;
 let warmed = false;
@@ -22,9 +22,18 @@ async function execute({ id, type, data }) {
   const progress = (value) => globalThis.postMessage({ id, type: "progress", data: value });
   if (type === "load") {
     reportDownload = progress;
+    const voice = await pocketVoice.load(progress);
+    if (data.recognition === "browser") {
+      // Chrome handles input after explicit consent. Keep only cloned TTS in
+      // memory on phones, with no unnecessary Whisper download or GPU session.
+      if (transcriber) await transcriber.dispose();
+      transcriber = null;
+      recognitionDevice = "browser";
+      loaded = true;
+      return { ...voice, recognitionDevice };
+    }
     const adapter = await navigator.gpu?.requestAdapter().catch(() => null);
     const device = adapter ? "webgpu" : "wasm";
-    const voice = await pocketVoice.load(progress);
     progress({ status: "stage", message: "Loading speech recognition…" });
     if (!transcriber) {
       recognitionDevice = device;
@@ -46,9 +55,10 @@ async function execute({ id, type, data }) {
         transcriber = await recognize("wasm");
       }
     }
+    loaded = true;
     return { ...voice, recognitionDevice };
   }
-  if (!transcriber) throw new Error("Download the voice models first.");
+  if (!loaded) throw new Error("Download the voice models first.");
   if (type === "reference") {
     if (data.audio.length < 120000 || data.audio.length > 720000) throw new Error("Use a 5–30 second reference recording.");
     await pocketVoice.setReference(data.audio);
@@ -60,6 +70,7 @@ async function execute({ id, type, data }) {
   const criteria = new InterruptableStoppingCriteria();
   running = { id, criteria };
   if (type === "transcribe") {
+    if (!transcriber) throw new Error("Choose on-device recognition and start again.");
     if (!data.audio.length || data.audio.length > 60 * 16000) throw new Error("Please keep voice turns under one minute.");
     const result = await transcriber(data.audio, { chunk_length_s: 30, stride_length_s: 5, stopping_criteria: [criteria] });
     return { text: result.text.trim(), language: "en" };

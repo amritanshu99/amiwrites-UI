@@ -19,9 +19,10 @@
 .amibot-voice-eyebrow { color: #8daebc; font-size: 9px; letter-spacing: .22em; margin: 0 0 12px; }
 .amibot-voice h3 { color: #f0faff; font-weight: 500; font-size: clamp(23px, 3vw, 32px); letter-spacing: -.035em; line-height: 1.2; margin: 0 0 12px; }
 .amibot-voice-description { color: #9fb6c4; font-size: 13px; line-height: 1.7; max-width: 340px; margin: 0; }
-.amibot-voice-options { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-top: 18px; }
+.amibot-voice-options { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-top: 18px; max-width: 100%; }
 .amibot-voice-options label { display: flex; flex-direction: column; text-align: left; gap: 7px; color: #9bb3c3; font-size: 10px; }
-.amibot-voice-options select { background: #182c3a; border: 1px solid #ffffff14; border-radius: 10px; padding: 10px 12px; color: #d4e9f1; font-size: 12px; }
+.amibot-voice-options select { background: #182c3a; border: 1px solid #ffffff14; border-radius: 10px; padding: 10px 12px; color: #d4e9f1; font-size: 16px; max-width: 100%; min-width: 0; }
+.amibot-voice-options label { min-width: 0; max-width: 100%; }
 .amibot-voice-download { display: flex; align-items: flex-start; gap: 10px; max-width: 420px; margin-top: 16px; text-align: left; font-size: 12px; line-height: 1.6; color: #adc5d0; }
 .amibot-voice-download input { margin-top: 4px; flex-shrink: 0; accent-color: #7de5ee; }
 .amibot-voice-progress { margin-top: 18px; color: #a5edf0; font-size: 12px; line-height: 1.7; }

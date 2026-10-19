@@ -26,9 +26,9 @@ class Recorder {
 }
 
 class Context {
-  constructor() { contexts.push(this); this.close = jest.fn(async () => {}); }
+  constructor() { contexts.push(this); this.state = "running"; this.close = jest.fn(async () => {}); }
   get currentTime() { return performance.now() / 1000; }
-  resume = async () => {};
+  resume = jest.fn(async () => { this.state = "running"; });
   createAnalyser = () => ({ fftSize: 256, getFloatTimeDomainData: (samples) => samples.fill(rms), connect: jest.fn(), disconnect: jest.fn() });
   createMediaStreamSource = () => ({ connect: jest.fn(), disconnect: jest.fn() });
   decodeAudioData = async () => ({ duration: 1 });
@@ -57,13 +57,132 @@ beforeEach(() => {
   global.fetch = jest.fn(async (url) => url.endsWith("/status") ? ready() : { ok: true, blob: async () => new Blob(["reference"]) });
 });
 
-afterEach(() => { jest.useRealTimers(); jest.restoreAllMocks(); });
+afterEach(() => { delete window.webkitSpeechRecognition; jest.useRealTimers(); jest.restoreAllMocks(); });
 
-async function setup(onTurn = jest.fn(async () => "Hello from AmiBot.")) {
-  const view = renderHook(() => useAmiBotVoice({ onTurn, token: "", tone: "natural" }));
+async function setup(onTurn = jest.fn(async () => "Hello from AmiBot."), options = {}) {
+  const view = renderHook(() => useAmiBotVoice({ onTurn, token: "", ...options }));
   await waitFor(() => expect(view.result.current.status?.ready).toBe(true));
   return view;
 }
+
+function nativeRecognition() {
+  const instances = [];
+  window.webkitSpeechRecognition = jest.fn(() => {
+    const input = { start: jest.fn(() => input.onstart?.()), stop: jest.fn(), abort: jest.fn() };
+    instances.push(input);
+    return input;
+  });
+  return instances;
+}
+
+test("browser speech requires consent even when the API is available", async () => {
+  nativeRecognition();
+  const { result, unmount } = await setup(undefined, { recognitionMode: "browser" });
+  await act(async () => result.current.start());
+  expect(window.webkitSpeechRecognition).not.toHaveBeenCalled();
+  expect(engine.load).not.toHaveBeenCalled();
+  expect(mic).not.toHaveBeenCalled();
+  unmount();
+});
+
+test("phone recognition owns the mic, previews words, then uses the cloned voice after native input ends", async () => {
+  const inputs = nativeRecognition();
+  const onTurn = jest.fn(async () => "Here are the skills.");
+  const { result, unmount } = await setup(onTurn, { recognitionMode: "browser", browserSpeechAccepted: true, speechLanguage: "en-IN" });
+  jest.useFakeTimers();
+  await act(async () => result.current.start());
+  expect(result.current.phase).toBe("listening");
+  expect(engine.load).toHaveBeenCalledWith(expect.objectContaining({ recognition: "browser" }));
+  expect(mic).not.toHaveBeenCalled();
+  act(() => inputs[0].onresult({ results: [Object.assign([{ transcript: "What skills" }], { isFinal: false })] }));
+  expect(result.current.transcript).toBe("What skills");
+  expect(onTurn).not.toHaveBeenCalled();
+  act(() => inputs[0].onresult({ results: [Object.assign([{ transcript: "What skills are listed?" }], { isFinal: true })] }));
+  expect(onTurn).not.toHaveBeenCalled();
+  await act(async () => inputs[0].onend());
+  expect(onTurn).toHaveBeenCalledWith("What skills are listed?", expect.objectContaining({ language: "en" }));
+  expect(engine.request.mock.calls.some(([type]) => type === "transcribe")).toBe(false);
+  expect(engine.request).toHaveBeenCalledWith("speak", { text: "Here are the skills." }, expect.any(Object));
+  expect(result.current.phase).toBe("speaking");
+  await act(async () => { sources[0].onended(); });
+  await act(async () => { jest.advanceTimersByTime(300); });
+  expect(inputs).toHaveLength(2);
+  expect(result.current.phase).toBe("listening");
+  unmount();
+  expect(inputs[1].abort).toHaveBeenCalled();
+});
+
+test("native pause/resume, empty turns and hidden tabs never send partial or stale words", async () => {
+  const inputs = nativeRecognition();
+  const onTurn = jest.fn();
+  const { result, unmount } = await setup(onTurn, { recognitionMode: "browser", browserSpeechAccepted: true });
+  await act(async () => result.current.start());
+  const lateEnd = inputs[0].onend;
+  act(() => result.current.toggleMute());
+  expect(inputs[0].abort).toHaveBeenCalled();
+  act(() => lateEnd());
+  expect(result.current.phase).toBe("paused");
+  act(() => result.current.toggleMute());
+  expect(inputs).toHaveLength(2);
+  act(() => inputs[1].onend());
+  expect(result.current.phase).toBe("paused");
+  expect(result.current.transcript).toMatch(/Tap Resume/);
+  act(() => result.current.toggleMute());
+  act(() => {
+    jest.spyOn(document, "hidden", "get").mockReturnValue(true);
+    document.dispatchEvent(new Event("visibilitychange"));
+  });
+  expect(inputs[2].abort).toHaveBeenCalled();
+  expect(result.current.active).toBe(false);
+  expect(onTurn).not.toHaveBeenCalled();
+  unmount();
+});
+
+test("Send now retains quiet speech below the automatic detector threshold", async () => {
+  const onTurn = jest.fn(async () => "I heard you.");
+  const { result, unmount } = await setup(onTurn);
+  jest.useFakeTimers();
+  rms = 0.005;
+  await act(async () => { await result.current.start(); jest.advanceTimersByTime(500); result.current.sendNow(); });
+  expect(onTurn).toHaveBeenCalledTimes(1);
+  unmount();
+});
+
+test("Send now on silence does not ask Whisper to invent words", async () => {
+  const onTurn = jest.fn();
+  const { result, unmount } = await setup(onTurn);
+  jest.useFakeTimers();
+  rms = 0;
+  await act(async () => { await result.current.start(); jest.advanceTimersByTime(500); result.current.sendNow(); });
+  expect(onTurn).not.toHaveBeenCalled();
+  expect(engine.request.mock.calls.some(([type]) => type === "transcribe")).toBe(false);
+  expect(result.current.transcript).toMatch(/too quiet/);
+  unmount();
+});
+
+test("a mobile microphone route change resumes the suspended audio context before metering", async () => {
+  mic.mockImplementationOnce(async () => {
+    contexts[0].state = "suspended";
+    return { getTracks: () => tracks, getAudioTracks: () => tracks };
+  });
+  const { result, unmount } = await setup();
+  await act(async () => result.current.start());
+  expect(contexts[0].resume).toHaveBeenCalledTimes(2);
+  expect(result.current.phase).toBe("listening");
+  unmount();
+});
+
+test("a natural mid-sentence pause does not cut off local recording", async () => {
+  const onTurn = jest.fn(async () => "I heard you.");
+  const { result, unmount } = await setup(onTurn);
+  jest.useFakeTimers();
+  await act(async () => { await result.current.start(); jest.advanceTimersByTime(200); rms = 0; jest.advanceTimersByTime(1200); });
+  expect(result.current.phase).toBe("listening");
+  expect(onTurn).not.toHaveBeenCalled();
+  await act(async () => { rms = 0.1; jest.advanceTimersByTime(200); rms = 0; jest.advanceTimersByTime(1700); });
+  expect(onTurn).toHaveBeenCalledTimes(1);
+  unmount();
+});
 
 test("a pause after speech sends the turn, plays the reply, then resumes listening", async () => {
   const onTurn = jest.fn(async () => "Hello from AmiBot.");
@@ -71,7 +190,7 @@ test("a pause after speech sends the turn, plays the reply, then resumes listeni
   jest.useFakeTimers();
   await act(async () => { await result.current.start(); });
   expect(result.current.phase).toBe("listening");
-  await act(async () => { jest.advanceTimersByTime(200); rms = 0; jest.advanceTimersByTime(1200); });
+  await act(async () => { jest.advanceTimersByTime(200); rms = 0; jest.advanceTimersByTime(1700); });
   expect(onTurn).toHaveBeenCalledWith("Hello", expect.objectContaining({ language: "en" }));
   expect(result.current.phase).toBe("speaking");
   expect(tracks[0].enabled).toBe(false);

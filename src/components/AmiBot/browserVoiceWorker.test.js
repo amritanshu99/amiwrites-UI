@@ -60,6 +60,24 @@ test("devices without WebGPU load the CPU-compatible models", async () => {
   expect(library.pipeline).toHaveBeenCalledWith(expect.any(String), expect.any(String), expect.objectContaining({ device: "wasm" }));
 });
 
+test("browser recognition skips Whisper downloads but still prepares and speaks the cloned voice", async () => {
+  expect((await send("load", { recognition: "browser" })).data).toEqual({ device: "wasm-threads", recognitionDevice: "browser" });
+  expect(library.pipeline).not.toHaveBeenCalled();
+  await send("reference", { audio: new Float32Array(120000) });
+  await send("warmup");
+  expect((await send("speak", { text: "My cloned voice." })).type).toBe("result");
+  expect(pocket.generate).toHaveBeenCalledTimes(2);
+  expect((await send("transcribe", { audio: new Float32Array(16000) })).type).toBe("error");
+});
+
+test("switching recognition modes releases local sessions and can load them again", async () => {
+  await send("load");
+  await send("load", { recognition: "browser" });
+  expect(recognizer.dispose).toHaveBeenCalledTimes(1);
+  await send("load", { recognition: "local" });
+  expect(library.pipeline).toHaveBeenCalledTimes(2);
+});
+
 test("a failed CPU warm-up is reported instead of pretending setup succeeded", async () => {
   navigator.gpu.requestAdapter.mockResolvedValue(null);
   recognizer.mockRejectedValueOnce(new Error("Not enough memory"));

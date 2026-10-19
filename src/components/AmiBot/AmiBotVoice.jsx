@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { ArrowLeft, AudioLines, Mic, MicOff, PhoneOff, SendHorizontal } from "lucide-react";
 import useAmiBotVoice from "./useAmiBotVoice";
+import { hasBrowserSpeech, preferredSpeechLanguage, preferredSpeechMode } from "./browserSpeechInput";
 import "./AmiBotVoice.css";
 
 const phases = {
@@ -18,7 +19,10 @@ const phases = {
 
 export default function AmiBotVoice({ onClose, onTurn, token }) {
   const [downloadAccepted, setDownloadAccepted] = useState(false);
-  const voice = useAmiBotVoice({ onTurn, token });
+  const [recognitionMode, setRecognitionMode] = useState(preferredSpeechMode);
+  const [speechLanguage, setSpeechLanguage] = useState(preferredSpeechLanguage);
+  const [browserSpeechAccepted, setBrowserSpeechAccepted] = useState(false);
+  const voice = useAmiBotVoice({ onTurn, token, recognitionMode, speechLanguage, browserSpeechAccepted });
   const closeRef = useRef(null);
   const [title, description] = voice.phase === "idle" && voice.modelReady
     ? ["Ready to talk", "Start to turn on your microphone and continue."] : phases[voice.phase];
@@ -54,10 +58,32 @@ export default function AmiBotVoice({ onClose, onTurn, token }) {
         <h3 aria-live="polite">{title}</h3>
         <p className="amibot-voice-description">{description}</p>
 
+        {!voice.active && hasBrowserSpeech() && <>
+          <div className="amibot-voice-options">
+            <label>Speech recognition
+              <select value={recognitionMode} onChange={(event) => setRecognitionMode(event.target.value)}>
+                <option value="browser">Browser speech (recommended on phones)</option>
+                <option value="local">On-device English</option>
+              </select>
+            </label>
+            {recognitionMode === "browser" && <label>Speaking language
+              <select value={speechLanguage} onChange={(event) => setSpeechLanguage(event.target.value)}>
+                <option value="en-IN">English (India)</option>
+                <option value="en-US">English (US)</option>
+                <option value="en-GB">English (UK)</option>
+                <option value="hi-IN">Hindi (India)</option>
+              </select>
+            </label>}
+          </div>
+          {recognitionMode === "browser" && <label className="amibot-voice-download">
+            <input type="checkbox" checked={browserSpeechAccepted} onChange={(event) => setBrowserSpeechAccepted(event.target.checked)} />
+            <span>Allow my browser's speech service to process microphone audio. Internet is required. AmiBot still replies in Amritanshu's cloned voice, in English.</span>
+          </label>}
+        </>}
         {!voice.active && !voice.modelReady && (
           <label className="amibot-voice-download">
             <input type="checkbox" checked={downloadAccepted} onChange={(event) => setDownloadAccepted(event.target.checked)} />
-            <span>Download about 230–360 MB for your cloned voice. English only. Models are cached when storage is available. Keep this page open while speaking.</span>
+            <span>Download about {recognitionMode === "browser" ? "150–200" : "230–360"} MB for voice mode. Models are cached when storage is available. Keep this page open while speaking.</span>
           </label>
         )}
         {voice.phase === "loading" && <p className="amibot-voice-progress" role="status">{voice.progress}</p>}
@@ -90,9 +116,9 @@ export default function AmiBotVoice({ onClose, onTurn, token }) {
             <button type="button" className="amibot-voice-control amibot-voice-end" onClick={voice.stop} aria-label="End voice conversation"><PhoneOff size={21} /></button>
           </div>
         ) : (
-          <button type="button" className="amibot-voice-primary" onClick={voice.start} disabled={!voice.supported || !voice.status?.ready || (!voice.modelReady && !downloadAccepted)}><Mic size={19} /> {voice.modelReady ? "Start conversation" : "Download & start"}</button>
+          <button type="button" className="amibot-voice-primary" onClick={voice.start} disabled={!voice.supported || !voice.status?.ready || (!voice.modelReady && !downloadAccepted) || (recognitionMode === "browser" && !browserSpeechAccepted)}><Mic size={19} /> {voice.modelReady ? "Start conversation" : "Download & start"}</button>
         )}
-        <p><a href="/voice/NOTICE.txt" target="_blank" rel="noreferrer">Voice credits</a> · AI-generated voice · English · {voice.active ? "Microphone pauses during replies" : "Audio stays on your device; text goes to AmiBot"}</p>
+        <p><a href="/voice/NOTICE.txt" target="_blank" rel="noreferrer">Voice credits</a> · AI-generated voice · English replies · {recognitionMode === "browser" ? "Input audio uses your browser's speech service; text goes to AmiBot" : "Audio stays on your device; text goes to AmiBot"}</p>
       </div>
     </section>
   );

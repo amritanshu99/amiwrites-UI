@@ -82,11 +82,12 @@ export default class BrowserVoiceEngine {
     });
   }
 
-  async load(options) {
-    if (this.ready) return { device: this.device };
-    const result = await this.request("load", {}, options);
+  async load({ recognition = "local", ...options } = {}) {
+    if (this.ready && this.recognition === recognition) return { device: this.device };
+    const result = await this.request("load", { recognition }, options);
     this.ready = true;
     this.device = result.device;
+    this.recognition = recognition;
     return result;
   }
 
