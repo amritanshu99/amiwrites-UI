@@ -9,7 +9,14 @@ import {
 } from "../../utils/careerJourney";
 
 const companyLogos = {
-  "Hitachi Digital": { src: "/hitachi-digital-logo.png", width: 2837, height: 640 },
+  "Hitachi Digital": {
+    src: "/hitachi-digital-logo.png",
+    width: 2837,
+    height: 640,
+    frameClassName:
+      "h-24 w-24 rounded-2xl border-2 border-black bg-[#222222] p-2 sm:h-28 sm:w-28 sm:rounded-[1.25rem]",
+    imageClassName: "brightness-0 invert",
+  },
   "ConQsys IT (P) Ltd.": { src: "/ConQsysLogo-Red.png" },
 };
 
@@ -56,7 +63,9 @@ const CompanyLogo = ({ company }) => {
   if (!logo) return null;
 
   return (
-    <div className="flex h-14 w-36 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
+    <div className={`flex shrink-0 items-center justify-center shadow-sm ${
+      logo.frameClassName || "h-14 w-36 rounded-xl border border-slate-200 bg-white px-4 py-3"
+    }`}>
       <img
         src={publicAsset(logo.src)}
         alt={`${company} logo`}
@@ -64,7 +73,7 @@ const CompanyLogo = ({ company }) => {
         height={logo.height}
         decoding="async"
         loading="lazy"
-        className="h-full w-full object-contain"
+        className={`h-full w-full object-contain ${logo.imageClassName || ""}`}
       />
     </div>
   );
