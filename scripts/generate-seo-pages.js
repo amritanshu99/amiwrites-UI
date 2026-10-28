@@ -70,7 +70,7 @@ const personEntity = {
     "https://www.instagram.com/ami.mishra99/",
     "https://www.facebook.com/Ami.Mishra99",
   ],
-  worksFor: { "@type": "Organization", name: "GlobalLogic" },
+  worksFor: { "@type": "Organization", name: "Hitachi Digital" },
   knowsAbout: [
     "JavaScript",
     "React",

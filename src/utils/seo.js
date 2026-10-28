@@ -100,7 +100,7 @@ const personEntity = () => ({
   sameAs: SOCIAL_LINKS,
   worksFor: {
     "@type": "Organization",
-    name: "GlobalLogic",
+    name: "Hitachi Digital",
   },
   alumniOf: [
     {

@@ -2,32 +2,23 @@ import React, { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { FaMapMarkerAlt } from "react-icons/fa";
 import {
+  countCareerMonths,
   formatCareerDateRange,
   formatCareerTenure,
   getCompanyCareerSpan,
 } from "../../utils/careerJourney";
 
 const companyLogos = {
-  GlobalLogic: {
-    src: "/GL.png",
-    frameClassName: "h-14 w-14 sm:h-16 sm:w-16",
-  },
-  "ConQsys IT (P) Ltd.": {
-    src: "/ConQsysLogo-Red.png",
-    frameClassName: "h-14 w-24 sm:h-16 sm:w-28",
-  },
+  "Hitachi Digital": { src: "/hitachi-digital-logo.png", width: 2837, height: 640 },
+  "ConQsys IT (P) Ltd.": { src: "/ConQsysLogo-Red.png" },
 };
 
 const cardVariants = {
-  hidden: { opacity: 0, y: 20, scale: 0.985 },
+  hidden: { opacity: 0, y: 20 },
   visible: {
     opacity: 1,
     y: 0,
-    scale: 1,
-    transition: {
-      duration: 0.56,
-      ease: [0.22, 1, 0.36, 1],
-    },
+    transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] },
   },
 };
 
@@ -36,7 +27,6 @@ const MAX_TIMER_DELAY_MS = 2_147_000_000;
 
 const getDelayToNextMonth = (now) => {
   const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-
   return Math.min(
     Math.max(nextMonth.getTime() - now.getTime() + 1000, 1000),
     MAX_TIMER_DELAY_MS,
@@ -48,17 +38,13 @@ const useCareerClock = () => {
 
   useEffect(() => {
     let timer;
-
     const scheduleNextMonth = () => {
-      const now = new Date();
       timer = window.setTimeout(() => {
         setAsOf(new Date());
         scheduleNextMonth();
-      }, getDelayToNextMonth(now));
+      }, getDelayToNextMonth(new Date()));
     };
-
     scheduleNextMonth();
-
     return () => window.clearTimeout(timer);
   }, []);
 
@@ -67,16 +53,15 @@ const useCareerClock = () => {
 
 const CompanyLogo = ({ company }) => {
   const logo = companyLogos[company];
-
   if (!logo) return null;
 
   return (
-    <div
-      className={`${logo.frameClassName} flex shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-2 shadow-[0_10px_28px_rgba(15,23,42,0.1)] ring-1 ring-white dark:border-white/10 dark:bg-white/[0.96] dark:ring-white/10`}
-    >
+    <div className="flex h-14 w-36 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
       <img
         src={publicAsset(logo.src)}
         alt={`${company} logo`}
+        width={logo.width}
+        height={logo.height}
         decoding="async"
         loading="lazy"
         className="h-full w-full object-contain"
@@ -91,138 +76,128 @@ export default function CareerJourney({ companies, reduceMotion = false }) {
     () => companies.map((company) => getCompanyCareerSpan(company.roles)),
     [companies],
   );
+  const allRoles = companies.flatMap((company) => company.roles);
+  const careerSpan = getCompanyCareerSpan(allRoles);
+  const careerYears = Math.floor(
+    countCareerMonths(careerSpan.startDate, careerSpan.endDate, asOf) / 12,
+  );
+  const highlights = [
+    {
+      value: careerYears > 0 ? `${careerYears}+` : "<1",
+      label: "Years of experience",
+    },
+    { value: companies.length, label: "Companies" },
+    { value: allRoles.length, label: "Roles along the way" },
+  ];
 
   return (
-    <div className="mt-9 space-y-5 sm:space-y-6">
-      {companies.map((company, companyIndex) => {
-        const companySpan = companySpans[companyIndex];
-        const companyDateRange = formatCareerDateRange(
-          companySpan.startDate,
-          companySpan.endDate,
-        );
-        const companyTenure = formatCareerTenure(
-          companySpan.startDate,
-          companySpan.endDate,
-          asOf,
-        );
+    <div className="mt-8 sm:mt-10">
+      <dl className="mb-8 grid grid-cols-3 divide-x divide-slate-200 rounded-2xl border border-slate-200/80 bg-white/75 py-5 dark:divide-white/10 dark:border-white/10 dark:bg-white/[0.035] sm:mb-10 sm:py-6">
+        {highlights.map(({ value, label }) => (
+          <div key={label} className="flex min-w-0 flex-col gap-1.5 px-3 sm:px-6">
+            <dt className="order-2 text-[0.6875rem] font-medium leading-4 text-slate-500 dark:text-zinc-400 sm:text-xs sm:leading-5">{label}</dt>
+            <dd className="text-2xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-3xl">{value}</dd>
+          </div>
+        ))}
+      </dl>
 
-        return (
-          <motion.article
-            key={company.company}
-            variants={cardVariants}
-            initial={reduceMotion ? false : "hidden"}
-            whileInView={reduceMotion ? undefined : "visible"}
-            viewport={{ once: true, amount: 0.12 }}
-            aria-labelledby={`career-company-${companyIndex}`}
-            className="group relative min-w-0 overflow-hidden rounded-[1.75rem] border border-white/90 bg-slate-50/[0.94] shadow-[0_20px_52px_rgba(15,23,42,0.08)] ring-1 ring-slate-900/[0.03] transition duration-300 hover:-translate-y-0.5 hover:border-sky-200 hover:shadow-[0_26px_58px_rgba(14,116,144,0.12)] dark:border-white/10 dark:bg-zinc-950/[0.95] dark:ring-white/[0.04] dark:hover:border-cyan-300/25"
-          >
-            <div
-              className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-sky-400/70 to-transparent dark:via-cyan-300/50"
-              aria-hidden="true"
-            />
+      <div className="space-y-6">
+        {companies.map((company, companyIndex) => {
+          const companySpan = companySpans[companyIndex];
+          const isCurrentCompany = company.roles.some((role) => !role.endDate);
+          const companyDateRange = formatCareerDateRange(companySpan.startDate, companySpan.endDate);
+          const companyTenure = formatCareerTenure(companySpan.startDate, companySpan.endDate, asOf);
 
-            <header className="p-5 sm:p-7">
-              <div className="flex min-w-0 items-start gap-4 sm:gap-5">
+          return (
+            <motion.article
+              key={company.company}
+              variants={cardVariants}
+              initial={reduceMotion ? false : "hidden"}
+              whileInView={reduceMotion ? undefined : "visible"}
+              viewport={{ once: true, amount: 0.12 }}
+              aria-labelledby={`career-company-${companyIndex}`}
+              className={`relative min-w-0 overflow-hidden rounded-3xl border bg-white shadow-[0_16px_48px_-24px_rgba(15,23,42,0.2)] dark:bg-zinc-950 lg:grid lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.6fr)] ${
+                isCurrentCompany
+                  ? "border-sky-200 dark:border-cyan-300/25"
+                  : "border-slate-200 dark:border-white/10"
+              }`}
+            >
+              <header className={`min-w-0 border-b p-5 sm:p-7 lg:border-b-0 lg:border-r lg:p-8 ${
+                isCurrentCompany
+                  ? "border-sky-100 bg-gradient-to-br from-sky-50/90 via-slate-50 to-white dark:border-cyan-300/10 dark:from-cyan-300/[0.07] dark:via-zinc-950 dark:to-zinc-950"
+                  : "border-slate-100 bg-slate-50/80 dark:border-white/10 dark:bg-white/[0.025]"
+              }`}>
+                <p className={`mb-5 flex items-center gap-2 text-[0.6875rem] font-bold uppercase tracking-[0.16em] ${
+                  isCurrentCompany ? "text-sky-700 dark:text-cyan-300" : "text-slate-500 dark:text-zinc-400"
+                }`}>
+                  <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${isCurrentCompany ? "bg-sky-600 dark:bg-cyan-300" : "bg-slate-400 dark:bg-zinc-500"}`} aria-hidden="true" />
+                  {isCurrentCompany ? "Current chapter" : "Earlier chapter"}
+                </p>
                 <CompanyLogo company={company.company} />
-
-                <div className="min-w-0 flex-1">
-                  <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
-                    <div className="min-w-0">
-                      <h3
-                        id={`career-company-${companyIndex}`}
-                        className="break-words text-lg font-bold tracking-tight text-slate-950 dark:text-white sm:text-xl"
-                      >
-                        {company.company}
-                      </h3>
-                      <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs font-semibold text-slate-500 dark:text-zinc-400 sm:text-sm">
-                        <span>{company.employmentType}</span>
-                        <span aria-hidden="true">·</span>
-                        <span>{companyDateRange}</span>
-                      </p>
-                    </div>
-
-                    <span className="w-fit shrink-0 rounded-full border border-sky-200/80 bg-sky-50 px-3 py-1 text-xs font-bold text-sky-800 dark:border-cyan-300/20 dark:bg-cyan-300/10 dark:text-cyan-200">
-                      {companyTenure}
-                    </span>
-                  </div>
-
-                  <p className="mt-2.5 flex items-start gap-2 text-xs leading-5 text-slate-500 dark:text-zinc-400 sm:text-sm">
-                    <FaMapMarkerAlt
-                      className="mt-0.5 shrink-0 text-sky-600 dark:text-cyan-300"
-                      aria-hidden="true"
-                    />
-                    <span>{company.location}</span>
+                <h3 id={`career-company-${companyIndex}`} className="mt-5 break-words text-xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-2xl">
+                  {company.company}
+                </h3>
+                {company.previousName && (
+                  <p className="mt-1 text-xs leading-5 text-slate-500 dark:text-zinc-400">Previously {company.previousName}</p>
+                )}
+                <p className="mt-4 text-sm font-semibold leading-6 text-slate-700 dark:text-zinc-200">{companyDateRange}</p>
+                <p className="mt-0.5 flex flex-wrap gap-x-2 gap-y-1 text-xs leading-5 text-slate-500 dark:text-zinc-400">
+                  <span>{companyTenure}</span>
+                  {company.employmentType && <><span aria-hidden="true">·</span><span>{company.employmentType}</span></>}
+                </p>
+                {company.location && (
+                  <p className="mt-4 flex items-start gap-2 text-xs leading-5 text-slate-500 dark:text-zinc-400">
+                    <FaMapMarkerAlt className="mt-1 shrink-0" aria-hidden="true" />
+                    <span className="min-w-0 break-words">{company.location}</span>
                   </p>
-                </div>
-              </div>
-            </header>
+                )}
+              </header>
 
-            <div className="border-t border-slate-200/80 bg-white/55 px-5 py-5 dark:border-white/10 dark:bg-white/[0.025] sm:px-7 sm:py-6">
-              <ol
-                className="ml-1"
-                aria-label={`${company.company} designation history`}
-              >
-                {company.roles.map((role, roleIndex) => {
-                  const isCurrent = !role.endDate;
-                  const roleDateRange = formatCareerDateRange(
-                    role.startDate,
-                    role.endDate,
-                  );
-                  const roleTenure = formatCareerTenure(
-                    role.startDate,
-                    role.endDate,
-                    asOf,
-                  );
+              <div className="min-w-0 p-5 sm:p-7 lg:p-8">
+                <p className="mb-5 text-[0.6875rem] font-bold uppercase tracking-[0.16em] text-slate-500 dark:text-zinc-400">Role progression</p>
+                <ol aria-label={`${company.company} designation history`}>
+                  {company.roles.map((role, roleIndex) => {
+                    const isCurrent = !role.endDate;
+                    const roleDateRange = formatCareerDateRange(role.startDate, role.endDate);
+                    const roleTenure = formatCareerTenure(role.startDate, role.endDate, asOf);
 
-                  return (
-                    <li
-                      key={`${role.title}-${role.startDate}`}
-                      className="relative grid min-w-0 grid-cols-[1.25rem_minmax(0,1fr)] gap-3 pb-6 last:pb-0 sm:gap-4"
-                    >
-                      <div className="relative flex justify-center" aria-hidden="true">
-                        <span
-                          className={`relative z-10 mt-1.5 h-2.5 w-2.5 rounded-full ring-4 ring-white dark:ring-zinc-950 ${
-                            isCurrent
-                              ? "bg-sky-600 shadow-[0_0_0_4px_rgba(14,165,233,0.12)] dark:bg-cyan-300 dark:shadow-[0_0_0_4px_rgba(103,232,249,0.1)]"
-                              : "bg-slate-300 dark:bg-zinc-600"
-                          }`}
-                        />
-                        {roleIndex < company.roles.length - 1 && (
-                          <span className="absolute bottom-[-0.5rem] top-4 w-px bg-gradient-to-b from-slate-300 to-slate-200 dark:from-zinc-600 dark:to-zinc-800" />
-                        )}
-                      </div>
-
-                      <div className="min-w-0">
-                        <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
-                          <div className="min-w-0">
-                            <div className="flex flex-wrap items-center gap-2">
-                              <h4 className="break-words text-base font-bold leading-6 text-slate-900 dark:text-zinc-100 sm:text-lg">
-                                {role.title}
-                              </h4>
-                              {isCurrent && (
-                                <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[0.65rem] font-bold uppercase tracking-[0.12em] text-emerald-700 ring-1 ring-emerald-200/70 dark:bg-emerald-400/10 dark:text-emerald-300 dark:ring-emerald-300/20">
-                                  Current
-                                </span>
-                              )}
-                            </div>
-                            <p className="mt-1 text-xs font-medium text-slate-500 dark:text-zinc-400 sm:text-sm">
-                              {roleDateRange}
-                            </p>
-                          </div>
-
-                          <span className="w-fit shrink-0 rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-600 ring-1 ring-slate-200/80 dark:bg-white/[0.06] dark:text-zinc-300 dark:ring-white/10">
-                            {roleTenure}
-                          </span>
+                    return (
+                      <li key={`${role.title}-${role.startDate}`} className="relative grid min-w-0 grid-cols-[0.75rem_minmax(0,1fr)] gap-3 pb-6 last:pb-0 sm:gap-4">
+                        <div className="relative flex justify-center" aria-hidden="true">
+                          <span className={`relative z-10 mt-5 h-2.5 w-2.5 shrink-0 rounded-full ring-4 ring-white dark:ring-zinc-950 ${
+                            isCurrent ? "bg-sky-600 dark:bg-cyan-300" : "bg-slate-300 dark:bg-zinc-600"
+                          }`} />
+                          {roleIndex < company.roles.length - 1 && (
+                            <span className="absolute -bottom-12 top-6 w-px bg-slate-200 dark:bg-zinc-800" />
+                          )}
                         </div>
-                      </div>
-                    </li>
-                  );
-                })}
-              </ol>
-            </div>
-          </motion.article>
-        );
-      })}
+                        <div className={`min-w-0 rounded-2xl border p-3 sm:p-4 ${
+                          isCurrent
+                            ? "border-sky-100 bg-sky-50/80 dark:border-cyan-300/15 dark:bg-cyan-300/[0.045]"
+                            : "border-transparent"
+                        }`}>
+                          <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+                            <h4 className="min-w-0 break-words text-base font-bold leading-6 text-slate-900 dark:text-zinc-100 sm:text-lg">{role.title}</h4>
+                            {isCurrent && (
+                              <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-emerald-50 px-2 py-0.5 text-[0.625rem] font-bold uppercase tracking-[0.1em] text-emerald-700 ring-1 ring-emerald-200/80 dark:bg-emerald-400/10 dark:text-emerald-300 dark:ring-emerald-300/20">
+                                <span className="h-1 w-1 rounded-full bg-current" aria-hidden="true" />Current
+                              </span>
+                            )}
+                          </div>
+                          <div className="mt-2 flex flex-col gap-1 text-xs leading-5 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-x-4 sm:text-sm">
+                            <p className="font-medium text-slate-500 dark:text-zinc-400">{roleDateRange}</p>
+                            <p className="text-slate-500 dark:text-zinc-400">{roleTenure}</p>
+                          </div>
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ol>
+              </div>
+            </motion.article>
+          );
+        })}
+      </div>
     </div>
   );
 }

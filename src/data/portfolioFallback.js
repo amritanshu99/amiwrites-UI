@@ -15,7 +15,8 @@ const portfolioFallback = {
   ],
   experience: [
     {
-      company: "GlobalLogic",
+      company: "Hitachi Digital",
+      previousName: "GlobalLogic",
       employmentType: "Full-time",
       location: "Noida, Uttar Pradesh, India",
       roles: [

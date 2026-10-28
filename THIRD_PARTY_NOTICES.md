@@ -1,5 +1,13 @@
 # Third-party notices
 
+## Hitachi Digital logo
+
+`public/hitachi-digital-logo.png` is the official Hitachi wordmark used by
+[Hitachi Digital](https://www.hitachidigital.com/), retrieved on October 28, 2026
+from [its website asset](https://www.hitachidigital.com/wp-content/themes/hitachi-digital/assets/images/logo-hitachi.png).
+It is displayed to identify the employer in the portfolio's career history.
+The logo and related trademarks belong to their respective owners.
+
 ## Distorted Pixels
 
 The hero's pixel-displacement interaction is adapted from the interaction model

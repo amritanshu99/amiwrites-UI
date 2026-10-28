@@ -1443,8 +1443,12 @@ export default function PortfolioDetails() {
             <div className="mx-auto max-w-7xl">
               <p className="text-xs font-bold uppercase tracking-[0.22em] text-sky-700 dark:text-cyan-300">03 · Experience</p>
               <h2 id="experience-heading" className="mt-3 flex items-center gap-3 text-3xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-4xl">
-                <FaBriefcase className="text-2xl text-sky-700 dark:text-cyan-300" aria-hidden="true" /> Career journey
+                <FaBriefcase className="shrink-0 text-2xl text-sky-700 dark:text-cyan-300" aria-hidden="true" /> Career journey
               </h2>
+              <p className="mt-4 max-w-2xl text-base leading-7 text-slate-600 dark:text-zinc-400">
+                From software engineering foundations to full-stack and AI delivery.
+                A journey of growing responsibility, one role at a time.
+              </p>
 
               <CareerJourney
                 companies={data.experience}

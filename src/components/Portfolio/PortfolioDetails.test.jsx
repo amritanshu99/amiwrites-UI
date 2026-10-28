@@ -722,11 +722,12 @@ describe("PortfolioDetails startup experience", () => {
     await finishInitialLoader();
 
     expect(
-      screen.getByRole("heading", { name: "GlobalLogic", level: 3 }),
+      screen.getByRole("heading", { name: "Hitachi Digital", level: 3 }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("img", { name: "GlobalLogic logo" }),
-    ).toBeInTheDocument();
+      screen.getByRole("img", { name: "Hitachi Digital logo" }),
+    ).toHaveAttribute("src", "/hitachi-digital-logo.png");
+    expect(screen.getByText("Previously GlobalLogic")).toBeInTheDocument();
     expect(
       screen.getByRole("heading", {
         name: "ConQsys IT (P) Ltd.",
