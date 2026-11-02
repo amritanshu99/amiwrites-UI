@@ -8,7 +8,7 @@ import {
   useState,
 } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { ArrowRight, Filter, Plus, Search, Trash2 } from "lucide-react";
+import { ArrowRight, ArrowUpRight, BookOpen, Clock, Filter, Plus, RefreshCw, Search, Trash2, TrendingUp, X } from "lucide-react";
 import { toast } from "react-toastify";
 import axios from "../../utils/api";
 import Loader from "../Loader/Loader";
@@ -18,28 +18,15 @@ import { useVerifiedAuth } from "../../hooks/useVerifiedAuth";
 import {
   createTrendingEventId,
   sendTrendingEvent,
-  trendingRequestPath,
 } from "../../utils/trendingAnalytics";
+import { useTrendingBlogs } from "../../hooks/useTrendingBlogs";
+import { blogPreview, blogPublicationDate } from "./blogPresentation";
+import "./blogs.css";
+
 const INITIAL_SKELETON_KEYS = ["init-0", "init-1", "init-2"];
 const PAGINATION_SKELETON_KEYS = ["pag-0", "pag-1", "pag-2"];
 const IMPRESSION_RETRY_DELAY_MS = 250;
 const IMPRESSION_MAX_DELIVERY_ROUNDS = 3;
-const TRENDING_REFRESH_FALLBACK_MS = 5 * 60 * 1000;
-const TRENDING_REFRESH_MAX_MS = 60 * 60 * 1000;
-const TRENDING_REFRESH_MIN_MS = 1000;
-
-function getTrendingRefreshDelay(epochEndsAt, now = Date.now()) {
-  const endTime = Date.parse(epochEndsAt);
-  if (!Number.isFinite(endTime) || endTime <= now) {
-    return TRENDING_REFRESH_FALLBACK_MS;
-  }
-
-  return Math.min(
-    TRENDING_REFRESH_MAX_MS,
-    Math.max(TRENDING_REFRESH_MIN_MS, endTime - now + 100),
-  );
-}
-
 function isRetryableTrendingDeliveryError(error) {
   const status = Number(error?.status);
   return (
@@ -51,143 +38,60 @@ function isRetryableTrendingDeliveryError(error) {
   );
 }
 
-function getPlainTextPreview(content, maxLength = 170) {
-  if (!content) return "No preview available.";
-
-  const plainText = content
-    .replace(/<[^>]+>/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-
-  if (!plainText) return "No preview available.";
-  return plainText.length > maxLength
-    ? `${plainText.slice(0, maxLength).trim()}...`
-    : plainText;
-}
-
 const BlogSkeleton = memo(function BlogSkeleton() {
   return (
-  <div className="flex h-[250px] w-full animate-pulse flex-col rounded-[1.35rem] border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-900 dark:bg-black dark:shadow-[0_24px_60px_-40px_rgba(0,0,0,0.92)] sm:h-[270px] sm:p-5">
-    <div className="mb-3 flex items-center justify-between gap-3 sm:mb-4">
-      <div className="h-4 w-28 rounded-full bg-zinc-200 dark:bg-zinc-800" />
-      <div className="h-7 w-7 rounded-full bg-zinc-200 dark:bg-zinc-800" />
+    <div className="journal-card journal-skeleton" aria-hidden="true">
+      <div className="journal-skeleton__label" />
+      <div className="journal-skeleton__title" />
+      <div className="journal-skeleton__title journal-skeleton__short" />
+      <div className="journal-skeleton__line" />
+      <div className="journal-skeleton__line" />
+      <div className="journal-skeleton__footer" />
     </div>
-    <div className="mb-2 h-5 w-4/5 rounded bg-zinc-300 dark:bg-zinc-800 sm:mb-3 sm:h-6" />
-    <div className="mb-2 h-5 w-2/3 rounded bg-zinc-200 dark:bg-zinc-900 sm:h-6" />
-    <div className="space-y-2.5 pt-2 sm:space-y-3">
-      <div className="h-3 rounded bg-zinc-200 dark:bg-zinc-900" />
-      <div className="h-3 w-11/12 rounded bg-zinc-200 dark:bg-zinc-900" />
-      <div className="h-3 w-5/6 rounded bg-zinc-200 dark:bg-zinc-900" />
-      <div className="h-3 w-3/5 rounded bg-zinc-200 dark:bg-zinc-900" />
-    </div>
-    <div className="mt-auto h-4 w-24 rounded bg-zinc-300 dark:bg-zinc-800" />
-  </div>
   );
 });
 
 const BlogCard = memo(forwardRef(function BlogCard({
-  blog,
-  isAdmin,
-  isDeleting,
-  isTrending,
-  onDeleteBlog,
-  onTrackClick,
+  blog, isAdmin, isDeleting, isTrending, featured, onDeleteBlog, onTrackClick,
 }, forwardedRef) {
-  const publishedDate = useMemo(() => {
-    if (!blog.date) return "Date unavailable";
-
-    return new Date(blog.date).toLocaleDateString("en-IN", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-  }, [blog.date]);
-
-  const previewText = useMemo(() => getPlainTextPreview(blog.content), [blog.content]);
-
-  const handleBlogLinkClick = useCallback(() => {
-    onTrackClick(blog._id);
-  }, [blog._id, onTrackClick]);
-
-  const handleDeleteClick = useCallback(
-    (e) => {
-      e.stopPropagation();
-      onDeleteBlog(blog._id);
-    },
-    [blog._id, onDeleteBlog]
-  );
+  const publicationDate = blogPublicationDate(blog);
+  const publishedDate = publicationDate
+    ? new Date(publicationDate).toLocaleDateString("en-IN", { year: "numeric", month: "short", day: "numeric" })
+    : "Date unavailable";
+  const { excerpt, minutes } = useMemo(() => blogPreview(blog), [blog]);
 
   return (
-    <article
-      ref={forwardedRef}
-      data-blog-id={blog._id}
-      className="group relative isolate flex min-h-[244px] w-full cursor-pointer flex-col overflow-hidden rounded-[1.35rem] border border-white/90 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(248,252,255,0.96),rgba(240,248,255,0.94))] p-4 shadow-[0_24px_60px_-40px_rgba(15,23,42,0.2)] ring-1 ring-sky-100/70 backdrop-blur-sm transform-gpu transition-[transform,box-shadow,border-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1.5 hover:scale-[1.01] hover:border-sky-200/90 hover:shadow-[0_32px_78px_-42px_rgba(14,165,233,0.28)] focus:outline-none focus-visible:-translate-y-1 focus-visible:scale-[1.005] focus-visible:ring-4 focus-visible:ring-sky-100 dark:border-zinc-800 dark:bg-[linear-gradient(180deg,rgba(0,0,0,1)_0%,rgba(0,0,0,1)_100%)] dark:ring-white/5 dark:hover:border-zinc-700 dark:shadow-[0_24px_64px_-40px_rgba(0,0,0,0.92)] dark:hover:shadow-[0_30px_72px_-40px_rgba(0,0,0,0.98)] dark:focus-visible:ring-white/10 sm:min-h-[270px] sm:rounded-[1.5rem] sm:p-5 motion-reduce:transform-none motion-reduce:transition-none"
-    >
-      <div className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100 dark:opacity-100">
-        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
-        <div className="absolute right-[-2.5rem] top-[-3rem] h-24 w-24 rounded-full bg-transparent blur-3xl" />
-        <div className="absolute left-[-2rem] bottom-[-3rem] h-24 w-24 rounded-full bg-transparent blur-3xl" />
-      </div>
-      <div className="mb-3 flex items-start justify-between gap-3 sm:mb-4">
-        <div className="flex flex-wrap items-center gap-2">
-          <p className="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-600 dark:border dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100">
-            Blog
-          </p>
-          {isTrending && (
-            <span
-              className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-3 py-1 text-[11px] font-semibold text-amber-800 dark:border dark:border-amber-900/60 dark:bg-amber-950 dark:text-amber-200"
-              title="This post is currently trending"
-              aria-label="Trending"
-            >
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                <path d="M13.5 0s1 2.5 1 5.5C14.5 10 10 11 10 15c0 2.761 2.239 5 5 5 3.314 0 6-2.686 6-6 0-4-3-6-3-9 0-2 1-5 1-5s-3 1-5.5 5C12 3 13.5 0 13.5 0z" />
-              </svg>
-              Trending
-            </span>
-          )}
-        </div>
-
+    <article ref={forwardedRef} data-blog-id={blog._id}
+      className={`journal-card${featured ? " journal-card--featured" : ""}`}>
+      <div className="journal-card__eyebrow">
+        <span className="journal-category">{blog.category || "Perspectives"}</span>
+        {isTrending && (
+          <span className="journal-trending" aria-label="Trending">
+            <TrendingUp size={14} aria-hidden="true" /> Trending
+          </span>
+        )}
         {isAdmin && (
-          <button
-            aria-label={`Delete blog titled ${blog.title}`}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-zinc-200 bg-white/90 text-red-500 transition hover:border-red-200 hover:bg-red-50 hover:text-red-700 focus:outline-none focus-visible:ring-4 focus-visible:ring-red-100 dark:border-zinc-800 dark:bg-black dark:text-red-300 dark:hover:border-zinc-700 dark:hover:bg-zinc-950 dark:hover:text-red-200 dark:focus-visible:ring-red-950/60"
-            onClick={handleDeleteClick}
-            onKeyDown={(e) => e.stopPropagation()}
-            disabled={isDeleting}
-            type="button"
-            title={isDeleting ? "Deleting..." : "Delete blog"}
-          >
+          <button type="button" className="journal-icon-button journal-delete"
+            aria-label={`Delete blog titled ${blog.title}`} disabled={isDeleting}
+            onClick={() => onDeleteBlog(blog._id)}>
             {isDeleting ? <Loader size="small" /> : <Trash2 size={16} />}
           </button>
         )}
       </div>
-
-      <Link
-        to={`/blogs/${blog._id}?src=list`}
-        onClick={handleBlogLinkClick}
-        className="flex h-full flex-col rounded-xl focus:outline-none focus-visible:ring-4 focus-visible:ring-sky-100 dark:focus-visible:ring-white/10"
-        aria-label={`Read ${blog.title}`}
-      >
-        <time
-          dateTime={blog.date}
-          className="text-xs font-medium uppercase tracking-[0.12em] text-zinc-500 dark:text-zinc-400 sm:text-sm sm:normal-case sm:tracking-normal"
-        >
-          {publishedDate}
-        </time>
-
-        <h2 className="mt-2 line-clamp-2 text-[15px] font-semibold leading-5 text-zinc-950 transition group-hover:text-sky-700 dark:text-zinc-50 dark:group-hover:text-zinc-200 sm:mt-2.5 sm:text-[1.05rem] sm:leading-6">
-          {blog.title}
-        </h2>
-
-        <p className="mt-2.5 line-clamp-4 text-sm leading-5 text-zinc-600 dark:text-zinc-300 sm:mt-3 sm:line-clamp-5 sm:leading-6">
-          {previewText}
-        </p>
-
-        <span className="mt-auto inline-flex items-center gap-1.5 pt-4 text-sm font-semibold text-sky-700 transition group-hover:translate-x-1 dark:text-zinc-100 sm:pt-5">
-          Read article
-          <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5" />
-        </span>
+      <Link to={`/blogs/${blog._id}?src=list`} onClick={() => onTrackClick(blog._id)}
+        className="journal-card__link" aria-label={`Read ${blog.title}`}>
+        {featured && <span className="journal-feature-label">{isTrending ? "In the spotlight" : "Latest story"}</span>}
+        <h2>{blog.title}</h2>
+        <p className="journal-card__excerpt">{excerpt || "Discover the full story and explore a new perspective."}</p>
+        <div className="journal-card__footer">
+          <div className="journal-card__meta">
+            <time dateTime={publicationDate}>{publishedDate}</time>
+            <span><Clock size={13} aria-hidden="true" /> {minutes} min read</span>
+          </div>
+          <span className="journal-card__arrow" aria-hidden="true"><ArrowUpRight size={20} /></span>
+        </div>
       </Link>
+      {featured && <span className="journal-feature-number" aria-hidden="true">01</span>}
     </article>
   );
 }));
@@ -195,8 +99,10 @@ const BlogCard = memo(forwardRef(function BlogCard({
 const BlogList = () => {
   const { isAdmin, verifiedAdminToken } = useVerifiedAuth();
   const [blogs, setBlogs] = useState([]);
-  const [rankedBlogs, setRankedBlogs] = useState([]);
-  const [trendingStatus, setTrendingStatus] = useState("loading");
+  const { items: trendingItems, status: trendingStatus, refresh: refreshTrending } = useTrendingBlogs();
+  const [listError, setListError] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const fetchErrorRef = useRef(false);
   const [loading, setLoading] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
   const [filter, setFilter] = useState("trending");
@@ -210,10 +116,9 @@ const BlogList = () => {
   const activeRequestRef = useRef(null);
   const debouncedSearch = useDebounce(search, 500);
 
-  const trendingIds = useMemo(
-    () => new Set(rankedBlogs.map((post) => String(post?._id)).filter(Boolean)),
-    [rankedBlogs],
-  );
+  const deletedBlogIdsRef = useRef(new Set());
+  const rankedBlogs = trendingItems.filter((post) => !deletedBlogIdsRef.current.has(String(post._id)));
+  const trendingIds = new Set(rankedBlogs.map((post) => String(post._id)));
 
   const trackClick = useCallback((postId) => {
     if (!postId) return;
@@ -228,7 +133,6 @@ const BlogList = () => {
   const pageRef = useRef(1);
   const observerRef = useRef(null);
   const scrollContainerRef = useRef(null);
-  const throttleTimeoutRef = useRef(null);
   const impressionObserverRef = useRef(null);
   const cardNodesRef = useRef(new Map());
   const seenImpressionsRef = useRef(new Set());
@@ -237,7 +141,6 @@ const BlogList = () => {
   const impressionDeliveryRoundsRef = useRef(new Map());
   const impressionRetryTimersRef = useRef(new Map());
   const terminalImpressionsRef = useRef(new Set());
-  const deletedBlogIdsRef = useRef(new Set());
 
   const resetObserver = useCallback(() => {
     if (observerRef.current && loaderRef.current) {
@@ -266,13 +169,15 @@ const BlogList = () => {
     const controller = new AbortController();
     activeRequestRef.current = controller;
     setLoading(true);
+    setListError(false);
+    fetchErrorRef.current = false;
     loadingRef.current = true;
     try {
       const res = await axios.get(
         `/api/blogs?page=${pageNumber}&limit=10&search=${encodeURIComponent(
           searchQuery
         )}&sort=${sortOrder}`,
-        { signal: controller.signal },
+        { signal: controller.signal, timeout: 15000 },
       );
 
       if (controller.signal.aborted || generation !== requestGenerationRef.current) {
@@ -294,11 +199,13 @@ const BlogList = () => {
       fetchedPagesRef.current.add(cacheKey);
       pageRef.current = pageNumber;
       hasMoreRef.current = Boolean(res.data?.hasMore);
+      setHasMore(hasMoreRef.current);
       return true;
     } catch (err) {
       const cancelled = controller.signal.aborted || err?.code === "ERR_CANCELED";
       if (!cancelled && generation === requestGenerationRef.current) {
-        toast.error("Failed to fetch blogs");
+        setListError(true);
+        fetchErrorRef.current = true;
       }
       return false;
     } finally {
@@ -311,73 +218,13 @@ const BlogList = () => {
     }
   }, [resetObserver]);
 
-  useEffect(() => {
-    let active = true;
-    let controller = null;
-    let refreshTimer = null;
-    let requestGeneration = 0;
-
-    const scheduleRefresh = (epochEndsAt) => {
-      if (!active) return;
-      if (refreshTimer) clearTimeout(refreshTimer);
-      refreshTimer = setTimeout(() => {
-        refreshTimer = null;
-        void loadTrending(false);
-      }, getTrendingRefreshDelay(epochEndsAt));
-    };
-
-    const loadTrending = async (isInitialRequest) => {
-      const generation = requestGeneration + 1;
-      requestGeneration = generation;
-      const nextController = new AbortController();
-      controller?.abort();
-      controller = nextController;
-
-      try {
-        const { data } = await axios.get(trendingRequestPath(), {
-          signal: nextController.signal,
-        });
-        if (!active || generation !== requestGeneration) return;
-
-        const items = Array.isArray(data?.items) ? data.items : [];
-        setRankedBlogs(
-          items.filter(
-            (item) =>
-              item?._id &&
-              !deletedBlogIdsRef.current.has(String(item._id)),
-          ),
-        );
-        setTrendingStatus("ready");
-        scheduleRefresh(data?.meta?.epochEndsAt);
-      } catch (error) {
-        const cancelled = nextController.signal.aborted || error?.code === "ERR_CANCELED";
-        if (!active || generation !== requestGeneration || cancelled) return;
-
-        if (isInitialRequest) {
-          setRankedBlogs([]);
-          setTrendingStatus("failed");
-        }
-        scheduleRefresh(null);
-      }
-    };
-
-    void loadTrending(true);
-    return () => {
-      active = false;
-      requestGeneration += 1;
-      controller?.abort();
-      if (refreshTimer) clearTimeout(refreshTimer);
-    };
-  }, []);
-
   const findScrollContainer = useCallback((startEl) => {
     const explicit = document.querySelector(".h-screen.overflow-y-scroll.relative");
     if (explicit) {
       try {
         const style = getComputedStyle(explicit);
         if (
-          (style.overflowY === "auto" || style.overflowY === "scroll") &&
-          explicit.scrollHeight > explicit.clientHeight
+          (style.overflowY === "auto" || style.overflowY === "scroll")
         ) {
           return explicit;
         }
@@ -423,6 +270,10 @@ const BlogList = () => {
   useEffect(() => {
     if (typeof IntersectionObserver !== "function") return undefined;
     let active = true;
+    const retryTimers = impressionRetryTimersRef.current;
+    const inFlight = impressionInFlightRef.current;
+    const deliveryRounds = impressionDeliveryRoundsRef.current;
+    const terminalImpressions = terminalImpressionsRef.current;
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -497,11 +348,11 @@ const BlogList = () => {
     return () => {
       active = false;
       observer.disconnect();
-      impressionRetryTimersRef.current.forEach((timer) => clearTimeout(timer));
-      impressionRetryTimersRef.current.clear();
-      impressionInFlightRef.current.clear();
-      impressionDeliveryRoundsRef.current.clear();
-      terminalImpressionsRef.current.clear();
+      retryTimers.forEach((timer) => clearTimeout(timer));
+      retryTimers.clear();
+      inFlight.clear();
+      deliveryRounds.clear();
+      terminalImpressions.clear();
       if (impressionObserverRef.current === observer) {
         impressionObserverRef.current = null;
       }
@@ -509,7 +360,7 @@ const BlogList = () => {
   }, []);
 
   const loadNextPage = useCallback(() => {
-    if (loadingRef.current || !hasMoreRef.current) return;
+    if (loadingRef.current || !hasMoreRef.current || fetchErrorRef.current) return;
 
     const currentPage = Math.max(1, pageRef.current);
     const sortOrder = filter === "oldest" ? "oldest" : "latest";
@@ -527,7 +378,7 @@ const BlogList = () => {
   }, [debouncedSearch, fetchBlogs, filter]);
 
   const checkAndLoadByScroll = useCallback((scroller) => {
-    if (loadingRef.current || !hasMoreRef.current) return;
+    if (loadingRef.current || !hasMoreRef.current || fetchErrorRef.current) return;
 
     let distanceToBottom = Infinity;
     if (
@@ -556,100 +407,41 @@ const BlogList = () => {
   }, [loadNextPage]);
 
   useEffect(() => {
-    let mounted = true;
-    let scroller = null;
-    let onScrollFn = null;
-
+    let scrollTarget;
+    let scrollTimer;
+    const onScroll = () => {
+      if (scrollTimer) return;
+      scrollTimer = setTimeout(() => {
+        scrollTimer = null;
+        checkAndLoadByScroll(scrollContainerRef.current);
+      }, 150);
+    };
     const build = () => {
-      if (!mounted) return;
-
-      if (observerRef.current) {
-        try {
-          observerRef.current.disconnect();
-        } catch (e) {}
-        observerRef.current = null;
-      }
-
-      scroller = findScrollContainer(loaderRef.current);
+      observerRef.current?.disconnect();
+      scrollTarget?.removeEventListener("scroll", onScroll);
+      const scroller = findScrollContainer(loaderRef.current);
       scrollContainerRef.current = scroller;
-
-      const options = {
-        root: scroller || null,
-        rootMargin: "400px 0px 400px 0px",
-        threshold: 0,
-      };
-
-      observerRef.current = new IntersectionObserver((entries) => {
-        const entry = entries[0];
-        if (!entry) return;
-        if (entry.isIntersecting && hasMoreRef.current && !loadingRef.current) {
-          loadNextPage();
-        }
-      }, options);
-
-      if (loaderRef.current) {
-        try {
-          observerRef.current.observe(loaderRef.current);
-        } catch (e) {}
+      if (typeof IntersectionObserver === "function") {
+        observerRef.current = new IntersectionObserver((entries) => {
+          if (entries[0]?.isIntersecting) loadNextPage();
+        }, { root: scroller, rootMargin: "400px 0px", threshold: 0 });
+        if (loaderRef.current) observerRef.current.observe(loaderRef.current);
       }
-
-      const scrollTarget = scroller || window;
-      try {
-        const prev = scrollTarget._blogListOnScroll;
-        if (prev) scrollTarget.removeEventListener("scroll", prev);
-      } catch (e) {}
-
-      onScrollFn = () => {
-        if (throttleTimeoutRef.current) return;
-        throttleTimeoutRef.current = setTimeout(() => {
-          throttleTimeoutRef.current = null;
-          try {
-            checkAndLoadByScroll(scroller);
-          } catch (e) {}
-        }, 150);
-      };
-
-      try {
-        scrollTarget.addEventListener("scroll", onScrollFn, { passive: true });
-        scrollTarget._blogListOnScroll = onScrollFn;
-      } catch (e) {}
+      scrollTarget = scroller || window;
+      scrollTarget.addEventListener("scroll", onScroll, { passive: true });
     };
-
-    const t = setTimeout(build, 40);
-    const rebuild = () => {
-      clearTimeout(t);
-      setTimeout(build, 120);
-    };
-
-    window.addEventListener("resize", rebuild);
-    window.addEventListener("orientationchange", rebuild);
-
+    // Build after the initial fetch effect has reset pagination.
+    const timer = setTimeout(build, 40);
+    window.addEventListener("resize", build);
     return () => {
-      mounted = false;
-      window.removeEventListener("resize", rebuild);
-      window.removeEventListener("orientationchange", rebuild);
-
-      if (observerRef.current) {
-        try {
-          observerRef.current.disconnect();
-        } catch (e) {}
-        observerRef.current = null;
-      }
-
-      const scrollerToCleanup = scrollContainerRef.current || window;
-      try {
-        const fn = scrollerToCleanup._blogListOnScroll;
-        if (fn) scrollerToCleanup.removeEventListener("scroll", fn);
-        delete scrollerToCleanup._blogListOnScroll;
-      } catch (e) {}
-
-      if (throttleTimeoutRef.current) {
-        clearTimeout(throttleTimeoutRef.current);
-        throttleTimeoutRef.current = null;
-      }
+      clearTimeout(timer);
+      clearTimeout(scrollTimer);
+      observerRef.current?.disconnect();
+      observerRef.current = null;
+      scrollTarget?.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", build);
     };
   }, [checkAndLoadByScroll, findScrollContainer, loadNextPage]);
-
 
   useEffect(() => {
     const scrollContainer = document.querySelector(
@@ -676,9 +468,6 @@ const BlogList = () => {
       setBlogs((current) =>
         current.filter((post) => String(post?._id) !== String(id)),
       );
-      setRankedBlogs((current) =>
-        current.filter((post) => String(post?._id) !== String(id)),
-      );
       setRefreshVersion((current) => current + 1);
     } catch {
       toast.error("Failed to delete blog");
@@ -697,6 +486,9 @@ const BlogList = () => {
     loadingRef.current = false;
     setBlogs([]);
     hasMoreRef.current = true;
+    setHasMore(true);
+    setListError(false);
+    fetchErrorRef.current = false;
     fetchedPagesRef.current = new Set();
     pageRef.current = 1;
     setLoading(false);
@@ -714,7 +506,7 @@ const BlogList = () => {
 
   const handleAddBlog = useCallback(() => navigate("/add-blog"), [navigate]);
 
-  const filteredBlogs = useMemo(() => {
+  const filteredBlogs = (() => {
     if (filter !== "trending") return blogs;
     if (trendingStatus === "loading") return [];
     if (trendingStatus === "failed") return blogs;
@@ -731,143 +523,110 @@ const BlogList = () => {
       ...matchingRanked,
       ...blogs.filter((post) => !rankedIds.has(String(post?._id))),
     ];
-  }, [blogs, debouncedSearch, filter, rankedBlogs, trendingStatus]);
+  })();
 
   const waitingForTrending = filter === "trending" && trendingStatus === "loading";
 
-  return (
-    <div className="amiverse-premium-light-page relative isolate min-h-screen overflow-hidden px-3 pb-24 pt-3 dark:bg-none dark:bg-black sm:px-5 sm:pb-6 sm:pt-4 lg:px-8 lg:pb-8 lg:pt-6">
-      <div
-        className="amiverse-premium-light-page absolute inset-0 -z-30 dark:bg-[linear-gradient(180deg,rgba(0,0,0,1)_0%,rgba(0,0,0,1)_100%)]"
-        aria-hidden="true"
-      />
-      <div
-        className="amiverse-premium-light-overlay absolute inset-0 -z-10 dark:bg-[linear-gradient(180deg,rgba(0,0,0,1)_0%,rgba(0,0,0,1)_100%)]"
-        aria-hidden="true"
-      />
-      <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden" aria-hidden="true">
-        <div className="absolute inset-x-0 top-0 h-28 bg-[linear-gradient(180deg,rgba(245,248,250,0.46),rgba(245,248,250,0))] dark:bg-transparent" />
-        <div className="absolute inset-x-0 bottom-0 h-36 bg-[linear-gradient(0deg,rgba(232,239,242,0.5),rgba(232,239,242,0))] dark:bg-transparent" />
-      </div>
-      <PushNotificationButton />
+  const retryBlogs = () => {
+    fetchErrorRef.current = false;
+    loadNextPage();
+  };
+  const isSearching = Boolean(debouncedSearch.trim());
+  const resultsLabel = isSearching ? `Results for “${debouncedSearch.trim()}”`
+    : filter === "trending" ? "Discover your next read" : filter === "latest" ? "Fresh from the journal" : "From the beginning";
 
-      <div className="relative z-10 mx-auto flex w-full max-w-7xl flex-col gap-3 sm:gap-4">
-        <section className="relative overflow-hidden rounded-[1.25rem] border border-white/90 bg-[linear-gradient(135deg,rgba(255,255,255,0.97),rgba(247,251,255,0.95),rgba(235,246,255,0.93))] px-4 py-4 shadow-[0_30px_80px_-48px_rgba(15,23,42,0.26)] ring-1 ring-sky-100/80 backdrop-blur-md dark:border-zinc-900 dark:bg-[linear-gradient(145deg,rgba(0,0,0,0.98),rgba(0,0,0,1),rgba(0,0,0,1))] dark:ring-white/5 dark:shadow-[0_32px_80px_-44px_rgba(0,0,0,0.92)] sm:rounded-[1.5rem] sm:px-5 sm:py-4 lg:px-6 lg:py-5">
-          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-sky-300/60 to-transparent dark:via-white/12" />
-          <div className="relative">
-            <div className="max-w-3xl">
-              <span className="inline-flex items-center rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100">
-                Editorial Notes
-              </span>
-              <h1 className="mt-2 max-w-2xl text-base font-semibold text-zinc-950 dark:text-zinc-50 sm:text-[1.35rem] lg:text-[1.65rem]">
-                Reinforcement Learning Blogs, optimized for what is trending now.
-              </h1>
-              <p className="mt-1.5 max-w-2xl text-sm leading-5 text-zinc-600 dark:text-zinc-300">
-                Trending recommendations are powered by Thompson Sampling, a reinforcement learning strategy that continuously learns from blog engagement.
-              </p>
-            </div>
+  return (
+    <div className="journal-page">
+      <PushNotificationButton />
+      <div className="journal-shell">
+        <header className="journal-hero">
+          <div>
+            <p className="journal-kicker"><span /> THE AMIVERSE JOURNAL</p>
+            <h1>Ideas for <em>curious minds.</em></h1>
+            <p className="journal-intro">Thoughts on technology, software, and the things we learn along the way. Find something worth your time.</p>
+          </div>
+          {isAdmin ? (
+            <button type="button" onClick={handleAddBlog} className="journal-button journal-button--primary">
+              <Plus size={17} aria-hidden="true" /> Add Blog
+            </button>
+          ) : (
+            <div className="journal-hero-note"><BookOpen size={22} aria-hidden="true" /><span>A fresh perspective.<br />One article at a time.</span></div>
+          )}
+        </header>
+
+        <section className="journal-toolbar" aria-label="Find an article">
+          <div className="journal-search">
+            <Search size={19} aria-hidden="true" />
+            <input id="blog-search" type="text" placeholder="Find your next read…" value={search}
+              onChange={(e) => setSearch(e.target.value)} maxLength={100} aria-label="Search blogs by title" />
+            {search && <button type="button" className="journal-icon-button" onClick={() => {
+              setSearch(""); document.getElementById("blog-search")?.focus();
+            }} aria-label="Clear search"><X size={17} /></button>}
+          </div>
+          <div className="journal-sort">
+            <Filter size={16} aria-hidden="true" />
+            <label htmlFor="blog-sort">Sort by</label>
+            <select id="blog-sort" value={filter} onChange={(e) => setFilter(e.target.value)} aria-label="Sort blogs">
+              <option value="trending">Trending</option>
+              <option value="latest">Latest</option>
+              <option value="oldest">Oldest</option>
+            </select>
           </div>
         </section>
 
-        <div className="flex flex-col items-stretch justify-between gap-2 sm:flex-row sm:items-center">
-          {isAdmin && (
-            <button
-              onClick={handleAddBlog}
-              className="inline-flex min-h-[44px] items-center justify-center gap-2 self-start rounded-full bg-zinc-950 px-4 py-2 text-sm font-semibold text-white shadow-[0_16px_34px_-24px_rgba(15,23,42,0.9)] transition duration-200 hover:-translate-y-0.5 hover:bg-zinc-800 focus:outline-none focus-visible:ring-4 focus-visible:ring-sky-100 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200 dark:focus-visible:ring-white/15 motion-reduce:transform-none sm:py-2.5"
-            >
-              <Plus className="h-4 w-4" />
-              Add Blog
-            </button>
-          )}
+        <div className="journal-section-heading">
+          <div><p className="journal-section-title">{resultsLabel}</p>
+            <p className="journal-section-description">{isSearching ? "Articles matching your title search."
+              : filter === "trending" && trendingStatus === "ready" && rankedBlogs.length > 0
+                ? "Trending reads first, followed by the latest stories."
+                : filter === "oldest" ? "Explore the archive, oldest stories first." : "Explore the latest stories from AmiVerse."}</p>
+          </div>
+          <span role="status" className="journal-result-count">{loading || waitingForTrending ? "Finding stories…" : `${filteredBlogs.length} ${filteredBlogs.length === 1 ? "article" : "articles"}${hasMore ? " loaded" : ""}`}</span>
         </div>
 
-        <section className="rounded-[1.2rem] border border-white/85 bg-[linear-gradient(135deg,rgba(255,255,255,0.93),rgba(246,250,255,0.92),rgba(239,247,255,0.94))] p-3 shadow-[0_22px_55px_-38px_rgba(15,23,42,0.18)] ring-1 ring-sky-100/70 backdrop-blur-md dark:border-zinc-900 dark:bg-[linear-gradient(145deg,rgba(0,0,0,0.98),rgba(0,0,0,1),rgba(0,0,0,1))] dark:ring-white/5 dark:shadow-[0_28px_70px_-44px_rgba(0,0,0,0.88)] sm:rounded-[1.35rem] sm:p-3.5">
-          <div className="flex flex-col gap-2.5 lg:flex-row lg:items-end lg:justify-between">
-            <div className="w-full lg:max-w-xl">
-              <div className="relative">
-                <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400 dark:text-zinc-500" />
-                <input
-                  id="blog-search"
-                  type="text"
-                  placeholder="Search by title..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  aria-label="Search blogs by title"
-                  className="min-h-[46px] w-full rounded-xl border border-zinc-300/90 bg-white/95 px-4 py-2.5 pl-11 text-sm text-zinc-900 outline-none transition duration-200 placeholder:text-zinc-400 hover:border-sky-300 focus:border-sky-600 focus:ring-4 focus:ring-sky-100 dark:border-zinc-800 dark:bg-black dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:hover:border-zinc-700 dark:focus:border-zinc-700 dark:focus:ring-white/10"
-                />
-              </div>
-            </div>
-
-            <div className="flex w-full flex-col gap-2.5 sm:flex-row lg:w-auto lg:items-end">
-              <div className="w-full sm:w-40">
-                <div className="relative">
-                  <select
-                    id="blog-sort"
-                    value={filter}
-                    onChange={(e) => setFilter(e.target.value)}
-                    aria-label="Sort blogs"
-                    className="min-h-[46px] w-full appearance-none rounded-xl border border-zinc-300/90 bg-white/95 px-4 py-2.5 pr-11 text-sm font-medium text-zinc-800 outline-none transition duration-200 hover:border-sky-300 focus:border-sky-600 focus:ring-4 focus:ring-sky-100 dark:border-zinc-800 dark:bg-black dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:hover:border-zinc-700 dark:focus:border-zinc-700 dark:focus:ring-white/10"
-                  >
-                    <option value="trending">Trending</option>
-                    <option value="latest">Latest</option>
-                    <option value="oldest">Oldest</option>
-                  </select>
-                  <div className="pointer-events-none absolute inset-y-0 right-4 flex items-center">
-                    <Filter size={16} className="text-zinc-500 dark:text-zinc-300" />
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-end">
-                <div className="min-h-[46px] w-full rounded-xl border border-zinc-200/80 bg-zinc-50/90 px-3 py-2.5 text-xs font-medium leading-5 text-zinc-600 dark:border-zinc-800 dark:bg-black dark:text-zinc-300 sm:px-3.5 sm:text-sm">
-                  {filteredBlogs.length} {filteredBlogs.length === 1 ? "post" : "posts"} loaded
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {filteredBlogs.length === 0 && !loading && !waitingForTrending ? (
-          <div className="rounded-[1.75rem] border border-dashed border-sky-200/80 bg-[linear-gradient(135deg,rgba(255,255,255,0.9),rgba(245,250,255,0.92))] px-6 py-16 text-center shadow-[0_20px_50px_-40px_rgba(15,23,42,0.2)] ring-1 ring-sky-100/70 backdrop-blur-sm dark:border-zinc-800 dark:bg-black dark:ring-white/5">
-            <p className="text-lg font-semibold text-zinc-700 dark:text-zinc-100">
-              No blogs available.
-            </p>
-            <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-300">
-              Try a different search or check back for new writing.
-            </p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 gap-3.5 sm:gap-4 md:grid-cols-2 2xl:grid-cols-3">
-            {filteredBlogs.map((blog) => (
-              <BlogCard
-                key={blog._id}
-                ref={(node) => registerBlogCard(blog._id, node)}
-                blog={blog}
-                isAdmin={isAdmin}
-                isDeleting={deletingId === blog._id}
-                isTrending={trendingIds.has(String(blog._id))}
-                onDeleteBlog={handleDelete}
-                onTrackClick={trackClick}
-              />
-            ))}
-
-            {loading &&
-              filteredBlogs.length > 0 &&
-              PAGINATION_SKELETON_KEYS.map((key) => (
-                <BlogSkeleton key={key} />
-              ))}
+        {filter === "trending" && trendingStatus === "failed" && (
+          <div className="journal-notice" role="status">
+            <span>Trending is taking a break. You can still explore the latest articles.</span>
+            <button type="button" onClick={refreshTrending}><RefreshCw size={14} aria-hidden="true" /> Retry trending</button>
           </div>
         )}
 
-        {(loading || waitingForTrending) && filteredBlogs.length === 0 && (
-          <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
-            {INITIAL_SKELETON_KEYS.map((key) => (
-              <BlogSkeleton key={key} />
-            ))}
+        <div className="journal-grid" aria-busy={loading || waitingForTrending}>
+          {filteredBlogs.map((blog, index) => (
+            <BlogCard key={blog._id} ref={(node) => registerBlogCard(blog._id, node)} blog={blog}
+              isAdmin={isAdmin} isDeleting={deletingId === blog._id}
+              isTrending={trendingIds.has(String(blog._id))}
+              featured={index === 0 && filter === "trending" && !isSearching}
+              onDeleteBlog={handleDelete} onTrackClick={trackClick} />
+          ))}
+          {(loading || waitingForTrending) && (filteredBlogs.length ? PAGINATION_SKELETON_KEYS : INITIAL_SKELETON_KEYS)
+            .map((key) => <BlogSkeleton key={key} />)}
+        </div>
+
+        {listError && (
+          <div className="journal-empty" role="alert">
+            <RefreshCw size={28} aria-hidden="true" />
+            <h2>{filteredBlogs.length ? "There’s more to explore" : "We couldn’t load the articles"}</h2>
+            <p>There was a connection problem. Give it another try.</p>
+            <button type="button" className="journal-button" onClick={retryBlogs}>Try again</button>
           </div>
         )}
-
-        <div ref={loaderRef} className="h-10" />
+        {!filteredBlogs.length && !loading && !waitingForTrending && !listError && (
+          <div className="journal-empty">
+            <Search size={28} aria-hidden="true" />
+            <h2>{isSearching ? "No matching stories" : "The next story is on its way"}</h2>
+            <p>{isSearching ? "Try another title or clear your search to explore all articles." : "Check back soon for fresh ideas and new perspectives."}</p>
+            {isSearching && <button type="button" className="journal-button" onClick={() => setSearch("")}>Clear search <ArrowRight size={16} /></button>}
+          </div>
+        )}
+        <div ref={loaderRef} className="journal-pagination">
+          {hasMore && !listError && !waitingForTrending && filteredBlogs.length > 0 && (
+            <button type="button" className="journal-button" onClick={loadNextPage} disabled={loading}>
+              {loading ? "Loading articles…" : "Load more articles"}<ArrowRight size={16} aria-hidden="true" />
+            </button>
+          )}
+          {!hasMore && filteredBlogs.length > 0 && !loading && <p>You’re all caught up. Stay curious.</p>}
+        </div>
       </div>
     </div>
   );

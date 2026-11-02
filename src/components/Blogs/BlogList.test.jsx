@@ -443,6 +443,9 @@ test("retries a failed pagination page instead of skipping to the next page", as
   await act(async () => Promise.resolve());
 
   act(() => loaderObserver.trigger(loader));
+  await act(async () => Promise.resolve());
+  expect(pageTwoAttempts).toBe(1);
+  fireEvent.click(screen.getByRole("button", { name: "Try again" }));
   expect(await screen.findByRole("heading", { name: "Third article" })).toBeInTheDocument();
   expect(pageTwoAttempts).toBe(2);
   expect(axios.get.mock.calls.some(([url]) => url.includes("page=3"))).toBe(false);

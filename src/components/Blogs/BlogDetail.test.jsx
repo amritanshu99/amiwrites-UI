@@ -42,6 +42,12 @@ jest.mock("../../utils/trendingAnalytics", () => {
 jest.mock("lucide-react", () => {
   const Icon = () => <span aria-hidden="true" />;
   return {
+    ArrowLeft: Icon,
+    ArrowUpRight: Icon,
+    BookOpen: Icon,
+    ChevronDown: Icon,
+    Link2: Icon,
+    TrendingUp: Icon,
     CalendarDays: Icon,
     CheckCircle2: Icon,
     Clipboard: Icon,
@@ -143,6 +149,37 @@ test("uses the shared bounded badge request and never sends a detail impression"
     expect.stringContaining("trending-rl"),
     expect.anything(),
   );
+});
+
+test("builds accessible contents links from sanitized article headings", async () => {
+  installRequests(makeBlog({ content: '<h2>First section</h2><p>Introduction</p><h3>More detail</h3><p>Details</p><script>bad()</script>' }));
+  await renderLoadedDetail();
+  expect(screen.getByRole("navigation", { name: "Table of contents" })).toBeInTheDocument();
+  const first = screen.getByRole("link", { name: "First section" });
+  expect(first).toHaveAttribute("href", "#article-section-1");
+  expect(screen.getByRole("heading", { name: "First section" })).toHaveAttribute("id", "article-section-1");
+  expect(document.querySelector(".blog-content script")).toBeNull();
+});
+
+test("copying a link confirms success and sends a single share outcome", async () => {
+  const writeText = jest.fn().mockResolvedValue(undefined);
+  Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText } });
+  await renderLoadedDetail();
+  fireEvent.click(screen.getByRole("button", { name: "Copy article link" }));
+  await flushPromises();
+  expect(writeText).toHaveBeenCalledWith(`${window.location.origin}/blogs/post-1`);
+  expect(screen.getByRole("status")).toHaveTextContent("Link copied.");
+  expect(sendTrendingEvent).toHaveBeenCalledTimes(1);
+  expect(sendTrendingEvent).toHaveBeenCalledWith("read-end", expect.objectContaining({ shared: true }), expect.anything());
+});
+
+test("a denied clipboard write does not count as a share", async () => {
+  Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText: jest.fn().mockRejectedValue(new Error("denied")) } });
+  await renderLoadedDetail();
+  fireEvent.click(screen.getByRole("button", { name: "Copy article link" }));
+  await flushPromises();
+  expect(screen.getByRole("status")).toHaveTextContent("Please copy the address from your browser.");
+  expect(sendTrendingEvent).not.toHaveBeenCalled();
 });
 
 test("aborts and ignores an older blog response after the route changes", async () => {
