@@ -1,409 +1,203 @@
-import React, { useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { useNavigate } from "react-router-dom";
-import {
-  ArrowLeft,
-  Bold,
-  Check,
-  FilePenLine,
-  Heading1,
-  Heading2,
-  Italic,
-  List,
-  ListOrdered,
-  Quote,
-  Redo2,
-  RotateCcw,
-  Send,
-  Sparkles,
-  Undo2,
-} from "lucide-react";
+import { ArrowLeft, ArrowUpRight, Bold, BookOpen, Check, CheckCircle2, Code2, Eye, Italic, List, ListOrdered, PenLine, Quote, Redo2, RotateCcw, Send, Undo2 } from "lucide-react";
 import Loader from "../Loader/Loader";
 import { apiUrl } from "../../config/api";
+import { sanitizeBlogHtml } from "../../utils/sanitizeHtml";
+import { useBlogDraft } from "../../hooks/useBlogDraft";
+import "./blogs.css";
+import "./blogComposer.css";
 
-const getWordCount = (value) => {
-  const normalized = value.trim();
-  return normalized ? normalized.split(/\s+/).length : 0;
-};
+const countWords = (text) => text.trim().split(/\s+/).filter(Boolean).length;
+const saveLabels = { empty: "Your next story starts here", saving: "Saving draft…", saved: "Draft saved on this browser", unavailable: "Draft saving unavailable — keep this page open" };
 
-const ChecklistItem = ({ complete, children }) => (
-  <li className="flex items-center gap-3 text-sm text-slate-600 dark:text-zinc-300">
-    <span
-      aria-hidden="true"
-      className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border transition-colors ${
-        complete
-          ? "border-emerald-500/25 bg-emerald-500/[0.12] text-emerald-600 dark:text-emerald-300"
-          : "border-slate-300 bg-white/60 text-slate-400 dark:border-white/10 dark:bg-white/[0.04] dark:text-zinc-500"
-      }`}
-    >
-      {complete ? <Check className="h-3.5 w-3.5" strokeWidth={2.7} /> : null}
-    </span>
-    {children}
-  </li>
-);
+function ChecklistItem({ complete, children }) {
+  return <li className={complete ? "is-complete" : ""}>
+    <span aria-hidden="true">{complete ? <Check size={13} /> : null}</span>
+    <span className="sr-only">{complete ? "Complete: " : "Still needed: "}</span>{children}
+  </li>;
+}
 
 export default function AddBlog() {
-  const [title, setTitle] = useState("");
+  const { draft, setDraft, saveStatus, restored, saveNow, discard, finishPublishing } = useBlogDraft();
+  const [view, setView] = useState("write");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [wordCount, setWordCount] = useState(0);
-  const [isEditorEmpty, setIsEditorEmpty] = useState(true);
+  const [error, setError] = useState("");
+  const [invalidField, setInvalidField] = useState("");
+  const publishing = useRef(false);
+  const titleRef = useRef(null);
   const navigate = useNavigate();
-
   const editor = useEditor({
-    extensions: [StarterKit],
-    content: "",
-    editorProps: {
-      attributes: {
-        class: "blog-editor-content__surface",
-        role: "textbox",
-        "aria-label": "Blog content",
-        "aria-multiline": "true",
-        "aria-describedby": "blog-editor-help",
-      },
-    },
+    extensions: [StarterKit.configure({ heading: { levels: [2, 3] } })],
+    content: draft.html,
+    editorProps: { attributes: {
+      class: "blog-content composer-prose",
+      role: "textbox",
+      "aria-label": "Blog content",
+      "aria-multiline": "true",
+      "aria-invalid": invalidField === "content" ? "true" : "false",
+      "aria-describedby": invalidField === "content" ? "blog-editor-help create-blog-error" : "blog-editor-help",
+    } },
     onUpdate: ({ editor: activeEditor }) => {
-      const text = activeEditor.getText();
-      setWordCount(getWordCount(text));
-      setIsEditorEmpty(!text.trim());
+      setDraft((previous) => ({ ...previous, html: activeEditor.getHTML(), text: activeEditor.getText() }));
+      setInvalidField("");
+      setError("");
     },
   });
 
+  useEffect(() => { editor?.setEditable(!loading, false); }, [editor, loading]);
+  useEffect(() => {
+    if (invalidField === "title") titleRef.current?.focus();
+    if (invalidField === "content") editor?.commands.focus();
+  }, [invalidField, view, editor]);
+
+  const words = countWords(draft.text);
+  const minutes = Math.max(1, Math.ceil(words / 220));
+  const titleReady = Boolean(draft.title.trim());
+  const contentReady = Boolean(draft.text.trim());
+  const previewHtml = useMemo(() => sanitizeBlogHtml(draft.html), [draft.html]);
+
+  const leaveEditor = () => {
+    if (publishing.current) return;
+    if (saveNow() === "unavailable" && (titleReady || contentReady) &&
+        !window.confirm("Your draft could not be saved. Leave this page and lose your changes?")) return;
+    navigate("/blogs");
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
-
-    if (!title.trim()) {
-      setError("Add a title before publishing.");
+    if (publishing.current) return;
+    if (!draft.title.trim() || !editor?.getText().trim()) {
+      const field = draft.title.trim() ? "content" : "title";
+      setView("write");
+      setInvalidField(field);
+      setError(field === "title" ? "Add a title before publishing." : "Write some blog content before publishing.");
       return;
     }
-
-    if (!editor || !editor.getText().trim()) {
-      setError("Write some blog content before publishing.");
-      return;
-    }
-
     const token = localStorage.getItem("token");
-    if (!token) {
-      setError("You must be logged in to publish a blog.");
-      return;
-    }
-
+    if (!token) { setError("You must be logged in to publish a blog. Your draft is kept on this browser."); return; }
+    publishing.current = true;
     setLoading(true);
-    setError(null);
-
+    setError("");
+    setInvalidField("");
+    saveNow();
     try {
-      await axios.post(
-        apiUrl("/api/blogs"),
-        { title: title.trim(), content: editor.getHTML() },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        },
-      );
-
-      navigate("/blogs");
+      const { data } = await axios.post(apiUrl("/api/blogs"), {
+        title: draft.title.trim(), content: editor.getHTML(),
+        ...(draft.category.trim() ? { category: draft.category.trim() } : {}),
+      }, { headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` } });
+      finishPublishing();
+      navigate(data?._id ? `/blogs/${data._id}` : "/blogs");
     } catch (err) {
-      setError(
-        err.response?.data?.error ||
-          err.message ||
-          "The blog could not be published. Please try again.",
-      );
+      setError(err.response?.data?.error || err.response?.data?.message || "We couldn’t publish your story. Your draft is still here — please try again.");
     } finally {
+      publishing.current = false;
       setLoading(false);
     }
   };
 
-  const handleClear = () => {
-    const hasDraft = Boolean(title.trim()) || Boolean(editor?.getText().trim());
-    if (hasDraft && !window.confirm("Clear this draft? This cannot be undone.")) return;
-
-    setTitle("");
+  const clearDraft = () => {
+    if (publishing.current || !window.confirm("Clear the title, category and story from this browser? This cannot be undone.")) return;
     editor?.commands.clearContent();
-    setWordCount(0);
-    setIsEditorEmpty(true);
-    setError(null);
+    discard();
+    setView("write");
+    setError("");
+    setInvalidField("");
+    titleRef.current?.focus();
   };
 
-  const titleIsReady = Boolean(title.trim());
-  const contentIsReady = Boolean(editor?.getText().trim());
+  const tools = editor ? [
+    { label: "Bold", shortcut: "Ctrl/⌘ B", icon: Bold, active: editor.isActive("bold"), run: () => editor.chain().focus().toggleBold().run() },
+    { label: "Italic", shortcut: "Ctrl/⌘ I", icon: Italic, active: editor.isActive("italic"), run: () => editor.chain().focus().toggleItalic().run() },
+    { label: "Bullet list", icon: List, active: editor.isActive("bulletList"), run: () => editor.chain().focus().toggleBulletList().run() },
+    { label: "Numbered list", icon: ListOrdered, active: editor.isActive("orderedList"), run: () => editor.chain().focus().toggleOrderedList().run() },
+    { label: "Blockquote", icon: Quote, active: editor.isActive("blockquote"), run: () => editor.chain().focus().toggleBlockquote().run() },
+    { label: "Code block", icon: Code2, active: editor.isActive("codeBlock"), run: () => editor.chain().focus().toggleCodeBlock().run() },
+    { label: "Undo", icon: Undo2, disabled: !editor.can().undo(), run: () => editor.chain().focus().undo().run() },
+    { label: "Redo", icon: Redo2, disabled: !editor.can().redo(), run: () => editor.chain().focus().redo().run() },
+  ] : [];
 
-  const toolbarButtons = editor
-    ? [
-        {
-          key: "bold",
-          label: "Bold",
-          icon: Bold,
-          isActive: () => editor.isActive("bold"),
-          run: () => editor.chain().focus().toggleBold().run(),
-        },
-        {
-          key: "italic",
-          label: "Italic",
-          icon: Italic,
-          isActive: () => editor.isActive("italic"),
-          run: () => editor.chain().focus().toggleItalic().run(),
-        },
-        {
-          key: "heading-1",
-          label: "Heading 1",
-          icon: Heading1,
-          isActive: () => editor.isActive("heading", { level: 1 }),
-          run: () => editor.chain().focus().toggleHeading({ level: 1 }).run(),
-        },
-        {
-          key: "heading-2",
-          label: "Heading 2",
-          icon: Heading2,
-          isActive: () => editor.isActive("heading", { level: 2 }),
-          run: () => editor.chain().focus().toggleHeading({ level: 2 }).run(),
-        },
-        {
-          key: "bullet-list",
-          label: "Bullet list",
-          icon: List,
-          isActive: () => editor.isActive("bulletList"),
-          run: () => editor.chain().focus().toggleBulletList().run(),
-        },
-        {
-          key: "ordered-list",
-          label: "Numbered list",
-          icon: ListOrdered,
-          isActive: () => editor.isActive("orderedList"),
-          run: () => editor.chain().focus().toggleOrderedList().run(),
-        },
-        {
-          key: "blockquote",
-          label: "Blockquote",
-          icon: Quote,
-          isActive: () => editor.isActive("blockquote"),
-          run: () => editor.chain().focus().toggleBlockquote().run(),
-        },
-        {
-          key: "undo",
-          label: "Undo",
-          icon: Undo2,
-          run: () => editor.chain().focus().undo().run(),
-        },
-        {
-          key: "redo",
-          label: "Redo",
-          icon: Redo2,
-          run: () => editor.chain().focus().redo().run(),
-        },
-      ]
-    : [];
+  return <section className="journal-page journal-composer">
+    <div className="journal-shell">
+      <nav className="composer-topbar" aria-label="Editor navigation">
+        <button className="composer-back" type="button" onClick={leaveEditor} disabled={loading}><ArrowLeft size={16} aria-hidden="true" /> Back to blogs</button>
+        <span className={`composer-save composer-save--${saveStatus}`} role="status">{saveStatus === "saved" && <CheckCircle2 size={14} aria-hidden="true" />}{saveLabels[saveStatus]}</span>
+      </nav>
+      <header className="composer-header">
+        <div><p className="journal-kicker"><span /> THE AMIVERSE JOURNAL · EDITOR</p><h1>A little thought.<br /><em>A new perspective.</em></h1></div>
+        <p>{restored ? "Welcome back. Your saved draft is ready to pick up where you left off." : "Give your idea room to grow. Write, preview, and share it when you’re ready."}</p>
+      </header>
 
-  return (
-    <section className="amiverse-premium-light-page relative min-h-[calc(100svh-4rem)] overflow-hidden bg-slate-100 text-slate-950 transition-colors dark:bg-black dark:text-white">
-      <div
-        aria-hidden="true"
-        className="amiverse-premium-light-overlay pointer-events-none absolute inset-0 dark:bg-[radial-gradient(circle_at_16%_0%,rgba(14,165,233,0.12),transparent_30%),radial-gradient(circle_at_88%_12%,rgba(99,102,241,0.10),transparent_32%)]"
-      />
-
-      <div className="relative mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 sm:py-9 lg:px-8 lg:py-12">
-        <header className="mb-6 overflow-hidden rounded-3xl border border-white/[0.65] bg-white/[0.72] p-5 shadow-[0_24px_70px_rgba(15,23,42,0.10)] backdrop-blur-2xl dark:border-white/10 dark:bg-zinc-950/[0.72] dark:shadow-[0_24px_70px_rgba(0,0,0,0.48)] sm:p-7">
-          <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex min-w-0 items-start gap-4">
-              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-slate-950 text-cyan-200 shadow-[0_14px_30px_rgba(15,23,42,0.18)] dark:bg-white dark:text-slate-950">
-                <FilePenLine className="h-5 w-5" aria-hidden="true" />
-              </span>
-              <div className="min-w-0">
-                <p className="flex items-center gap-2 text-[0.68rem] font-bold uppercase tracking-[0.24em] text-sky-700 dark:text-cyan-300">
-                  <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
-                  Editorial studio
-                </p>
-                <h1 className="mt-2 font-cinzel text-2xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-3xl lg:text-4xl">
-                  Create a new story
-                </h1>
-                <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 dark:text-zinc-400 sm:text-base">
-                  Shape the draft, add structure, and publish it to AmiVerse when it is ready.
-                </p>
-              </div>
+      <form onSubmit={handleSubmit} noValidate className="composer-layout" aria-label="Create blog" aria-busy={loading}>
+        <div className="composer-workspace">
+          <div className="composer-workspace-bar">
+            <div className="composer-view-switch" role="group" aria-label="Editor view">
+              <button type="button" aria-pressed={view === "write"} onClick={() => setView("write")}><PenLine size={15} aria-hidden="true" /> Write</button>
+              <button type="button" aria-pressed={view === "preview"} onClick={() => setView("preview")}><Eye size={15} aria-hidden="true" /> Preview</button>
             </div>
-
-            <button
-              type="button"
-              onClick={() => navigate("/blogs")}
-              className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl border border-slate-300/80 bg-white/75 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:-translate-y-0.5 hover:border-sky-400 hover:text-sky-800 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-sky-300/35 dark:border-white/10 dark:bg-white/[0.05] dark:text-zinc-200 dark:hover:border-cyan-300/40 dark:hover:text-cyan-200"
-            >
-              <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-              Back to blogs
-            </button>
-          </div>
-        </header>
-
-        <form
-          id="create-blog-form"
-          onSubmit={handleSubmit}
-          className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_18rem]"
-        >
-          <div className="min-w-0 overflow-hidden rounded-3xl border border-white/70 bg-white/[0.82] shadow-[0_24px_70px_rgba(15,23,42,0.11)] backdrop-blur-2xl dark:border-white/10 dark:bg-zinc-950/[0.82] dark:shadow-[0_24px_70px_rgba(0,0,0,0.52)]">
-            <div className="border-b border-slate-200/80 p-5 dark:border-white/10 sm:p-7">
-              <div className="flex items-end justify-between gap-4">
-                <label
-                  htmlFor="blog-title"
-                  className="text-sm font-bold text-slate-800 dark:text-zinc-100"
-                >
-                  Blog title
-                </label>
-                <span
-                  id="blog-title-count"
-                  className="text-xs font-medium tabular-nums text-slate-400 dark:text-zinc-500"
-                >
-                  {title.length} characters
-                </span>
-              </div>
-              <input
-                id="blog-title"
-                type="text"
-                value={title}
-                onChange={(event) => {
-                  setTitle(event.target.value);
-                  if (error) setError(null);
-                }}
-                placeholder="Give your story a clear, memorable title"
-                aria-describedby={`blog-title-count${error ? " create-blog-error" : ""}`}
-                className="mt-3 w-full rounded-2xl border border-slate-300/80 bg-white/80 px-4 py-3.5 text-lg font-semibold text-slate-950 shadow-inner shadow-slate-900/[0.03] outline-none transition placeholder:text-slate-400 focus:border-sky-500 focus:ring-4 focus:ring-sky-300/25 dark:border-white/10 dark:bg-black/35 dark:text-white dark:placeholder:text-zinc-600 dark:focus:border-cyan-300/60 dark:focus:ring-cyan-300/10 sm:px-5 sm:text-xl"
-              />
-            </div>
-
-            <div
-              role="toolbar"
-              aria-label="Blog formatting"
-              className="sticky top-0 z-10 flex items-center gap-1 overflow-x-auto border-b border-slate-200/80 bg-white/90 px-3 py-3 backdrop-blur-xl dark:border-white/10 dark:bg-zinc-950/90 sm:px-5"
-            >
-              {editor ? (
-                toolbarButtons.map(({ key, label, icon: Icon, isActive, run }) => {
-                  const active = isActive?.() || false;
-                  return (
-                    <button
-                      key={key}
-                      type="button"
-                      title={label}
-                      aria-label={label}
-                      aria-pressed={isActive ? active : undefined}
-                      onClick={run}
-                      disabled={loading}
-                      className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border text-sm transition focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-sky-300/30 disabled:cursor-not-allowed disabled:opacity-45 dark:focus-visible:ring-cyan-300/15 ${
-                        active
-                          ? "border-sky-500 bg-sky-500 text-white shadow-[0_8px_18px_rgba(14,165,233,0.22)] dark:border-cyan-300 dark:bg-cyan-300 dark:text-slate-950"
-                          : "border-transparent text-slate-600 hover:border-slate-200 hover:bg-slate-100 hover:text-slate-950 dark:text-zinc-400 dark:hover:border-white/10 dark:hover:bg-white/[0.07] dark:hover:text-white"
-                      }`}
-                    >
-                      <Icon className="h-4.5 w-4.5" aria-hidden="true" />
-                    </button>
-                  );
-                })
-              ) : (
-                <div className="flex gap-2" aria-label="Loading editor toolbar">
-                  {[0, 1, 2, 3, 4].map((item) => (
-                    <span
-                      key={item}
-                      className="h-10 w-10 animate-pulse rounded-xl bg-slate-200/80 dark:bg-white/[0.07]"
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
-
-            <div className="relative min-h-[25rem] bg-white/[0.45] dark:bg-black/20">
-              {editor ? (
-                <>
-                  {isEditorEmpty ? (
-                    <p
-                      aria-hidden="true"
-                      className="pointer-events-none absolute left-5 top-5 z-[1] text-base text-slate-400 dark:text-zinc-600 sm:left-7 sm:top-7"
-                    >
-                      Start writing your blog here…
-                    </p>
-                  ) : null}
-                  <EditorContent editor={editor} className="blog-editor-content" />
-                </>
-              ) : (
-                <div className="space-y-4 p-5 sm:p-7" aria-label="Loading blog editor">
-                  <div className="h-4 w-4/5 animate-pulse rounded bg-slate-200 dark:bg-white/[0.08]" />
-                  <div className="h-4 w-full animate-pulse rounded bg-slate-200 dark:bg-white/[0.08]" />
-                  <div className="h-4 w-2/3 animate-pulse rounded bg-slate-200 dark:bg-white/[0.08]" />
-                </div>
-              )}
-            </div>
-
-            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200/80 bg-slate-50/75 px-5 py-3.5 text-xs font-medium text-slate-500 dark:border-white/10 dark:bg-white/[0.025] dark:text-zinc-500 sm:px-7">
-              <p id="blog-editor-help">Use headings and lists to keep the article easy to scan.</p>
-              <p className="tabular-nums">{wordCount} {wordCount === 1 ? "word" : "words"}</p>
-            </div>
+            <span className="composer-word-count">{words.toLocaleString()} {words === 1 ? "word" : "words"}<span aria-hidden="true"> · </span>{words ? `${minutes} min read` : "Just getting started"}</span>
           </div>
 
-          <aside className="rounded-3xl border border-white/70 bg-white/[0.78] p-5 shadow-[0_22px_60px_rgba(15,23,42,0.10)] backdrop-blur-2xl dark:border-white/10 dark:bg-zinc-950/[0.78] dark:shadow-[0_22px_60px_rgba(0,0,0,0.48)] lg:sticky lg:top-6">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500 dark:text-zinc-500">
-                  Draft status
-                </p>
-                <p className="mt-1 text-base font-bold text-slate-900 dark:text-white">Not published</p>
-              </div>
-              <span className="h-2.5 w-2.5 rounded-full bg-amber-400 shadow-[0_0_14px_rgba(251,191,36,0.55)]" aria-hidden="true" />
+          <div hidden={view !== "write"}>
+            <div className="composer-title-field">
+              <label htmlFor="blog-title">Blog title</label>
+              <textarea ref={titleRef} id="blog-title" rows={2} value={draft.title} disabled={loading}
+                onChange={(event) => { setDraft((previous) => ({ ...previous, title: event.target.value })); setError(""); setInvalidField(""); }}
+                placeholder="Every good story starts with a title…" aria-invalid={invalidField === "title"}
+                aria-describedby={invalidField === "title" ? "create-blog-error" : undefined} />
             </div>
+            <div className="composer-toolbar" role="toolbar" aria-label="Blog formatting">
+              <select aria-label="Text style" disabled={!editor || loading}
+                value={editor?.isActive("heading", { level: 2 }) ? "2" : editor?.isActive("heading", { level: 3 }) ? "3" : "paragraph"}
+                onChange={(event) => event.target.value === "paragraph" ? editor.chain().focus().setParagraph().run() : editor.chain().focus().setHeading({ level: Number(event.target.value) }).run()}>
+                <option value="paragraph">Paragraph</option><option value="2">Heading</option><option value="3">Subheading</option>
+              </select>
+              <span className="composer-toolbar-divider" aria-hidden="true" />
+              {tools.map(({ label, shortcut, icon: Icon, active, run, disabled }) => <button key={label} type="button"
+                aria-label={label} title={`${label}${shortcut ? ` (${shortcut})` : ""}`} aria-pressed={active}
+                onClick={run} disabled={loading || disabled}><Icon size={17} aria-hidden="true" /></button>)}
+            </div>
+            <div className={`composer-editor-body journal-reading-main${invalidField === "content" ? " composer-editor-body--invalid" : ""}`}>
+              {editor ? <>
+                {!contentReady && <p className="composer-placeholder" aria-hidden="true">Start with the thought you can’t stop thinking about…</p>}
+                <EditorContent editor={editor} />
+              </> : <p className="composer-editor-loading" role="status">Preparing your writing space…</p>}
+            </div>
+            <p className="composer-editor-help" id="blog-editor-help">Make it easy to follow. Break up your story with headings, lists, and a little breathing room.</p>
+          </div>
 
-            <ul className="mt-5 space-y-3 border-y border-slate-200/80 py-5 dark:border-white/10">
-              <ChecklistItem complete={titleIsReady}>Title added</ChecklistItem>
-              <ChecklistItem complete={contentIsReady}>Story written</ChecklistItem>
-              <ChecklistItem complete>Admin access verified</ChecklistItem>
-            </ul>
+          {view === "preview" && <section className="composer-preview" aria-label="Article preview">
+            <p className="composer-preview-note"><Eye size={14} aria-hidden="true" /> Reader preview · Not published</p>
+            <span className="journal-category">{draft.category.trim() || "Perspectives"}</span>
+            <h2>{draft.title.trim() || "Your story title"}</h2>
+            <p className="composer-preview-byline">Amritanshu Mishra <span aria-hidden="true">·</span> {minutes} min read</p>
+            {contentReady ? <div className="journal-reading-main"><div className="blog-content" dangerouslySetInnerHTML={{ __html: previewHtml }} /></div>
+              : <div className="composer-preview-empty"><BookOpen size={28} aria-hidden="true" /><p>Your story will take shape here.</p><button className="journal-button" type="button" onClick={() => setView("write")}>Start writing <ArrowUpRight size={15} aria-hidden="true" /></button></div>}
+          </section>}
+        </div>
 
-            {error ? (
-              <p
-                id="create-blog-error"
-                role="alert"
-                className="mt-5 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium leading-5 text-rose-700 dark:border-rose-400/20 dark:bg-rose-400/[0.08] dark:text-rose-200"
-              >
-                {error}
-              </p>
-            ) : null}
-
-            <button
-              type="submit"
-              disabled={loading || !editor}
-              className="mt-5 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-slate-950 px-5 py-3 text-sm font-bold text-white shadow-[0_14px_30px_rgba(15,23,42,0.22)] transition hover:-translate-y-0.5 hover:bg-sky-800 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-sky-300/35 disabled:cursor-not-allowed disabled:opacity-55 dark:bg-cyan-300 dark:text-slate-950 dark:hover:bg-cyan-200 dark:focus-visible:ring-cyan-300/20"
-            >
-              {loading ? (
-                <>
-                  <Loader size="small" fullscreen={false} label="Publishing blog" />
-                  Publishing…
-                </>
-              ) : (
-                <>
-                  <Send className="h-4 w-4" aria-hidden="true" />
-                  Publish blog
-                </>
-              )}
+        <aside className="composer-sidebar" aria-label="Publishing settings">
+          <div className="composer-publish-card">
+            <p className="journal-kicker">THE FINISHING TOUCHES</p><h2>Ready when you are.</h2>
+            <p className="composer-sidebar-intro">Your story goes live as soon as you publish.</p>
+            <label htmlFor="blog-category">Category <span>optional</span></label>
+            <input id="blog-category" value={draft.category} maxLength={60} disabled={loading} placeholder="e.g. Technology" list="blog-category-options"
+              onChange={(event) => setDraft((previous) => ({ ...previous, category: event.target.value }))} />
+            <datalist id="blog-category-options"><option value="Technology" /><option value="Artificial Intelligence" /><option value="Science" /><option value="Software Engineering" /><option value="Perspectives" /></datalist>
+            <ul className="composer-checklist"><ChecklistItem complete={titleReady}>A title to draw readers in</ChecklistItem><ChecklistItem complete={contentReady}>A story worth sharing</ChecklistItem></ul>
+            {error && <p id="create-blog-error" className="composer-error" role="alert">{error}</p>}
+            <button className="journal-button journal-button--primary composer-publish" type="submit" disabled={loading || !editor}>
+              {loading ? <><Loader size="small" fullscreen={false} label="Publishing blog" /> Publishing…</> : <><Send size={16} aria-hidden="true" /> Publish blog</>}
             </button>
-
-            <button
-              type="button"
-              onClick={() => navigate("/blogs")}
-              disabled={loading}
-              className="mt-2.5 inline-flex min-h-11 w-full items-center justify-center rounded-2xl border border-slate-300/80 bg-white/70 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-sky-400 hover:text-sky-800 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-sky-300/30 disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/10 dark:bg-white/[0.04] dark:text-zinc-300 dark:hover:border-cyan-300/35 dark:hover:text-cyan-200"
-            >
-              Cancel
-            </button>
-
-            <button
-              type="button"
-              onClick={handleClear}
-              disabled={loading || (!title.trim() && !contentIsReady)}
-              className="mt-2.5 inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-slate-500 transition hover:bg-rose-50 hover:text-rose-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-rose-200/50 disabled:cursor-not-allowed disabled:opacity-40 dark:text-zinc-500 dark:hover:bg-rose-400/[0.08] dark:hover:text-rose-200 dark:focus-visible:ring-rose-400/15"
-            >
-              <RotateCcw className="h-4 w-4" aria-hidden="true" />
-              Clear draft
-            </button>
-          </aside>
-        </form>
-      </div>
-    </section>
-  );
+            <p className="composer-local-note">Drafts stay on this browser until you publish or clear them.</p>
+            <button className="composer-clear" type="button" onClick={clearDraft} disabled={loading || (!titleReady && !contentReady && !draft.category)}><RotateCcw size={14} aria-hidden="true" /> Clear draft</button>
+          </div>
+          <div className="composer-writing-note"><PenLine size={18} aria-hidden="true" /><p><strong>A small writing tip</strong>Write like you’re explaining it to one curious person. You can polish the details in Preview.</p></div>
+        </aside>
+      </form>
+    </div>
+  </section>;
 }
