@@ -8,7 +8,7 @@ import {
   useState,
 } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { ArrowRight, ArrowUpRight, BookOpen, Clock, Filter, Plus, RefreshCw, Search, Trash2, TrendingUp, X } from "lucide-react";
+import { ArrowRight, ArrowUpRight, BookOpen, Clock, Filter, Plus, RefreshCw, Search, Trash2, X } from "lucide-react";
 import { toast } from "react-toastify";
 import axios from "../../utils/api";
 import Loader from "../Loader/Loader";
@@ -20,6 +20,9 @@ import {
   sendTrendingEvent,
 } from "../../utils/trendingAnalytics";
 import { useTrendingBlogs } from "../../hooks/useTrendingBlogs";
+import { useMostReadBlogs } from "../../hooks/useMostReadBlogs";
+import { MOST_READ_SINCE_LABEL } from "../../utils/mostReadAnalytics";
+import BlogBadges from "./BlogBadges";
 import { blogPreview, blogPublicationDate } from "./blogPresentation";
 import "./blogs.css";
 
@@ -52,7 +55,7 @@ const BlogSkeleton = memo(function BlogSkeleton() {
 });
 
 const BlogCard = memo(forwardRef(function BlogCard({
-  blog, isAdmin, isDeleting, isTrending, featured, onDeleteBlog, onTrackClick,
+  blog, isAdmin, isDeleting, isTrending, readCount, featured, onDeleteBlog, onTrackClick,
 }, forwardedRef) {
   const publicationDate = blogPublicationDate(blog);
   const publishedDate = publicationDate
@@ -65,11 +68,7 @@ const BlogCard = memo(forwardRef(function BlogCard({
       className={`journal-card${featured ? " journal-card--featured" : ""}`}>
       <div className="journal-card__eyebrow">
         <span className="journal-category">{blog.category || "Perspectives"}</span>
-        {isTrending && (
-          <span className="journal-trending" aria-label="Trending">
-            <TrendingUp size={14} aria-hidden="true" /> Trending
-          </span>
-        )}
+        <BlogBadges isTrending={isTrending} readCount={readCount} />
         {isAdmin && (
           <button type="button" className="journal-icon-button journal-delete"
             aria-label={`Delete blog titled ${blog.title}`} disabled={isDeleting}
@@ -80,13 +79,14 @@ const BlogCard = memo(forwardRef(function BlogCard({
       </div>
       <Link to={`/blogs/${blog._id}?src=list`} onClick={() => onTrackClick(blog._id)}
         className="journal-card__link" aria-label={`Read ${blog.title}`}>
-        {featured && <span className="journal-feature-label">{isTrending ? "In the spotlight" : "Latest story"}</span>}
+        {featured && <span className="journal-feature-label">{isTrending ? "In the spotlight" : readCount > 0 ? "A reader favourite" : "Latest story"}</span>}
         <h2>{blog.title}</h2>
         <p className="journal-card__excerpt">{excerpt || "Discover the full story and explore a new perspective."}</p>
         <div className="journal-card__footer">
           <div className="journal-card__meta">
             <time dateTime={publicationDate}>{publishedDate}</time>
             <span><Clock size={13} aria-hidden="true" /> {minutes} min read</span>
+            {readCount > 0 && <span><BookOpen size={13} aria-hidden="true" /> {readCount.toLocaleString()} {readCount === 1 ? "read" : "reads"}</span>}
           </div>
           <span className="journal-card__arrow" aria-hidden="true"><ArrowUpRight size={20} /></span>
         </div>
@@ -100,6 +100,7 @@ const BlogList = () => {
   const { isAdmin, verifiedAdminToken } = useVerifiedAuth();
   const [blogs, setBlogs] = useState([]);
   const { items: trendingItems, status: trendingStatus, refresh: refreshTrending } = useTrendingBlogs();
+  const { items: mostReadItems, status: mostReadStatus, refresh: refreshMostRead } = useMostReadBlogs();
   const [listError, setListError] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const fetchErrorRef = useRef(false);
@@ -119,6 +120,11 @@ const BlogList = () => {
   const deletedBlogIdsRef = useRef(new Set());
   const rankedBlogs = trendingItems.filter((post) => !deletedBlogIdsRef.current.has(String(post._id)));
   const trendingIds = new Set(rankedBlogs.map((post) => String(post._id)));
+  const mostReadBlogs = mostReadItems.filter((post) => !deletedBlogIdsRef.current.has(String(post._id)));
+  const readCounts = new Map(mostReadBlogs.map((post) => [String(post._id), post.readCount]));
+  const isRankedSort = filter === "trending" || filter === "most-read";
+  const activeRankedBlogs = filter === "most-read" ? mostReadBlogs : rankedBlogs;
+  const rankingStatus = filter === "most-read" ? mostReadStatus : trendingStatus;
 
   const trackClick = useCallback((postId) => {
     if (!postId) return;
@@ -507,16 +513,16 @@ const BlogList = () => {
   const handleAddBlog = useCallback(() => navigate("/add-blog"), [navigate]);
 
   const filteredBlogs = (() => {
-    if (filter !== "trending") return blogs;
-    if (trendingStatus === "loading") return [];
-    if (trendingStatus === "failed") return blogs;
+    if (!isRankedSort) return blogs;
+    if (rankingStatus === "loading") return [];
+    if (rankingStatus === "failed") return blogs;
 
     const normalizedSearch = debouncedSearch.trim().toLocaleLowerCase();
     const matchingRanked = normalizedSearch
-      ? rankedBlogs.filter((post) =>
+      ? activeRankedBlogs.filter((post) =>
           String(post?.title || "").toLocaleLowerCase().includes(normalizedSearch),
         )
-      : rankedBlogs;
+      : activeRankedBlogs;
     const rankedIds = new Set(matchingRanked.map((post) => String(post._id)));
 
     return [
@@ -525,7 +531,7 @@ const BlogList = () => {
     ];
   })();
 
-  const waitingForTrending = filter === "trending" && trendingStatus === "loading";
+  const waitingForRanking = isRankedSort && rankingStatus === "loading";
 
   const retryBlogs = () => {
     fetchErrorRef.current = false;
@@ -533,7 +539,7 @@ const BlogList = () => {
   };
   const isSearching = Boolean(debouncedSearch.trim());
   const resultsLabel = isSearching ? `Results for “${debouncedSearch.trim()}”`
-    : filter === "trending" ? "Discover your next read" : filter === "latest" ? "Fresh from the journal" : "From the beginning";
+    : filter === "most-read" ? "The stories readers return to" : filter === "trending" ? "Discover your next read" : filter === "latest" ? "Fresh from the journal" : "From the beginning";
 
   return (
     <div className="journal-page">
@@ -568,38 +574,55 @@ const BlogList = () => {
             <label htmlFor="blog-sort">Sort by</label>
             <select id="blog-sort" value={filter} onChange={(e) => setFilter(e.target.value)} aria-label="Sort blogs">
               <option value="trending">Trending</option>
+              <option value="most-read">Most Read</option>
               <option value="latest">Latest</option>
               <option value="oldest">Oldest</option>
             </select>
           </div>
         </section>
 
+        <details className="journal-badge-guide">
+          <summary>What do the badges mean?</summary>
+          <div>
+            <p><strong>Trending</strong> highlights recent articles gaining engagement.</p>
+            <p><strong>Most Read</strong> marks the four most-read stories since {MOST_READ_SINCE_LABEL}, including older favourites. A read counts after 30 seconds, once per browser per article each day.</p>
+            <p>A story can earn both badges.</p>
+          </div>
+        </details>
+
         <div className="journal-section-heading">
           <div><p className="journal-section-title">{resultsLabel}</p>
             <p className="journal-section-description">{isSearching ? "Articles matching your title search."
+              : filter === "most-read"
+                ? mostReadStatus === "ready" && mostReadBlogs.length === 0
+                  ? `A fresh start: reads count from ${MOST_READ_SINCE_LABEL}. Explore a story and help shape the favourites.`
+                  : `Most-read stories first, followed by the latest. Counting from ${MOST_READ_SINCE_LABEL}.`
               : filter === "trending" && trendingStatus === "ready" && rankedBlogs.length > 0
                 ? "Trending reads first, followed by the latest stories."
+                : filter === "trending" && trendingStatus === "ready"
+                  ? "No stories are trending right now. There’s still plenty to discover in the archive."
                 : filter === "oldest" ? "Explore the archive, oldest stories first." : "Explore the latest stories from AmiVerse."}</p>
           </div>
-          <span role="status" className="journal-result-count">{loading || waitingForTrending ? "Finding stories…" : `${filteredBlogs.length} ${filteredBlogs.length === 1 ? "article" : "articles"}${hasMore ? " loaded" : ""}`}</span>
+          <span role="status" className="journal-result-count">{loading || waitingForRanking ? "Finding stories…" : `${filteredBlogs.length} ${filteredBlogs.length === 1 ? "article" : "articles"}${hasMore ? " loaded" : ""}`}</span>
         </div>
 
-        {filter === "trending" && trendingStatus === "failed" && (
+        {isRankedSort && rankingStatus === "failed" && (
           <div className="journal-notice" role="status">
-            <span>Trending is taking a break. You can still explore the latest articles.</span>
-            <button type="button" onClick={refreshTrending}><RefreshCw size={14} aria-hidden="true" /> Retry trending</button>
+            <span>{filter === "most-read" ? "Most Read is" : "Trending is"} taking a break. You can still explore the latest articles.</span>
+            <button type="button" onClick={filter === "most-read" ? refreshMostRead : refreshTrending}><RefreshCw size={14} aria-hidden="true" /> Retry {filter === "most-read" ? "Most Read" : "trending"}</button>
           </div>
         )}
 
-        <div className="journal-grid" aria-busy={loading || waitingForTrending}>
+        <div className="journal-grid" aria-busy={loading || waitingForRanking}>
           {filteredBlogs.map((blog, index) => (
             <BlogCard key={blog._id} ref={(node) => registerBlogCard(blog._id, node)} blog={blog}
               isAdmin={isAdmin} isDeleting={deletingId === blog._id}
               isTrending={trendingIds.has(String(blog._id))}
-              featured={index === 0 && filter === "trending" && !isSearching}
+              readCount={readCounts.get(String(blog._id)) || 0}
+              featured={index === 0 && isRankedSort && !isSearching}
               onDeleteBlog={handleDelete} onTrackClick={trackClick} />
           ))}
-          {(loading || waitingForTrending) && (filteredBlogs.length ? PAGINATION_SKELETON_KEYS : INITIAL_SKELETON_KEYS)
+          {(loading || waitingForRanking) && (filteredBlogs.length ? PAGINATION_SKELETON_KEYS : INITIAL_SKELETON_KEYS)
             .map((key) => <BlogSkeleton key={key} />)}
         </div>
 
@@ -611,7 +634,7 @@ const BlogList = () => {
             <button type="button" className="journal-button" onClick={retryBlogs}>Try again</button>
           </div>
         )}
-        {!filteredBlogs.length && !loading && !waitingForTrending && !listError && (
+        {!filteredBlogs.length && !loading && !waitingForRanking && !listError && (
           <div className="journal-empty">
             <Search size={28} aria-hidden="true" />
             <h2>{isSearching ? "No matching stories" : "The next story is on its way"}</h2>
@@ -620,7 +643,7 @@ const BlogList = () => {
           </div>
         )}
         <div ref={loaderRef} className="journal-pagination">
-          {hasMore && !listError && !waitingForTrending && filteredBlogs.length > 0 && (
+          {hasMore && !listError && !waitingForRanking && filteredBlogs.length > 0 && (
             <button type="button" className="journal-button" onClick={loadNextPage} disabled={loading}>
               {loading ? "Loading articles…" : "Load more articles"}<ArrowRight size={16} aria-hidden="true" />
             </button>

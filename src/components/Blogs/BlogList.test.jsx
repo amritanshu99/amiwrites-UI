@@ -106,6 +106,7 @@ const deferred = () => {
 
 const installSuccessfulRequests = () => {
   axios.get.mockImplementation((url) => {
+    if (url === "/api/most-read") return Promise.resolve({ data: { items: [{ ...rankedFirst, readCount: 12 }] } });
     if (url === trendingRequestPath()) {
       return Promise.resolve({ data: { items: [rankedSecond, rankedFirst] } });
     }
@@ -163,6 +164,8 @@ test("uses the bounded trending request and merges ranked posts first without du
   );
   expect(trendingRequestPath()).not.toContain("all=");
   expect(screen.getAllByLabelText("Trending")).toHaveLength(2);
+  expect(screen.getByLabelText("Most Read")).toBeInTheDocument();
+  expect(screen.getByLabelText("Most Read").closest("article").querySelector('[aria-label="Trending"]')).not.toBeNull();
 
   fireEvent.change(screen.getByRole("textbox", { name: "Search blogs by title" }), {
     target: { value: "Third" },
@@ -173,6 +176,29 @@ test("uses the bounded trending request and merges ranked posts first without du
       "Third article",
     ]);
   });
+});
+
+test("Most Read ordering coexists with Trending badges and includes older stories", async () => {
+  renderList();
+  await screen.findByRole("heading", { name: "Third article" });
+  fireEvent.change(screen.getByRole("combobox", { name: "Sort blogs" }), { target: { value: "most-read" } });
+  await waitFor(() => expect(screen.getAllByRole("heading", { level: 2 }).map((node) => node.textContent)).toEqual([
+    "Ranked first", "Third article", "Ranked second",
+  ]));
+  expect(screen.getByLabelText("Most Read")).toHaveAttribute("title", expect.stringContaining("12 qualifying reads"));
+  expect(screen.getAllByLabelText("Trending")).toHaveLength(2);
+});
+
+test("zero-read launch explains the empty ranking while still showing articles", async () => {
+  const installed = axios.get.getMockImplementation();
+  axios.get.mockImplementation((url, options) => url === "/api/most-read"
+    ? Promise.resolve({ data: { items: [] } }) : installed(url, options));
+  renderList();
+  await screen.findByRole("heading", { name: "Third article" });
+  fireEvent.change(screen.getByRole("combobox", { name: "Sort blogs" }), { target: { value: "most-read" } });
+  expect(await screen.findByText(/A fresh start: reads count/)).toBeInTheDocument();
+  expect(screen.queryByLabelText("Most Read")).not.toBeInTheDocument();
+  expect(screen.getByRole("heading", { name: "Third article" })).toBeInTheDocument();
 });
 
 test("does not expose chronological cards before the initial slate and falls back on failure", async () => {

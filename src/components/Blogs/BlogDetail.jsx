@@ -23,7 +23,6 @@ import {
   CalendarDays,
   ChevronDown,
   Link2,
-  TrendingUp,
   CheckCircle2,
   Clipboard,
   Clock,
@@ -32,6 +31,10 @@ import {
 } from "lucide-react";
 
 import { useTrendingBlogs } from "../../hooks/useTrendingBlogs";
+import { useMostReadBlogs } from "../../hooks/useMostReadBlogs";
+import { useQualifiedBlogRead } from "../../hooks/useQualifiedBlogRead";
+import { MOST_READ_SINCE_LABEL } from "../../utils/mostReadAnalytics";
+import BlogBadges from "./BlogBadges";
 import { articleOutline, blogPublicationDate } from "./blogPresentation";
 import "./blogs.css";
 
@@ -65,6 +68,9 @@ const BlogDetails = () => {
 
   const { items: trendingItems } = useTrendingBlogs(Boolean(blog?._id));
   const isTrending = trendingItems.some((item) => String(item._id) === String(blog?._id));
+  const { items: mostReadItems, refresh: refreshMostRead } = useMostReadBlogs(Boolean(blog?._id));
+  const readCount = mostReadItems.find((item) => String(item._id) === String(blog?._id))?.readCount || 0;
+  useQualifiedBlogRead(blog?._id, refreshMostRead);
 
   // Ref to the summary section for smooth scrolling
   const summaryRef = useRef(null);
@@ -629,7 +635,7 @@ const BlogDetails = () => {
           <header className="journal-article-header">
             <div className="journal-article-labels">
               <span className="journal-category">{blog.category || "Perspectives"}</span>
-              {isTrending && <span className="journal-trending"><TrendingUp size={14} aria-hidden="true" /> Trending</span>}
+              <BlogBadges isTrending={isTrending} readCount={readCount} />
             </div>
             <h1>{blog.title}</h1>
             <div className="journal-byline">
@@ -637,6 +643,7 @@ const BlogDetails = () => {
               <div className="journal-article-meta">
                 <time dateTime={blogPublicationDate(blog)}><CalendarDays size={15} aria-hidden="true" />{publishedLabel}</time>
                 <span><Clock size={15} aria-hidden="true" />{readingMinutes} min read</span>
+                {readCount > 0 && <span title={`Qualifying reads since ${MOST_READ_SINCE_LABEL}`}><BookOpen size={15} aria-hidden="true" />{readCount.toLocaleString()} {readCount === 1 ? "read" : "reads"}</span>}
               </div>
             </div>
           </header>

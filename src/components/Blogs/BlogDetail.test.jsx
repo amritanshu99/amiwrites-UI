@@ -7,6 +7,13 @@ import {
   trendingRequestPath,
 } from "../../utils/trendingAnalytics";
 import BlogDetail from "./BlogDetail";
+import { sendQualifiedRead } from "../../utils/mostReadAnalytics";
+
+jest.mock("../../utils/mostReadAnalytics", () => ({
+  MIN_READ_MS: 30_000,
+  MOST_READ_SINCE_LABEL: "4 Nov 2026",
+  sendQualifiedRead: jest.fn(),
+}));
 
 const mockRoute = { id: "post-1", pathname: "/blogs/post-1" };
 
@@ -90,6 +97,7 @@ const setVisibility = async (nextVisibility) => {
 
 const installRequests = (blog = makeBlog(), rankedItems = [blog]) => {
   axios.get.mockImplementation((url) => {
+    if (url === "/api/most-read") return Promise.resolve({ data: { items: [{ ...blog, readCount: 7 }] } });
     if (url === `/api/blogs/${mockRoute.id}`) {
       return Promise.resolve({ data: blog });
     }
@@ -121,6 +129,7 @@ beforeEach(() => {
   jest.spyOn(window, "scrollTo").mockImplementation(() => {});
   createTrendingEventId.mockReset().mockReturnValue("read:event:0001");
   sendTrendingEvent.mockReset().mockResolvedValue({ ok: true });
+  sendQualifiedRead.mockReset().mockResolvedValue({ ok: true, counted: true });
   axios.get.mockReset();
   axios.post.mockReset();
   installRequests();
@@ -142,6 +151,7 @@ test("uses the shared bounded badge request and never sends a detail impression"
   );
   expect(trendingRequestPath()).not.toContain("all=");
   expect(screen.getByText("Trending")).toBeInTheDocument();
+  expect(screen.getByLabelText("Most Read")).toBeInTheDocument();
   expect(
     sendTrendingEvent.mock.calls.some(([eventType]) => eventType === "impression"),
   ).toBe(false);
@@ -149,6 +159,15 @@ test("uses the shared bounded badge request and never sends a detail impression"
     expect.stringContaining("trending-rl"),
     expect.anything(),
   );
+});
+
+test("a qualified read is recorded independently of an early share", async () => {
+  await renderLoadedDetail();
+  fireEvent.click(screen.getByRole("link", { name: "Share on Twitter" }));
+  await flushPromises();
+  expect(sendQualifiedRead).not.toHaveBeenCalled();
+  await advanceActiveTime(30_000);
+  expect(sendQualifiedRead).toHaveBeenCalledWith("post-1", 30_000);
 });
 
 test("builds accessible contents links from sanitized article headings", async () => {
