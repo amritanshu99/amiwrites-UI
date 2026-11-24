@@ -9,6 +9,7 @@ import {
   Database,
   FileSpreadsheet,
   FileText,
+  FlaskConical,
   Inbox,
   Layers3,
   LoaderCircle,
@@ -398,15 +399,21 @@ export default function AmiBotAdmin() {
               </div>
             </div>
 
-            <button
-              type="button"
-              onClick={loadAdminData}
-              disabled={loading}
-              className={`${secondaryButtonClassName} w-full sm:w-auto`}
-            >
-              <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
-              Refresh
-            </button>
+            <div className="flex flex-wrap items-center gap-2">
+              <Link to="/amibot-admin/evals" className={primaryButtonClassName}>
+                <FlaskConical className="h-4 w-4" />
+                RAG evaluations
+              </Link>
+              <button
+                type="button"
+                onClick={loadAdminData}
+                disabled={loading}
+                className={`${secondaryButtonClassName} w-full sm:w-auto`}
+              >
+                <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+                Refresh
+              </button>
+            </div>
           </div>
 
           <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">

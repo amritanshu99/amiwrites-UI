@@ -144,6 +144,11 @@
     "description": "Private AmiBot administration workspace.",
     "noindex": true
   },
+  "/amibot-admin/evals": {
+    "title": "AmiBot RAG Evaluations | AmiVerse Admin",
+    "description": "Private AmiBot evaluation workspace for reviewing answers and retrieved evidence.",
+    "noindex": true
+  },
   "/reset-password": {
     "title": "Reset Password | AmiVerse",
     "description": "Secure AmiVerse password reset page.",
