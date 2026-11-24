@@ -51,6 +51,7 @@ const EmotionAnalyzerDetails = lazy(() =>
   import("./pages/EmotionAnalyzerDetails"),
 );
 const AmiBotDetails = lazy(() => import("./pages/AmiBotDetails"));
+const AmiBotEvals = lazy(() => import("./components/AmiBot/AmiBotEvals"));
 const ReinforcementLearningDetails = lazy(() =>
   import("./pages/ReinforcementLearning"),
 );
@@ -61,6 +62,7 @@ const instantScrollPaths = new Set([
   "/add-blog",
   "/ami-pulse-settings",
   "/amibot-admin",
+  "/amibot-admin/evals",
   "/amibot",
 ]);
 
@@ -286,6 +288,14 @@ const App = () => {
             />
             <Route path="/amibot" element={<AmiBotDetails />} />
             <Route path="/amibot/voice" element={<AmiBotDetails />} />
+            <Route
+              path="/amibot-admin/evals"
+              element={
+                <ProtectedAdminRoute loadingLabel="Loading AmiBot evaluations">
+                  <AmiBotEvals />
+                </ProtectedAdminRoute>
+              }
+            />
             <Route
               path="/amibot-admin"
               element={
